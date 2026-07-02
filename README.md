@@ -73,6 +73,50 @@ Tout se paramètre dans `backend/appsettings.json` (ou via les variables d'envir
         └── components/ # FiveWhys, Ishikawa, FtaTree, RaciEditor, Layout
 ```
 
+## Aperçu de l'application
+
+Captures d'écran réalisées avec des données de démonstration.
+
+### Connexion (Active Directory)
+Authentification avec le compte AD ; l'accès est réservé aux membres des groupes paramétrés.
+
+![Connexion](docs/screenshots/01-connexion.png)
+
+### Ma console — personnalisée par rôle
+Page d'accueil composée côté serveur selon le rôle. Ici la vue **Admin**, qui cumule le bloc personnel (mes actions, mes problèmes), le pilotage du processus (problèmes à qualifier, analyses sans cause racine, erreurs connues sans action, retards) et l'administration (volumétrie).
+
+![Console](docs/screenshots/02-console-admin.png)
+
+### Problèmes — enregistrement et suivi
+Liste filtrable (statut, recherche) avec badges de statut et de priorité P1–P4 calculée.
+
+![Problèmes](docs/screenshots/03-problemes.png)
+
+### Fiche problème — qualification
+Impact × urgence, catégorie, contournement (erreur connue) et cause racine validée. Modification réservée aux gestionnaires.
+
+![Fiche problème](docs/screenshots/04-probleme-informations.png)
+
+### Analyse de cause racine
+Espace d'analyse par méthodologie au choix : **5 Pourquoi** (ci-dessous), **Ishikawa 6M** ou **arbre des défaillances FTA** avec portes ET/OU. Plusieurs analyses possibles par problème.
+
+![Analyse 5 Pourquoi](docs/screenshots/05-analyse-5-pourquoi.png)
+
+### Actions correctives — matrice RACI
+Chaque action porte une échéance et des affectations RACI vers des utilisateurs ou groupes AD (au moins un R, exactement un A).
+
+![Actions RACI](docs/screenshots/06-actions-raci.png)
+
+### Suivi transverse des actions
+Vue globale filtrable par statut ou « Mes affectations », avec signalement des retards.
+
+![Suivi des actions](docs/screenshots/07-suivi-actions.png)
+
+### Reporting
+Indicateurs du processus : répartitions par statut / priorité / catégorie, actions en retard, MTTR.
+
+![Reporting](docs/screenshots/08-reporting.png)
+
 ## Documentation
 
 - [`docs/rules.md`](docs/rules.md) — règles de gestion : rôles et droits, consoles par rôle, cycle de vie, matrice de priorité, règles RACI.
