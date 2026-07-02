@@ -10,9 +10,10 @@ export default function Layout() {
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">Gestion des <span>problèmes</span></div>
-        <NavLink to="/" end>Tableau de bord</NavLink>
+        <NavLink to="/" end>Ma console</NavLink>
         <NavLink to="/problems">Problèmes</NavLink>
         <NavLink to="/actions">Actions correctives</NavLink>
+        <NavLink to="/reports">Reporting</NavLink>
         <div className="me">
           <b>{user?.displayName}</b>
           {user?.role === 'Admin' ? 'Administrateur' : user?.role === 'Manager' ? 'Gestionnaire' : 'Utilisateur'}

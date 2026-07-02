@@ -73,6 +73,11 @@ Tout se paramètre dans `backend/appsettings.json` (ou via les variables d'envir
         └── components/ # FiveWhys, Ishikawa, FtaTree, RaciEditor, Layout
 ```
 
+## Documentation
+
+- [`docs/rules.md`](docs/rules.md) — règles de gestion : rôles et droits, consoles par rôle, cycle de vie, matrice de priorité, règles RACI.
+- [`docs/architecture.md`](docs/architecture.md) — architecture technique : containers, auth AD/JWT, modèle de données, API, frontend, déploiement.
+
 ## Points de durcissement avant production
 
 - Changer `Jwt:Key` et le mot de passe PostgreSQL (utiliser des secrets Docker ou variables d'environnement).

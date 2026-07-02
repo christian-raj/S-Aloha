@@ -28,8 +28,8 @@ export default function Dashboard() {
   const max = arr => Math.max(1, ...arr.map(x => x.count))
   return (
     <>
-      <h1 className="page-title">Tableau de bord</h1>
-      <p className="page-sub">Vue d'ensemble du processus de gestion des problèmes.</p>
+      <h1 className="page-title">Reporting</h1>
+      <p className="page-sub">Indicateurs globaux du processus de gestion des problèmes.</p>
 
       <div className="kpi-row">
         <div className="kpi"><div className="n">{s.openProblems}</div><div className="l">Problèmes ouverts</div></div>

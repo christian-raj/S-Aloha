@@ -45,6 +45,7 @@ export const api = {
     create: (pid, dto) => request(`/problems/${pid}/actions`, { method: 'POST', body: JSON.stringify(dto) }),
     update: (id, dto) => request('/actions/' + id, { method: 'PUT', body: JSON.stringify(dto) })
   },
+  console: { get: () => request('/console') },
   directory: { search: (q) => request('/directory/search?q=' + encodeURIComponent(q)) },
   reports: { summary: () => request('/reports/summary') }
 }
