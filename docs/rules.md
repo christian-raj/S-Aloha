@@ -20,11 +20,23 @@ Si un utilisateur appartient à plusieurs groupes, le rôle le plus élevé est 
 
 ## 2. Consoles par rôle
 
-Chaque rôle dispose de sa propre console (page d'accueil « Ma console ») :
+Chaque rôle dispose de sa propre console (page d'accueil « Ma console »), **orientée action** : le contenu est organisé en deux zones, et ce qui requiert une intervention de l'utilisateur apparaît toujours en premier.
 
-- **User** : ses actions à traiter (avec ses rôles RACI et les retards), ses problèmes déclarés encore ouverts.
-- **Manager** : le bloc User **+** le pilotage du processus — problèmes à qualifier (statut Nouveau), analyses en cours sans cause racine, erreurs connues sans action corrective, actions en retard toutes équipes.
-- **Admin** : les blocs User et Manager **+** l'administration — volumétrie globale (problèmes, actions, analyses, déclarants) et dernière activité.
+**Zone « À traiter »** — classée par criticité, chaque bloc n'apparaît que s'il contient des éléments :
+
+| Ordre | Bloc | Visible par | Criticité |
+|---|---|---|---|
+| 1 | Mes actions en retard (échéance dépassée) | Tous | 🔴 |
+| 2 | Problèmes à qualifier (statut Nouveau) | Manager, Admin | 🔵 |
+| 3 | Erreurs connues sans action corrective | Manager, Admin | 🟠 |
+| 4 | Actions en retard toutes équipes (à relancer) | Manager, Admin | 🟠 |
+| 5 | Mes actions en cours (non en retard) | Tous | 🔵 |
+
+Un **bandeau de synthèse** en tête de console totalise les éléments à traiter (état « Rien à traiter » sinon).
+
+**Zone « À suivre »** — informative, en retrait visuel : mes problèmes déclarés encore ouverts (tous), analyses en cours sans cause racine (Manager, Admin).
+
+Les **indicateurs de volumétrie** (totaux problèmes/actions/analyses, déclarants distincts, dernière activité) ne relèvent pas de l'action : ils ont été déplacés de la console vers la page **Reporting**, accessible à tous les rôles.
 
 La composition des blocs est décidée **côté serveur** (`GET /api/console`) à partir du rôle porté par le jeton : un client ne peut pas obtenir un bloc qui ne correspond pas à son rôle.
 

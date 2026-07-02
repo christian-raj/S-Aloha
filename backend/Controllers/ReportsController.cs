@@ -40,7 +40,11 @@ public class ReportsController(AppDbContext db) : ControllerBase
             MttrDays = mttrDays,
             OpenProblems = problems.Count(p => p.Status != "Clos"),
             KnownErrors = problems.Count(p => p.Status == "Erreur connue"),
-            TotalProblems = problems.Count
+            TotalProblems = problems.Count,
+            TotalActions = actions.Count,
+            TotalAnalyses = await db.Analyses.CountAsync(),
+            Contributors = problems.Select(p => p.CreatedBy).Distinct().Count(),
+            LastActivity = problems.Count > 0 ? problems.Max(p => p.UpdatedAt) : (DateTime?)null
         });
     }
 }
@@ -113,21 +117,7 @@ public class ConsoleController(AppDbContext db) : ControllerBase
                                KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue };
         }
 
-        object? administration = null;
-        if (role == "Admin")
-        {
-            // --- Bloc administration (Admin) ---
-            administration = new
-            {
-                TotalProblems = await db.Problems.CountAsync(),
-                TotalActions = await db.Actions.CountAsync(),
-                TotalAnalyses = await db.Analyses.CountAsync(),
-                Contributors = await db.Problems.Select(p => p.CreatedBy).Distinct().CountAsync(),
-                LastActivity = await db.Problems.MaxAsync(p => (DateTime?)p.UpdatedAt)
-            };
-        }
-
         return Ok(new { Role = role, Username = me, MyProblems = myProblems, MyActions = myActions,
-                        Management = management, Administration = administration });
+                        Management = management });
     }
 }

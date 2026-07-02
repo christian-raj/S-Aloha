@@ -37,7 +37,7 @@ Trois containers orchestrés par `docker-compose.yml` : **web** (nginx sert le b
 2. Les groupes `memberOf` sont comparés au mapping `Ldap:Groups` (Admin > Manager > User). Aucun groupe correspondant ⇒ connexion refusée.
 3. Un **JWT** est émis avec le rôle en claim. Le frontend le stocke en `sessionStorage` et l'envoie en `Authorization: Bearer`.
 4. Côté API, trois policies imbriquées : `User` (tous les rôles), `Manager` (Manager + Admin), `Admin`.
-5. La console (`GET /api/console`) compose sa réponse **côté serveur** selon le rôle du jeton.
+5. La console (`GET /api/console`) compose sa réponse **côté serveur** selon le rôle du jeton ; le frontend n'y reçoit que les blocs autorisés, classés pour mettre l'actionnable en premier.
 
 En production : activer LDAPS (`Ldap:UseSsl=true`, port 636), servir le frontend en HTTPS, externaliser `Jwt:Key` et les mots de passe (secrets Docker / variables d'environnement).
 
@@ -66,14 +66,14 @@ Suppressions en cascade : Problem → Analyses/Actions → RaciAssignments.
 | Méthode / Route | Policy | Rôle métier |
 |---|---|---|
 | POST `/api/auth/login` | — | Authentification AD → JWT |
-| GET `/api/console` | User | Console personnalisée par rôle |
+| GET `/api/console` | User | Console par rôle, orientée action (blocs « à traiter » / « à suivre ») |
 | GET/POST `/api/problems`, GET `/api/problems/{id}` | User | Liste (filtres statut, texte), détail, déclaration |
 | PUT `/api/problems/{id}` | Manager | Qualification, statuts, cause racine, contournement |
 | DELETE `/api/problems/{id}` | Admin | Suppression |
 | GET/POST/PUT `/api/problems/{id}/analyses[...]` | User | Analyses RCA (DELETE : Manager) |
 | GET `/api/actions`, POST `/api/problems/{id}/actions`, PUT `/api/actions/{id}` | User | Actions + RACI (DELETE : Manager) |
 | GET `/api/directory/search?q=` | User | Recherche utilisateurs/groupes AD (sélecteur RACI) |
-| GET `/api/reports/summary` | User | Indicateurs globaux (statuts, priorités, catégories, retards, MTTR) |
+| GET `/api/reports/summary` | User | Indicateurs globaux : statuts, priorités, catégories, retards, MTTR + volumétrie (totaux, analyses, déclarants, dernière activité) |
 
 ## 6. Frontend
 

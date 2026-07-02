@@ -82,8 +82,8 @@ Authentification avec le compte AD ; l'accès est réservé aux membres des grou
 
 ![Connexion](docs/screenshots/01-connexion.png)
 
-### Ma console — personnalisée par rôle
-Page d'accueil composée côté serveur selon le rôle. Ici la vue **Admin**, qui cumule le bloc personnel (mes actions, mes problèmes), le pilotage du processus (problèmes à qualifier, analyses sans cause racine, erreurs connues sans action, retards) et l'administration (volumétrie).
+### Ma console — personnalisée par rôle, orientée action
+Page d'accueil composée côté serveur selon le rôle. Un bandeau totalise les éléments à traiter, puis la zone **À traiter** classe par criticité ce qui requiert une intervention (mes actions en retard, problèmes à qualifier, erreurs connues sans action, retards toutes équipes, mes actions en cours) ; la zone **À suivre** regroupe l'informatif. La volumétrie a été déplacée vers le Reporting. Ici la vue **Admin**.
 
 ![Console](docs/screenshots/02-console-admin.png)
 
@@ -113,7 +113,7 @@ Vue globale filtrable par statut ou « Mes affectations », avec signalement des
 ![Suivi des actions](docs/screenshots/07-suivi-actions.png)
 
 ### Reporting
-Indicateurs du processus : répartitions par statut / priorité / catégorie, actions en retard, MTTR.
+Indicateurs du processus : volumétrie globale (problèmes, actions, analyses, déclarants), répartitions par statut / priorité / catégorie, actions en retard, MTTR.
 
 ![Reporting](docs/screenshots/08-reporting.png)
 

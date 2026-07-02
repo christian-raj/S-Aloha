@@ -38,6 +38,13 @@ export default function Dashboard() {
         <div className="kpi"><div className="n">{s.mttrDays ?? '—'}</div><div className="l">MTTR (jours)</div></div>
       </div>
 
+      <div className="kpi-row">
+        <div className="kpi"><div className="n">{s.totalProblems}</div><div className="l">Problèmes (total)</div></div>
+        <div className="kpi"><div className="n">{s.totalActions}</div><div className="l">Actions (total)</div></div>
+        <div className="kpi"><div className="n">{s.totalAnalyses}</div><div className="l">Analyses RCA</div></div>
+        <div className="kpi"><div className="n">{s.contributors}</div><div className="l">Déclarants distincts</div></div>
+      </div>
+
       <div className="grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
         <Bars title="Problèmes par statut" data={s.problemsByStatus} labelKey="status" max={max(s.problemsByStatus)} />
         <Bars title="Problèmes par priorité" data={s.problemsByPriority} labelKey="priority" max={max(s.problemsByPriority)} />
