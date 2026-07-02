@@ -85,7 +85,7 @@ src/
 └── pages/              # Login, Console, Problems, ProblemDetail (onglets), Actions, Dashboard (reporting)
 ```
 
-Principes UI : palette bleue claire (fond `#eef4f9`, marine `#0d3a5c`, bleu `#1d6fa5`), typographie Manrope, badges de statut/priorité/RACI, tableaux cliquables, responsive mobile (< 900 px).
+Principes UI : fond neutre très clair (`#f7f8f9`), accents bleus (marine `#0d3a5c`, bleu `#1d6fa5`), typographie Manrope, badges de statut/priorité/RACI, tableaux cliquables, responsive mobile (< 900 px).
 
 ## 7. Build et déploiement
 

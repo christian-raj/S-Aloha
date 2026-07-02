@@ -1,12 +1,12 @@
 :root {
-  --bg: #eef4f9;
+  --bg: #f7f8f9;
   --surface: #ffffff;
   --navy: #0d3a5c;
   --blue: #1d6fa5;
   --blue-soft: #dcedf9;
   --ink: #21415c;
   --muted: #5d7b93;
-  --line: #d7e5f0;
+  --line: #e3e7ea;
   --ok: #1e8e5a;
   --warn: #c07b1a;
   --danger: #c0392b;
@@ -40,7 +40,7 @@ button { font-family: inherit; cursor: pointer; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
 .grid { display: grid; gap: 16px; }
 table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); padding: 12px 14px; background: #f6fafd; border-bottom: 1px solid var(--line); }
+th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); padding: 12px 14px; background: #f9fafb; border-bottom: 1px solid var(--line); }
 td { padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 14px; }
 tr:last-child td { border-bottom: none; }
 tr.clickable:hover { background: var(--blue-soft); cursor: pointer; }
@@ -79,7 +79,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--blue); outl
 .badge.I { background: #eceff2; color: var(--muted); }
 
 /* ---- login ---- */
-.login-wrap { min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg, #dcedf9, #aed4ef); }
+.login-wrap { min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg, #fafbfc, #eceef0); }
 .login-card { width: 380px; background: #fff; border-radius: 14px; padding: 34px; box-shadow: 0 20px 50px rgba(13,58,92,.18); }
 .login-card h1 { color: var(--navy); font-size: 22px; margin-bottom: 4px; }
 .login-card p { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
