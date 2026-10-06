@@ -96,7 +96,6 @@ décisions D1 à D5 y sont détaillées avec une recommandation.
 | # | Chantier | Qui |
 |---|---|---|
 | C2 | Code de conduite (attend l'adresse de contact dédiée), `.github/FUNDING.yml` (après C6), GitHub Discussions | code + action |
-| C3 | Données d'exemple pour le mode démonstration (problèmes, incidents, changements…) | code |
 | C4 | Version `v0.1.0` : notes de version, images publiées sur `ghcr.io` par la CI | code |
 | C5 | Tableau GitHub Projects public alimenté par ce plan | action |
 | C6 | **Activer GitHub Sponsors** (profil du mainteneur : informations bancaires et fiscales), niveaux et contreparties ([ADR-0011](decisions/adr-0011-financement-sponsoring-et-services.md)) | action |
