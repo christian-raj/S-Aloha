@@ -95,8 +95,8 @@ décisions D1 à D5 y sont détaillées avec une recommandation.
 
 | # | Chantier | Qui |
 |---|---|---|
-| C2 | Code de conduite (attend l'adresse de contact dédiée), `.github/FUNDING.yml` (après C6), GitHub Discussions | code + action |
-| C5 | Tableau GitHub Projects public alimenté par ce plan | action |
+| C2 | Code de conduite (attend l'adresse de contact dédiée), `.github/FUNDING.yml` (après C6) | code + action |
+| C5 | Tableau GitHub Projects public alimenté par ce plan (le jeton `gh` du mainteneur doit recevoir le droit `project` : `gh auth refresh -s project`) | action |
 | C6 | **Activer GitHub Sponsors** (profil du mainteneur : informations bancaires et fiscales), niveaux et contreparties ([ADR-0011](decisions/adr-0011-financement-sponsoring-et-services.md)) | action |
 | C7 | Lancement : LinuxFr, Reddit, awesome-selfhosted, AlternativeTo, Framalibre ; image de partage du dépôt | action (après C4) |
 | C8 | Démo en ligne réinitialisée chaque nuit | décision (D5) |
