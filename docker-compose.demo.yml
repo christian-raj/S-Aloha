@@ -1,6 +1,6 @@
 # Mode démonstration : essayer S-Aloha sans Active Directory d'entreprise.
 #
-#   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+#   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d
 #
 # Ajoute un contrôleur de domaine Samba AD (domaine SALOHA.LAN) et y branche l'API.
 # Comptes de démonstration, un par rôle : demo.admin, demo.manager, demo.user
@@ -10,6 +10,7 @@
 
 services:
   annuaire:
+    image: ghcr.io/christian-raj/s-aloha-annuaire-demo:${S_ALOHA_VERSION:-latest}
     build: ./demo/annuaire
     # Nom NetBIOS du contrôleur, figé au provisionnement.
     hostname: dc01
