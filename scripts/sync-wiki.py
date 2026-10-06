@@ -37,7 +37,7 @@ PILOTAGE = [
     ('Plan-d’action', 'docs/plan-action.md', 'Les chantiers ouverts et leur priorité'),
     ('Décisions', 'docs/decisions/readme.md', 'Les choix structurants et pourquoi (ADR)'),
     ('Protocole-documentaire', 'docs/protocole-documentation.md', 'La routine qui tient la documentation à jour'),
-    ('Stratégie-communauté', 'docs/strategie-communaute.md', 'Attirer contributeurs et sponsors'),
+    ('Soutenir', 'docs/soutenir.md', 'Financer la feuille de route : sponsoring, services'),
 ]
 
 

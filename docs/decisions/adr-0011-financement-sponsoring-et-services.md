@@ -11,7 +11,7 @@
 Pour durer, S-Aloha a besoin de moyens : temps de maintenance, hébergement d'une démo en
 ligne, développement de la feuille de route. Le modèle reste 100 % AGPLv3, sans double
 licence ([ADR-0010](adr-0010-certificat-d-origine-dco.md)) : la vente de licences est
-exclue. La [stratégie communauté](../strategie-communaute.md#axe-4--financer-le-projet)
+exclue. La stratégie communauté
 (décision D4) recense les canaux possibles.
 
 ## Décision
@@ -44,3 +44,9 @@ exclue. La [stratégie communauté](../strategie-communaute.md#axe-4--financer-l
   projet et au choix du DCO.
 - **Dons uniquement, sans contreparties** — écarté : une entreprise justifie plus
   facilement un sponsoring qui lui apporte de la visibilité.
+
+## Addendum — 2026-10-06
+
+La stratégie communauté est devenue un document interne : le lien qui y menait dans le
+contexte ci-dessus est retiré. Les canaux et les contreparties retenus sont présentés
+publiquement dans [Soutenir S-Aloha](../soutenir.md). La décision est inchangée.

@@ -165,7 +165,7 @@ documentation en passant par les retours d'usage.
 - 📝 Le [guide de contribution](CONTRIBUTING.md) explique comment proposer une
   modification. Chaque commit est signé (`git commit -s`, *Developer Certificate of Origin*).
 - 💛 **Votre organisation utilise S-Aloha ?** Le soutien financier permet d'aller plus
-  vite sur la feuille de route : voir la [stratégie communauté et financement](docs/strategie-communaute.md#axe-4--financer-le-projet).
+  vite sur la feuille de route : voir [Soutenir S-Aloha](docs/soutenir.md).
 
 ## Documentation
 
