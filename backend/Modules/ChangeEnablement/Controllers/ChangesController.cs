@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Links;
 using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ChangeEnablement;
@@ -94,6 +95,62 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
             .Select(c => new { c.Id, c.Reference, c.Title, c.Status, c.ChangeType, c.Risk,
                                c.PlannedStart, c.PlannedEnd, c.OwnerDisplayName })
             .ToListAsync();
-        return Ok(items);
+        var conflicts = await ConflictsAsync();
+        return Ok(items.Select(c => new
+        {
+            c.Id, c.Reference, c.Title, c.Status, c.ChangeType, c.Risk, c.PlannedStart, c.PlannedEnd,
+            c.OwnerDisplayName, Conflicts = conflicts.GetValueOrDefault(c.Id, [])
+        }));
+    }
+
+    /// <summary>Conflits de calendrier d'un changement (vide s'il n'en a pas).</summary>
+    [HttpGet("{id:int}/conflicts")]
+    public async Task<IActionResult> Conflicts(int id) =>
+        await Db.Changes.AnyAsync(c => c.Id == id)
+            ? Ok((await ConflictsAsync()).GetValueOrDefault(id, []))
+            : NotFound();
+
+    /// <summary>Conflit : un autre changement planifié sur le même CI, sur un créneau qui chevauche.</summary>
+    public record Conflict(int CiId, string CiReference, string CiTitle, int ChangeId, string ChangeReference, string ChangeTitle);
+
+    /// <summary>
+    /// Deux changements non rejetés sont en conflit s'ils sont liés à un même
+    /// CI (liens inter-processus) et que leurs créneaux se chevauchent. Sans
+    /// fin planifiée, un changement occupe une heure.
+    /// </summary>
+    private async Task<Dictionary<int, List<Conflict>>> ConflictsAsync()
+    {
+        var planned = (await Db.Changes.AsNoTracking()
+                .Where(c => c.PlannedStart != null && c.Status != "Rejeté")
+                .Select(c => new { c.Id, c.Reference, c.Title, c.PlannedStart, c.PlannedEnd })
+                .ToListAsync())
+            .ToDictionary(c => c.Id, c => (c.Reference, c.Title, Start: c.PlannedStart!.Value,
+                                           End: c.PlannedEnd ?? c.PlannedStart!.Value.AddHours(1)));
+        // Les liens se lisent dans les deux sens : changement → CI ou CI → changement.
+        var touches = (await Db.ItemLinks.AsNoTracking()
+                .Where(l => (l.FromType == "change" && l.ToType == "ci") || (l.FromType == "ci" && l.ToType == "change"))
+                .ToListAsync())
+            .Select(l => l.FromType == "change" ? (Change: l.FromId, Ci: l.ToId) : (Change: l.ToId, Ci: l.FromId))
+            .Where(t => planned.ContainsKey(t.Change)).Distinct().ToList();
+
+        var ciIds = touches.Select(t => t.Ci).Distinct().ToList();
+        var cis = await ItemLinks.ByType("ci")!.Query(Db).Where(c => ciIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id);
+        var result = new Dictionary<int, List<Conflict>>();
+        foreach (var onCi in touches.Where(t => cis.ContainsKey(t.Ci)).GroupBy(t => t.Ci))
+        {
+            var ci = cis[onCi.Key];
+            var changes = onCi.Select(t => t.Change).ToList();
+            foreach (var a in changes)
+            foreach (var b in changes.Where(b => b != a))
+            {
+                var (pa, pb) = (planned[a], planned[b]);
+                if (pa.Start < pb.End && pb.Start < pa.End)
+                {
+                    if (!result.TryGetValue(a, out var list)) result[a] = list = [];
+                    list.Add(new Conflict(ci.Id, ci.Reference, ci.Title, b, pb.Reference, pb.Title));
+                }
+            }
+        }
+        return result;
     }
 }

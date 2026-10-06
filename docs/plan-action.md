@@ -82,8 +82,8 @@ envisagés, à prioriser ; chacun se cale sur le guide de la pratique ITIL 4 cor
 | F1 | Niveaux de service | **Mesure de l'atteinte des SLA** : rapprocher la durée de résolution des incidents (priorité, service) des cibles P1–P4 ; échéance de résolution sur l'incident | décision : rattacher l'incident à un service du catalogue plutôt qu'au texte libre « Service affecté » |
 | F2 | Incidents, Problèmes | Service affecté et catégorie tirés du catalogue et d'un référentiel, plutôt qu'en texte libre | décision (rejoint A1 : référentiels) |
 | F3 | Demandes | Catalogue de demandes (modèles d'objets demandés, approbation facultative selon le modèle) | décision |
-| F4 | Changements | Modèles de changements standard ; détection des conflits au calendrier (mêmes CI, même créneau) ; revue post-implémentation | code |
-| F5 | Configuration | Vue d'impact (CI amont/aval d'un service) ; rattachement CI ↔ service ; import en masse | code |
+| F4 | Changements | Modèles de changements standard ; revue post-implémentation | code |
+| F5 | Configuration | Rattachement CI ↔ service ; import en masse | code |
 | F6 | Tous | Transitions de statut contraintes (comme R4 pour les problèmes) et historique des modifications (R5) | décision |
 | F7 | Tous | Pièces jointes, commentaires, notifications | décision |
 | F8 | Connaissances | Rendu Markdown du contenu ; suggestion d'articles depuis un incident | code |
