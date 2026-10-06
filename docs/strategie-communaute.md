@@ -11,13 +11,30 @@
 
 ## Où en est le projet
 
+### Au départ (2026-10-06, matin)
+
 | Atout | Frein |
 |---|---|
-| 8 processus ITIL 4 en MVP, socle modulaire documenté (« ajouter un module » en 5 étapes) | **Impossible à essayer sans Active Directory** : un `docker compose up` mène à un écran de connexion inutilisable |
-| Licence AGPLv3, CI, tests, Dependabot, `CONTRIBUTING`, `SECURITY`, modèles d'issues | Aucune version publiée, aucune image Docker prête à l'emploi |
-| Documentation soignée, ADR, wiki, captures d'écran | 0 étoile, 0 fork, aucune issue ouverte pour un nouveau venu |
-| Stack répandue (.NET 8, React, PostgreSQL) | Pas de démo en ligne, pas de Discussions, pas de code de conduite |
-| Analyse de cause racine outillée (5 Pourquoi, Ishikawa, FTA), console orientée action | Projet porté par une seule personne : risque perçu par un sponsor |
+| 8 processus ITIL 4 en MVP, socle modulaire documenté | **Impossible à essayer sans Active Directory** |
+| Licence AGPLv3, CI, tests, `CONTRIBUTING`, `SECURITY`, modèles d'issues | Aucune version publiée, aucune image Docker |
+| Documentation soignée, ADR, wiki, captures d'écran | 0 étoile, aucune issue pour un nouveau venu |
+| Stack répandue (.NET 8, React, PostgreSQL) | Pas de démo, pas de Discussions, pas de code de conduite |
+| Cause racine outillée, console orientée action | Projet porté par une seule personne |
+
+### Avancement (2026-10-06, soir)
+
+| Frein | État |
+|---|---|
+| Essai sans AD | ✅ Mode démonstration avec annuaire et données d'exemple : application prête en 28 s depuis un clone neuf |
+| Version et images | ✅ [v0.1.0](https://github.com/christian-raj/S-Aloha/releases/tag/v0.1.0), images publiques sur `ghcr.io`, [journal des versions](../CHANGELOG.md) |
+| Issues pour nouveaux venus | ✅ 8 issues rédigées (#23–#30), Discussions activées |
+| Contributions | ✅ DCO vérifié par la CI, README bilingue |
+| Code de conduite, Sponsors, tableau de feuille de route | ⏳ En attente du mainteneur (plan C2, C5, C6) |
+| Visibilité | ⏳ Textes de lancement prêts, image de partage prête (`docs/screenshots/partage-1280x640.png`) ; awesome-selfhosted à partir du **2027-02-06** (première version de plus de 4 mois exigée) |
+| Plus d'un mainteneur | ⏳ Dépend des premières contributions |
+
+Indicateurs au 2026-10-06 : 1 étoile, 0 fork, profil communautaire GitHub à 85 %,
+premier commentaire extérieur reçu (issues #29 et #30).
 
 ## Positionnement
 
@@ -71,6 +88,12 @@ contributeur ni sponsor.
   code est déjà en anglais.
 - **Réactivité** : premier retour sous 48 h sur une issue ou une pull request extérieure.
   C'est le facteur qui fait revenir un contributeur.
+- **Ne pas doubler un contributeur** : une issue `good first issue` ou `help wanted` est
+  réservée aux contributions extérieures. Si quelqu'un s'y manifeste, on lui répond
+  d'abord (accueil, précisions, invitation à ouvrir une pull request) ; l'équipe ne
+  l'implémente elle-même qu'après un délai annoncé dans l'issue, ou s'il n'y a pas de
+  suite. Leçon des issues #29 et #30 : deux propositions extérieures restées sans réponse,
+  puis traitées en interne.
 - **Reconnaissance** : contributeurs cités dans les notes de version et dans le README.
 
 ## Axe 3 — Se faire connaître
