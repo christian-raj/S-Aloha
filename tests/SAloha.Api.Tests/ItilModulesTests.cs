@@ -36,10 +36,14 @@ public class ItilModulesTests(ApiFixture api)
     private static object Request(string title, string? status = null) =>
         new { title, status, requestedItem = "Accès VPN" };
 
-    private static object Change(string title, string type, string? status = null, string? outcome = null) => new
+    // Créneau fixe : un créneau qui bougerait à chaque appel serait une
+    // modification du changement, qui retire son autorisation (F10).
+    private static readonly DateTime Slot = DateTime.UtcNow.Date.AddDays(2).AddHours(20);
+
+    private static object Change(string title, string type, string? status = null, string? outcome = null,
+        string risk = "Moyen") => new
     {
-        title, status, changeType = type, risk = "Moyen", outcome,
-        plannedStart = DateTime.UtcNow.AddDays(2), plannedEnd = DateTime.UtcNow.AddDays(2).AddHours(2)
+        title, status, changeType = type, risk, outcome, plannedStart = Slot, plannedEnd = Slot.AddHours(2)
     };
 
     public static TheoryData<string, string, object> Modules => new()
@@ -229,12 +233,48 @@ public class ItilModulesTests(ApiFixture api)
     }
 
     [Fact]
-    public async Task Changement_autorise_ne_change_plus_de_type()
+    public async Task F10_changement_autorise_modifie_par_un_utilisateur_redemande_une_autorisation()
     {
         var user = api.Client("User");
-        var c = await Create(user, "/api/changes", Change("Standard détourné", "Standard"));
+        var standard = await Create(user, "/api/changes", Change("Standard détourné", "Standard"));
+        var edited = await Json(await Put(user, "/api/changes", Id(standard), Change("Standard détourné", "Urgent", "Autorisé")));
+        Assert.Equal("Évalué", Str(edited, "status"));
+        Assert.Equal(JsonValueKind.Null, edited.GetProperty("authorizedAt").ValueKind);
         Assert.Equal(HttpStatusCode.BadRequest,
-            (await Put(user, "/api/changes", Id(c), Change("Standard détourné", "Urgent", "Autorisé"))).StatusCode);
+            (await Put(user, "/api/changes", Id(standard), Change("Standard détourné", "Urgent", "Planifié"))).StatusCode);
+
+        var manager = api.Client("Manager");
+        var normal = await Create(user, "/api/changes", Change("Risque revu", "Normal"));
+        await Json(await Put(manager, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Autorisé")));
+        await Json(await Put(user, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Planifié")));
+        var riskier = await Json(await Put(user, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Planifié", risk: "Élevé")));
+        Assert.Equal("Évalué", Str(riskier, "status"));
+
+        // Le gestionnaire est l'autorité de changement : sa modification vaut autorisation.
+        await Json(await Put(manager, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Autorisé", risk: "Élevé")));
+        var byManager = await Json(await Put(manager, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Autorisé", risk: "Faible")));
+        Assert.Equal("Autorisé", Str(byManager, "status"));
+
+        // Renommer ou décrire n'est pas une modification du changement lui-même.
+        var renamed = await Json(await Put(user, "/api/changes", Id(normal), Change("Risque revu (titre)", "Normal", "Autorisé", risk: "Faible")));
+        Assert.Equal("Autorisé", Str(renamed, "status"));
+    }
+
+    [Fact]
+    public async Task F9_article_publie_modifie_par_un_utilisateur_repasse_en_brouillon()
+    {
+        var user = api.Client("User");
+        var manager = api.Client("Manager");
+        object Dto(string content, string? status) => new { title = "Procédure VPN", articleType = "Procédure", content, status };
+        var a = await Create(user, "/api/knowledge", Dto("v1", null));
+        await Json(await Put(manager, "/api/knowledge", Id(a), Dto("v1", "Publié")));
+
+        var byManager = await Json(await Put(manager, "/api/knowledge", Id(a), Dto("v2", "Publié")));
+        Assert.Equal("Publié", Str(byManager, "status"));
+
+        var byUser = await Json(await Put(user, "/api/knowledge", Id(a), Dto("v3", "Publié")));
+        Assert.Equal("Brouillon", Str(byUser, "status"));
+        Assert.Equal(JsonValueKind.Null, byUser.GetProperty("publishedAt").ValueKind);
     }
 
     [Fact]

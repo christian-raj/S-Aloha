@@ -6,19 +6,22 @@
 
 ## Gestion du schéma
 
-Le schéma est créé au démarrage de l'API par `Database.EnsureCreated()`
-(`backend/Program.cs`) : **il n'y a pas de migrations EF**.
+Le schéma est tenu par les **migrations EF** (`backend/Core/Data/Migrations`), appliquées
+au démarrage de l'API par `DatabaseSchema.Migrate` (`backend/Core/Data/DatabaseSchema.cs`) ;
+l'historique est dans la table `__EFMigrationsHistory`
+([ADR-0008](../decisions/adr-0008-migrations-ef.md)).
 
-Conséquence : `EnsureCreated` ne crée le schéma que si la base est vide. Une évolution du
-modèle (colonne, table, contrainte) **n'est pas appliquée** à une base existante. Tant que
-les migrations ne sont pas en place (chantier dans [`plan-action.md`](../plan-action.md)),
-toute évolution du modèle impose de recréer la base ou de l'altérer à la main.
+| Migration | Contenu |
+|---|---|
+| `Initial` | Schéma du module Problèmes : `Problems`, `Analyses`, `Actions`, `RaciAssignments` — identique à ce que créait `EnsureCreated` avant les modules ITIL 4 |
+| `ItilModules` | Les dix tables des autres processus et des liens (`ItemLinks`, `Incidents`, `ServiceRequests`, `Changes`, `ConfigurationItems`, `CiRelationships`, `Services`, `Agreements`, `KnowledgeArticles`, `Improvements`) ; aucune modification des tables existantes |
 
-> ⚠️ **Modules ITIL 4 (2026-10-06)** : onze tables nouvelles (`ItemLinks`, `Incidents`,
-> `ServiceRequests`, `Changes`, `ConfigurationItems`, `CiRelationships`, `Services`,
-> `Agreements`, `KnowledgeArticles`, `Improvements`). Une base créée avant cette version
-> ne les reçoit **pas** : les nouveaux processus y répondent 500. Procédure :
-> [exploitation § Évolutions de schéma](exploitation.md#évolutions-de-schéma).
+**Reprise d'une base créée par `EnsureCreated`** (installations antérieures, sans
+historique) : au démarrage, si `__EFMigrationsHistory` n'existe pas mais que `Problems`
+existe, l'API inscrit `Initial` comme appliquée — et `ItilModules` si `Incidents` existe
+aussi —, puis applique les migrations restantes. Les données sont conservées.
+
+Faire évoluer le modèle : [exploitation § Évolutions de schéma](exploitation.md#évolutions-de-schéma).
 
 ## Entités — module Gestion des problèmes
 

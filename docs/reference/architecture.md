@@ -22,7 +22,7 @@ Trois containers orchestrés par `docker-compose.yml` : **web** (nginx sert le b
 |---|---|---|
 | Frontend | React 18 + Vite, react-router | Build statique servi par nginx ; aucune dépendance UI lourde (CSS natif à jetons, voir [frontend.md](frontend.md)) |
 | Backend | ASP.NET Core 8 Web API | Controllers REST, Swagger exposé sur `/swagger` |
-| ORM | Entity Framework Core 8 (8.0.31) | Provider Npgsql ; schéma créé par `EnsureCreated()` au démarrage |
+| ORM | Entity Framework Core 8 (8.0.31) | Provider Npgsql ; schéma par migrations EF, appliquées au démarrage ([ADR-0008](../decisions/adr-0008-migrations-ef.md)) |
 | Base | PostgreSQL 16 (provider Npgsql EF 8.0.11) | Remplaçable par SQL Server (provider EF + image du compose) |
 | Annuaire | Novell.Directory.Ldap.NETStandard | Bind de service pour la recherche, bind utilisateur pour l'authentification |
 | Auth API | JWT Bearer (HS256, JwtBearer 8.0.31) | Claims : name, displayName, role ; expiration paramétrable |
@@ -33,10 +33,10 @@ S-Aloha est une **plateforme modulaire** : un **socle** (*Core*) transverse à t
 
 ```
 backend/                              # projet SAloha.Api (namespace SAloha.Api.*)
-├── Program.cs                        # DI, JWT, policies, CORS, EnsureCreated
+├── Program.cs                        # DI, JWT, policies, CORS, migrations au démarrage
 ├── Core/                             # socle — ne dépend d'aucun module
 │   ├── Auth/                         # AuthController, LdapService, TokenService, AuthDtos
-│   ├── Data/                         # AppDbContext (unique, toutes les entités), References (XXX-AAAA-NNNN)
+│   ├── Data/                         # AppDbContext, References (XXX-AAAA-NNNN), DatabaseSchema + Migrations/
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)
 │   ├── Itil/                         # Priority (matrice impact × urgence → P1–P4)
 │   ├── Links/                        # ItemLink, registre ItemLinks, LinksController (liens inter-processus)
@@ -66,7 +66,8 @@ Les processus autres que les problèmes héritent d'un même socle :
   du statut, suppression (Admin, liens compris). Un module ne déclare que son préfixe,
   ses statuts et ses règles : `Apply` (champs et valeurs fermées), `RequiresManager`
   (statuts réservés), `CheckStatus` (conditions du statut, vérifiées à chaque
-  enregistrement), `OnStatusChanged` (horodatages), `InitialStatus`, `ManagerOnly`
+  enregistrement), `OnStatusChanged` (horodatages), `StatusAfterEdit` (statut auquel
+  la modification d'un non-gestionnaire ramène l'enregistrement), `InitialStatus`, `ManagerOnly`
   (référentiels), `Filter`/`Search`/`WithDetails`, `ListItems` (colonnes du registre).
   Les longueurs `[MaxLength]` sont contrôlées avant l'enregistrement (`Lengths`).
 - **`References.CreateAsync`** — référence annuelle `XXX-AAAA-NNNN` (plus grand numéro + 1,
@@ -179,5 +180,7 @@ Détails (registre des modules, thème, design) : [frontend.md](frontend.md).
   modules ITIL 4 — 23 tests d'API (`ItilModulesTests` : référence et statut inconnu par module,
   créations simultanées, décisions de gestionnaire, conditions de statut, liens, console,
   constats de la revue de code : changement rejeté, type d'un changement autorisé, amélioration
-  abandonnée, conditions tenues hors changement de statut, longueurs, registre allégé) et 2 tests
+  abandonnée, conditions tenues hors changement de statut, longueurs, registre allégé ;
+  F9 et F10 : article retouché, changement modifié) ; mise à niveau du schéma — 2 tests
+  (`MigrationTests` : base créée par `EnsureCreated` avant et après les modules ITIL 4) ; et 2 tests
   d'interface (`RecordForm.test.jsx` : conversions formulaire ↔ API).

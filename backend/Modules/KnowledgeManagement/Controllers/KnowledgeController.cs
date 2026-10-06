@@ -29,6 +29,13 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     protected override string? CheckStatus(KnowledgeArticle e, string status) =>
         status == "Publié" && string.IsNullOrWhiteSpace(e.Content) ? "Un article publié doit avoir un contenu." : null;
 
+    // Un article publié retouché par un non-gestionnaire repasse en brouillon :
+    // la nouvelle version attend une nouvelle publication.
+    protected override string? StatusAfterEdit(KnowledgeArticle e, KnowledgeArticleDto dto) =>
+        e.Status == "Publié" && (dto.Title.Trim() != e.Title || (dto.Description ?? "") != e.Description
+                                 || (dto.Content ?? "") != e.Content || dto.ArticleType != e.ArticleType)
+            ? "Brouillon" : null;
+
     protected override void OnStatusChanged(KnowledgeArticle e, string from)
     {
         if (e.Status == "Publié") { e.PublishedAt = DateTime.UtcNow; e.PublishedBy = MyDisplay; }

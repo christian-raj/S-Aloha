@@ -43,8 +43,9 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
 
 var app = builder.Build();
 
+// Schéma par migrations EF ; une base créée par l'ancien EnsureCreated est reprise telle quelle.
 using (var scope = app.Services.CreateScope())
-    scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreated();
+    DatabaseSchema.Migrate(scope.ServiceProvider.GetRequiredService<AppDbContext>(), app.Logger);
 
 app.UseSwagger();
 app.UseSwaggerUI();

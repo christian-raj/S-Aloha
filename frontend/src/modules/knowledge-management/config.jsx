@@ -31,6 +31,6 @@ export const knowledgeConfig = {
     { h: 'Revue', v: r => dateFr(r.reviewDate) },
   ],
   meta: r => [r.publishedAt && `Publié par ${r.publishedBy} le ${dateTimeFr(r.publishedAt)}`],
-  help: 'La publication est validée par un gestionnaire ; un article publié doit avoir un contenu.',
+  help: 'La publication est validée par un gestionnaire ; un article publié doit avoir un contenu. Retouché par un autre utilisateur, il repasse en brouillon.',
   linkHint: 'Problème (erreur connue), incidents résolus grâce à l\'article…',
 }

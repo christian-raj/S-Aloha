@@ -180,8 +180,13 @@ S'appliquent aux processus des sections 9 à 15 (socle `Core/Records` de l'API).
   « Modèle standard (pré-autorisé) »), **Normal**, **Urgent**. Risque : Faible, Moyen, Élevé.
 - **Autorisé** et **Rejeté** : gestionnaire uniquement (autorité de changement) ; l'autorisation horodate `AuthorizedAt` / `AuthorizedBy`.
 - **Planifié**, **Mis en œuvre** et **Clos** exigent un changement autorisé ; **Planifié** exige un début planifié ; **Clos** exige le résultat (*Réussi* ou *Échoué*). Un changement **rejeté est terminé** : ni planifié, ni mis en œuvre, ni clos.
-- Le **type** d'un changement autorisé ne peut plus changer (un standard pré-autorisé passé en urgent garderait une autorisation jamais donnée) : créer un nouveau changement.
 - Revenir à Demandé ou Évalué efface l'autorisation. La fin planifiée ne peut précéder le début.
+- **Modifier un changement autorisé** (statut Autorisé ou Planifié) — type, risque, plan de
+  mise en œuvre, plan de retour arrière ou créneau — le **ramène à Évalué** et efface
+  l'autorisation : l'autorité de changement doit l'autoriser de nouveau. Exceptions : la
+  modification faite par un gestionnaire vaut autorisation ; replanifier un changement
+  **standard** ne retire pas son autorisation (elle vient du modèle, pas du créneau) ; titre,
+  description et responsable se modifient librement.
 - **Calendrier des changements** : changements non rejetés ayant un début planifié, depuis une semaine, regroupés par semaine.
 
 ## 12. Gestion de la configuration des services (ITIL 4)
@@ -215,6 +220,9 @@ S'appliquent aux processus des sections 9 à 15 (socle `Core/Records` de l'API).
 
 - Types d'article : Solution, Procédure, Erreur connue, FAQ ; résumé, contenu, mots-clés, date de revue.
 - **Publié** : gestionnaire uniquement, et contenu obligatoire ; horodate `PublishedAt` / `PublishedBy`, effacés au retour en Brouillon.
+- **Retoucher un article publié** (titre, résumé, contenu ou type) le **ramène en Brouillon** :
+  la nouvelle version attend une nouvelle publication. La retouche faite par un gestionnaire
+  vaut publication ; les mots-clés, la date de revue et le responsable se modifient librement.
 - La recherche porte aussi sur les mots-clés et le contenu.
 
 ## 15. Amélioration continue (ITIL 4)

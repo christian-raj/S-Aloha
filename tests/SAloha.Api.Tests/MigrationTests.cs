@@ -1,0 +1,72 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using SAloha.Api.Core.Data;
+using SAloha.Api.Modules.ProblemManagement;
+using Testcontainers.PostgreSql;
+
+namespace SAloha.Api.Tests;
+
+/// <summary>
+/// Mise à niveau d'une base créée par l'ancien EnsureCreated (sans historique
+/// de migrations) : l'API démarre, crée les tables manquantes, garde les données (S4).
+/// </summary>
+public class MigrationTests
+{
+    private static async Task<(PostgreSqlContainer Db, WebApplicationFactory<Program> Api)> StartOnLegacyDatabase(bool withItilModules)
+    {
+        var container = new PostgreSqlBuilder().WithImage("postgres:18-alpine").Build();
+        await container.StartAsync();
+
+        // Base « comme avant » : schéma appliqué, puis historique supprimé —
+        // exactement ce que laissait EnsureCreated.
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(container.GetConnectionString()).Options;
+        await using (var db = new AppDbContext(options))
+        {
+            var target = db.Database.GetMigrations().First(m => m.EndsWith(withItilModules ? "_ItilModules" : "_Initial"));
+            await db.GetService<IMigrator>().MigrateAsync(target);
+            await db.Database.ExecuteSqlRawAsync("DROP TABLE \"__EFMigrationsHistory\"");
+            db.Problems.Add(new Problem { Reference = "PRB-2025-0001", Title = "Problème d'avant la mise à niveau" });
+            await db.SaveChangesAsync();
+        }
+
+        var api = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b
+            .UseSetting("ConnectionStrings:Default", container.GetConnectionString())
+            .UseSetting("Jwt:Key", ApiFixture.JwtKey)
+            .UseSetting("Jwt:Issuer", "S-Aloha"));
+        return (container, api);
+    }
+
+    [Theory]
+    [InlineData(false)]  // installation antérieure aux modules ITIL 4
+    [InlineData(true)]   // installation des modules ITIL 4 avant les migrations
+    public async Task Une_base_creee_par_EnsureCreated_est_mise_a_niveau_sans_perte(bool withItilModules)
+    {
+        var (container, api) = await StartOnLegacyDatabase(withItilModules);
+        try
+        {
+            var client = api.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiFixture.Token("hery.rakoto", "Admin"));
+
+            Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/incidents")).StatusCode);
+            Assert.Equal(HttpStatusCode.Created, (await client.PostAsJsonAsync("/api/incidents",
+                new { title = "Après mise à niveau", impact = "Moyen", urgency = "Moyenne" })).StatusCode);
+            var problems = await client.GetStringAsync("/api/problems?q=avant la mise");
+            Assert.Contains("PRB-2025-0001", problems);
+
+            await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+                .UseNpgsql(container.GetConnectionString()).Options);
+            Assert.Empty(await db.Database.GetPendingMigrationsAsync());
+        }
+        finally
+        {
+            await api.DisposeAsync();
+            await container.DisposeAsync();
+        }
+    }
+}

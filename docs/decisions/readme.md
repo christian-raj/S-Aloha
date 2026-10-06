@@ -16,6 +16,7 @@ son état actuel, et pas seulement *quel* est cet état.
 | [0005](adr-0005-langage-visuel-a-jetons-en-css-natif.md) | Nouveau langage visuel à jetons clair/sombre, réalisé en CSS natif | 2026-10-06 | accepté |
 | [0006](adr-0006-licence-agplv3.md) | S-Aloha est publié sous licence AGPLv3 | 2026-10-06 | accepté |
 | [0007](adr-0007-pratiques-itil4-et-socle-commun-des-processus.md) | Pratiques ITIL 4 comme référentiel, socle commun des processus, liens inter-processus dans le socle | 2026-10-06 | accepté |
+| [0008](adr-0008-migrations-ef.md) | Migrations EF à la place d'EnsureCreated, avec reprise des bases existantes | 2026-10-06 | accepté |
 
 Les choix fondateurs antérieurs à cette base (authentification AD LDAP → JWT, analyses
 RCA stockées en JSON) sont décrits dans [`reference/architecture.md`](../reference/architecture.md)

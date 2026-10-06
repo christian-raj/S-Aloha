@@ -22,15 +22,28 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         if (error is not null) return error;
         if (dto.PlannedStart is not null && dto.PlannedEnd is not null && dto.PlannedEnd < dto.PlannedStart)
             return "La fin planifiée précède le début planifié.";
-        // L'autorisation vaut pour un type donné : un standard pré-autorisé
-        // passé en urgent garderait sinon une autorisation jamais donnée.
-        if (!creating && e.AuthorizedAt is not null && dto.ChangeType != e.ChangeType)
-            return "Le type d'un changement autorisé ne peut plus changer : créer un nouveau changement.";
         e.ChangeType = dto.ChangeType!; e.Risk = dto.Risk!;
         e.PlannedStart = Dates.Utc(dto.PlannedStart); e.PlannedEnd = Dates.Utc(dto.PlannedEnd);
         e.ImplementationPlan = dto.ImplementationPlan ?? ""; e.BackoutPlan = dto.BackoutPlan ?? "";
         e.Outcome = string.IsNullOrEmpty(dto.Outcome) ? null : dto.Outcome;
         return null;
+    }
+
+    /// <summary>
+    /// L'autorisation porte sur un changement précis : en modifier le type, le
+    /// risque, les plans ou le créneau la retire (retour à Évalué, en attente
+    /// de l'autorité de changement). Un standard reste pré-autorisé quand on
+    /// ne fait que le replanifier : son autorisation vient du modèle, pas du créneau.
+    /// </summary>
+    protected override string? StatusAfterEdit(Change e, ChangeDto dto)
+    {
+        if (e.Status is not ("Autorisé" or "Planifié")) return null;
+        var rescheduled = Dates.Utc(dto.PlannedStart) != e.PlannedStart || Dates.Utc(dto.PlannedEnd) != e.PlannedEnd;
+        var modified = dto.ChangeType != e.ChangeType || dto.Risk != e.Risk
+                       || (dto.ImplementationPlan ?? "") != e.ImplementationPlan
+                       || (dto.BackoutPlan ?? "") != e.BackoutPlan
+                       || (rescheduled && e.ChangeType != "Standard");
+        return modified ? "Évalué" : null;
     }
 
     // Un changement standard suit un modèle déjà évalué : il est pré-autorisé.

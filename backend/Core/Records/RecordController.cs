@@ -50,6 +50,14 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     /// sans description. <c>e.Status</c> est encore le statut actuel.
     /// </summary>
     protected virtual string? CheckStatus(T e, string status) => null;
+    /// <summary>
+    /// Statut auquel une modification faite par un non-gestionnaire ramène
+    /// l'enregistrement, ou null : un article publié retouché repasse en
+    /// brouillon, un changement autorisé modifié redemande une autorisation.
+    /// Appelé avant la recopie du DTO : <c>e</c> porte encore les valeurs
+    /// enregistrées. La modification d'un gestionnaire vaut validation.
+    /// </summary>
+    protected virtual string? StatusAfterEdit(T e, TDto dto) => null;
     /// <summary>Effets d'un changement de statut (horodatages) ; <c>from</c> vide à la création.</summary>
     protected virtual void OnStatusChanged(T e, string from) { }
     protected virtual IQueryable<T> Filter(IQueryable<T> q) => q;
@@ -108,12 +116,13 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         var e = await db.Set<T>().FindAsync(id);
         if (e is null) return NotFound();
         if (ManagerOnly && !IsManager) return Forbid();
+        var demoted = IsManager ? null : StatusAfterEdit(e, dto);
         var error = Fill(e, dto, false) ?? await ValidateAsync(e);
         if (error is not null) return BadRequest(new { message = error });
 
-        var target = dto.Status ?? e.Status;
+        var target = demoted ?? dto.Status ?? e.Status;
         var changing = target != e.Status;
-        if (changing)
+        if (changing && demoted is null)
         {
             error = Allowed.Check("Statut", target, Statuses);
             if (error is not null) return BadRequest(new { message = error });

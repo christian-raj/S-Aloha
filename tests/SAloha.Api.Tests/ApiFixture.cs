@@ -17,7 +17,7 @@ namespace SAloha.Api.Tests;
 /// </summary>
 public sealed class ApiFixture : IAsyncLifetime
 {
-    private const string JwtKey = "cle-de-test-uniquement-0123456789abcdef0123456789abcdef0123";
+    internal const string JwtKey = "cle-de-test-uniquement-0123456789abcdef0123456789abcdef0123";
 
     // Image déjà présente localement : aucun téléchargement au lancement.
     private readonly PostgreSqlContainer _db = new PostgreSqlBuilder("postgres:18-alpine").Build();
@@ -40,7 +40,7 @@ public sealed class ApiFixture : IAsyncLifetime
         return client;
     }
 
-    private static string Token(string username, string role)
+    internal static string Token(string username, string role)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
         var token = new JwtSecurityToken(

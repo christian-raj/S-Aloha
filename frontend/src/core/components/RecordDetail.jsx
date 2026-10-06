@@ -17,7 +17,12 @@ function Editor({ config, record, onSaved }) {
   const merge = patch => setF(prev => ({ ...prev, ...patch }))
 
   const save = () => config.api.update(record.id, { ...toPayload(config.fields, f), status: f.status })
-    .then(() => { setMsg({ ok: true, text: 'Modifications enregistrées.' }); onSaved() })
+    .then(saved => {
+      // L'API peut ramener le statut en arrière (article retouché, changement modifié).
+      setMsg({ ok: true, text: saved.status === f.status ? 'Modifications enregistrées.'
+        : `Modifications enregistrées. Statut repassé à « ${saved.status} » : une nouvelle validation d'un gestionnaire est requise.` })
+      onSaved()
+    })
     .catch(e => setMsg({ ok: false, text: e.message }))
   const remove = () => window.confirm(`Supprimer définitivement ${record.reference} ?`)
     && config.api.remove(record.id).then(() => nav(config.basePath)).catch(e => setMsg({ ok: false, text: e.message }))

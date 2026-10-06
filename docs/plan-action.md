@@ -59,7 +59,6 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 | S1 | **Secrets hors du dépôt** (`Jwt:Key`, mots de passe PostgreSQL et LDAP) | code + action |
 | S2 | **LDAPS** et **HTTPS** | action |
 | S3 | **CORS** restreint ; API et Swagger non publiés hors de nginx | code |
-| S4 | **Migrations EF** à la place d'`EnsureCreated` ([détail](reference/base-de-donnees.md#gestion-du-schéma)) — **prioritaire** : les modules ITIL 4 ajoutent onze tables qu'une base existante ne reçoit pas ([exploitation](reference/exploitation.md#évolutions-de-schéma)) | code |
 | S5 | Stockage du jeton côté navigateur (`sessionStorage` ou cookie `HttpOnly`) | décision |
 
 ## 6. Qualité
@@ -88,5 +87,3 @@ envisagés, à prioriser ; chacun se cale sur le guide de la pratique ITIL 4 cor
 | F6 | Tous | Transitions de statut contraintes (comme R4 pour les problèmes) et historique des modifications (R5) | décision |
 | F7 | Tous | Pièces jointes, commentaires, notifications | décision |
 | F8 | Connaissances | Rendu Markdown du contenu ; suggestion d'articles depuis un incident | code |
-| F9 | Connaissances | **Édition d'un article publié** : aujourd'hui tout User peut en modifier le contenu sans nouvelle validation (revue de code du 2026-10-06) | **décision** : retour en Brouillon à chaque modification du contenu, ou édition libre |
-| F10 | Changements | Une modification substantielle d'un changement autorisé (risque, plans, créneau) ne retire pas l'autorisation ; seul le type est verrouillé | **décision** : quels champs imposent une nouvelle autorisation |
