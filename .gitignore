@@ -3,9 +3,3 @@ dist/
 bin/
 obj/
 *.user
-
-# Déploiement local propre au poste (cluster du réseau local) : jamais publié.
-deploy/
-
-# Documents internes du mainteneur (stratégie…) : jamais publiés.
-prive/
