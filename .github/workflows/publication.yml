@@ -1,0 +1,40 @@
+# Publication d'une version : à chaque tag vX.Y.Z, construit et pousse les images sur
+# le registre GitHub (ghcr.io), étiquetées avec la version et « latest ».
+# Aucune action tierce hormis checkout (épinglée par SHA, comme dans ci.yml).
+name: Publication
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  images:
+    name: Images ghcr.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Connexion au registre
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Construction et envoi
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          prefixe=ghcr.io/christian-raj/s-aloha
+          source=https://github.com/${{ github.repository }}
+          for image in api:backend web:frontend annuaire-demo:demo/annuaire; do
+            nom=${image%%:*}; dossier=${image#*:}
+            docker build "$dossier" \
+              --label org.opencontainers.image.source="$source" \
+              --label org.opencontainers.image.version="$VERSION" \
+              --label org.opencontainers.image.licenses=AGPL-3.0-or-later \
+              -t "$prefixe-$nom:$VERSION" -t "$prefixe-$nom:latest"
+            docker push "$prefixe-$nom:$VERSION"
+            docker push "$prefixe-$nom:latest"
+          done

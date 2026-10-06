@@ -108,8 +108,11 @@ charge des données d'exemple fictives. Seul Docker est requis.
 
 ```bash
 git clone https://github.com/christian-raj/S-Aloha.git && cd S-Aloha
-docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d
 ```
+
+Les images publiées de la dernière version sont téléchargées ; ajoutez `--build` pour
+construire depuis les sources.
 
 Ouvrez **http://localhost** et connectez-vous avec l'un des comptes de démonstration :
 
@@ -188,7 +191,7 @@ their attention, ranked by severity.
   change enablement (with schedule), configuration items (CMDB), service levels,
   knowledge and continual improvement — all linked to each other.
 - **Stack**: ASP.NET Core 8, EF Core, PostgreSQL 16, React 18 + Vite, Docker Compose.
-- **Try it**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build`,
+- **Try it**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`,
   then sign in at http://localhost as `demo.admin` / `Demo-Admin-2026` (a demo directory
   is started for you).
 - **Contribute**: documentation is in French, code in English; issues and pull requests
