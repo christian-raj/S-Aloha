@@ -52,7 +52,10 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger)
         }
         catch (LdapException ex)
         {
-            logger.LogWarning(ex, "Échec d'authentification LDAP pour {User}", username);
+            // Saisie non authentifiée : sans retrait des sauts de ligne, un
+            // identifiant forgé injecterait de fausses lignes dans le journal.
+            var logged = username.Replace("\r", "").Replace("\n", "");
+            logger.LogWarning(ex, "Échec d'authentification LDAP pour {User}", logged);
             return null;
         }
     }

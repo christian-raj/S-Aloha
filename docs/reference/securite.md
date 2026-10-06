@@ -81,5 +81,10 @@ Réglages du dépôt GitHub public, en place depuis le 2026-10-06 :
 | Règles de `main` | Ni suppression ni push forcé ; pour une pull request, CI au vert et historique linéaire |
 | Actions | Seules les actions publiées par GitHub ; jeton en lecture seule ; workflows d'un contributeur externe soumis à approbation |
 
+Première analyse CodeQL : une alerte, `cs/log-forging` (gravité moyenne). L'identifiant
+saisi à la connexion était journalisé tel quel en cas d'échec LDAP : des sauts de ligne
+permettaient d'insérer de fausses lignes dans le journal. Ils sont retirés avant
+journalisation (`backend/Core/Auth/LdapService.cs`).
+
 Non disponibles sans GitHub Advanced Security : détection des secrets hors fournisseurs
 connus et vérification de validité des secrets détectés.
