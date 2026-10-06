@@ -17,7 +17,7 @@ et montre à chacun **ce qui requiert son intervention, maintenant**.
 ![Active Directory](https://img.shields.io/badge/Auth-Active%20Directory-0078D4)
 [![Licence AGPLv3](https://img.shields.io/badge/Licence-AGPLv3-A42E2B)](LICENSE)
 
-[Fonctionnalités](#pourquoi-s-aloha) · [Aperçu](#aperçu) · [Démarrer](#démarrer-en-2-minutes) · [Documentation](#documentation) · [Licence](#licence)
+[Fonctionnalités](#pourquoi-s-aloha) · [Aperçu](#aperçu) · [Essayer](#essayer-en-5-minutes) · [Contribuer](#contribuer-et-soutenir) · [Documentation](#documentation) · [English](#english)
 
 <br/>
 
@@ -101,22 +101,33 @@ un changement, un changement touche des CI.
   </tr>
 </table>
 
-## Démarrer en 2 minutes
+## Essayer en 5 minutes
+
+Pas besoin d'Active Directory : le **mode démonstration** démarre son propre annuaire.
+Seul Docker est requis.
 
 ```bash
-git clone git@github.com:christian-raj/S-Aloha.git && cd S-Aloha
-# Renseignez votre Active Directory dans docker-compose.yml (service api, variables Ldap__*)
-docker compose up -d --build
+git clone https://github.com/christian-raj/S-Aloha.git && cd S-Aloha
+docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
 ```
 
-Ouvrez **http://localhost** et connectez-vous avec un compte membre de l'un des groupes
-`GRP-SALOHA-ADMINS`, `GRP-SALOHA-MANAGERS` ou `GRP-SALOHA-USERS` (noms configurables).
+Ouvrez **http://localhost** et connectez-vous avec l'un des comptes de démonstration :
+
+| Compte | Mot de passe | Rôle |
+|---|---|---|
+| `demo.admin` | `Demo-Admin-2026` | Administrateur |
+| `demo.manager` | `Demo-Manager-2026` | Gestionnaire |
+| `demo.user` | `Demo-User-2026` | Utilisateur |
+
+**Avec votre Active Directory** : renseignez-le dans `docker-compose.yml` (variables
+`Ldap__*` du service `api`), puis `docker compose up -d --build`. Les utilisateurs doivent
+appartenir à l'un des groupes `GRP-SALOHA-ADMINS`, `GRP-SALOHA-MANAGERS` ou
+`GRP-SALOHA-USERS` (noms configurables). Détails : [guide d'exploitation](docs/reference/exploitation.md).
 
 > [!IMPORTANT]
-> La configuration fournie sert à l'évaluation : secrets d'exemple, ni LDAPS ni HTTPS.
-> Avant une mise en production, suivez [la liste de durcissement](docs/reference/securite.md#points-de-durcissement-avant-production).
-
-Configuration complète : [guide d'exploitation](docs/reference/exploitation.md).
+> Mode démonstration et configuration fournie servent à l'évaluation : mots de passe
+> publics, ni LDAPS ni HTTPS. Avant une mise en production, suivez
+> [la liste de durcissement](docs/reference/securite.md#points-de-durcissement-avant-production).
 
 ## Sous le capot
 
@@ -136,6 +147,22 @@ TESTCONTAINERS_RYUK_DISABLED=true dotnet test tests/SAloha.Api.Tests   # API, Do
 cd frontend && npm test                                                # interface
 ```
 
+## Contribuer et soutenir
+
+S-Aloha est un projet ouvert : toutes les contributions sont bienvenues, du code à la
+documentation en passant par les retours d'usage.
+
+- 🧩 **Première contribution ?** Les issues
+  [`good first issue`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+  sont prêtes à prendre : contexte, fichiers concernés, critère de fin.
+- 🛠️ **Envie d'un chantier plus large ?** Voir
+  [`help wanted`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+  et le [plan d'action](docs/plan-action.md).
+- 📝 Le [guide de contribution](CONTRIBUTING.md) explique comment proposer une
+  modification. Chaque commit est signé (`git commit -s`, *Developer Certificate of Origin*).
+- 💛 **Votre organisation utilise S-Aloha ?** Le soutien financier permet d'aller plus
+  vite sur la feuille de route : voir la [stratégie communauté et financement](docs/strategie-communaute.md#axe-4--financer-le-projet).
+
 ## Documentation
 
 | | |
@@ -148,6 +175,26 @@ cd frontend && npm test                                                # interfa
 | 🤝 [Contribuer](CONTRIBUTING.md) | Issues, pull requests, contrôles avant envoi |
 | 🚨 [Signaler une faille](SECURITY.md) | En privé, jamais dans une issue publique |
 | 📚 [Tout le reste](docs/readme.md) | Base de données, frontend, décisions, plan d'action |
+
+## English
+
+**S-Aloha** is a free (AGPLv3), self-hosted **ITIL 4 service-management platform** for
+IT departments that run **Active Directory**. Users sign in with their Windows account;
+roles follow AD groups. Each user lands on an action-oriented console showing what needs
+their attention, ranked by severity.
+
+- **Processes**: problem management with root-cause analysis (5 Whys, Ishikawa, fault
+  tree), RACI-based corrective actions, plus MVP modules for incidents, service requests,
+  change enablement (with schedule), configuration items (CMDB), service levels,
+  knowledge and continual improvement — all linked to each other.
+- **Stack**: ASP.NET Core 8, EF Core, PostgreSQL 16, React 18 + Vite, Docker Compose.
+- **Try it**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build`,
+  then sign in at http://localhost as `demo.admin` / `Demo-Admin-2026` (a demo directory
+  is started for you).
+- **Contribute**: documentation is in French, code in English; issues and pull requests
+  are welcome in **English or French**. Start with a
+  [`good first issue`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+  and read [CONTRIBUTING.md](CONTRIBUTING.md). Commits are signed off (DCO).
 
 ## Licence
 

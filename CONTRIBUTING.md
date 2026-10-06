@@ -3,6 +3,28 @@
 Merci de votre intérêt. S-Aloha est distribué sous [AGPLv3](LICENSE) : toute
 contribution est publiée sous la même licence.
 
+> **EN:** Contributions are welcome in English or French. Every commit must be signed
+> off (`git commit -s`) under the [Developer Certificate of Origin](https://developercertificate.org/).
+
+## Par où commencer
+
+- Les issues [`good first issue`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+  sont rédigées pour un premier passage : contexte, fichiers concernés, critère de fin.
+  Les [`help wanted`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+  demandent un peu plus de contexte.
+- Indiquez dans l'issue que vous la prenez, pour éviter un travail en double.
+- Lancez l'application **sans Active Directory** avec le mode démonstration :
+
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+  ```
+
+  puis connectez-vous sur http://localhost avec `demo.admin` / `Demo-Admin-2026`
+  (autres comptes : [README](README.md#essayer-en-5-minutes)).
+- Pour comprendre le code : [architecture](docs/reference/architecture.md), et pour
+  ajouter un écran ou un module : [frontend](docs/reference/frontend.md).
+- Issues, pull requests et commits sont acceptés **en français ou en anglais**.
+
 ## Signaler un bug ou proposer une évolution
 
 Les [issues](https://github.com/christian-raj/S-Aloha/issues) sont la source de vérité
@@ -26,4 +48,17 @@ issue publique : voir [SECURITY.md](SECURITY.md).
    [protocole documentaire](docs/protocole-documentation.md).
 4. La CI doit être au vert pour que la pull request soit fusionnée.
 
-Messages de commit en français, à l'indicatif, décrivant le changement.
+Messages de commit à l'indicatif, décrivant le changement (français de préférence,
+anglais accepté).
+
+## Certificat d'origine (DCO)
+
+Chaque commit porte la ligne `Signed-off-by: Prénom Nom <adresse>`, ajoutée par
+`git commit -s`. Par cette signature, vous certifiez avoir le droit de soumettre votre
+contribution sous la licence du projet, selon le
+[Developer Certificate of Origin 1.1](https://developercertificate.org/). Vous restez
+titulaire de vos droits ; aucune cession n'est demandée
+([ADR-0010](docs/decisions/adr-0010-certificat-d-origine-dco.md)).
+
+Oubli sur le dernier commit : `git commit --amend -s --no-edit`, puis
+`git push --force-with-lease` sur votre branche.
