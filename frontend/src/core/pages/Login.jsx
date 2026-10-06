@@ -1,9 +1,21 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../api'
-import { PILLARS } from '../../modules/registry'
-import { BrandMark } from '../components/icons'
+import { BrandMark, IconConsole, IconProblem, IconChange, IconReport } from '../components/icons'
 import { SOURCE_URL, LICENSE_LABEL } from '../about'
+
+// Ce que l'outil permet de faire, pas la liste de ses menus. Chaque bloc
+// renvoie à une fonctionnalité existante (docs/reference/regles-metier.md).
+const FEATURES = [
+  { Icon: IconConsole, title: 'Savoir quoi traiter d\'abord',
+    text: 'Une console par rôle, classée par criticité : retards, incidents majeurs, décisions en attente.' },
+  { Icon: IconProblem, title: 'Remonter à la cause racine',
+    text: '5 Pourquoi, Ishikawa ou arbre des défaillances, puis actions correctives en RACI, confiées à des comptes ou groupes AD.' },
+  { Icon: IconChange, title: 'Encadrer les changements',
+    text: 'Risque, autorisation, plan de retour arrière et calendrier des mises en production.' },
+  { Icon: IconReport, title: 'Mesurer le service rendu',
+    text: 'SLA par service, MTTR des incidents et des problèmes, taux de changements réussis.' },
+]
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -35,20 +47,32 @@ export default function Login() {
           <span className="brand-name large">S-Aloha</span>
         </div>
 
-        <div>
-          <h1>L'excellence du service IT au cœur de notre performance.</h1>
-          <p className="login-motto">« Ny fahaiza-manao ho amin'ny tolotra tsara kokoa. »</p>
-          <ul className="pillars">
-            {PILLARS.map((p) => (
-              <li key={p.id}>
-                <span className="pillar-letter">{p.letter}</span>
-                <span><b>{p.label}</b><small>{p.desc}</small></span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <div className="login-hero-body">
+          <div className="login-message">
+            <p className="login-kicker">Plateforme ITIL de la DSI</p>
+            <h1>L'excellence du service IT au cœur de notre performance.</h1>
+            <p className="login-motto">
+              <span lang="mg">« Ny fahaiza-manao ho amin'ny tolotra tsara kokoa. »</span>
+              <span className="login-motto-fr">Le savoir-faire au service d'une meilleure offre.</span>
+            </p>
+            <p className="login-pun">
+              <i lang="mg">Aloha</i> signifie « d'abord » en malgache :
+              {' '}<i lang="mg">Service alohan'ny zavatra rehetra</i>, le service avant toute chose.
+            </p>
+          </div>
 
-        <p className="login-foot">Service alohan'ny zavatra rehetra</p>
+          <div>
+            <p className="login-kicker">Ce que vous y faites</p>
+            <ul className="login-features">
+              {FEATURES.map(({ Icon, title, text }) => (
+                <li key={title}>
+                  <b><Icon size={17} />{title}</b>
+                  <p>{text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </aside>
 
       <div className="login-side bg-canvas">

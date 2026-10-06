@@ -324,23 +324,31 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--accent-blue
 .login { display: flex; min-height: 100vh; }
 .login-hero {
   position: relative; width: 42%; display: flex; flex-direction: column; justify-content: space-between;
-  overflow: hidden; padding: 56px 48px; background: linear-gradient(160deg, var(--brand-navy-deep), #050814); color: #fff;
+  overflow: hidden; padding: clamp(32px, 6vh, 64px) clamp(28px, 3.4vw, 64px); background: linear-gradient(160deg, var(--brand-navy-deep), #050814); color: #fff;
 }
 .login-hero > * { position: relative; }
 .login-glow { position: absolute !important; width: 384px; height: 384px; filter: blur(48px); pointer-events: none; }
 .login-glow.a { left: -96px; top: -96px; opacity: .4; background: radial-gradient(circle, var(--brand-blue), transparent 70%); }
 .login-glow.b { right: 0; bottom: -128px; width: 320px; height: 320px; opacity: .3; background: radial-gradient(circle, var(--accent-emerald), transparent 70%); }
-.login-hero h1 { max-width: 400px; font-size: 32px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
-.login-motto { margin-top: 16px; max-width: 400px; font-size: 14.5px; font-style: italic; color: rgb(255 255 255 / .45); }
-.pillars { list-style: none; margin-top: 36px; display: grid; gap: 12px; }
-.pillars li { display: flex; align-items: center; gap: 14px; }
-.pillar-letter {
-  width: 30px; height: 30px; flex-shrink: 0; display: grid; place-items: center;
-  border: 1px solid rgb(255 255 255 / .15); font-weight: 800; color: #93c5fd;
+.login-hero h1 { font-size: clamp(26px, 3.7vh, 38px); text-wrap: balance; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
+/* Message et fonctionnalités forment UN bloc centré verticalement, à écart
+   fixe : ancrer les fonctionnalités en bas laissait un grand vide entre les
+   deux sur les écrans hauts. */
+.login-hero-body {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  gap: clamp(28px, 5vh, 48px); max-width: 540px; padding-top: clamp(24px, 4vh, 48px);
 }
-.pillars b { display: block; font-size: 14px; font-weight: 700; color: rgb(255 255 255 / .85); }
-.pillars small { display: block; font-size: 12.5px; color: rgb(255 255 255 / .38); }
-.login-foot { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .15em; color: rgb(255 255 255 / .22); }
+.login-kicker { margin-bottom: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .14em; color: #93c5fd; }
+.login-motto { margin-top: 16px; max-width: 440px; padding-left: 14px; border-left: 2px solid rgb(147 197 253 / .45); }
+.login-motto [lang="mg"] { display: block; font-size: 15px; font-style: italic; color: rgb(255 255 255 / .9); }
+.login-motto-fr { display: block; margin-top: 2px; font-size: 13px; color: rgb(255 255 255 / .68); }
+.login-pun { max-width: 480px; margin-top: 20px; text-wrap: pretty; font-size: 13px; line-height: 1.5; color: rgb(255 255 255 / .68); }
+.login-pun i { font-style: italic; color: rgb(255 255 255 / .9); }
+.login-features { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 28px; }
+.login-features li { padding-top: 12px; border-top: 1px solid rgb(255 255 255 / .12); }
+.login-features b { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; font-weight: 700; line-height: 1.3; color: #fff; }
+.login-features svg { flex-shrink: 0; margin-top: 1px; color: #93c5fd; }
+.login-features p { margin-top: 6px; text-wrap: pretty; font-size: 13px; line-height: 1.45; color: rgb(255 255 255 / .72); }
 .login-side { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
 .login-card {
   width: 100%; max-width: 384px; display: flex; flex-direction: column; gap: 20px;
