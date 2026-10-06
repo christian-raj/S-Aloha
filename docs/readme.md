@@ -9,7 +9,7 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 
 | | Document | Pour |
 |---|---|---|
-| 🧭 | [Produit](reference/produit.md) | Comprendre la vision, les piliers S-A-L-O-H-A et la feuille de route |
+| 🧭 | [Produit](reference/produit.md) | Comprendre la vision, les processus couverts et la feuille de route |
 | 📐 | [Règles métier](reference/regles-metier.md) | Connaître les rôles, la console, le cycle de vie, la priorité, le RACI |
 | 🏗️ | [Architecture](reference/architecture.md) | Voir comment tout s'assemble : containers, socle, modules, API |
 | 🗄️ | [Base de données](reference/base-de-donnees.md) | Lire le modèle de données et les formats d'analyse |

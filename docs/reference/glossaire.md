@@ -43,10 +43,9 @@
 
 | Terme | Définition |
 |---|---|
-| **Pilier** | L'un des six axes S-A-L-O-H-A (Service, Alignment, Leadership, Optimisation, Harmonie, Agilité) auquel chaque processus est rattaché. |
 | **Socle** (*Core*) | Code transverse à tous les processus : authentification, annuaire, données, pilotage. |
 | **Module** | Implémentation d'un processus ITIL (`Modules/<Processus>`, `modules/<processus>`). |
-| **Registre** | `frontend/src/modules/registry.js`, source unique de la navigation : piliers et processus, avec leur état. |
+| **Registre** | `frontend/src/modules/registry.js`, source unique de la navigation : les processus et leur état. |
 | **Bientôt** | État d'un processus déclaré dans le registre mais sans interface (`status: 'soon'`). |
 | **Pilotage** | Section transverse de la navigation : Ma console et Reporting. |
 | **Ma console** | Page d'accueil par rôle, orientée action : groupes Urgent, Décisions, Relances, Mon travail, À suivre. |

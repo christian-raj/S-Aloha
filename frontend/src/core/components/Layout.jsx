@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getUser } from '../../api'
-import { MODULES, pillarOf } from '../../modules/registry'
+import { MODULES } from '../../modules/registry'
 import ThemeToggle from './ThemeToggle'
 import { SOURCE_URL, LICENSE_LABEL } from '../about'
 import { BrandMark, IconConsole, IconReport, IconLogout, IconMenu, IconClose, MODULE_ICONS } from './icons'
@@ -32,8 +32,6 @@ function NavItem({ href, label, description, icon: Icon, end, active, onClick })
 
 function ModuleItem({ module, pathname, onClick }) {
   const Icon = MODULE_ICONS[module.id]
-  const pillar = pillarOf(module.pillar)
-  const tag = <span className="pillar-tag" title={`Pilier ${pillar.label}`}>{pillar.letter}</span>
 
   // Un processus sans interface reste visible : la feuille de route se lit
   // dans la navigation elle-même, sans laisser croire qu'il est utilisable.
@@ -55,7 +53,7 @@ function ModuleItem({ module, pathname, onClick }) {
   const isOn = (p) => (exact ? p === exact : pathname.startsWith(p.href + '/'))
   return (
     <>
-      <NavItem href={module.href} label={<>{module.label} {tag}</>} description={module.description}
+      <NavItem href={module.href} label={module.label} description={module.description}
         icon={Icon} active={open} onClick={onClick} />
       {open && pages.map((p) => (
         <NavLink key={p.href} to={p.href} end onClick={onClick}

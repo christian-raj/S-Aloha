@@ -203,11 +203,10 @@ h3 { font-size: var(--fs-md); font-weight: 600; letter-spacing: -0.01em; }
 .nav-sublink.active { color: #fff; border-left-color: #93c5fd; }
 .nav-link.soon { cursor: not-allowed; color: rgb(255 255 255 / .25); border-left-color: transparent; background: none; }
 .nav-link.soon .nav-icon { color: rgb(255 255 255 / .18); }
-.soon-badge, .pillar-tag {
+.soon-badge {
   flex-shrink: 0; padding: 1px 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
   border: 1px solid rgb(255 255 255 / .08); background: rgb(255 255 255 / .04); color: rgb(255 255 255 / .3);
 }
-.pillar-tag { color: #93c5fd; border-color: rgb(147 197 253 / .25); }
 
 .sidebar-foot { position: relative; padding: 16px 16px 20px; border-top: 1px solid rgb(255 255 255 / .06); }
 .me { display: flex; align-items: center; gap: 12px; }

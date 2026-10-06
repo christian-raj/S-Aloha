@@ -28,9 +28,8 @@ Organiser le code en **un socle et un module par processus ITIL** :
   `SAloha.Api.Modules.<Processus>`.
 - **Frontend** : `src/core/` (Layout, Login, Console, Reporting, composants partagés) et
   `src/modules/<processus>/` (pages et composants propres).
-- **Registre** `frontend/src/modules/registry.js` : **source unique** de la navigation et
-  de la page de connexion. Chaque processus y est déclaré avec son pilier S-A-L-O-H-A ; il
-  passe de `soon` (« Bientôt ») à `active` le jour où son interface existe, sans autre
+- **Registre** `frontend/src/modules/registry.js` : **source unique** de la navigation.
+  Chaque processus y est déclaré ; il passe de `soon` (« Bientôt ») à `active` le jour où son interface existe, sans autre
   modification de la navigation.
 - Les routes d'API existantes sont conservées à l'identique.
 - Renommage de la configuration par défaut : groupes AD `GRP-SALOHA-*`, compte
