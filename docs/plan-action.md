@@ -59,7 +59,7 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 | S1 | **Secrets hors du dépôt** (`Jwt:Key`, mots de passe PostgreSQL et LDAP) | code + action |
 | S2 | **LDAPS** et **HTTPS** | action |
 | S3 | **CORS** restreint ; API et Swagger non publiés hors de nginx | code |
-| S4 | **Migrations EF** à la place d'`EnsureCreated` ([détail](reference/base-de-donnees.md#gestion-du-schéma)) | code |
+| S4 | **Migrations EF** à la place d'`EnsureCreated` ([détail](reference/base-de-donnees.md#gestion-du-schéma)) — **prioritaire** : les modules ITIL 4 ajoutent onze tables qu'une base existante ne reçoit pas ([exploitation](reference/exploitation.md#évolutions-de-schéma)) | code |
 | S5 | Stockage du jeton côté navigateur (`sessionStorage` ou cookie `HttpOnly`) | décision |
 
 ## 6. Qualité
@@ -69,15 +69,22 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 | Q1 | **Tests** : socle en place (API : xUnit + Testcontainers ; frontend : Vitest), B1–B3 et M1, M2, M4–M6 couverts ; étendre aux scénarios R1–R6 | code |
 | Q2 | **CI** : build backend et frontend, `python3 scripts/check-docs.py` | code |
 | Q3 | Retirer `puppeteer-core` des dépendances du frontend (inutilisé, alourdit l'image) | décision |
-| Q4 | Créer les issues GitHub des sections 1 à 6 et les lier ici | action |
+| Q4 | Créer les issues GitHub des sections 1 à 7 et les lier ici | action |
+| Q5 | Captures d'écran : régénérer la console et le reporting (nouveaux blocs), ajouter les nouveaux processus à la galerie du README | code |
 
 ## 7. Feuille de route fonctionnelle
 
-Processus « Bientôt » ([cartographie](reference/produit.md#cartographie-des-processus-itil-et-état)).
-Ordre à arbitrer, **après** les sections 1 à 3.
+Les sept processus sont livrés en **MVP** ([cartographie](reference/produit.md#cartographie-des-processus-itil-et-état),
+[ADR-0007](decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)). Enrichissements
+envisagés, à prioriser ; chacun se cale sur le guide de la pratique ITIL 4 correspondante.
 
-| # | Processus | Remarque |
-|---|---|---|
-| F1 | Incidents | Lien naturel vers les problèmes (incident → problème) |
-| F2 | Changements | Lien naturel depuis les actions correctives |
-| F3 | Demandes, Configuration, Niveaux de service, Connaissances, Amélioration (CSI) | — |
+| # | Processus | Enrichissement | Qui |
+|---|---|---|---|
+| F1 | Niveaux de service | **Mesure de l'atteinte des SLA** : rapprocher la durée de résolution des incidents (priorité, service) des cibles P1–P4 ; échéance de résolution sur l'incident | décision : rattacher l'incident à un service du catalogue plutôt qu'au texte libre « Service affecté » |
+| F2 | Incidents, Problèmes | Service affecté et catégorie tirés du catalogue et d'un référentiel, plutôt qu'en texte libre | décision (rejoint A1 : référentiels) |
+| F3 | Demandes | Catalogue de demandes (modèles d'objets demandés, approbation facultative selon le modèle) | décision |
+| F4 | Changements | Modèles de changements standard ; détection des conflits au calendrier (mêmes CI, même créneau) ; revue post-implémentation | code |
+| F5 | Configuration | Vue d'impact (CI amont/aval d'un service) ; rattachement CI ↔ service ; import en masse | code |
+| F6 | Tous | Transitions de statut contraintes (comme R4 pour les problèmes) et historique des modifications (R5) | décision |
+| F7 | Tous | Pièces jointes, commentaires, notifications | décision |
+| F8 | Connaissances | Rendu Markdown du contenu ; suggestion d'articles depuis un incident | code |

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../../api'
+import { ITEM_TYPES, hrefOf } from '../itemTypes'
 
 const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
 const dateFr = d => new Date(d).toLocaleDateString('fr-FR')
@@ -17,7 +18,7 @@ function TodoSection({ title, tone, rows, cols, onRow, hint }) {
       <table>
         <thead><tr>{cols.map(c => <th key={c.h}>{c.h}</th>)}</tr></thead>
         <tbody>{rows.map(r => (
-          <tr key={r.id} className="clickable" onClick={() => onRow(r)}>
+          <tr key={(r.type ?? '') + r.id} className="clickable" onClick={() => onRow(r)}>
             {cols.map(c => <td key={c.h}>{c.v(r)}</td>)}
           </tr>))}
         </tbody>
@@ -36,13 +37,22 @@ export default function Console() {
   if (!c) return <p>Chargement…</p>
 
   const goP = r => nav('/problems/' + (r.problem ? r.problem.id : r.id))
+  const goItem = r => nav(hrefOf(r.type, r.id))
   const m = c.management
+  // Colonnes d'une ligne « enregistrement » d'un autre processus (type, référence, titre, statut).
+  const itemCols = [
+    { h: 'Processus', v: r => ITEM_TYPES[r.type]?.label ?? r.type },
+    { h: 'Référence', v: r => <b>{r.reference}</b> },
+    { h: 'Titre', v: r => r.title },
+    { h: 'Statut', v: r => r.status }
+  ]
 
   // --- Zone 1 : à traiter (par ordre de criticité) ---
   const myOverdue = c.myActions.filter(a => a.overdue)
   const myTodo = c.myActions.filter(a => !a.overdue)
-  const nbTodo = myOverdue.length + myTodo.length
-    + (m ? m.overdueActions.length + m.toQualify.length + m.knownErrorsNoAction.length : 0)
+  const nbTodo = myOverdue.length + myTodo.length + c.myAssignments.length
+    + (m ? m.overdueActions.length + m.toQualify.length + m.knownErrorsNoAction.length
+         + m.majorIncidents.length + m.decisions.length + m.reviewsDue.length : 0)
 
   const roleLabel = { Admin: 'administrateur', Manager: 'gestionnaire', User: 'utilisateur' }[c.role]
 
@@ -76,6 +86,10 @@ export default function Console() {
           { h: 'Échéance', v: r => <span style={{ color: 'var(--danger)', fontWeight: 700 }}>{dateFr(r.dueDate)} ⚠</span> }
         ]} />
 
+      {m && <TodoSection title="Incidents majeurs en cours" tone="var(--danger)" rows={m.majorIncidents} onRow={goItem}
+        hint="Interruptions majeures : coordonner le rétablissement et la communication."
+        cols={itemCols.slice(1)} />}
+
       {m && <TodoSection title="Problèmes à qualifier" tone="var(--blue)" rows={m.toQualify} onRow={goP}
         hint="Nouveaux problèmes en attente de qualification par un gestionnaire."
         cols={[
@@ -85,6 +99,10 @@ export default function Console() {
           { h: 'Déclaré par', v: r => r.createdByDisplayName },
           { h: 'Le', v: r => dateFr(r.createdAt) }
         ]} />}
+
+      {m && <TodoSection title="Décisions en attente" tone="var(--blue)" rows={m.decisions} onRow={goItem}
+        hint="Changements à autoriser, demandes à approuver, améliorations à valider."
+        cols={itemCols} />}
 
       {m && <TodoSection title="Erreurs connues sans action corrective" tone="var(--warn)" rows={m.knownErrorsNoAction} onRow={goP}
         hint="Une erreur connue doit porter au moins une action corrective planifiée."
@@ -103,6 +121,10 @@ export default function Console() {
           { h: 'Responsables', v: r => r.responsibles.join(', ') || '—' }
         ]} />}
 
+      {m && <TodoSection title="Revues échues" tone="var(--warn)" rows={m.reviewsDue} onRow={goItem}
+        hint="Articles publiés et SLA en vigueur dont la date de revue est passée."
+        cols={itemCols} />}
+
       <TodoSection title="Mes actions en cours" tone="var(--blue)" rows={myTodo} onRow={goP}
         cols={[
           { h: 'Action', v: r => <b>{r.title}</b> },
@@ -111,6 +133,10 @@ export default function Console() {
           { h: 'Échéance', v: r => r.dueDate ? dateFr(r.dueDate) : '—' },
           { h: 'Statut', v: r => r.status }
         ]} />
+
+      <TodoSection title="Mes incidents, demandes, changements et améliorations" tone="var(--blue)"
+        rows={c.myAssignments} onRow={goItem} hint="Ouverts et dont vous êtes responsable (assigné, porteur)."
+        cols={itemCols} />
 
       {nbTodo === 0 && <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 20 }}>Aucun élément à traiter. 👍</p>}
 

@@ -48,13 +48,18 @@ function ModuleItem({ module, pathname, onClick }) {
   }
 
   const open = module.routes.some((r) => pathname === r || pathname.startsWith(r + '/'))
+  // Une sous-page peut prolonger une autre (/changes/schedule sous /changes) :
+  // la correspondance exacte l'emporte, sinon le préfixe (fiche /changes/12).
+  const pages = module.pages ?? []
+  const exact = pages.find((p) => p.href === pathname)
+  const isOn = (p) => (exact ? p === exact : pathname.startsWith(p.href + '/'))
   return (
     <>
       <NavItem href={module.href} label={<>{module.label} {tag}</>} description={module.description}
         icon={Icon} active={open} onClick={onClick} />
-      {open && module.pages.map((p) => (
-        <NavLink key={p.href} to={p.href} onClick={onClick}
-          className={({ isActive }) => 'nav-sublink' + (isActive || pathname.startsWith(p.href + '/') ? ' active' : '')}>
+      {open && pages.map((p) => (
+        <NavLink key={p.href} to={p.href} end onClick={onClick}
+          className={'nav-sublink' + (isOn(p) ? ' active' : '')}>
           {p.label}
         </NavLink>
       ))}

@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using SAloha.Api.Core.Data;
 
 namespace SAloha.Api.Modules.ProblemManagement;
 
-public class Problem
+public class Problem : IHasReference
 {
     public int Id { get; set; }
     [MaxLength(20)] public string Reference { get; set; } = "";   // PRB-2026-0001

@@ -5,6 +5,7 @@ import FiveWhys from '../components/FiveWhys'
 import Ishikawa from '../components/Ishikawa'
 import FtaTree from '../components/FtaTree'
 import RaciEditor from '../../../core/components/RaciEditor'
+import LinkedItems from '../../../core/components/LinkedItems'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
 const METHODS = { FIVE_WHYS: '5 Pourquoi', ISHIKAWA: 'Ishikawa (6M)', FTA: 'Arbre des défaillances (FTA)' }
@@ -37,7 +38,11 @@ export default function ProblemDetail() {
           .map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
       </div>
 
-      {tab === 'infos' && <Infos p={p} isManager={isManager} onSaved={load} />}
+      {tab === 'infos' && <>
+        <Infos p={p} isManager={isManager} onSaved={load} />
+        <LinkedItems type="problem" id={p.id}
+          hint="Incidents à l'origine, changement qui corrige, article d'erreur connue…" />
+      </>}
       {tab === 'rca' && <Rca p={p} onSaved={load} />}
       {tab === 'actions' && <ActionsTab p={p} onSaved={load} />}
     </>

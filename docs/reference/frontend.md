@@ -18,21 +18,48 @@ frontend/
     ├── styles.css                # jetons, thèmes, composants — voir § Design
     ├── core/                     # socle UI, transverse aux processus
     │   ├── about.js              # URL du code source et licence (AGPLv3, VITE_SOURCE_URL)
+    │   ├── fields.js             # champs communs (titre, description, responsable AD), formats de date
+    │   ├── itemTypes.js          # types reliables → libellé et page (miroir de ItemLinks côté API)
     │   ├── components/
     │   │   ├── Layout.jsx        # sidebar (desktop) / tiroir (mobile), construite depuis le registre
     │   │   ├── ThemeToggle.jsx   # bascule clair / sombre
     │   │   ├── icons.jsx         # icônes SVG en ligne
-    │   │   └── RaciEditor.jsx    # éditeur RACI + recherche dans l'annuaire AD
+    │   │   ├── DirectoryPicker.jsx # recherche dans l'annuaire AD (utilisateur ou groupe)
+    │   │   ├── RaciEditor.jsx    # éditeur RACI (rôle + DirectoryPicker)
+    │   │   ├── RecordList.jsx    # registre d'un processus : filtres, création, tableau
+    │   │   ├── RecordDetail.jsx  # fiche : en-tête, éditeur, contenu propre, éléments liés
+    │   │   ├── RecordForm.jsx    # formulaire décrit par des champs ; conversions API ↔ formulaire
+    │   │   ├── StatusBadge.jsx   # badge de statut selon la tonalité déclarée
+    │   │   └── LinkedItems.jsx   # éléments liés (tous processus), ajout par référence
     │   └── pages/
     │       ├── Login.jsx         # panneau de marque, six piliers, formulaire AD
     │       ├── Console.jsx       # « Ma console », orientée action
     │       └── Reporting.jsx     # indicateurs et volumétrie
     └── modules/
         ├── registry.js           # registre des processus ITIL — source unique de la navigation
-        └── problem-management/
-            ├── components/       # FiveWhys, Ishikawa, FtaTree
-            └── pages/            # Problems, ProblemDetail (onglets), Actions
+        ├── problem-management/
+        │   ├── components/       # FiveWhys, Ishikawa, FtaTree
+        │   └── pages/            # Problems, ProblemDetail (onglets), Actions
+        ├── incident-management/          # config.jsx + pages Incidents, IncidentDetail
+        ├── service-request-management/   # config.jsx + pages Requests, RequestDetail
+        ├── change-enablement/            # config.jsx + pages Changes, ChangeDetail, ChangeSchedule
+        ├── service-configuration-management/ # config.jsx + pages ConfigurationItems, ConfigurationItemDetail
+        ├── service-level-management/     # config.jsx + pages Services, ServiceDetail, Agreements, AgreementDetail
+        ├── knowledge-management/         # config.jsx + pages Articles, ArticleDetail
+        └── continual-improvement/        # config.jsx + pages Improvements, ImprovementDetail
 ```
+
+### Modules décrits par configuration
+
+Hors problèmes, chaque module tient dans un `config.jsx` lu par les composants génériques
+du socle (`RecordList`, `RecordDetail`) : client d'API (`api.js` › `records(path)`),
+`basePath`, `linkType`, statuts avec tonalité (`tone` : `new`, `progress`, `wait`, `done`,
+`bad`, `closed` — classes `.badge.t-*`) et marque `manager` des statuts réservés, champs du
+formulaire (`text`, `textarea`, `select`, `date`, `datetime`, `number`, `checkbox`, `person`),
+colonnes du registre, badges et mentions de l'en-tête. Une page n'ajoute que ce qui est
+propre au processus, passé en enfant de `RecordDetail` : ouverture d'un problème depuis un
+incident, relations entre CI, SLA d'un service. Les statuts réservés aux gestionnaires
+sont désactivés dans la liste pour les autres rôles ; l'API reste seule juge.
 
 Règle de dépendance : `modules/*` peut importer `core/*` ; `core/*` n'importe aucun module,
 sauf le registre `modules/registry.js` (lu par `Layout` et `Login`).
@@ -47,6 +74,13 @@ sauf le registre `modules/registry.js` (lu par `Layout` et `Login`).
 | `/problems` | `modules/problem-management/pages/Problems` | Processus ITIL › Problèmes |
 | `/problems/:id` | `modules/problem-management/pages/ProblemDetail` | Processus ITIL › Problèmes |
 | `/actions` | `modules/problem-management/pages/Actions` | Processus ITIL › Problèmes |
+| `/incidents`, `/incidents/:id` | `modules/incident-management/pages/*` | Processus ITIL › Incidents |
+| `/requests`, `/requests/:id` | `modules/service-request-management/pages/*` | Processus ITIL › Demandes |
+| `/changes`, `/changes/schedule`, `/changes/:id` | `modules/change-enablement/pages/*` | Processus ITIL › Changements |
+| `/configuration`, `/configuration/:id` | `modules/service-configuration-management/pages/*` | Processus ITIL › Configuration |
+| `/services`, `/services/:id`, `/agreements`, `/agreements/:id` | `modules/service-level-management/pages/*` | Processus ITIL › Niveaux de service |
+| `/knowledge`, `/knowledge/:id` | `modules/knowledge-management/pages/*` | Processus ITIL › Connaissances |
+| `/improvements`, `/improvements/:id` | `modules/continual-improvement/pages/*` | Processus ITIL › Amélioration (CSI) |
 
 Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont rendues dans
 `Layout`. Les droits réels sont contrôlés par l'API.
@@ -60,14 +94,17 @@ Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont r
 - `MODULES` — les processus ITIL, dans l'ordre du cycle de vie : `id`, `label`,
   `description`, `pillar`, `status` (`active` | `soon`) et, pour un module actif, `href`
   (point d'entrée), `routes` (préfixes d'URL qui l'activent dans la navigation), `pages`
-  (sous-entrées affichées quand le module est ouvert) ;
+  (sous-entrées affichées quand le module est ouvert, facultatives ; quand une sous-page en
+  prolonge une autre — `/changes/schedule` sous `/changes` — la correspondance exacte l'emporte) ;
 - `pillarOf(id)`.
 
 Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 
 ### Ajouter un module
 
-1. Créer `src/modules/<processus>/{pages,components}`.
+1. Créer `src/modules/<processus>/` : un `config.jsx` (voir § Modules décrits par
+   configuration) et des pages qui passent cette configuration à `RecordList` et
+   `RecordDetail` ; ajouter le client dans `api.js` et le type dans `core/itemTypes.js`.
 2. Déclarer ses routes dans `App.jsx`, sous le commentaire du processus.
 3. Dans `registry.js`, passer le module à `status: 'active'` et renseigner `href`, `routes`,
    `pages`. Rien d'autre à toucher dans la navigation.

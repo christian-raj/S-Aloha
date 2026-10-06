@@ -34,7 +34,8 @@ Active Directory : aucun compte à créer, aucun mot de passe stocké.
 
 **🎯 Une console qui dit quoi faire**
 Chaque utilisateur arrive sur ce qui l'attend, classé par criticité : actions en retard,
-problèmes à qualifier, erreurs connues sans plan d'action. L'informatif passe après.
+incidents majeurs, changements à autoriser, demandes à approuver, problèmes à qualifier,
+revues échues. L'informatif passe après.
 
 **🔍 L'analyse de cause racine, outillée**
 Trois méthodes intégrées : **5 Pourquoi**, **Ishikawa 6M** et **arbre des défaillances**
@@ -45,8 +46,8 @@ Chaque action corrective porte une échéance et une matrice **RACI** affectée 
 personnes ou des groupes de l'annuaire. Les retards remontent tout seuls.
 
 **📊 Le pilotage sans export Excel**
-MTTR, répartition par statut, priorité et catégorie, actions en retard avec leurs
-responsables : tout est dans le Reporting.
+MTTR des problèmes et des incidents, taux de changements réussis, répartitions, actions
+en retard avec leurs responsables, volumétrie de chaque processus : tout est dans le Reporting.
 
 **🏠 Chez vous, en une commande, et libre**
 On-prem, trois containers, vos données restent dans votre SI. Logiciel libre sous
@@ -57,11 +58,18 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 | Processus | |
 |---|---|
 | **Gestion des problèmes** — cause racine, erreurs connues, actions correctives | ✅ Disponible |
-| Incidents · Demandes · Changements · Configuration (CMDB) | 🔜 Bientôt |
-| Niveaux de service · Connaissances · Amélioration continue | 🔜 Bientôt |
+| **Incidents** — priorité P1–P4, incidents majeurs, ouverture d'un problème lié | ✅ Disponible (MVP) |
+| **Demandes** — objet demandé, bénéficiaire, approbation avant traitement | ✅ Disponible (MVP) |
+| **Changements** — standard pré-autorisé, autorisation, retour arrière, calendrier | ✅ Disponible (MVP) |
+| **Configuration (CMDB)** — éléments de configuration et leurs relations | ✅ Disponible (MVP) |
+| **Niveaux de service** — catalogue des services, SLA et dates de revue | ✅ Disponible (MVP) |
+| **Connaissances** — solutions, procédures, erreurs connues, publication validée | ✅ Disponible (MVP) |
+| **Amélioration continue** — registre et modèle ITIL 4 en 7 étapes | ✅ Disponible (MVP) |
 
-Chaque processus s'ajoute comme un module, sur un socle commun : même connexion, même
-console, même reporting.
+Chaque processus est un module, aligné sur la pratique **ITIL 4** correspondante, sur un
+socle commun : même connexion, même console, même reporting. Les enregistrements se
+relient entre eux par leur référence : un incident ouvre un problème, un problème appelle
+un changement, un changement touche des CI.
 
 ## Aperçu
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { api } from '../../api'
+import DirectoryPicker from './DirectoryPicker'
 
 const ROLES = [
   { code: 'R', label: 'Responsable (réalise)' },
@@ -11,21 +11,12 @@ const ROLES = [
 /** Sélecteur d'utilisateurs / groupes AD avec rôle RACI. */
 export default function RaciEditor({ value, onChange }) {
   const [role, setRole] = useState('R')
-  const [q, setQ] = useState('')
-  const [results, setResults] = useState([])
-
-  const search = async (text) => {
-    setQ(text)
-    if (text.length < 2) { setResults([]); return }
-    try { setResults(await api.directory.search(text)) } catch { setResults([]) }
-  }
 
   const add = (entry) => {
     if (!value.some(r => r.role === role && r.assigneeId === entry.id))
       onChange([...value, {
         role, assigneeType: entry.type, assigneeId: entry.id, assigneeDisplayName: entry.displayName
       }])
-    setQ(''); setResults([])
   }
 
   const remove = (i) => onChange(value.filter((_, idx) => idx !== i))
@@ -39,19 +30,9 @@ export default function RaciEditor({ value, onChange }) {
             {ROLES.map(r => <option key={r.code} value={r.code}>{r.code} — {r.label}</option>)}
           </select>
         </div>
-        <div className="field raci-pick">
+        <div className="field">
           <label>Utilisateur ou groupe AD</label>
-          <input value={q} onChange={e => search(e.target.value)}
-            placeholder="Tapez au moins 2 caractères…" />
-          {results.length > 0 && (
-            <div className="raci-results">
-              {results.map(r => (
-                <div key={r.type + r.id} onClick={() => add(r)}>
-                  {r.type === 'Group' ? '👥 ' : '👤 '}{r.displayName} <span style={{ color: 'var(--muted)' }}>({r.id})</span>
-                </div>
-              ))}
-            </div>
-          )}
+          <DirectoryPicker onPick={add} />
         </div>
       </div>
       <div>

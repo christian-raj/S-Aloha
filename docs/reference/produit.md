@@ -49,16 +49,21 @@ Ordre du cycle de vie du service. Source unique : `MODULES` dans
 `frontend/src/modules/registry.js` — un processus passe de **Bientôt** à **Actif** le jour
 où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-par-processus-itil.md)).
 
-| Processus | Objet | Pilier | État | Module |
+| Processus | Objet | Pilier | État | Module (API, interface) |
 |---|---|---|---|---|
-| Incidents | Rétablir le service au plus vite | Service | Bientôt | — |
-| Demandes | Demandes de service utilisateurs | Service | Bientôt | — |
-| **Problèmes** | Causes racines et erreurs connues | Service | **Actif** | `Modules/ProblemManagement`, `modules/problem-management` |
-| Changements | Changements et mises en production | Agilité | Bientôt | — |
-| Configuration | Actifs et dépendances (CMDB) | Service | Bientôt | — |
-| Niveaux de service | Catalogue, SLA et engagements | Alignment | Bientôt | — |
-| Connaissances | Capitalisation et formation | Leadership | Bientôt | — |
-| Amélioration (CSI) | Amélioration continue des services | Optimisation | Bientôt | — |
+| **Incidents** | Rétablir le service au plus vite | Service | Actif (MVP) | `Modules/IncidentManagement`, `modules/incident-management` |
+| **Demandes** | Demandes de service utilisateurs | Service | Actif (MVP) | `Modules/ServiceRequestManagement`, `modules/service-request-management` |
+| **Problèmes** | Causes racines et erreurs connues | Service | Actif | `Modules/ProblemManagement`, `modules/problem-management` |
+| **Changements** | Changements et mises en production | Agilité | Actif (MVP) | `Modules/ChangeEnablement`, `modules/change-enablement` |
+| **Configuration** | Actifs et dépendances (CMDB) | Service | Actif (MVP) | `Modules/ServiceConfigurationManagement`, `modules/service-configuration-management` |
+| **Niveaux de service** | Catalogue, SLA et engagements | Alignment | Actif (MVP) | `Modules/ServiceLevelManagement`, `modules/service-level-management` |
+| **Connaissances** | Capitalisation et formation | Leadership | Actif (MVP) | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
+| **Amélioration (CSI)** | Amélioration continue des services | Optimisation | Actif (MVP) | `Modules/ContinualImprovement`, `modules/continual-improvement` |
+
+**MVP** : enregistrer, suivre un cycle de vie simple, porter les décisions des
+gestionnaires et relier les processus entre eux. Référentiel : les **pratiques ITIL 4**
+publiées par PeopleCert/Axelos ([ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)) ;
+l'enrichissement de chaque pratique viendra ensuite ([plan d'action](../plan-action.md)).
 
 > Le pilier **Harmonie** n'a pas encore de processus rattaché.
 
@@ -68,9 +73,28 @@ Indépendants des processus, accessibles à tous les rôles :
 
 - **Ma console** — page d'accueil orientée action, composée côté serveur selon le rôle
   (règles : [`regles-metier.md`](regles-metier.md#2-consoles-par-rôle)) ;
-- **Reporting** — indicateurs et volumétrie.
+- **Reporting** — indicateurs (problèmes, MTTR incidents, taux de changements réussis)
+  et volumétrie par processus.
 
-## Processus actif : Gestion des problèmes (ITIL v3)
+## Les processus
+
+Chaque processus reprend l'objectif de la pratique ITIL 4 correspondante. Règles
+détaillées : [`regles-metier.md`](regles-metier.md).
+
+| Processus | Objectif ITIL 4 | Ce que fait le MVP |
+|---|---|---|
+| Incidents | Minimiser l'impact négatif des incidents en rétablissant le service normal au plus vite | Déclaration, priorité P1–P4, assignation AD, incident majeur, résolution ; ouverture d'un problème lié |
+| Demandes | Délivrer la qualité de service convenue en traitant les demandes prédéfinies des utilisateurs, de façon efficace et conviviale | Objet demandé, bénéficiaire, échéance ; approbation par un gestionnaire avant traitement |
+| Changements | Maximiser le nombre de changements réussis : évaluer les risques, autoriser, gérer le calendrier | Types Standard (pré-autorisé), Normal, Urgent ; risque ; autorisation ; plans de mise en œuvre et de retour arrière ; résultat ; calendrier |
+| Configuration | Une information exacte et fiable sur les services et les CI, quand et où elle est nécessaire | CI typés par environnement, propriétaire ; relations entre CI |
+| Niveaux de service | Des cibles claires, orientées métier, et le suivi de la prestation au regard de ces cibles | Catalogue des services ; SLA (disponibilité, délais de résolution P1–P4, revue) |
+| Connaissances | Un usage efficace, efficient et pratique de l'information et des connaissances | Articles (solution, procédure, erreur connue, FAQ), publication validée, revue |
+| Amélioration continue | Aligner les services sur l'évolution des besoins par l'amélioration continue | Registre d'amélioration, mesures de départ et cible, modèle ITIL 4 en 7 étapes, validation |
+
+Tous les enregistrements se **relient** entre eux par leur référence (incident → problème,
+problème → changement, changement → CI, problème → article d'erreur connue…).
+
+### Gestion des problèmes
 
 1. **Détection et enregistrement** : déclaration avec impact × urgence → priorité P1–P4
    calculée, référence `PRB-AAAA-NNNN`.

@@ -2,7 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Records;
+using SAloha.Api.Modules.ChangeEnablement;
+using SAloha.Api.Modules.ContinualImprovement;
+using SAloha.Api.Modules.IncidentManagement;
+using SAloha.Api.Modules.KnowledgeManagement;
 using SAloha.Api.Modules.ProblemManagement;
+using SAloha.Api.Modules.ServiceLevelManagement;
+using SAloha.Api.Modules.ServiceRequestManagement;
 
 namespace SAloha.Api.Core.Pilotage;
 
@@ -47,6 +54,13 @@ public class ConsoleController(AppDbContext db) : ControllerBase
                 Overdue = a.DueDate != null && a.DueDate < today
             }).ToListAsync();
 
+        // Enregistrements des autres processus dont je suis responsable (assigné, propriétaire).
+        var myAssignments = new List<Item>();
+        myAssignments.AddRange(await Mine(db.Incidents, "incident", meKey, Incident.Done));
+        myAssignments.AddRange(await Mine(db.ServiceRequests, "request", meKey, ServiceRequest.Done));
+        myAssignments.AddRange(await Mine(db.Changes, "change", meKey, Change.Done));
+        myAssignments.AddRange(await Mine(db.Improvements, "improvement", meKey, Improvement.Done));
+
         object? management = null;
         if (role is "Manager" or "Admin")
         {
@@ -77,11 +91,44 @@ public class ConsoleController(AppDbContext db) : ControllerBase
                     Responsibles = a.Raci.Where(r => r.Role == "R").Select(r => r.AssigneeDisplayName)
                 }).ToListAsync();
 
+            var majorIncidents = await db.Incidents.AsNoTracking()
+                .Where(i => i.IsMajor && !Incident.Done.Contains(i.Status))
+                .Select(i => new Item("incident", i.Id, i.Reference, i.Title, i.Status)).ToListAsync();
+
+            // Décisions de gestionnaire en attente : autoriser, approuver, valider.
+            var decisions = new List<Item>();
+            decisions.AddRange(await InStatus(db.Changes, "change", "Demandé", "Évalué"));
+            decisions.AddRange(await InStatus(db.ServiceRequests, "request", "Soumise"));
+            decisions.AddRange(await InStatus(db.Improvements, "improvement", "Proposée"));
+
+            // Revues échues : articles publiés et SLA en vigueur dont la date de revue est passée.
+            var reviewsDue = new List<Item>();
+            reviewsDue.AddRange(await db.KnowledgeArticles.AsNoTracking()
+                .Where(a => a.Status == "Publié" && a.ReviewDate != null && a.ReviewDate < today)
+                .Select(a => new Item("article", a.Id, a.Reference, a.Title, a.Status)).ToListAsync());
+            reviewsDue.AddRange(await db.Agreements.AsNoTracking()
+                .Where(a => a.Status == "En vigueur" && a.ReviewDate != null && a.ReviewDate < today)
+                .Select(a => new Item("agreement", a.Id, a.Reference, a.Title, a.Status)).ToListAsync());
+
             management = new { ToQualify = toQualify, InAnalysisNoRootCause = inAnalysisNoRootCause,
-                               KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue };
+                               KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue,
+                               MajorIncidents = majorIncidents, Decisions = decisions, ReviewsDue = reviewsDue };
         }
 
         return Ok(new { Role = role, Username = me, MyProblems = myProblems, MyActions = myActions,
-                        Management = management });
+                        MyAssignments = myAssignments, Management = management });
     }
+
+    /// <summary>Ligne de console désignant un enregistrement d'un processus.</summary>
+    public record Item(string Type, int Id, string Reference, string Title, string Status);
+
+    private static Task<List<Item>> Mine<T>(DbSet<T> set, string type, string meKey, string[] done) where T : Record =>
+        set.AsNoTracking()
+            .Where(x => x.OwnerId != null && x.OwnerId.ToLower() == meKey && !done.Contains(x.Status))
+            .OrderBy(x => x.CreatedAt)
+            .Select(x => new Item(type, x.Id, x.Reference, x.Title, x.Status)).ToListAsync();
+
+    private static Task<List<Item>> InStatus<T>(DbSet<T> set, string type, params string[] statuses) where T : Record =>
+        set.AsNoTracking().Where(x => statuses.Contains(x.Status)).OrderBy(x => x.CreatedAt)
+            .Select(x => new Item(type, x.Id, x.Reference, x.Title, x.Status)).ToListAsync();
 }

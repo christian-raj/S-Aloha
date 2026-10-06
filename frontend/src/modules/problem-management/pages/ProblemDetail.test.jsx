@@ -17,7 +17,8 @@ vi.mock('../../../api', () => ({
         analyses: [], actions: []
       })
     },
-    analyses: { create: vi.fn(), update: vi.fn() }
+    analyses: { create: vi.fn(), update: vi.fn() },
+    links: { list: () => Promise.resolve([]), create: vi.fn(), remove: vi.fn() }
   }
 }))
 

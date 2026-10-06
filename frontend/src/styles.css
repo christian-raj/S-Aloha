@@ -272,6 +272,9 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--accent-blue
 .field { margin-bottom: 14px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+/* Formulaires des modules (RecordForm) : grille fluide, champs longs pleine largeur. */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); column-gap: 14px; }
+.form-grid .full { grid-column: 1 / -1; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -302,6 +305,13 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--accent-blue
 .badge.Resolu { background: var(--accent-emerald-soft); color: var(--accent-emerald); border-color: color-mix(in srgb, var(--accent-emerald) 30%, transparent); }
 .badge.P1, .badge.R { background: var(--accent-red-soft); color: var(--accent-red); border-color: color-mix(in srgb, var(--accent-red) 30%, transparent); }
 .badge.Clos, .badge.P4, .badge.I { background: var(--bg-surface-hover); color: var(--text-tertiary); border-color: var(--border-default); }
+/* Tonalités des statuts des autres processus (config des modules : `tone`). */
+.badge.t-new { background: var(--accent-violet-soft); color: var(--accent-violet); border-color: color-mix(in srgb, var(--accent-violet) 30%, transparent); }
+.badge.t-progress { background: var(--accent-blue-soft); color: var(--accent-blue); border-color: color-mix(in srgb, var(--accent-blue) 30%, transparent); }
+.badge.t-wait { background: var(--accent-amber-soft); color: var(--accent-amber); border-color: color-mix(in srgb, var(--accent-amber) 30%, transparent); }
+.badge.t-done { background: var(--accent-emerald-soft); color: var(--accent-emerald); border-color: color-mix(in srgb, var(--accent-emerald) 30%, transparent); }
+.badge.t-bad { background: var(--accent-red-soft); color: var(--accent-red); border-color: color-mix(in srgb, var(--accent-red) 30%, transparent); }
+.badge.t-closed { background: var(--bg-surface-hover); color: var(--text-tertiary); border-color: var(--border-default); }
 
 /* ---- Bandeau de synthèse (console) ---- */
 .banner { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Core.Pilotage;
 
@@ -22,8 +23,35 @@ public class ReportsController(AppDbContext db) : ControllerBase
             ? Math.Round(closed.Average(p => (p.ClosedAt!.Value - p.CreatedAt).TotalDays), 1)
             : null;
 
+        var resolved = await db.Incidents.AsNoTracking().Where(i => i.ResolvedAt != null)
+            .Select(i => new { i.CreatedAt, i.ResolvedAt }).ToListAsync();
+        double? incidentMttrHours = resolved.Count > 0
+            ? Math.Round(resolved.Average(i => (i.ResolvedAt!.Value - i.CreatedAt).TotalHours), 1)
+            : null;
+        var outcomes = await db.Changes.AsNoTracking().Where(c => c.Outcome != null)
+            .Select(c => c.Outcome).ToListAsync();
+        double? changeSuccessRate = outcomes.Count > 0
+            ? Math.Round(100.0 * outcomes.Count(o => o == "Réussi") / outcomes.Count)
+            : null;
+
+        // Volumétrie par processus, dans l'ordre du cycle de vie du service.
+        var processes = new[]
+        {
+            await Breakdown(db.Incidents, "Incidents"),
+            await Breakdown(db.ServiceRequests, "Demandes"),
+            await Breakdown(db.Changes, "Changements"),
+            await Breakdown(db.ConfigurationItems, "Configuration"),
+            await Breakdown(db.Agreements, "Niveaux de service (SLA)"),
+            await Breakdown(db.KnowledgeArticles, "Connaissances"),
+            await Breakdown(db.Improvements, "Amélioration continue"),
+        };
+
         return Ok(new
         {
+            IncidentMttrHours = incidentMttrHours,
+            ChangeSuccessRate = changeSuccessRate,
+            MajorIncidentsOpen = await db.Incidents.CountAsync(i => i.IsMajor && i.Status != "Résolu" && i.Status != "Clos"),
+            Processes = processes,
             ProblemsByStatus = problems.GroupBy(p => p.Status)
                 .Select(g => new { Status = g.Key, Count = g.Count() }),
             ProblemsByPriority = problems.GroupBy(p => p.Priority).OrderBy(g => g.Key)
@@ -46,5 +74,12 @@ public class ReportsController(AppDbContext db) : ControllerBase
             Contributors = problems.Select(p => p.CreatedBy).Distinct().Count(),
             LastActivity = problems.Count > 0 ? problems.Max(p => p.UpdatedAt) : (DateTime?)null
         });
+    }
+
+    private static async Task<object> Breakdown<T>(DbSet<T> set, string label) where T : Record
+    {
+        var byStatus = await set.AsNoTracking().GroupBy(x => x.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() }).ToListAsync();
+        return new { Process = label, Total = byStatus.Sum(s => s.Count), ByStatus = byStatus };
     }
 }

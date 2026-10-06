@@ -29,28 +29,53 @@ Trois containers orchestrés par `docker-compose.yml` : **web** (nginx sert le b
 
 ## 3. Organisation du code : socle et modules
 
-S-Aloha est une **plateforme modulaire** : un **socle** (*Core*) transverse à tous les processus ITIL, et un **module** par processus. Seul le module *Gestion des problèmes* est implémenté ; les autres sont déclarés « bientôt » dans le registre frontend (voir [produit.md](produit.md)).
+S-Aloha est une **plateforme modulaire** : un **socle** (*Core*) transverse à tous les processus ITIL, et un **module** par processus. Les huit processus du registre sont implémentés ; tous sauf *Gestion des problèmes* en MVP, sur un socle commun d'enregistrement (voir [produit.md](produit.md) et [ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)).
 
 ```
 backend/                              # projet SAloha.Api (namespace SAloha.Api.*)
 ├── Program.cs                        # DI, JWT, policies, CORS, EnsureCreated
 ├── Core/                             # socle — ne dépend d'aucun module
 │   ├── Auth/                         # AuthController, LdapService, TokenService, AuthDtos
-│   ├── Data/                         # AppDbContext (unique, toutes les entités)
+│   ├── Data/                         # AppDbContext (unique, toutes les entités), References (XXX-AAAA-NNNN)
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)
-│   └── Pilotage/                     # ConsoleController, ReportsController (vues transverses)
+│   ├── Itil/                         # Priority (matrice impact × urgence → P1–P4)
+│   ├── Links/                        # ItemLink, registre ItemLinks, LinksController (liens inter-processus)
+│   ├── Pilotage/                     # ConsoleController, ReportsController (vues transverses)
+│   └── Records/                      # Record (entité de base), RecordController<T,TDto>, Allowed, Dates
 └── Modules/
-    └── ProblemManagement/            # processus « Gestion des problèmes »
-        ├── Controllers/              # Problems, Analyses, Actions
-        └── Models/                   # Entities, Dtos
+    ├── ProblemManagement/            # Gestion des problèmes : Problems, Analyses, Actions
+    ├── IncidentManagement/           # Gestion des incidents : Incidents
+    ├── ServiceRequestManagement/     # Gestion des demandes de service : ServiceRequests
+    ├── ChangeEnablement/             # Habilitation des changements : Changes (+ calendrier)
+    ├── ServiceConfigurationManagement/ # Configuration des services : ConfigurationItems (+ relations)
+    ├── ServiceLevelManagement/       # Niveaux de service : Services, Agreements
+    ├── KnowledgeManagement/          # Connaissances : Knowledge
+    └── ContinualImprovement/         # Amélioration continue : Improvements
+        # chaque module : Controllers/ et Models/ (Entities.cs : entités et DTO)
 ```
+
+### Socle commun des processus (`Core/Records`)
+
+Les processus autres que les problèmes héritent d'un même socle :
+
+- **`Record`** — classe de base non mappée (une table par processus) : `Id`, `Reference`,
+  `Title`, `Description`, `Status`, responsable AD (`OwnerType`, `OwnerId`,
+  `OwnerDisplayName`), traçabilité (`CreatedBy`, `CreatedAt`, `UpdatedAt`).
+- **`RecordController<T, TDto>`** — API CRUD commune : liste (`status`, `q`, `owner=me`),
+  détail, création avec référence (`References.CreateAsync`), modification avec contrôle
+  du statut, suppression (Admin, liens compris). Un module ne déclare que son préfixe,
+  ses statuts et ses règles : `Apply` (champs et valeurs fermées), `RequiresManager`
+  (statuts réservés), `CheckTransition` (pré-conditions), `OnStatusChanged` (horodatages),
+  `InitialStatus`, `ManagerOnly` (référentiels), `Filter`/`Search`/`WithDetails`.
+- **`References.CreateAsync`** — référence annuelle `XXX-AAAA-NNNN` (plus grand numéro + 1,
+  nouvelle tentative sur collision de l'index unique) ; utilisée aussi par les problèmes.
 
 Règles de dépendance :
 - un **module** peut utiliser le socle (auth, annuaire, `AppDbContext`) ;
-- le **socle** n'importe pas le code d'un module, à l'exception de `Core/Pilotage` et `Core/Data` qui agrègent les données des modules (console, reporting, `DbSet`) ;
-- un module n'appelle pas un autre module directement.
+- le **socle** n'importe pas le code d'un module, à l'exception de `Core/Pilotage`, `Core/Data` et `Core/Links` qui agrègent les données des modules (console, reporting, `DbSet`, registre des types reliables) ;
+- un module n'appelle pas un autre module directement : les liens entre processus passent par `Core/Links` (table `ItemLinks`).
 
-Ajouter un module : créer `Modules/<Processus>/{Controllers,Models}`, déclarer ses `DbSet` dans `AppDbContext`, puis son interface côté frontend (voir [frontend.md](frontend.md) § Ajouter un module).
+Ajouter un module : créer `Modules/<Processus>/{Controllers,Models}` — entité dérivée de `Record`, DTO implémentant `IRecordDto`, contrôleur dérivé de `RecordController` —, déclarer ses `DbSet` et l'index unique de sa référence dans `AppDbContext`, l'inscrire dans `ItemLinks.Kinds` s'il est reliable, puis son interface côté frontend (voir [frontend.md](frontend.md) § Ajouter un module).
 
 ## 4. Authentification et autorisation
 
@@ -80,7 +105,8 @@ Modèle de sécurité et points de durcissement : [`securite.md`](securite.md).
 Une base PostgreSQL, un `AppDbContext` unique déclarant les entités de tous les modules.
 Module Gestion des problèmes : `Problem 1──∞ RcaAnalysis`, `Problem 1──∞ CorrectiveAction 1──∞ RaciAssignment`,
 analyses RCA stockées en JSON (`DataJson`) pour ajouter une méthode sans évolution de
-schéma. Détail des tables, contraintes et formats JSON : [`base-de-donnees.md`](base-de-donnees.md).
+schéma. Autres processus : une table par entité dérivée de `Record`, plus
+`CiRelationships` (CI ↔ CI) et `Agreements → Services` ; liens inter-processus dans `ItemLinks`. Détail des tables, contraintes et formats JSON : [`base-de-donnees.md`](base-de-donnees.md).
 
 Sérialisation JSON de l'API : `ReferenceHandler.IgnoreCycles` (`backend/Program.cs`), car
 les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem → Analyses`).
@@ -96,8 +122,16 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | DELETE `/api/problems/{id}` | Admin | Suppression | Modules/ProblemManagement |
 | GET/POST/PUT `/api/problems/{id}/analyses[...]` | User | Analyses RCA (DELETE : Manager) | Modules/ProblemManagement |
 | GET `/api/actions`, POST `/api/problems/{id}/actions`, PUT `/api/actions/{id}` | User | Actions + RACI (DELETE : Manager) | Modules/ProblemManagement |
+| GET/POST/PUT `/api/incidents[/{id}]` | User | Incidents (DELETE : Admin) | Modules/IncidentManagement |
+| GET/POST/PUT `/api/requests[/{id}]` | User | Demandes ; Approuvée/Rejetée : Manager (DELETE : Admin) | Modules/ServiceRequestManagement |
+| GET/POST/PUT `/api/changes[/{id}]`, GET `/api/changes/schedule` | User | Changements, calendrier ; Autorisé/Rejeté : Manager (DELETE : Admin) | Modules/ChangeEnablement |
+| GET/POST/PUT `/api/configuration-items[/{id}]`, POST `/{id}/relations`, DELETE `/relations/{id}` | User | CI et relations (DELETE d'un CI : Admin) | Modules/ServiceConfigurationManagement |
+| GET `/api/services`, `/api/agreements` ; POST/PUT | User ; écriture Manager | Catalogue des services, SLA (DELETE : Admin) | Modules/ServiceLevelManagement |
+| GET/POST/PUT `/api/knowledge[/{id}]` | User | Articles ; Publié : Manager (DELETE : Admin) | Modules/KnowledgeManagement |
+| GET/POST/PUT `/api/improvements[/{id}]` | User | Améliorations ; Validée/Abandonnée : Manager (DELETE : Admin) | Modules/ContinualImprovement |
+| GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
 | GET `/api/directory/search?q=` | User | Recherche utilisateurs/groupes AD (sélecteur RACI) | Core/Directory |
-| GET `/api/reports/summary` | User | Indicateurs globaux : statuts, priorités, catégories, retards, MTTR + volumétrie (totaux, analyses, déclarants, dernière activité) | Core/Pilotage |
+| GET `/api/reports/summary` | User | Indicateurs : problèmes (statuts, priorités, catégories, retards, MTTR, volumétrie), MTTR incidents, taux de changements réussis, incidents majeurs ouverts, volumétrie par processus | Core/Pilotage |
 
 ## 7. Frontend
 
@@ -139,4 +173,7 @@ Détails (registre des modules, thème, design) : [frontend.md](frontend.md).
 - Couverture actuelle : bloquants B1 à B3 et majeurs M1, M2, M4, M5, M6 de la
   [revue fonctionnelle](../archives/revue-fonctionnelle-2026-10-06.md) — 6 tests d'API
   (`ProblemReferenceTests`, `ProblemLifecycleTests`) et 4 tests d'interface
-  (`ProblemDetail.test.jsx`, `FtaTree.test.jsx`), qui échouent tous sur le code d'avant correctif.
+  (`ProblemDetail.test.jsx`, `FtaTree.test.jsx`), qui échouent tous sur le code d'avant correctif ;
+  modules ITIL 4 — 16 tests d'API (`ItilModulesTests` : référence et statut inconnu par module,
+  créations simultanées, décisions de gestionnaire, pré-conditions, liens, console) et 2 tests
+  d'interface (`RecordForm.test.jsx` : conversions formulaire ↔ API).

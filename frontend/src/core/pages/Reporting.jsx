@@ -29,7 +29,14 @@ export default function Reporting() {
   return (
     <>
       <h1 className="page-title">Reporting</h1>
-      <p className="page-sub">Indicateurs globaux du processus de gestion des problèmes.</p>
+      <p className="page-sub">Indicateurs des processus ITIL : problèmes, incidents, changements et volumétrie par processus.</p>
+
+      <div className="kpi-row">
+        <div className="kpi"><div className="n">{s.majorIncidentsOpen}</div><div className="l">Incidents majeurs ouverts</div></div>
+        <div className="kpi"><div className="n">{s.incidentMttrHours ?? '—'}</div><div className="l">MTTR incidents (heures)</div></div>
+        <div className="kpi"><div className="n">{s.changeSuccessRate != null ? s.changeSuccessRate + ' %' : '—'}</div><div className="l">Changements réussis</div></div>
+        <div className="kpi"><div className="n">{s.processes.reduce((n, p) => n + p.total, 0)}</div><div className="l">Enregistrements (hors problèmes)</div></div>
+      </div>
 
       <div className="kpi-row">
         <div className="kpi"><div className="n">{s.openProblems}</div><div className="l">Problèmes ouverts</div></div>
@@ -59,6 +66,13 @@ export default function Reporting() {
             </div>
           ))}
         </div>
+      </div>
+
+      <h2 style={{ color: 'var(--navy)', fontSize: 17, margin: '28px 0 12px' }}>Volumétrie par processus</h2>
+      <div className="grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        {s.processes.map(p => (
+          <Bars key={p.process} title={`${p.process} (${p.total})`} data={p.byStatus} labelKey="status" max={max(p.byStatus)} />
+        ))}
       </div>
       <p style={{ marginTop: 20 }}><Link to="/problems">Voir tous les problèmes →</Link></p>
     </>

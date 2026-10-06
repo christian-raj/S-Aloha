@@ -27,6 +27,15 @@ async function request(path, options = {}) {
   return res.status === 204 ? null : res.json()
 }
 
+/** Client CRUD d'un processus servi par le RecordController commun de l'API. */
+const records = (path) => ({
+  list: (params = {}) => request(path + '?' + new URLSearchParams(params)),
+  get: (id) => request(`${path}/${id}`),
+  create: (dto) => request(path, { method: 'POST', body: JSON.stringify(dto) }),
+  update: (id, dto) => request(`${path}/${id}`, { method: 'PUT', body: JSON.stringify(dto) }),
+  remove: (id) => request(`${path}/${id}`, { method: 'DELETE' })
+})
+
 export const api = {
   login: (username, password) =>
     request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
@@ -44,6 +53,23 @@ export const api = {
     all: (params = {}) => request('/actions?' + new URLSearchParams(params)),
     create: (pid, dto) => request(`/problems/${pid}/actions`, { method: 'POST', body: JSON.stringify(dto) }),
     update: (id, dto) => request('/actions/' + id, { method: 'PUT', body: JSON.stringify(dto) })
+  },
+  incidents: records('/incidents'),
+  requests: records('/requests'),
+  changes: { ...records('/changes'), schedule: () => request('/changes/schedule') },
+  configurationItems: {
+    ...records('/configuration-items'),
+    addRelation: (id, dto) => request(`/configuration-items/${id}/relations`, { method: 'POST', body: JSON.stringify(dto) }),
+    removeRelation: (relId) => request('/configuration-items/relations/' + relId, { method: 'DELETE' })
+  },
+  services: records('/services'),
+  agreements: records('/agreements'),
+  knowledge: records('/knowledge'),
+  improvements: records('/improvements'),
+  links: {
+    list: (type, id) => request(`/links?type=${type}&id=${id}`),
+    create: (dto) => request('/links', { method: 'POST', body: JSON.stringify(dto) }),
+    remove: (id) => request('/links/' + id, { method: 'DELETE' })
   },
   console: { get: () => request('/console') },
   directory: { search: (q) => request('/directory/search?q=' + encodeURIComponent(q)) },

@@ -14,6 +14,12 @@ modèle (colonne, table, contrainte) **n'est pas appliquée** à une base exista
 les migrations ne sont pas en place (chantier dans [`plan-action.md`](../plan-action.md)),
 toute évolution du modèle impose de recréer la base ou de l'altérer à la main.
 
+> ⚠️ **Modules ITIL 4 (2026-10-06)** : onze tables nouvelles (`ItemLinks`, `Incidents`,
+> `ServiceRequests`, `Changes`, `ConfigurationItems`, `CiRelationships`, `Services`,
+> `Agreements`, `KnowledgeArticles`, `Improvements`). Une base créée avant cette version
+> ne les reçoit **pas** : les nouveaux processus y répondent 500. Procédure :
+> [exploitation § Évolutions de schéma](exploitation.md#évolutions-de-schéma).
+
 ## Entités — module Gestion des problèmes
 
 Source : `backend/Modules/ProblemManagement/Models/Entities.cs`.
@@ -96,8 +102,53 @@ Le JSON permet d'ajouter une méthodologie sans évolution de schéma.
 - **Ishikawa (6M)** : `{ "categories": { "Méthode": ["..."], ... }, "rootCause": "..." }`
 - **FTA** : arbre récursif `{ "root": { "label": "...", "gate": "OR|AND", "children": [...] }, "rootCause": "..." }`
 
+## Entités — socle commun des processus
+
+Les entités des autres processus dérivent de `Record` (`backend/Core/Records/Record.cs`,
+classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
+
+| Champ | Type | Règle |
+|---|---|---|
+| `Reference` | texte (20) | **unique** (index par table) — `XXX-AAAA-NNNN` |
+| `Title` | texte (200) | obligatoire ; porte le *nom* pour un CI ou un service |
+| `Description` | texte | |
+| `Status` | texte (30) | liste fermée propre au processus ([règles métier](regles-metier.md#8-règles-communes-aux-processus)) |
+| `OwnerType`, `OwnerId`, `OwnerDisplayName` | texte (10 / 200 / 250), nullable | responsable AD : `User` ou `Group` |
+| `CreatedBy`, `CreatedByDisplayName` | texte (100 / 200) | |
+| `CreatedAt`, `UpdatedAt` | horodatage UTC | |
+
+### Tables des processus
+
+| Table (entité) | Préfixe | Colonnes propres |
+|---|---|---|
+| `Incidents` (`Incident`) | INC | `Impact`, `Urgency`, `Priority` (dérivée), `Category`, `AffectedService`, `IsMajor`, `Resolution`, `ResolvedAt`, `ClosedAt` |
+| `ServiceRequests` (`ServiceRequest`) | REQ | `RequestedItem`, `RequestedFor`, `RequestedForDisplayName`, `DueDate`, `ApprovedBy`, `ApprovedAt`, `FulfilledAt`, `ClosedAt` |
+| `Changes` (`Change`) | CHG | `ChangeType`, `Risk`, `PlannedStart`, `PlannedEnd`, `ImplementationPlan`, `BackoutPlan`, `Outcome`, `AuthorizedBy`, `AuthorizedAt`, `ClosedAt` |
+| `ConfigurationItems` (`ConfigurationItem`) | CI | `CiType`, `Environment`, `Location` |
+| `Services` (`ItService`) | SVC | `Criticality`, `ServiceHours` |
+| `Agreements` (`ServiceLevelAgreement`) | SLA | `ServiceId` (FK → `Services`, cascade), `Customer`, `AvailabilityTarget` (décimal 5,2), `ResolutionHoursP1`…`P4`, `ValidFrom`, `ValidTo`, `ReviewDate` |
+| `KnowledgeArticles` (`KnowledgeArticle`) | KB | `ArticleType`, `Content`, `Keywords`, `ReviewDate`, `PublishedBy`, `PublishedAt` |
+| `Improvements` (`Improvement`) | AMI | `Step` (1–7), `Priority`, `Benefit`, `Baseline`, `Target`, `Outcome`, `DueDate`, `ValidatedBy`, `ValidatedAt`, `CompletedAt` |
+
+```mermaid
+erDiagram
+    ConfigurationItem ||--o{ CiRelationship : "source"
+    ConfigurationItem ||--o{ CiRelationship : "cible"
+    ItService ||--o{ ServiceLevelAgreement : "est couvert par"
+```
+
+- **`CiRelationships`** : `SourceId`, `TargetId` (FK → `ConfigurationItems`, cascade des deux
+  côtés), `Type` (`Dépend de`, `Héberge`, `Fait partie de`, `Se connecte à`).
+- **`ItemLinks`** (socle, `backend/Core/Links/ItemLink.cs`) : `FromType`, `FromId`, `ToType`,
+  `ToId`, `CreatedBy`, `CreatedAt`. Types : `problem`, `incident`, `request`, `change`, `ci`,
+  `service`, `agreement`, `article`, `improvement`. Pas de clé étrangère (une extrémité
+  peut appartenir à n'importe quelle table) : les liens d'un enregistrement sont supprimés
+  avec lui par l'API, et un lien orphelin est ignoré à la lecture. Index sur
+  (`FromType`, `FromId`) et (`ToType`, `ToId`).
+- Les dates saisies sans fuseau sont lues en UTC (`Dates.Utc`) : les colonnes sont en `timestamptz`.
+
 ## Ajouter les entités d'un module
 
-1. Déclarer les entités dans `backend/Modules/<Processus>/Models/`.
-2. Ajouter les `DbSet` et la configuration (`OnModelCreating`) dans `AppDbContext`.
-3. Documenter les tables ici, dans une section par module.
+1. Déclarer les entités dans `backend/Modules/<Processus>/Models/` (dérivées de `Record` pour un processus).
+2. Ajouter les `DbSet`, l'index unique de la référence et la configuration (`OnModelCreating`) dans `AppDbContext`.
+3. Documenter les tables ici.
