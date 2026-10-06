@@ -109,6 +109,9 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
   pour éviter un fond plat sur les pages peu denses.
 - **Badges** de statut, de priorité et de rôle RACI ; tableaux cliquables.
 - **Accessibilité** : `:focus-visible` marqué, `aria-label` sur les boutons-icônes.
+- **Jamais de composant déclaré dans le rendu d'un autre** : React le recrée à chaque
+  rendu et la saisie perd le focus (défaut M1 de l'arbre des défaillances). Un sous-composant
+  se déclare au niveau du module (ex. `FtaNode` dans `FtaTree.jsx`).
 
 ### Thème clair / sombre
 

@@ -54,3 +54,10 @@ complète : [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).
 | Jeton côté navigateur | `sessionStorage`, lisible par tout script de la page (XSS) | À arbitrer : cookie `HttpOnly` + protection CSRF |
 | Révocation | Aucune avant expiration | Durée courte et/ou contrôle de l'appartenance AD |
 | Tentatives de connexion | Aucune limitation de débit | Limitation par IP et par compte |
+
+**Dépendances** — contrôle : `dotnet list package --vulnerable --include-transitive`
+(backend) et `npm audit` (frontend). Corrigé le 2026-10-06 (`8f918a1`) :
+`Microsoft.Extensions.Caching.Memory` 8.0.0, tirée par EF Core 8.0.8
+([GHSA-qj66-m88j-hmgj](https://github.com/advisories/GHSA-qj66-m88j-hmgj), gravité haute) ;
+passage à EF Core et JwtBearer 8.0.31, Npgsql EF 8.0.11. Plus aucune vulnérabilité
+relevée sur l'API.

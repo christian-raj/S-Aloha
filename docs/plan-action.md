@@ -18,25 +18,14 @@
 
 ## 1. Bloquants fonctionnels — le processus est inutilisable
 
-Détail et preuves : [revue fonctionnelle § Bloquants](archives/revue-fonctionnelle-2026-10-06.md#-bloquants).
-
-| # | Défaut | Qui |
-|---|---|---|
-| B1 | Impossible de créer une analyse depuis l'interface (onglet qui plante) | code |
-| B2 | Après la suppression d'un problème, plus aucune déclaration possible (référence en double → 500) | code |
-| B3 | Déclarations simultanées : une seule réussit, les autres → 500 | code |
-
-À fermer chacun avec un test (B2 et B3 : référence tirée d'une séquence PostgreSQL).
+Aucun bloquant ouvert : B1 à B3 corrigés et couverts par des tests le 2026-10-06
+([journal](archives/journal-2026-10-06.md)).
 
 ## 2. Défauts majeurs — correctifs locaux
 
-| # | Défaut | Qui |
-|---|---|---|
-| M1 | Arbre des défaillances : la saisie perd le focus à chaque caractère | code |
-| M2 | « Mes actions » dépend de la casse de l'identifiant saisi au login | code |
-| M4 | Réouverture d'un problème clos : `ClosedAt` conservé, MTTR faux | code |
-| M5 | Recherche de problèmes sensible à la casse | code |
-| M6 | Action à échéance du jour signalée en retard dès le matin (fuseau) | code |
+M1, M2, M4, M5 et M6 corrigés et couverts par des tests le 2026-10-06
+([journal](archives/journal-2026-10-06.md)). M3, M7 et M8 attendent une décision
+(section 4).
 
 ## 3. Règles métier que l'API ne tient pas
 
@@ -77,7 +66,7 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 
 | # | Chantier | Qui |
 |---|---|---|
-| Q1 | Socle de **tests** : commencer par les scénarios de la revue fonctionnelle (B1–B3, R1–R4) | code |
+| Q1 | **Tests** : socle en place (API : xUnit + Testcontainers ; frontend : Vitest), B1–B3 et M1, M2, M4–M6 couverts ; étendre aux scénarios R1–R6 | code |
 | Q2 | **CI** : build backend et frontend, `python3 scripts/check-docs.py` | code |
 | Q3 | Retirer `puppeteer-core` des dépendances du frontend (inutilisé, alourdit l'image) | décision |
 | Q4 | Créer les issues GitHub des sections 1 à 6 et les lier ici | action |

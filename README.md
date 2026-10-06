@@ -105,9 +105,15 @@ Configuration complète : [guide d'exploitation](docs/reference/exploitation.md)
 | **API** | ASP.NET Core 8 + Entity Framework Core, Swagger sur `/swagger` |
 | **Données** | PostgreSQL 16 |
 | **Identité** | Active Directory (LDAP) → JWT, rôles Admin / Manager / User |
+| **Tests** | xUnit + Testcontainers (API), Vitest + Testing Library (frontend) |
 
 Socle commun dans `backend/Core` et `frontend/src/core`, un module par processus dans
 `Modules/` et `modules/`. Détail : [architecture](docs/reference/architecture.md).
+
+```bash
+TESTCONTAINERS_RYUK_DISABLED=true dotnet test tests/SAloha.Api.Tests   # API, Docker requis
+cd frontend && npm test                                                # interface
+```
 
 ## Documentation
 
@@ -115,7 +121,7 @@ Socle commun dans `backend/Core` et `frontend/src/core`, un module par processus
 |---|---|
 | 🧭 [Produit](docs/reference/produit.md) | Vision, piliers S-A-L-O-H-A, feuille de route |
 | 📐 [Règles métier](docs/reference/regles-metier.md) | Rôles, console, cycle de vie, priorité, RACI |
-| 🏗️ [Architecture](docs/reference/architecture.md) | Containers, socle et modules, API |
+| 🏗️ [Architecture](docs/reference/architecture.md) | Containers, socle et modules, API, tests |
 | ⚙️ [Exploitation](docs/reference/exploitation.md) | Installation, Active Directory, mise à jour |
 | 🛡️ [Sécurité](docs/reference/securite.md) | Modèle d'autorisation, durcissement |
 | 📚 [Tout le reste](docs/readme.md) | Base de données, frontend, décisions, plan d'action |

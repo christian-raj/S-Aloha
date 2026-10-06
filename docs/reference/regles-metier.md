@@ -22,6 +22,8 @@ Les rôles applicatifs sont dérivés de l'appartenance aux **groupes Active Dir
 
 Si un utilisateur appartient à plusieurs groupes, le rôle le plus élevé est retenu (ordre d'évaluation : Admin > Manager > User).
 
+L'identité retenue est le `sAMAccountName` renvoyé par l'annuaire, quelle que soit la casse saisie à la connexion ; les comparaisons d'identifiants (« Mes … » de la console, actions affectées) ignorent la casse.
+
 ## 2. Consoles par rôle
 
 Chaque rôle dispose de sa propre console (page d'accueil « Ma console »), **orientée action** : le contenu est organisé en deux zones, et ce qui requiert une intervention de l'utilisateur apparaît toujours en premier.
@@ -64,10 +66,11 @@ stateDiagram-v2
 Les statuts sont modifiables librement par un Manager ou un Admin ; le schéma montre le
 parcours nominal.
 
-- Un problème est créé au statut **Nouveau** avec une référence `PRB-AAAA-NNNN` (séquence annuelle).
+- Un problème est créé au statut **Nouveau** avec une référence `PRB-AAAA-NNNN` (séquence annuelle). Le numéro part du **plus grand numéro de l'année**, pas du nombre de problèmes : un numéro supprimé n'est pas réattribué, sauf s'il était le dernier de l'année. En cas de déclarations simultanées, la déclaration perdante relit le maximum et réessaie (jusqu'à 10 tentatives).
 - La création d'une première analyse RCA fait passer automatiquement un problème **Nouveau** à **En analyse**.
 - **Erreur connue** : le champ *Contournement* doit être documenté (règle de bonne pratique, non bloquante).
-- Le passage à **Clos** horodate `ClosedAt`, utilisé pour le calcul du MTTR. Seuls Manager et Admin changent les statuts.
+- Le passage à **Clos** horodate `ClosedAt`, utilisé pour le calcul du MTTR. Un problème **rouvert** (le statut quitte Clos) voit `ClosedAt` remis à vide : seul un problème actuellement clos compte dans le MTTR. Seuls Manager et Admin changent les statuts.
+- La recherche de problèmes (titre, référence) ignore la casse.
 
 ## 4. Gestion des problèmes — priorité
 
@@ -93,10 +96,10 @@ La priorité est **calculée automatiquement** (matrice impact × urgence), non 
   - exactement **un A** (Approbateur — rend compte du résultat) ;
   - C (Consulté) et I (Informé) libres.
 - Chaque rôle RACI est affecté à un **utilisateur ou groupe AD** (recherche en direct dans l'annuaire).
-- Une action est **en retard** si son échéance est dépassée et son statut ni Terminée ni Annulée.
+- Une action est **en retard** si son échéance est dépassée et son statut ni Terminée ni Annulée. L'échéance est une **date** : l'action n'est en retard qu'à partir du **lendemain** de la date d'échéance, jamais le jour même. La règle vaut pour la console, le reporting et le suivi des actions.
 - Le passage à **Terminée** horodate `CompletedAt`.
 
 ## 7. Reporting
 
-- **MTTR** : moyenne en jours de (`ClosedAt − CreatedAt`) sur les problèmes clos.
+- **MTTR** : moyenne en jours de (`ClosedAt − CreatedAt`) sur les problèmes actuellement clos.
 - Répartitions par statut, priorité et catégorie ; liste des actions en retard avec leurs responsables (R).

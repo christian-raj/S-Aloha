@@ -22,10 +22,10 @@ Trois containers orchestrés par `docker-compose.yml` : **web** (nginx sert le b
 |---|---|---|
 | Frontend | React 18 + Vite, react-router | Build statique servi par nginx ; aucune dépendance UI lourde (CSS natif à jetons, voir [frontend.md](frontend.md)) |
 | Backend | ASP.NET Core 8 Web API | Controllers REST, Swagger exposé sur `/swagger` |
-| ORM | Entity Framework Core 8 | Provider Npgsql ; schéma créé par `EnsureCreated()` au démarrage |
-| Base | PostgreSQL 16 | Remplaçable par SQL Server (provider EF + image du compose) |
+| ORM | Entity Framework Core 8 (8.0.31) | Provider Npgsql ; schéma créé par `EnsureCreated()` au démarrage |
+| Base | PostgreSQL 16 (provider Npgsql EF 8.0.11) | Remplaçable par SQL Server (provider EF + image du compose) |
 | Annuaire | Novell.Directory.Ldap.NETStandard | Bind de service pour la recherche, bind utilisateur pour l'authentification |
-| Auth API | JWT Bearer (HS256) | Claims : name, displayName, role ; expiration paramétrable |
+| Auth API | JWT Bearer (HS256, JwtBearer 8.0.31) | Claims : name, displayName, role ; expiration paramétrable |
 
 ## 3. Organisation du code : socle et modules
 
@@ -69,7 +69,7 @@ sequenceDiagram
 
 1. `POST /api/auth/login` : l'API se connecte à l'AD avec le **compte de service** (`Ldap:BindUser`), recherche l'utilisateur (`Ldap:UserFilter`), puis valide le mot de passe par un **bind avec le DN de l'utilisateur**.
 2. Les groupes `memberOf` sont comparés au mapping `Ldap:Groups` (Admin > Manager > User). Aucun groupe correspondant ⇒ connexion refusée.
-3. Un **JWT** est émis avec le rôle en claim. Le frontend le stocke en `sessionStorage` et l'envoie en `Authorization: Bearer`.
+3. Un **JWT** est émis avec le rôle en claim ; il porte le `sAMAccountName` renvoyé par l'annuaire, non l'identifiant tel que tapé (de même que `LoginResponse.username`). Les comparaisons d'identifiants (console « Mes … », filtre `assignee` de `GET /api/actions`) ignorent la casse. Le frontend le stocke en `sessionStorage` et l'envoie en `Authorization: Bearer`.
 4. Côté API, trois policies imbriquées : `User` (tous les rôles), `Manager` (Manager + Admin), `Admin`.
 5. La console (`GET /api/console`) compose sa réponse **côté serveur** selon le rôle du jeton ; le frontend n'y reçoit que les blocs autorisés, classés pour mettre l'actionnable en premier.
 
@@ -124,3 +124,19 @@ Détails (registre des modules, thème, design) : [frontend.md](frontend.md).
 - Frontend exposé sur **:80**, API sur **:8080** (Swagger : `/swagger`).
 - Configuration, Active Directory, mise à jour d'une installation existante : [`exploitation.md`](exploitation.md).
 - Points de durcissement avant production : [`securite.md`](securite.md#points-de-durcissement-avant-production).
+
+## 9. Tests
+
+| Suite | Commande | Outillage |
+|---|---|---|
+| API (intégration) | `TESTCONTAINERS_RYUK_DISABLED=true dotnet test tests/SAloha.Api.Tests` | xUnit + `WebApplicationFactory` sur un PostgreSQL jetable (Testcontainers 4.15, image `postgres:18-alpine`) ; **Docker requis** |
+| Frontend | `cd frontend && npm test` | Vitest + Testing Library (jsdom) |
+
+- Le projet de tests cible **net10.0** alors que l'API reste en **net8.0** : un hôte de
+  test 8.0 exécuté sur le runtime 10 répond 500 à toute écriture JSON.
+- Les jetons sont signés par la fixture (`ApiFixture`) avec la clé de configuration :
+  l'Active Directory n'est pas sollicité.
+- Couverture actuelle : bloquants B1 à B3 et majeurs M1, M2, M4, M5, M6 de la
+  [revue fonctionnelle](../archives/revue-fonctionnelle-2026-10-06.md) — 6 tests d'API
+  (`ProblemReferenceTests`, `ProblemLifecycleTests`) et 4 tests d'interface
+  (`ProblemDetail.test.jsx`, `FtaTree.test.jsx`), qui échouent tous sur le code d'avant correctif.
