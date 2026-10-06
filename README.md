@@ -9,6 +9,7 @@
 La plateforme ITIL qui se branche sur votre Active Directory<br/>
 et montre à chacun **ce qui requiert son intervention, maintenant**.
 
+[![CI](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml/badge.svg)](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml)
 ![.NET 8](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)
 ![React 18](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
@@ -144,6 +145,8 @@ cd frontend && npm test                                                # interfa
 | 🏗️ [Architecture](docs/reference/architecture.md) | Containers, socle et modules, API, tests |
 | ⚙️ [Exploitation](docs/reference/exploitation.md) | Installation, Active Directory, mise à jour |
 | 🛡️ [Sécurité](docs/reference/securite.md) | Modèle d'autorisation, durcissement |
+| 🤝 [Contribuer](CONTRIBUTING.md) | Issues, pull requests, contrôles avant envoi |
+| 🚨 [Signaler une faille](SECURITY.md) | En privé, jamais dans une issue publique |
 | 📚 [Tout le reste](docs/readme.md) | Base de données, frontend, décisions, plan d'action |
 
 ## Licence

@@ -66,3 +66,20 @@ Frontend, corrigé le 2026-10-06 : 16 alertes, dont 2 critiques (tinypool, exéc
 par pollution de prototype). Passage à Vite 6.4, Vitest 4.1 et react-router 7.18 ; les
 dépendances transitives (postcss, esbuild, browserslist, source-map-js) suivent.
 `npm audit` : 0 vulnérabilité.
+
+## Contrôles du dépôt
+
+Réglages du dépôt GitHub public, en place depuis le 2026-10-06 :
+
+| Contrôle | Effet |
+|---|---|
+| Signalement privé de vulnérabilités | Les failles arrivent hors des issues publiques ([SECURITY.md](../../SECURITY.md)) |
+| Secret scanning + push protection | Un push contenant un secret reconnu est refusé |
+| Dependabot (alertes, correctifs, versions) | Alerte et PR de correctif dès qu'un avis touche une dépendance ; mises à jour hebdomadaires groupées (npm, NuGet, Docker, Actions) |
+| CodeQL (configuration par défaut) | Analyse statique C# et JavaScript à chaque push et chaque semaine |
+| CI ([architecture § Intégration continue](architecture.md#intégration-continue)) | Tests, build, audit des dépendances, santé de la doc |
+| Règles de `main` | Ni suppression ni push forcé ; pour une pull request, CI au vert et historique linéaire |
+| Actions | Seules les actions publiées par GitHub ; jeton en lecture seule ; workflows d'un contributeur externe soumis à approbation |
+
+Non disponibles sans GitHub Advanced Security : détection des secrets hors fournisseurs
+connus et vérification de validité des secrets détectés.

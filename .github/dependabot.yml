@@ -1,0 +1,32 @@
+# Mises à jour de version, regroupées et hebdomadaires. Les correctifs de
+# sécurité, eux, arrivent dès l'alerte (Dependabot security updates).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: { interval: weekly, day: monday }
+    groups:
+      frontend:
+        update-types: [minor, patch]
+    labels: [dependencies]
+
+  - package-ecosystem: nuget
+    directories: [/backend, /tests/SAloha.Api.Tests]
+    schedule: { interval: weekly, day: monday }
+    groups:
+      dotnet:
+        update-types: [minor, patch]
+    labels: [dependencies]
+
+  - package-ecosystem: docker
+    directories: [/backend, /frontend]
+    schedule: { interval: weekly, day: monday }
+    labels: [dependencies]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    groups:
+      actions:
+        patterns: ["*"]
+    labels: [dependencies]
