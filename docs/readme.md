@@ -42,6 +42,12 @@ Le cycle : un constat daté part en **archives** ; ce qu'il révèle de durable 
 | une décision actée et structurante | un ADR dans [`decisions/`](decisions/readme.md) |
 | un fait durable sur le fonctionnement | le document de référence concerné, **dans le même commit que le code** ([ADR-0002](decisions/adr-0002-documentation-dans-le-depot.md)) |
 
+## Wiki
+
+Le [wiki du projet](https://github.com/christian-raj/S-Aloha/wiki) est généré depuis ce
+dossier par `scripts/sync-wiki.py` : on le lit, on ne l'édite pas
+([protocole § 6](protocole-documentation.md#6-publier-le-wiki)).
+
 ## Licence
 
 Code et documentation sont sous [AGPLv3](../LICENSE)
