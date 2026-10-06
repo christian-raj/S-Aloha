@@ -45,3 +45,11 @@ Aucun CLA, aucune cession de droits. Le modèle reste **100 % AGPLv3**.
   pas.
 - **Aucun cadre** — écarté : rien n'atteste que le contributeur avait le droit de
   soumettre son code (code d'employeur, code copié).
+
+## Addendum — 2026-10-06
+
+La vérification automatique est en place : job **DCO** de la CI, exigé pour fusionner
+dans `main` (`.github/workflows/ci.yml`). Il refuse tout commit d'une pull request dont
+le `Signed-off-by` ne correspond pas à l'adresse de l'auteur ; les commits des bots
+(Dependabot) en sont exemptés. La décision est inchangée.
+

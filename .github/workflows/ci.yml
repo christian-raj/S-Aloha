@@ -1,6 +1,7 @@
 # Contrôles de chaque push sur main et de chaque pull request : tests de l'API
 # (PostgreSQL réel via Testcontainers), tests et build de l'interface, santé
-# de la documentation, build des deux images.
+# de la documentation, build des deux images ; sur une pull request, signature
+# DCO de chaque commit (ADR-0010).
 # Actions épinglées par SHA (tenues à jour par Dependabot) ; jeton en lecture seule.
 name: CI
 
@@ -78,3 +79,37 @@ jobs:
           persist-credentials: false
       - run: docker build -t s-aloha-api backend
       - run: docker build -t s-aloha-web frontend
+
+  dco:
+    name: DCO
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Signed-off-by de l'auteur sur chaque commit
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          fail=0
+          for c in $(git rev-list --no-merges "$BASE..$HEAD"); do
+            email=$(git log -1 --format=%ae "$c")
+            # Les bots (Dependabot) ne signent pas : ils ne cèdent aucun code d'auteur.
+            case "$email" in *"[bot]@users.noreply.github.com") continue ;; esac
+            if git log -1 --format=%B "$c" | git interpret-trailers --parse \
+                 | grep -i "^signed-off-by:" | grep -qF "<$email>"; then
+              echo "✔ $(git log -1 --format='%h %s' "$c")"
+            else
+              echo "::error::Commit $(git log -1 --format='%h « %s »' "$c") sans Signed-off-by pour <$email>"
+              fail=1
+            fi
+          done
+          if [ "$fail" = 1 ]; then
+            echo "Signez vos commits : git commit -s (voir CONTRIBUTING.md § Certificat d'origine)."
+            echo "Rattrapage : git rebase --signoff $BASE puis git push --force-with-lease."
+          fi
+          exit $fail
