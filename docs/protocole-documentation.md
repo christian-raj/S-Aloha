@@ -45,7 +45,7 @@ Chaque changement est replié dans le document de [`reference/`](reference/) con
 | `App.jsx`, `core/`, `modules/*/pages` | [frontend](reference/frontend.md) § Routes et Structure |
 | `styles.css`, thème, composants visuels | [frontend](reference/frontend.md) § Design ; captures d'écran |
 | Nouveau terme métier ou technique | [glossaire](reference/glossaire.md) |
-| Fonctionnalité visible par l'utilisateur | [README](../README.md) |
+| Fonctionnalité visible par l'utilisateur | [README](../README.md), et section « Non publié » du [journal des versions](../CHANGELOG.md) |
 | Décision structurante actée | nouvel ADR dans [`decisions/`](decisions/readme.md) |
 
 Une interface modifiée rend les **captures d'écran** obsolètes : les régénérer
