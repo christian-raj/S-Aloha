@@ -136,6 +136,16 @@ par un jeton** défini dans les deux thèmes.
 `--ok`, `--warn`, `--danger` pointent vers les jetons. Ils existent pour les styles en
 ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 
+### Typographie
+
+- Échelle en jetons sur `:root` : `--fs-2xs` 11,5 · `--fs-xs` 12,5 · `--fs-sm` 14 ·
+  `--fs-base` 15,5 · `--fs-md` 17 · `--fs-lg` 21 · `--fs-xl` 28 · `--fs-2xl` 36 px ;
+  `html` à 16 px. **Toute nouvelle taille de police passe par ces jetons**, sans valeur en
+  px en dur.
+- Tailles courantes : cellules 15 px, champs 15,5, boutons 15, libellés de champ 14,
+  badges 11,5, en-têtes de colonnes 12, titre de page 36 (30 en mobile), sous-titre 16,5
+  en `--text-secondary`.
+
 ### Principes
 
 - **Angles droits** : aucun `border-radius`.
@@ -149,6 +159,19 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 - **Jamais de composant déclaré dans le rendu d'un autre** : React le recrée à chaque
   rendu et la saisie perd le focus (défaut M1 de l'arbre des défaillances). Un sous-composant
   se déclare au niveau du module (ex. `FtaNode` dans `FtaTree.jsx`).
+
+### Console
+
+`core/pages/Console.jsx`, alimentée par `GET /api/console` (contenu par rôle :
+[règles métier § 2](regles-metier.md#2-consoles-par-rôle)).
+
+- En-tête : date et rôle, « Bonjour, <prénom> », phrase propre au rôle.
+- Tuiles de synthèse (`.c-tile`) : Urgent, Décisions, Relances, Mon travail ; une tuile mène
+  à son groupe, une tuile à zéro s'efface.
+- Groupes dans l'ordre de traitement : Urgent, Décisions, Relances, Mon travail, À suivre.
+- Listes compactes `.c-list` (référence, titre, métadonnées, chevron) plutôt que des
+  tableaux ; ton de la liste par classe `tone-red`, `tone-blue`, `tone-amber`,
+  `tone-emerald`, `tone-neutral`. Pas de bandeau ni d'émojis ; état vide « Tout est à jour ».
 
 ### Page de connexion
 

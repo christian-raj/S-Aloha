@@ -31,25 +31,28 @@ L'identité retenue est le `sAMAccountName` renvoyé par l'annuaire, quelle que 
 
 ## 2. Consoles par rôle
 
-Chaque rôle dispose de sa propre console (page d'accueil « Ma console »), **orientée action** : le contenu est organisé en deux zones, et ce qui requiert une intervention de l'utilisateur apparaît toujours en premier.
+Chaque rôle dispose de sa propre console (page d'accueil « Ma console »), **orientée action** : le contenu est organisé en groupes, dans l'ordre où il faut les traiter ; un bloc n'apparaît que s'il contient des éléments.
 
-**Zone « À traiter »** — classée par criticité, chaque bloc n'apparaît que s'il contient des éléments :
+| Groupe | Bloc | Visible par |
+|---|---|---|
+| **Urgent** | Mes actions en retard (échéance dépassée) | Tous |
+| | Incidents majeurs en cours (ni Résolu ni Clos) | Manager, Admin |
+| **Décisions** | Décisions en attente : changements Demandé/Évalué, demandes Soumise, améliorations Proposée | Manager, Admin |
+| | Problèmes à qualifier (statut Nouveau) | Manager, Admin |
+| **Relances** | Actions en retard toutes équipes (à relancer) | Manager, Admin |
+| | Erreurs connues sans action corrective | Manager, Admin |
+| | Revues échues : articles Publié et SLA En vigueur dont la date de revue est passée | Manager, Admin |
+| **Mon travail** | Mes actions en cours (non en retard) | Tous |
+| | Mes incidents, demandes, changements et améliorations ouverts (dont je suis le responsable) | Tous |
+| **À suivre** | Mes problèmes déclarés encore ouverts | Tous |
+| | Analyses en cours sans cause racine | Manager, Admin |
 
-| Ordre | Bloc | Visible par | Criticité |
-|---|---|---|---|
-| 1 | Mes actions en retard (échéance dépassée) | Tous | 🔴 |
-| 2 | Incidents majeurs en cours (ni Résolu ni Clos) | Manager, Admin | 🔴 |
-| 3 | Problèmes à qualifier (statut Nouveau) | Manager, Admin | 🔵 |
-| 4 | Décisions en attente : changements Demandé/Évalué, demandes Soumise, améliorations Proposée | Manager, Admin | 🔵 |
-| 5 | Erreurs connues sans action corrective | Manager, Admin | 🟠 |
-| 6 | Actions en retard toutes équipes (à relancer) | Manager, Admin | 🟠 |
-| 7 | Revues échues : articles Publié et SLA En vigueur dont la date de revue est passée | Manager, Admin | 🟠 |
-| 8 | Mes actions en cours (non en retard) | Tous | 🔵 |
-| 9 | Mes incidents, demandes, changements et améliorations ouverts (dont je suis le responsable) | Tous | 🔵 |
+En tête de console, des **tuiles de synthèse** comptent les éléments de chaque groupe à
+traiter (Urgent, Décisions, Relances, Mon travail ; les deux du milieu pour Manager et
+Admin) et mènent au groupe ; une tuile à zéro s'efface. Sans rien à traiter : « Tout est à jour ».
 
-Un **bandeau de synthèse** en tête de console totalise les éléments à traiter (état « Rien à traiter » sinon).
-
-**Zone « À suivre »** — informative, en retrait visuel : mes problèmes déclarés encore ouverts (tous), analyses en cours sans cause racine (Manager, Admin).
+La console d'un **Admin** est celle d'un Manager, avec le même contenu : une console
+d'administration propre reste à définir (A1).
 
 Les **indicateurs de volumétrie** (totaux problèmes/actions/analyses, déclarants distincts, dernière activité) ne relèvent pas de l'action : ils ont été déplacés de la console vers la page **Reporting**, accessible à tous les rôles.
 
