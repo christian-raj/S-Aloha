@@ -84,7 +84,19 @@ un changement, un changement touche des CI.
   </tr>
   <tr>
     <td><img src="docs/screenshots/06-actions-raci.png" alt="Actions RACI" /><br/><b>Actions correctives</b> — échéance et matrice RACI</td>
-    <td><img src="docs/screenshots/08-reporting.png" alt="Reporting" /><br/><b>Reporting</b> — MTTR, répartitions, retards</td>
+    <td><img src="docs/screenshots/08-reporting.png" alt="Reporting" /><br/><b>Reporting</b> — MTTR, taux de changements réussis, volumétrie</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/10-incident-majeur.png" alt="Incident majeur" /><br/><b>Incidents</b> — priorité P1–P4, incident majeur, problème lié</td>
+    <td><img src="docs/screenshots/11-calendrier-changements.png" alt="Calendrier des changements" /><br/><b>Changements</b> — autorisation et calendrier des mises en production</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/12-configuration-relations.png" alt="CI et relations" /><br/><b>Configuration</b> — éléments de configuration et leurs dépendances</td>
+    <td><img src="docs/screenshots/13-niveaux-de-service.png" alt="Accords de niveau de service" /><br/><b>Niveaux de service</b> — SLA par service, cibles et revues</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/14-connaissances.png" alt="Base de connaissances" /><br/><b>Connaissances</b> — solutions, procédures, erreurs connues</td>
+    <td><img src="docs/screenshots/15-amelioration-continue.png" alt="Amélioration continue" /><br/><b>Amélioration continue</b> — registre et modèle ITIL 4 en 7 étapes</td>
   </tr>
 </table>
 

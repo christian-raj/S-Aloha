@@ -69,7 +69,6 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 | Q2 | **CI** : build backend et frontend, `python3 scripts/check-docs.py` | code |
 | Q3 | Retirer `puppeteer-core` des dépendances du frontend (inutilisé, alourdit l'image) | décision |
 | Q4 | Créer les issues GitHub des sections 1 à 7 et les lier ici | action |
-| Q5 | Captures d'écran : régénérer la console et le reporting (nouveaux blocs), ajouter les nouveaux processus à la galerie du README | code |
 
 ## 7. Feuille de route fonctionnelle
 

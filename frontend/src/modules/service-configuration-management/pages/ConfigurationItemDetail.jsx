@@ -15,7 +15,7 @@ function Relations({ ci, onChanged }) {
 
   const rows = [
     ...ci.outgoing.map(r => ({ id: r.id, text: `${ci.title} ${r.type.toLowerCase()}`, other: r.target })),
-    ...ci.incoming.map(r => ({ id: r.id, text: `${r.type} ${ci.title}`, other: r.source, before: true })),
+    ...ci.incoming.map(r => ({ id: r.id, text: `${r.type.toLowerCase()} ${ci.title}`, other: r.source, before: true })),
   ]
   return (
     <div className="card" style={{ marginTop: 16 }}>
