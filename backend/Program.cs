@@ -53,3 +53,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+// Exposé aux tests d'intégration (WebApplicationFactory<Program>).
+public partial class Program;

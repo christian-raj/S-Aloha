@@ -95,7 +95,10 @@ function Infos({ p, isManager, onSaved }) {
 
 function Rca({ p, onSaved }) {
   const [current, setCurrent] = useState(p.analyses[p.analyses.length - 1] || null)
-  const [data, setData] = useState(current ? JSON.parse(current.dataJson) : {})
+  // Initialisation paresseuse : passée en valeur, l'expression était
+  // réévaluée à CHAQUE rendu, et une analyse qu'on démarre (sans dataJson)
+  // faisait planter l'onglet — aucune analyse ne pouvait être créée (B1).
+  const [data, setData] = useState(() => (current ? JSON.parse(current.dataJson) : {}))
   const [msg, setMsg] = useState('')
 
   const start = (method) => { setCurrent({ method, id: null }); setData({}) }

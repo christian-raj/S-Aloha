@@ -40,20 +40,51 @@ public class ProblemsController(AppDbContext db) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(ProblemDto dto)
     {
-        var year = DateTime.UtcNow.Year;
-        var count = await db.Problems.CountAsync(p => p.CreatedAt.Year == year);
-        var p = new Problem
+        // La référence part du plus grand numéro de l'année, pas du nombre de
+        // problèmes : compter redonnait un numéro existant dès qu'un problème
+        // avait été supprimé, et l'index unique bloquait alors TOUTES les
+        // déclarations suivantes (B2, revue du 2026-10-06). Deux déclarations
+        // simultanées lisent le même maximum : l'index unique tranche, la
+        // perdante relit et réessaie (B3).
+        for (var attempt = 1; ; attempt++)
         {
-            Reference = $"PRB-{year}-{count + 1:D4}",
-            Title = dto.Title, Description = dto.Description,
-            Impact = dto.Impact, Urgency = dto.Urgency,
-            Priority = ComputePriority(dto.Impact, dto.Urgency),
-            Category = dto.Category, AffectedService = dto.AffectedService,
-            CreatedBy = Me, CreatedByDisplayName = MyDisplay
-        };
-        db.Problems.Add(p);
-        await db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Get), new { id = p.Id }, p);
+            var p = new Problem
+            {
+                Reference = await NextReferenceAsync(),
+                Title = dto.Title, Description = dto.Description,
+                Impact = dto.Impact, Urgency = dto.Urgency,
+                Priority = ComputePriority(dto.Impact, dto.Urgency),
+                Category = dto.Category, AffectedService = dto.AffectedService,
+                CreatedBy = Me, CreatedByDisplayName = MyDisplay
+            };
+            db.Problems.Add(p);
+            try
+            {
+                await db.SaveChangesAsync();
+                return CreatedAtAction(nameof(Get), new { id = p.Id }, p);
+            }
+            catch (DbUpdateException) when (attempt < MaxReferenceAttempts)
+            {
+                db.Entry(p).State = EntityState.Detached;
+                // Toute autre erreur d'enregistrement que la collision de
+                // référence remonte telle quelle.
+                if (!await db.Problems.AnyAsync(x => x.Reference == p.Reference)) throw;
+                await Task.Delay(Random.Shared.Next(5, 25 * attempt));
+            }
+        }
+    }
+
+    private const int MaxReferenceAttempts = 10;
+
+    private async Task<string> NextReferenceAsync()
+    {
+        var prefix = $"PRB-{DateTime.UtcNow.Year}-";
+        // Numéro sur 4 chiffres complétés de zéros : l'ordre alphabétique est
+        // l'ordre numérique jusqu'à 9999 problèmes dans l'année.
+        var last = await db.Problems.Where(x => x.Reference.StartsWith(prefix))
+            .OrderByDescending(x => x.Reference).Select(x => x.Reference).FirstOrDefaultAsync();
+        var n = last is null ? 0 : int.Parse(last[prefix.Length..]);
+        return $"{prefix}{n + 1:D4}";
     }
 
     [HttpPut("{id:int}")]
