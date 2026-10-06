@@ -61,3 +61,8 @@ complète : [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).
 ([GHSA-qj66-m88j-hmgj](https://github.com/advisories/GHSA-qj66-m88j-hmgj), gravité haute) ;
 passage à EF Core et JwtBearer 8.0.31, Npgsql EF 8.0.11. Plus aucune vulnérabilité
 relevée sur l'API.
+
+Frontend, corrigé le 2026-10-06 : 16 alertes, dont 2 critiques (tinypool, exécution de code
+par pollution de prototype). Passage à Vite 6.4, Vitest 4.1 et react-router 7.18 ; les
+dépendances transitives (postcss, esbuild, browserslist, source-map-js) suivent.
+`npm audit` : 0 vulnérabilité.
