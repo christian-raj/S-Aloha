@@ -4,7 +4,8 @@
 #
 # Ajoute un contrôleur de domaine Samba AD (domaine SALOHA.LAN) et y branche l'API.
 # Comptes de démonstration, un par rôle : demo.admin, demo.manager, demo.user
-# (mots de passe ci-dessous). Mots de passe PUBLICS : jamais en production —
+# (mots de passe ci-dessous), et données d'exemple fictives chargées par l'API au
+# premier démarrage. Mots de passe PUBLICS : jamais en production —
 # docs/reference/exploitation.md § Mode démonstration.
 
 services:
@@ -38,6 +39,16 @@ services:
       Ldap__BaseDn: "DC=saloha,DC=lan"
       Ldap__BindUser: "CN=svc-saloha,CN=Users,DC=saloha,DC=lan"
       Ldap__BindPassword: "Demo-Service-2026"
+
+  # Charge une seule fois des données d'exemple fictives, par l'API (demo/donnees/).
+  donnees:
+    image: python:3.12-alpine
+    depends_on:
+      - api
+    volumes:
+      - ./demo/donnees:/donnees:ro
+    command: ["python3", "/donnees/charger.py", "http://api:8080"]
+    restart: "no"
 
 volumes:
   annuaire:

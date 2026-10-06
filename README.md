@@ -103,8 +103,8 @@ un changement, un changement touche des CI.
 
 ## Essayer en 5 minutes
 
-Pas besoin d'Active Directory : le **mode démonstration** démarre son propre annuaire.
-Seul Docker est requis.
+Pas besoin d'Active Directory : le **mode démonstration** démarre son propre annuaire et
+charge des données d'exemple fictives. Seul Docker est requis.
 
 ```bash
 git clone https://github.com/christian-raj/S-Aloha.git && cd S-Aloha
