@@ -1,5 +1,7 @@
 # Constat — état initial au 2026-10-06
 
+<sub>[← Documentation](../readme.md)</sub>
+
 > **Document d'archive, figé.** Relevé de l'état du dépôt au moment du passage à la
 > plateforme S-Aloha et de la mise en place de la base documentaire. Il n'est pas mis à
 > jour : ce qui reste vrai est replié dans [`reference/`](../reference/), ce qui reste à

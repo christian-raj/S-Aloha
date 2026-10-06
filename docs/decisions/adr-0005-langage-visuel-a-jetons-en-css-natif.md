@@ -1,5 +1,7 @@
 # ADR-0005 — Nouveau langage visuel à jetons clair/sombre, réalisé en CSS natif
 
+<sub>[← Documentation](../readme.md) · [Toutes les décisions](readme.md)</sub>
+
 - **Date** : 2026-10-06
 - **Statut** : accepté
 - **Décideur** : Christian Rajaonary

@@ -1,4 +1,6 @@
-# Décisions d'architecture (ADR)
+# ⚖️ Décisions d'architecture (ADR)
+
+<sub>[← Documentation](../readme.md)</sub>
 
 Une décision structurante par fichier, numérotée sans trou, jamais réécrite après coup :
 si une décision est renversée, on en écrit une nouvelle qui la supersède et on met à jour
@@ -12,6 +14,7 @@ son état actuel, et pas seulement *quel* est cet état.
 | [0003](adr-0003-plateforme-modulaire-par-processus-itil.md) | Plateforme modulaire par processus ITIL : socle + modules + registre | 2026-10-06 | accepté |
 | [0004](adr-0004-conserver-le-stack-dotnet-react.md) | On conserve le stack .NET / React / PostgreSQL ; pas de réécriture Next.js / Tailwind | 2026-10-06 | accepté |
 | [0005](adr-0005-langage-visuel-a-jetons-en-css-natif.md) | Nouveau langage visuel à jetons clair/sombre, réalisé en CSS natif | 2026-10-06 | accepté |
+| [0006](adr-0006-licence-agplv3.md) | S-Aloha est publié sous licence AGPLv3 | 2026-10-06 | accepté |
 
 Les choix fondateurs antérieurs à cette base (authentification AD LDAP → JWT, analyses
 RCA stockées en JSON) sont décrits dans [`reference/architecture.md`](../reference/architecture.md)

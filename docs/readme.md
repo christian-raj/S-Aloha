@@ -1,82 +1,63 @@
-# Documentation S-Aloha
+# 📚 Documentation S-Aloha
 
-Cette base documentaire est rangée par **nature de document**, pas par thème. Un même
-sujet — la sécurité, un processus ITIL — produit à la fois un constat daté, un plan et une
-décision, et ces trois-là n'ont ni la même durée de vie ni le même lecteur. Les mélanger
-dans un fichier unique est ce qui fait dériver une documentation.
+> Tout ce qu'il faut pour comprendre, installer et faire évoluer S-Aloha.
+> Première visite ? Commencez par le [README](../README.md), puis le [Produit](reference/produit.md).
 
-## Comment c'est rangé
+## Référence
 
-La méthode de travail se fait en trois étapes, et chacune a son emplacement :
+Ce qui est vrai en permanence, mis à jour avec le code.
 
-| Étape | Ce qu'elle produit | Où ça vit | Durée de vie |
-|---|---|---|---|
-| **1. Analyse** — audit, diagnostic, revue | un constat **daté** | [`archives/`](archives/) | figé, on n'y corrige jamais rien |
-| **2. Plan** — ce qu'il reste à faire | des **chantiers** | [`plan-action.md`](plan-action.md) | vivant, se vide en fermant |
-| **3. Décision** — ce qui est tranché | un **ADR** | [`decisions/`](decisions/) | définitif, remplacé jamais réécrit |
+| | Document | Pour |
+|---|---|---|
+| 🧭 | [Produit](reference/produit.md) | Comprendre la vision, les piliers S-A-L-O-H-A et la feuille de route |
+| 📐 | [Règles métier](reference/regles-metier.md) | Connaître les rôles, la console, le cycle de vie, la priorité, le RACI |
+| 🏗️ | [Architecture](reference/architecture.md) | Voir comment tout s'assemble : containers, socle, modules, API |
+| 🗄️ | [Base de données](reference/base-de-donnees.md) | Lire le modèle de données et les formats d'analyse |
+| 🖥️ | [Frontend](reference/frontend.md) | Ajouter un écran ou un module, respecter le design |
+| ⚙️ | [Exploitation](reference/exploitation.md) | Installer, brancher l'Active Directory, mettre à jour |
+| 🛡️ | [Sécurité](reference/securite.md) | Préparer une mise en production |
+| 📖 | [Glossaire](reference/glossaire.md) | Retrouver un terme ITIL, technique ou malgache |
 
-Et au milieu, le socle : [`reference/`](reference/) — **ce qui est vrai en permanence**,
-qui se met à jour et ne s'archive jamais.
+## Décisions, plan et historique
 
-Le cycle : un audit produit un constat daté qui part en `archives/`. Ce qu'il révèle de
-durable est replié dans `reference/`. Ce qu'il reste à faire va dans `plan-action.md`. Ce
-qui est tranché devient un ADR. Rien ne reste en suspens dans un document hybride.
+| | | Durée de vie |
+|---|---|---|
+| ⚖️ [Décisions (ADR)](decisions/readme.md) | Les choix structurants et **pourquoi** | Définitif : remplacé, jamais réécrit |
+| 🗺️ [Plan d'action](plan-action.md) | Les chantiers ouverts | Vivant : se vide en avançant |
+| 🗃️ [Archives](archives/readme.md) | Constats datés et journaux des sujets traités | Figé |
+| 🔄 [Protocole](protocole-documentation.md) | La routine qui tient tout cela à jour | Vivant |
 
-## Le socle — [`reference/`](reference/)
-
-| Document | Contenu |
-|---|---|
-| [`produit.md`](reference/produit.md) | Vision S-Aloha, les six piliers, cartographie des processus ITIL et leur état |
-| [`regles-metier.md`](reference/regles-metier.md) | **Règles métier** — à lire avant toute modification de logique |
-| [`architecture.md`](reference/architecture.md) | Containers, socle et modules, authentification AD → JWT, API |
-| [`base-de-donnees.md`](reference/base-de-donnees.md) | Entités, contraintes, formats JSON des analyses, gestion du schéma |
-| [`frontend.md`](reference/frontend.md) | Structure React, registre des modules, routes, thème et design |
-| [`exploitation.md`](reference/exploitation.md) | Démarrage, configuration, Active Directory, déploiement |
-| [`securite.md`](reference/securite.md) | Modèle d'autorisation, secrets, surface exposée, points de durcissement |
-| [`glossaire.md`](reference/glossaire.md) | Termes ITIL, termes techniques, vocabulaire malgache |
-
-## À la racine
-
-| | |
-|---|---|
-| [`plan-action.md`](plan-action.md) | **Étape 2** — chantiers ouverts et priorités |
-| [`screenshots/`](screenshots/) | Captures d'écran utilisées par le [`README`](../README.md) du dépôt |
+Le cycle : un constat daté part en **archives** ; ce qu'il révèle de durable rejoint la
+**référence** ; ce qu'il reste à faire va au **plan** ; ce qui est tranché devient une
+**décision**.
 
 ## Où va quoi
 
-- Un **bug** → [GitHub Issues](https://github.com/christian-raj/S-Aloha/issues), source de
-  vérité ([ADR-0001](decisions/adr-0001-github-issues-source-de-verite.md)). Pas dans un
-  tableau markdown, qui ne peut que dériver par rapport à l'issue.
-- Un **chantier** (ce qui demande une intention, pas seulement un correctif) →
-  [`plan-action.md`](plan-action.md).
-- Un **rapport d'audit ou un constat** → [`archives/`](archives/), daté dans son nom.
-- Une **décision structurante et actée** → un ADR. Critères et forme :
-  [`decisions/readme.md`](decisions/readme.md).
-- Un **fait durable sur le fonctionnement du système** → le document de
-  [`reference/`](reference/) concerné, mis à jour sur place, **dans le même commit que le
-  code** ([ADR-0002](decisions/adr-0002-documentation-dans-le-depot.md)).
-
-## Ce qui vit hors de `docs/`
-
-| Fichier | Pourquoi il ne bouge pas |
+| J'ai… | Je le mets dans… |
 |---|---|
-| `README.md` (racine) | Vitrine du dépôt, affichée par GitHub sur la page d'accueil |
+| un bug, une faille | [GitHub Issues](https://github.com/christian-raj/S-Aloha/issues) ([ADR-0001](decisions/adr-0001-github-issues-source-de-verite.md)) |
+| un chantier qui demande une intention | [`plan-action.md`](plan-action.md) |
+| un audit, un état des lieux | `archives/`, daté dans le nom du fichier |
+| un sujet traité aujourd'hui | le journal du jour, `archives/journal-AAAA-MM-JJ.md` ([protocole](protocole-documentation.md)) |
+| une décision actée et structurante | un ADR dans [`decisions/`](decisions/readme.md) |
+| un fait durable sur le fonctionnement | le document de référence concerné, **dans le même commit que le code** ([ADR-0002](decisions/adr-0002-documentation-dans-le-depot.md)) |
+
+## Licence
+
+Code et documentation sont sous [AGPLv3](../LICENSE)
+([ADR-0006](decisions/adr-0006-licence-agplv3.md)).
 
 ## Conventions
 
-- **Français** pour la documentation, **anglais** pour le code (identifiants), commentaires
-  de code en français comme dans le reste du dépôt.
-- **Noms de fichiers en minuscules**, mots séparés par des tirets.
-- **Un document, une nature.** Si un fichier contient à la fois un constat, un plan et une
-  description du fonctionnement, il faut le scinder.
-- Les liens entre documents sont **relatifs**. Contrôle des liens, ancres et chemins cités :
+- Documentation en **français**, identifiants de code en **anglais**.
+- Fichiers en **minuscules-avec-tirets** ; liens **relatifs**.
+- **Un document, une nature** : constat, plan, décision ou référence, jamais un mélange.
+- Diagrammes en **Mermaid**, affichés directement par GitHub.
+- Captures d'écran dans [`screenshots/`](screenshots/), à régénérer quand l'interface change.
+- Le code cite parfois la doc (`docs/reference/frontend.md § Design`, `ADR-0005`) : un
+  renommage impose de mettre à jour ces renvois (`grep -rn "docs/\|ADR-" backend frontend/src`).
+- Avant de committer :
 
   ```bash
-  python3 scripts/check-docs.py
+  python3 scripts/check-docs.py   # liens, ancres et chemins cités
   ```
-
-- Les commentaires de code peuvent citer la documentation (`docs/reference/frontend.md
-  § Design`, `ADR-0005`) : renommer un document ou un titre impose de mettre à jour ces
-  renvois — `grep -rn "docs/\|ADR-" backend frontend/src`.
-- Aucune mention d'outil d'IA (signature, `Co-Authored-By`) dans les commits, les PR ou
-  les fichiers.

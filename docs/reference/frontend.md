@@ -1,8 +1,8 @@
-# Frontend — S-Aloha
+# 🖥️ Frontend
 
-> React 18 + Vite + react-router, build statique servi par nginx. Aucune bibliothèque de
-> composants, CSS natif à jetons ([ADR-0004](../decisions/adr-0004-conserver-le-stack-dotnet-react.md),
-> [ADR-0005](../decisions/adr-0005-langage-visuel-a-jetons-en-css-natif.md)). Paquet npm `s-aloha-web`.
+> React 18 + Vite + react-router, servi par nginx. Aucune bibliothèque de composants : CSS natif à jetons ([ADR-0004](../decisions/adr-0004-conserver-le-stack-dotnet-react.md), [ADR-0005](../decisions/adr-0005-langage-visuel-a-jetons-en-css-natif.md)).
+
+<sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
 
 ## Structure
 
@@ -17,6 +17,7 @@ frontend/
     ├── App.jsx                   # déclaration des routes
     ├── styles.css                # jetons, thèmes, composants — voir § Design
     ├── core/                     # socle UI, transverse aux processus
+    │   ├── about.js              # URL du code source et licence (AGPLv3, VITE_SOURCE_URL)
     │   ├── components/
     │   │   ├── Layout.jsx        # sidebar (desktop) / tiroir (mobile), construite depuis le registre
     │   │   ├── ThemeToggle.jsx   # bascule clair / sombre

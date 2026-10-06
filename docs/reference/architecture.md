@@ -1,23 +1,17 @@
-# Architecture technique — S-Aloha
+# 🏗️ Architecture
 
-> Référence technique de la plateforme. Règles métier : [regles-metier.md](regles-metier.md) · Produit et modules : [produit.md](produit.md) · Frontend et design : [frontend.md](frontend.md) · Décisions : [../decisions/](../decisions/).
+> Comment S-Aloha est construit : containers, socle et modules, authentification, API.
+
+<sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
 
 ## 1. Vue d'ensemble
 
-```
-┌─────────────┐   HTTP     ┌──────────────────┐   TCP 5432   ┌──────────────┐
-│  Navigateur │ ─────────▶ │  web (nginx)     │              │  db          │
-│  (React)    │            │  - fichiers React│              │  PostgreSQL16│
-└─────────────┘            │  - proxy /api/ ──┼──────┐       └──────▲───────┘
-                           └──────────────────┘      │              │ EF Core
-                                                     ▼              │
-                                            ┌──────────────────┐    │
-                            LDAP(S) 389/636 │  api (.NET 8)    │────┘
-                           ┌──────────────◀─┤  ASP.NET Core    │
-                           │                └──────────────────┘
-                    ┌──────┴───────┐
-                    │  AD on-prem  │
-                    └──────────────┘
+```mermaid
+flowchart LR
+    U(["Navigateur<br/>React"]) -- HTTP --> W["web<br/>nginx"]
+    W -- "/api/" --> A["api<br/>ASP.NET Core 8"]
+    A -- "EF Core" --> D[("db<br/>PostgreSQL 16")]
+    A -- "LDAP(S) 389/636" --> AD[["Active Directory<br/>on-prem"]]
 ```
 
 Trois containers orchestrés par `docker-compose.yml` : **web** (nginx sert le build React et proxifie `/api/` vers l'API), **api** (ASP.NET Core 8), **db** (PostgreSQL 16, volume persistant `pgdata`).
@@ -59,6 +53,19 @@ Règles de dépendance :
 Ajouter un module : créer `Modules/<Processus>/{Controllers,Models}`, déclarer ses `DbSet` dans `AppDbContext`, puis son interface côté frontend (voir [frontend.md](frontend.md) § Ajouter un module).
 
 ## 4. Authentification et autorisation
+
+```mermaid
+sequenceDiagram
+    participant N as Navigateur
+    participant A as API
+    participant AD as Active Directory
+    N->>A: POST /api/auth/login (identifiant, mot de passe)
+    A->>AD: bind compte de service, recherche de l'utilisateur
+    A->>AD: bind avec le DN et le mot de passe de l'utilisateur
+    AD-->>A: OK + groupes memberOf
+    A-->>N: JWT (nom, rôle)
+    N->>A: requêtes avec Authorization: Bearer
+```
 
 1. `POST /api/auth/login` : l'API se connecte à l'AD avec le **compte de service** (`Ldap:BindUser`), recherche l'utilisateur (`Ldap:UserFilter`), puis valide le mot de passe par un **bind avec le DN de l'utilisateur**.
 2. Les groupes `memberOf` sont comparés au mapping `Ldap:Groups` (Admin > Manager > User). Aucun groupe correspondant ⇒ connexion refusée.

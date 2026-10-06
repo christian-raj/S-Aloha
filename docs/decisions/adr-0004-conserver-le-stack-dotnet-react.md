@@ -1,5 +1,7 @@
 # ADR-0004 — On conserve le stack .NET / React / PostgreSQL
 
+<sub>[← Documentation](../readme.md) · [Toutes les décisions](readme.md)</sub>
+
 - **Date** : 2026-10-06
 - **Statut** : accepté
 - **Décideur** : Christian Rajaonary

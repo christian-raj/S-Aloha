@@ -1,7 +1,8 @@
-# Base de données — S-Aloha
+# 🗄️ Base de données
 
-> PostgreSQL 16, accès par Entity Framework Core 8 (provider Npgsql). Base et utilisateur
-> `saloha` par défaut. Contexte unique : `backend/Core/Data/AppDbContext.cs`.
+> PostgreSQL 16 via Entity Framework Core 8 (Npgsql). Base et utilisateur `saloha` par défaut, contexte unique `backend/Core/Data/AppDbContext.cs`.
+
+<sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
 
 ## Gestion du schéma
 
@@ -17,10 +18,11 @@ toute évolution du modèle impose de recréer la base ou de l'altérer à la ma
 
 Source : `backend/Modules/ProblemManagement/Models/Entities.cs`.
 
-```
-Problem 1──∞ RcaAnalysis
-   │
-   1──∞ CorrectiveAction 1──∞ RaciAssignment
+```mermaid
+erDiagram
+    Problem ||--o{ RcaAnalysis : "est analysé par"
+    Problem ||--o{ CorrectiveAction : "est traité par"
+    CorrectiveAction ||--|{ RaciAssignment : "est affectée via"
 ```
 
 | `DbSet` | Entité | Table |

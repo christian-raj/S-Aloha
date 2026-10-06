@@ -1,5 +1,7 @@
 # ADR-0001 — GitHub Issues comme source de vérité pour les bugs, la sécurité et le backlog
 
+<sub>[← Documentation](../readme.md) · [Toutes les décisions](readme.md)</sub>
+
 - **Date** : 2026-10-06
 - **Statut** : accepté
 - **Décideur** : Christian Rajaonary

@@ -3,6 +3,9 @@ WORKDIR /app
 COPY package.json .
 RUN npm install
 COPY . .
+# URL du code source affichée dans l'interface (AGPLv3, section 13) — à surcharger par un fork
+ARG VITE_SOURCE_URL
+ENV VITE_SOURCE_URL=$VITE_SOURCE_URL
 RUN npm run build
 
 FROM nginx:alpine

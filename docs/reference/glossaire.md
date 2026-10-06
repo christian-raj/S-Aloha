@@ -1,7 +1,8 @@
-# Glossaire — S-Aloha
+# 📖 Glossaire
 
-> Termes récurrents dans la documentation et l'interface. Détail : [`regles-metier.md`](regles-metier.md)
-> (métier), [`architecture.md`](architecture.md) (technique), [`produit.md`](produit.md) (vision).
+> Les termes ITIL, S-Aloha, techniques et malgaches employés dans l'interface et la documentation.
+
+<sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
 
 ## ITIL et gestion des problèmes
 

@@ -1,7 +1,10 @@
-# Produit — S-Aloha
+# 🧭 Produit
 
-> *L'excellence du service IT au cœur de notre performance.*
-> « Ny fahaiza-manao ho amin'ny tolotra tsara kokoa. » — *Service alohan'ny zavatra rehetra.*
+> Pourquoi S-Aloha existe, pour qui, et quels processus ITIL il couvre.
+>
+> *L'excellence du service IT au cœur de notre performance.* — « Ny fahaiza-manao ho amin'ny tolotra tsara kokoa. »
+
+<sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
 
 ## Pourquoi S-Aloha existe
 

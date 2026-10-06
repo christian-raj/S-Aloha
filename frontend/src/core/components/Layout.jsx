@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getUser } from '../../api'
 import { MODULES, pillarOf } from '../../modules/registry'
 import ThemeToggle from './ThemeToggle'
+import { SOURCE_URL, LICENSE_LABEL } from '../about'
 import { BrandMark, IconConsole, IconReport, IconLogout, IconMenu, IconClose, MODULE_ICONS } from './icons'
 
 const ROLE_LABEL = { Admin: 'Administrateur', Manager: 'Gestionnaire', User: 'Utilisateur' }
@@ -91,6 +92,7 @@ function SidebarContent({ user, pathname, onClose, onLogout }) {
           <ThemeToggle />
         </div>
         <button className="logout" onClick={onLogout}><IconLogout /> Se déconnecter</button>
+        <a className="source-link" href={SOURCE_URL} target="_blank" rel="noreferrer">Code source · {LICENSE_LABEL}</a>
       </div>
     </div>
   )

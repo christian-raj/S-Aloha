@@ -1,8 +1,10 @@
-# Règles métier — S-Aloha
+# 📐 Règles métier
 
-Ce document décrit les règles métier implémentées dans la plateforme. Toute évolution du code doit rester cohérente avec ces règles, ou celles-ci doivent être mises à jour **dans le même commit** ([ADR-0002](../decisions/adr-0002-documentation-dans-le-depot.md)).
+> Les règles implémentées dans la plateforme. À lire avant toute modification de logique ; à mettre à jour **dans le même commit** que le code ([ADR-0002](../decisions/adr-0002-documentation-dans-le-depot.md)).
 
-Les sections 1, 2 et 7 relèvent du **socle** (transverses à tous les processus) ; les sections 3 à 6 du module **Gestion des problèmes (ITIL v3)**. Vocabulaire : [`glossaire.md`](glossaire.md).
+<sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
+
+Sections 1, 2 et 7 : **socle**, communes à tous les processus. Sections 3 à 6 : module **Gestion des problèmes (ITIL v3)**.
 
 ## 1. Rôles et droits
 
@@ -44,7 +46,23 @@ La composition des blocs est décidée **côté serveur** (`GET /api/console`) �
 
 ## 3. Gestion des problèmes — cycle de vie
 
-`Nouveau → En analyse → Erreur connue → Résolu → Clos`
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Nouveau : déclaration
+    Nouveau --> EnAnalyse : 1re analyse RCA (automatique)
+    EnAnalyse --> ErreurConnue : cause et contournement
+    ErreurConnue --> Resolu : actions correctives
+    EnAnalyse --> Resolu
+    Resolu --> Clos : horodate ClosedAt
+    Clos --> [*]
+    EnAnalyse : En analyse
+    ErreurConnue : Erreur connue
+    Resolu : Résolu
+```
+
+Les statuts sont modifiables librement par un Manager ou un Admin ; le schéma montre le
+parcours nominal.
 
 - Un problème est créé au statut **Nouveau** avec une référence `PRB-AAAA-NNNN` (séquence annuelle).
 - La création d'une première analyse RCA fait passer automatiquement un problème **Nouveau** à **En analyse**.

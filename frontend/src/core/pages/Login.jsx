@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../../api'
 import { PILLARS } from '../../modules/registry'
 import { BrandMark } from '../components/icons'
+import { SOURCE_URL, LICENSE_LABEL } from '../about'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -77,6 +78,7 @@ export default function Login() {
           <button className="btn block" type="submit" disabled={busy}>
             {busy ? 'Connexion…' : 'Se connecter'}
           </button>
+          <a className="source-link muted" href={SOURCE_URL} target="_blank" rel="noreferrer">Code source · {LICENSE_LABEL}</a>
         </form>
       </div>
     </div>
