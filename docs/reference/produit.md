@@ -13,8 +13,7 @@ un seul outil, adossé à l'**Active Directory** de l'organisation, pour gérer 
 du cycle de vie du service IT — incidents, problèmes, changements, configuration, niveaux
 de service, connaissances, amélioration continue.
 
-Le nom joue sur deux lectures : **S-A-L-O-H-A**, acronyme des six piliers ci-dessous, et
-*aloha*, « d'abord, avant tout » en malgache — le service passe avant tout
+Le nom vient du malgache *aloha*, « d'abord, avant tout » : le service passe avant tout
 (*Service alohan'ny zavatra rehetra*). Voir le [glossaire](glossaire.md#vocabulaire-malgache).
 
 ## Pour qui
@@ -28,45 +27,27 @@ Le nom joue sur deux lectures : **S-A-L-O-H-A**, acronyme des six piliers ci-des
 Les rôles sont dérivés des groupes AD ; le détail des droits est dans
 [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).
 
-## Les six piliers
-
-Chaque processus ITIL est rattaché à un pilier ; les libellés sont ceux de la charte
-S-Aloha (« Alignment » compris). Source dans le code :
-`PILLARS` dans `frontend/src/modules/registry.js`. Les piliers ne sont plus affichés à la
-connexion ; la barre latérale garde la lettre du pilier sur chaque module.
-
-| Lettre | Pilier | Ce qu'il recouvre |
-|---|---|---|
-| **S** | Service | Gestion des services et des incidents |
-| **A** | Alignment | Processus IT alignés sur les besoins métier |
-| **L** | Leadership | Accompagnement du changement et formation |
-| **O** | Optimisation | Amélioration continue (CSI) |
-| **H** | Harmonie | Cohésion entre équipes IT et utilisateurs |
-| **A** | Agilité | Changements et mises en production fluides |
-
 ## Cartographie des processus ITIL et état
 
 Ordre du cycle de vie du service. Source unique : `MODULES` dans
 `frontend/src/modules/registry.js` — un processus passe de **Bientôt** à **Actif** le jour
 où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-par-processus-itil.md)).
 
-| Processus | Objet | Pilier | État | Module (API, interface) |
-|---|---|---|---|---|
-| **Incidents** | Rétablir le service au plus vite | Service | Actif (MVP) | `Modules/IncidentManagement`, `modules/incident-management` |
-| **Demandes** | Demandes de service utilisateurs | Service | Actif (MVP) | `Modules/ServiceRequestManagement`, `modules/service-request-management` |
-| **Problèmes** | Causes racines et erreurs connues | Service | Actif | `Modules/ProblemManagement`, `modules/problem-management` |
-| **Changements** | Changements et mises en production | Agilité | Actif (MVP) | `Modules/ChangeEnablement`, `modules/change-enablement` |
-| **Configuration** | Actifs et dépendances (CMDB) | Service | Actif (MVP) | `Modules/ServiceConfigurationManagement`, `modules/service-configuration-management` |
-| **Niveaux de service** | Catalogue, SLA et engagements | Alignment | Actif (MVP) | `Modules/ServiceLevelManagement`, `modules/service-level-management` |
-| **Connaissances** | Capitalisation et formation | Leadership | Actif (MVP) | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
-| **Amélioration (CSI)** | Amélioration continue des services | Optimisation | Actif (MVP) | `Modules/ContinualImprovement`, `modules/continual-improvement` |
+| Processus | Objet | État | Module (API, interface) |
+|---|---|---|---|
+| **Incidents** | Rétablir le service au plus vite | Actif (MVP) | `Modules/IncidentManagement`, `modules/incident-management` |
+| **Demandes** | Demandes de service utilisateurs | Actif (MVP) | `Modules/ServiceRequestManagement`, `modules/service-request-management` |
+| **Problèmes** | Causes racines et erreurs connues | Actif | `Modules/ProblemManagement`, `modules/problem-management` |
+| **Changements** | Changements et mises en production | Actif (MVP) | `Modules/ChangeEnablement`, `modules/change-enablement` |
+| **Configuration** | Actifs et dépendances (CMDB) | Actif (MVP) | `Modules/ServiceConfigurationManagement`, `modules/service-configuration-management` |
+| **Niveaux de service** | Catalogue, SLA et engagements | Actif (MVP) | `Modules/ServiceLevelManagement`, `modules/service-level-management` |
+| **Connaissances** | Capitalisation et formation | Actif (MVP) | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
+| **Amélioration (CSI)** | Amélioration continue des services | Actif (MVP) | `Modules/ContinualImprovement`, `modules/continual-improvement` |
 
 **MVP** : enregistrer, suivre un cycle de vie simple, porter les décisions des
 gestionnaires et relier les processus entre eux. Référentiel : les **pratiques ITIL 4**
 publiées par PeopleCert/Axelos ([ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)) ;
 l'enrichissement de chaque pratique viendra ensuite ([plan d'action](../plan-action.md)).
-
-> Le pilier **Harmonie** n'a pas encore de processus rattaché.
 
 ## Socle transverse (Pilotage)
 

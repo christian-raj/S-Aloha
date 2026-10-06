@@ -89,14 +89,11 @@ Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont r
 
 `frontend/src/modules/registry.js` exporte :
 
-- `PILLARS` — les six piliers S-A-L-O-H-A (`id`, `letter`, `label`, `desc`). Deux piliers
-  portent la lettre « A » : la clé est l'`id`, jamais la lettre ;
 - `MODULES` — les processus ITIL, dans l'ordre du cycle de vie : `id`, `label`,
-  `description`, `pillar`, `status` (`active` | `soon`) et, pour un module actif, `href`
+  `description`, `status` (`active` | `soon`) et, pour un module actif, `href`
   (point d'entrée), `routes` (préfixes d'URL qui l'activent dans la navigation), `pages`
   (sous-entrées affichées quand le module est ouvert, facultatives ; quand une sous-page en
-  prolonge une autre — `/changes/schedule` sous `/changes` — la correspondance exacte l'emporte) ;
-- `pillarOf(id)`.
+  prolonge une autre — `/changes/schedule` sous `/changes` — la correspondance exacte l'emporte).
 
 Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 
@@ -175,7 +172,7 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 
 ### Page de connexion
 
-- Le panneau de marque (gauche) ne liste ni les modules ni les piliers S-A-L-O-H-A. De
+- Le panneau de marque (gauche) ne liste pas les modules. De
   haut en bas : marque, « Plateforme ITIL de la DSI », slogan, maxime malgache et sa
   traduction, explication du nom, puis « Ce que vous y faites » : quatre blocs de
   fonctionnalités (constante `FEATURES` de `Login.jsx` : console par rôle, cause racine et

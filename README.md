@@ -139,7 +139,7 @@ cd frontend && npm test                                                # interfa
 
 | | |
 |---|---|
-| 🧭 [Produit](docs/reference/produit.md) | Vision, piliers S-A-L-O-H-A, feuille de route |
+| 🧭 [Produit](docs/reference/produit.md) | Vision, processus ITIL couverts, feuille de route |
 | 📐 [Règles métier](docs/reference/regles-metier.md) | Rôles, console, cycle de vie, priorité, RACI |
 | 🏗️ [Architecture](docs/reference/architecture.md) | Containers, socle et modules, API, tests |
 | ⚙️ [Exploitation](docs/reference/exploitation.md) | Installation, Active Directory, mise à jour |
