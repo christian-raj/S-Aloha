@@ -87,3 +87,20 @@ envisagés, à prioriser ; chacun se cale sur le guide de la pratique ITIL 4 cor
 | F6 | Tous | Transitions de statut contraintes (comme R4 pour les problèmes) et historique des modifications (R5) | décision |
 | F7 | Tous | Pièces jointes, commentaires, notifications | décision |
 | F8 | Connaissances | Rendu Markdown du contenu ; suggestion d'articles depuis un incident | code |
+
+## 8. Communauté et financement
+
+Découle de la [stratégie communauté et financement](strategie-communaute.md). Les
+décisions D1 à D5 y sont détaillées avec une recommandation.
+
+| # | Chantier | Qui |
+|---|---|---|
+| C1 | Trancher D1 (mode démo public), D2 (DCO ou CLA, **avant toute contribution extérieure**), D3 (langue), D4 (financement) | **décision** |
+| C2 | Code de conduite, `.github/FUNDING.yml`, GitHub Discussions, résumé anglais du README | code + action |
+| C3 | **Mode démonstration** : profil compose `demo` avec annuaire Samba AD, trois comptes, données d'exemple | code (après D1) |
+| C4 | Version `v0.1.0` : notes de version, images publiées sur `ghcr.io` par la CI | code |
+| C5 | 8 à 10 issues `good first issue` / `help wanted` rédigées depuis ce plan ; tableau GitHub Projects public | action |
+| C6 | Activer GitHub Sponsors (profil du mainteneur), niveaux et contreparties | action (après D4) |
+| C7 | Lancement : LinuxFr, Reddit, awesome-selfhosted, AlternativeTo, Framalibre ; image de partage du dépôt | action (après C3, C4) |
+| C8 | Démo en ligne réinitialisée chaque nuit | décision (D5) |
+| C9 | `GOVERNANCE.md` dès le deuxième contributeur régulier | décision |
