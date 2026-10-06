@@ -62,3 +62,7 @@ titulaire de vos droits ; aucune cession n'est demandée
 
 Oubli sur le dernier commit : `git commit --amend -s --no-edit`, puis
 `git push --force-with-lease` sur votre branche.
+
+Le job **DCO** de la CI le vérifie sur chaque pull request : un commit sans
+`Signed-off-by` à l'adresse de son auteur bloque la fusion. Pour signer après coup
+tous les commits de la branche : `git rebase --signoff main`.
