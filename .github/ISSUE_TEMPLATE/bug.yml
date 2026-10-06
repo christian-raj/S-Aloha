@@ -1,0 +1,31 @@
+name: Bug
+description: Un comportement incorrect de l'application
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "**Faille de sécurité ?** Ne remplissez pas ce formulaire : utilisez le [signalement privé](https://github.com/christian-raj/S-Aloha/security/advisories/new)."
+  - type: textarea
+    id: constat
+    attributes:
+      label: Constat
+      description: Ce qui se passe, et ce qui était attendu.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduire
+    attributes:
+      label: Pour reproduire
+      placeholder: "1. Se connecter en Manager\n2. Ouvrir…\n3. …"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Commit ou date de récupération du dépôt.
+  - type: dropdown
+    id: processus
+    attributes:
+      label: Processus concerné
+      options: [Socle (connexion, console, reporting), Problèmes, Incidents, Demandes, Changements, Configuration, Niveaux de service, Connaissances, Amélioration continue, Installation / exploitation]

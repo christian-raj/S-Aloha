@@ -1,0 +1,80 @@
+# Contrôles de chaque push sur main et de chaque pull request : tests de l'API
+# (PostgreSQL réel via Testcontainers), tests et build de l'interface, santé
+# de la documentation, build des deux images.
+# Actions épinglées par SHA (tenues à jour par Dependabot) ; jeton en lecture seule.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          # L'API cible net8.0, le projet de tests net10.0.
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Tests
+        run: dotnet test tests/SAloha.Api.Tests
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+      - name: Dépendances vulnérables
+        run: |
+          dotnet list backend/SAloha.Api.csproj package --vulnerable --include-transitive | tee vuln.txt
+          ! grep -q "has the following vulnerable packages" vuln.txt
+
+  web:
+    name: Interface (React)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Dépendances vulnérables
+        run: npm audit --audit-level=high
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 scripts/check-docs.py
+
+  images:
+    name: Images Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: docker build -t s-aloha-api backend
+      - run: docker build -t s-aloha-web frontend

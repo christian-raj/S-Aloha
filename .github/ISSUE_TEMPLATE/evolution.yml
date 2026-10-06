@@ -1,0 +1,19 @@
+name: Évolution
+description: Une amélioration ou une nouvelle fonctionnalité
+labels: [enhancement]
+body:
+  - type: textarea
+    id: besoin
+    attributes:
+      label: Besoin
+      description: Le problème à résoudre, du point de vue de l'utilisateur.
+    validations:
+      required: true
+  - type: textarea
+    id: proposition
+    attributes:
+      label: Proposition
+  - type: input
+    id: itil
+    attributes:
+      label: Pratique ITIL 4 concernée
