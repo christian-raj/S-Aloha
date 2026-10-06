@@ -26,6 +26,13 @@ public class CiRelationship
 {
     public static readonly string[] Types = ["Dépend de", "Héberge", "Fait partie de", "Se connecte à"];
 
+    /// <summary>
+    /// Sens de propagation d'une panne. « Source dépend de / se connecte à
+    /// cible » : la panne de la cible touche la source. « Source héberge /
+    /// fait partie de cible » : la panne de la source touche la cible.
+    /// </summary>
+    public static bool FailureFlowsFromTarget(string type) => type is "Dépend de" or "Se connecte à";
+
     public int Id { get; set; }
     public int SourceId { get; set; }
     public ConfigurationItem? Source { get; set; }

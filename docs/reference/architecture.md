@@ -127,8 +127,8 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/actions`, POST `/api/problems/{id}/actions`, PUT `/api/actions/{id}` | User | Actions + RACI (DELETE : Manager) | Modules/ProblemManagement |
 | GET/POST/PUT `/api/incidents[/{id}]` | User | Incidents (DELETE : Admin) | Modules/IncidentManagement |
 | GET/POST/PUT `/api/requests[/{id}]` | User | Demandes ; Approuvée/Rejetée : Manager (DELETE : Admin) | Modules/ServiceRequestManagement |
-| GET/POST/PUT `/api/changes[/{id}]`, GET `/api/changes/schedule` | User | Changements, calendrier ; Autorisé/Rejeté : Manager (DELETE : Admin) | Modules/ChangeEnablement |
-| GET/POST/PUT `/api/configuration-items[/{id}]`, POST `/{id}/relations`, DELETE `/relations/{id}` | User | CI et relations (DELETE d'un CI : Admin) | Modules/ServiceConfigurationManagement |
+| GET/POST/PUT `/api/changes[/{id}]`, GET `/api/changes/schedule`, GET `/api/changes/{id}/conflicts` | User | Changements, calendrier et conflits ; Autorisé/Rejeté : Manager (DELETE : Admin) | Modules/ChangeEnablement |
+| GET/POST/PUT `/api/configuration-items[/{id}]`, GET `/{id}/impact`, POST `/{id}/relations`, DELETE `/relations/{id}` | User | CI, relations et vue d'impact transitive (DELETE d'un CI : Admin) | Modules/ServiceConfigurationManagement |
 | GET `/api/services`, `/api/agreements` ; POST/PUT | User ; écriture Manager | Catalogue des services, SLA (DELETE : Admin) | Modules/ServiceLevelManagement |
 | GET/POST/PUT `/api/knowledge[/{id}]` | User | Articles ; Publié : Manager (DELETE : Admin) | Modules/KnowledgeManagement |
 | GET/POST/PUT `/api/improvements[/{id}]` | User | Améliorations ; Validée/Abandonnée : Manager (DELETE : Admin) | Modules/ContinualImprovement |

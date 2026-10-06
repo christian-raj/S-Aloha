@@ -42,9 +42,16 @@ export default function ChangeSchedule() {
           <table>
             <thead><tr><th>Début</th><th>Fin</th><th>Référence</th><th>Titre</th><th>Type</th><th>Risque</th><th>Responsable</th><th>Statut</th></tr></thead>
             <tbody>{w.items.map(c => (
-              <tr key={c.id} className="clickable" onClick={() => nav('/changes/' + c.id)}>
+              <tr key={c.id} className="clickable" onClick={() => nav('/changes/' + c.id)}
+                style={c.conflicts.length ? { boxShadow: 'inset 4px 0 0 var(--accent-red)' } : undefined}>
                 <td>{dateTimeFr(c.plannedStart)}</td><td>{dateTimeFr(c.plannedEnd)}</td>
-                <td><b>{c.reference}</b></td><td>{c.title}</td><td>{c.changeType}</td><td>{c.risk}</td>
+                <td><b>{c.reference}</b></td>
+                <td>{c.title}
+                  {c.conflicts.map(x => (
+                    <div key={x.changeId + '-' + x.ciId} style={{ color: 'var(--accent-red)', fontSize: 'var(--fs-xs)', fontWeight: 600 }}>
+                      Conflit avec {x.changeReference} sur {x.ciReference} {x.ciTitle}
+                    </div>))}
+                </td><td>{c.changeType}</td><td>{c.risk}</td>
                 <td>{c.ownerDisplayName || '—'}</td>
                 <td><StatusBadge statuses={changeStatuses} status={c.status} /></td>
               </tr>))}

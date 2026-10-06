@@ -34,6 +34,56 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
         q.Include(c => c.Outgoing).ThenInclude(r => r.Target)
          .Include(c => c.Incoming).ThenInclude(r => r.Source);
 
+    /// <summary>
+    /// Vue d'impact transitive : en aval, ce qui est touché si ce CI tombe ;
+    /// en amont, ce dont il dépend. Parcours en largeur sur tout le graphe des
+    /// relations : chaque CI n'apparaît qu'une fois, à sa plus courte distance,
+    /// ce qui arrête aussi le parcours en cas de cycle.
+    /// </summary>
+    [HttpGet("{id:int}/impact")]
+    public async Task<IActionResult> Impact(int id)
+    {
+        if (!await Db.ConfigurationItems.AnyAsync(c => c.Id == id)) return NotFound();
+        var relations = await Db.CiRelationships.AsNoTracking().ToListAsync();
+        // Arcs « la panne de From touche To », avec la relation d'origine.
+        var impacts = relations.Select(r => CiRelationship.FailureFlowsFromTarget(r.Type)
+            ? (From: r.TargetId, To: r.SourceId, r.Type)
+            : (From: r.SourceId, To: r.TargetId, r.Type)).ToList();
+
+        var downstream = Traverse(id, impacts.ToLookup(a => a.From, a => (Next: a.To, a.Type)));
+        var upstream = Traverse(id, impacts.ToLookup(a => a.To, a => (Next: a.From, a.Type)));
+
+        var ids = downstream.Concat(upstream).SelectMany(n => new[] { n.Id, n.Via }).Distinct().ToList();
+        var cis = await Db.ConfigurationItems.AsNoTracking().Where(c => ids.Contains(c.Id))
+            .Select(c => new { c.Id, c.Reference, c.Title, c.CiType, c.Status }).ToDictionaryAsync(c => c.Id);
+        object Describe(ImpactNode n) => new
+        {
+            cis[n.Id].Id, cis[n.Id].Reference, cis[n.Id].Title, cis[n.Id].CiType, cis[n.Id].Status,
+            n.Depth, n.Relation, Via = new { cis[n.Via].Id, cis[n.Via].Reference, cis[n.Via].Title }
+        };
+        return Ok(new { Downstream = downstream.Select(Describe), Upstream = upstream.Select(Describe) });
+    }
+
+    private record ImpactNode(int Id, int Depth, int Via, string Relation);
+
+    private static List<ImpactNode> Traverse(int start, ILookup<int, (int Next, string Type)> edges)
+    {
+        var seen = new HashSet<int> { start };
+        var result = new List<ImpactNode>();
+        var queue = new Queue<(int Id, int Depth)>([(start, 0)]);
+        while (queue.Count > 0)
+        {
+            var (current, depth) = queue.Dequeue();
+            foreach (var (next, type) in edges[current])
+            {
+                if (!seen.Add(next)) continue;
+                result.Add(new ImpactNode(next, depth + 1, current, type));
+                queue.Enqueue((next, depth + 1));
+            }
+        }
+        return result;
+    }
+
     /// <summary>Relie ce CI à un autre, désigné par sa référence.</summary>
     [HttpPost("{id:int}/relations")]
     public async Task<IActionResult> AddRelation(int id, CiRelationshipDto dto)
