@@ -3,7 +3,7 @@
 <sub>[← Documentation](../readme.md) · [Toutes les décisions](readme.md)</sub>
 
 - **Date** : 2026-10-06
-- **Statut** : accepté
+- **Statut** : accepté — amendé le 2026-10-06 (voir l'addendum)
 - **Décideur** : Christian Rajaonary
 
 ## Contexte
@@ -28,8 +28,9 @@ Organiser le code en **un socle et un module par processus ITIL** :
   `SAloha.Api.Modules.<Processus>`.
 - **Frontend** : `src/core/` (Layout, Login, Console, Reporting, composants partagés) et
   `src/modules/<processus>/` (pages et composants propres).
-- **Registre** `frontend/src/modules/registry.js` : **source unique** de la navigation.
-  Chaque processus y est déclaré ; il passe de `soon` (« Bientôt ») à `active` le jour où son interface existe, sans autre
+- **Registre** `frontend/src/modules/registry.js` : **source unique** de la navigation et
+  de la page de connexion. Chaque processus y est déclaré avec son pilier S-A-L-O-H-A ; il
+  passe de `soon` (« Bientôt ») à `active` le jour où son interface existe, sans autre
   modification de la navigation.
 - Les routes d'API existantes sont conservées à l'identique.
 - Renommage de la configuration par défaut : groupes AD `GRP-SALOHA-*`, compte
@@ -61,3 +62,11 @@ Organiser le code en **un socle et un module par processus ITIL** :
   pour un déploiement on-prem en Docker Compose.
 - **Garder l'arborescence plate et préfixer les fichiers** — écarté : ne rend pas visible
   la frontière socle / processus, qui est précisément ce qu'on veut protéger.
+
+## Addendum — 2026-10-06
+
+La notion de **piliers S-A-L-O-H-A** est retirée de la plateforme : le registre ne déclare
+plus de pilier par processus (`PILLARS`, champ `pillar` et `pillarOf` supprimés), la barre
+latérale n'affiche plus la lettre du pilier, et la page de connexion ne les présente plus.
+Le registre `frontend/src/modules/registry.js` reste la **source unique de la navigation** ;
+le reste de la décision est inchangé.
