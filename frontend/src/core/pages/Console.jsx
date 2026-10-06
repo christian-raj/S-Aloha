@@ -1,29 +1,70 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api } from '../../api'
+import { api, getUser } from '../../api'
 import { ITEM_TYPES, hrefOf } from '../itemTypes'
 
 const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
-const dateFr = d => new Date(d).toLocaleDateString('fr-FR')
+const dateFr = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
 
-/** Carte d'une zone "à traiter" : bord coloré + compteur, masquée si vide. */
-function TodoSection({ title, tone, rows, cols, onRow, hint }) {
+const ROLE = {
+  User: { label: 'Utilisateur', intro: 'Vos actions et les dossiers dont vous êtes responsable, du plus urgent au moins urgent.' },
+  Manager: { label: 'Gestionnaire', intro: 'Ce qui est urgent, ce qui attend votre décision, puis ce qu’il faut relancer.' },
+  Admin: { label: 'Administrateur', intro: 'Ce qui est urgent, ce qui attend votre décision, puis ce qu’il faut relancer.' },
+}
+
+const Chevron = () => (
+  <svg className="row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 6l6 6-6 6" /></svg>
+)
+const Check = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+)
+
+/** Une liste du tableau de bord : titre, aide, lignes compactes cliquables.
+ * Masquée si vide — la console ne montre que ce qui demande quelque chose. */
+function List({ title, hint, tone, rows, render, onRow }) {
   if (rows.length === 0) return null
   return (
-    <div className="card todo" style={{ borderLeft: `4px solid ${tone}`, marginBottom: 14 }}>
-      <h3 style={{ color: 'var(--navy)', marginBottom: 4 }}>
-        {title} <span style={{ color: tone, fontWeight: 800 }}>({rows.length})</span>
-      </h3>
-      {hint && <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 10 }}>{hint}</p>}
-      <table>
-        <thead><tr>{cols.map(c => <th key={c.h}>{c.h}</th>)}</tr></thead>
-        <tbody>{rows.map(r => (
-          <tr key={(r.type ?? '') + r.id} className="clickable" onClick={() => onRow(r)}>
-            {cols.map(c => <td key={c.h}>{c.v(r)}</td>)}
-          </tr>))}
-        </tbody>
-      </table>
-    </div>
+    <section className={'c-list tone-' + tone}>
+      <header>
+        <h3>{title} <span className="c-count">{rows.length}</span></h3>
+        {hint && <p>{hint}</p>}
+      </header>
+      <ul>
+        {rows.map(r => (
+          <li key={(r.type ?? '') + r.id}>
+            <button type="button" onClick={() => onRow(r)}>
+              {render(r)}
+              <Chevron />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+/** Contenu d'une ligne : référence, titre, puis métadonnées alignées à droite. */
+const Row = ({ reference, title, meta }) => (
+  <>
+    <span className="row-ref">{reference}</span>
+    <span className="row-title">{title}</span>
+    <span className="row-meta">{meta}</span>
+  </>
+)
+
+const Roles = ({ roles }) => roles.map(x => <span key={x} className={'badge ' + x}>{x}</span>)
+
+/** Groupe de la console (Urgent, Décisions…) : n'apparaît que s'il a du contenu. */
+function Group({ id, title, total, children }) {
+  if (total === 0) return null
+  return (
+    <section className="c-group" id={id} aria-labelledby={id + '-t'}>
+      <h2 id={id + '-t'}>{title}</h2>
+      {children}
+    </section>
   )
 }
 
@@ -34,147 +75,117 @@ export default function Console() {
   const nav = useNavigate()
   useEffect(() => { api.console.get().then(setC).catch(e => setError(e.message)) }, [])
   if (error) return <div className="error">{error}</div>
-  if (!c) return <p>Chargement…</p>
+  if (!c) return <p className="muted">Chargement…</p>
 
   const goP = r => nav('/problems/' + (r.problem ? r.problem.id : r.id))
   const goItem = r => nav(hrefOf(r.type, r.id))
   const m = c.management
-  // Colonnes d'une ligne « enregistrement » d'un autre processus (type, référence, titre, statut).
-  const itemCols = [
-    { h: 'Processus', v: r => ITEM_TYPES[r.type]?.label ?? r.type },
-    { h: 'Référence', v: r => <b>{r.reference}</b> },
-    { h: 'Titre', v: r => r.title },
-    { h: 'Statut', v: r => r.status }
-  ]
+  const role = ROLE[c.role] ?? ROLE.User
+  const firstName = (getUser()?.displayName || '').split(' ')[0]
 
-  // --- Zone 1 : à traiter (par ordre de criticité) ---
   const myOverdue = c.myActions.filter(a => a.overdue)
   const myTodo = c.myActions.filter(a => !a.overdue)
-  const nbTodo = myOverdue.length + myTodo.length + c.myAssignments.length
-    + (m ? m.overdueActions.length + m.toQualify.length + m.knownErrorsNoAction.length
-         + m.majorIncidents.length + m.decisions.length + m.reviewsDue.length : 0)
+  const L = k => (m ? m[k].length : 0)
 
-  const roleLabel = { Admin: 'administrateur', Manager: 'gestionnaire', User: 'utilisateur' }[c.role]
+  // Les quatre temps de la console, dans l'ordre où l'on doit les traiter.
+  const urgent = myOverdue.length + L('majorIncidents')
+  const decide = L('decisions') + L('toQualify')
+  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue')
+  const work = myTodo.length + c.myAssignments.length
+  const follow = c.myProblems.length + L('inAnalysisNoRootCause')
+
+  const tiles = [
+    { id: 'urgent', label: 'Urgent', caption: 'Retards et incidents majeurs', n: urgent, tone: 'red' },
+    m && { id: 'decisions', label: 'Décisions', caption: 'À autoriser, approuver, qualifier', n: decide, tone: 'blue' },
+    m && { id: 'relances', label: 'Relances', caption: 'Retards d’équipe, revues échues', n: chase, tone: 'amber' },
+    { id: 'travail', label: 'Mon travail', caption: 'Actions et dossiers en cours', n: work, tone: 'emerald' },
+  ].filter(Boolean)
+
+  const itemRow = r => <Row reference={r.reference}
+    title={r.title}
+    meta={<><span className="row-kind">{ITEM_TYPES[r.type]?.label ?? r.type}</span><span className="row-status">{r.status}</span></>} />
 
   return (
     <>
-      <h1 className="page-title">Ma console</h1>
-      <p className="page-sub">Console {roleLabel} — ce qui requiert votre intervention apparaît en premier.</p>
+      <header className="c-head">
+        <p className="c-eyebrow">{today} · Console {role.label.toLowerCase()}</p>
+        <h1 className="page-title">{firstName ? `Bonjour, ${firstName}` : 'Ma console'}</h1>
+        <p className="page-sub">{role.intro}</p>
+      </header>
 
-      {/* Bandeau de synthèse */}
-      <div className={'card banner ' + (nbTodo > 0 ? 'warn' : 'ok')}>
-        <span style={{ fontSize: 26 }}>{nbTodo > 0 ? '⚠' : '✓'}</span>
-        <div>
-          <b style={{ color: 'var(--navy)' }}>
-            {nbTodo > 0 ? `${nbTodo} élément${nbTodo > 1 ? 's' : ''} à traiter` : 'Rien à traiter'}
-          </b>
-          <div style={{ fontSize: 13, color: 'var(--muted)' }}>
-            {nbTodo > 0 ? 'Les zones ci-dessous sont classées par criticité.' : 'Aucune intervention requise de votre part pour le moment.'}
+      <nav className="c-tiles" aria-label="Synthèse">
+        {tiles.map(t => (
+          <a key={t.id} href={'#' + t.id} className={'c-tile tone-' + t.tone + (t.n === 0 ? ' is-zero' : '')}
+            onClick={e => { e.preventDefault(); document.getElementById(t.id)?.scrollIntoView({ behavior: 'smooth' }) }}
+            aria-disabled={t.n === 0}>
+            <span className="c-tile-n">{t.n}</span>
+            <span className="c-tile-l">{t.label}</span>
+            <span className="c-tile-c">{t.caption}</span>
+          </a>
+        ))}
+      </nav>
+
+      {urgent + decide + chase + work === 0 && (
+        <div className="c-clear">
+          <span className="c-clear-icon"><Check /></span>
+          <div>
+            <b>Tout est à jour</b>
+            <p>Aucune intervention ne vous est demandée pour le moment.</p>
           </div>
-        </div>
-      </div>
-
-      {/* ---- Zone À TRAITER ---- */}
-      <h2 style={{ color: 'var(--danger)', fontSize: 17, margin: '0 0 12px' }}>À traiter</h2>
-
-      <TodoSection title="Mes actions en retard" tone="var(--danger)" rows={myOverdue} onRow={goP}
-        hint="Échéance dépassée : à traiter ou replanifier immédiatement."
-        cols={[
-          { h: 'Action', v: r => <b>{r.title}</b> },
-          { h: 'Mon rôle', v: r => r.myRoles.map(x => <span key={x} className={'badge ' + x} style={{ marginRight: 4 }}>{x}</span>) },
-          { h: 'Problème', v: r => r.problem.reference },
-          { h: 'Échéance', v: r => <span style={{ color: 'var(--danger)', fontWeight: 700 }}>{dateFr(r.dueDate)} ⚠</span> }
-        ]} />
-
-      {m && <TodoSection title="Incidents majeurs en cours" tone="var(--danger)" rows={m.majorIncidents} onRow={goItem}
-        hint="Interruptions majeures : coordonner le rétablissement et la communication."
-        cols={itemCols.slice(1)} />}
-
-      {m && <TodoSection title="Problèmes à qualifier" tone="var(--blue)" rows={m.toQualify} onRow={goP}
-        hint="Nouveaux problèmes en attente de qualification par un gestionnaire."
-        cols={[
-          { h: 'Référence', v: r => <b>{r.reference}</b> },
-          { h: 'Titre', v: r => r.title },
-          { h: 'Priorité', v: r => <span className={'badge ' + r.priority}>{r.priority}</span> },
-          { h: 'Déclaré par', v: r => r.createdByDisplayName },
-          { h: 'Le', v: r => dateFr(r.createdAt) }
-        ]} />}
-
-      {m && <TodoSection title="Décisions en attente" tone="var(--blue)" rows={m.decisions} onRow={goItem}
-        hint="Changements à autoriser, demandes à approuver, améliorations à valider."
-        cols={itemCols} />}
-
-      {m && <TodoSection title="Erreurs connues sans action corrective" tone="var(--warn)" rows={m.knownErrorsNoAction} onRow={goP}
-        hint="Une erreur connue doit porter au moins une action corrective planifiée."
-        cols={[
-          { h: 'Référence', v: r => <b>{r.reference}</b> },
-          { h: 'Titre', v: r => r.title },
-          { h: 'Priorité', v: r => <span className={'badge ' + r.priority}>{r.priority}</span> }
-        ]} />}
-
-      {m && <TodoSection title="Actions en retard (toutes équipes)" tone="var(--warn)" rows={m.overdueActions} onRow={goP}
-        hint="À relancer auprès des responsables (R)."
-        cols={[
-          { h: 'Action', v: r => <b>{r.title}</b> },
-          { h: 'Problème', v: r => r.problem.reference },
-          { h: 'Échéance', v: r => <span style={{ color: 'var(--danger)', fontWeight: 700 }}>{dateFr(r.dueDate)}</span> },
-          { h: 'Responsables', v: r => r.responsibles.join(', ') || '—' }
-        ]} />}
-
-      {m && <TodoSection title="Revues échues" tone="var(--warn)" rows={m.reviewsDue} onRow={goItem}
-        hint="Articles publiés et SLA en vigueur dont la date de revue est passée."
-        cols={itemCols} />}
-
-      <TodoSection title="Mes actions en cours" tone="var(--blue)" rows={myTodo} onRow={goP}
-        cols={[
-          { h: 'Action', v: r => <b>{r.title}</b> },
-          { h: 'Mon rôle', v: r => r.myRoles.map(x => <span key={x} className={'badge ' + x} style={{ marginRight: 4 }}>{x}</span>) },
-          { h: 'Problème', v: r => r.problem.reference },
-          { h: 'Échéance', v: r => r.dueDate ? dateFr(r.dueDate) : '—' },
-          { h: 'Statut', v: r => r.status }
-        ]} />
-
-      <TodoSection title="Mes incidents, demandes, changements et améliorations" tone="var(--blue)"
-        rows={c.myAssignments} onRow={goItem} hint="Ouverts et dont vous êtes responsable (assigné, porteur)."
-        cols={itemCols} />
-
-      {nbTodo === 0 && <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 20 }}>Aucun élément à traiter. 👍</p>}
-
-      {/* ---- Zone À SUIVRE (informatif, ton neutre) ---- */}
-      <h2 style={{ color: 'var(--muted)', fontSize: 17, margin: '26px 0 12px' }}>À suivre</h2>
-
-      <div className="card" style={{ marginBottom: 14, opacity: .93 }}>
-        <h3 style={{ color: 'var(--navy)', marginBottom: 10 }}>Mes problèmes déclarés (ouverts) <span style={{ color: 'var(--muted)', fontWeight: 600 }}>({c.myProblems.length})</span></h3>
-        {c.myProblems.length === 0
-          ? <p style={{ color: 'var(--muted)', fontSize: 13 }}>Aucun problème ouvert déclaré par vous.</p>
-          : <table><thead><tr><th>Référence</th><th>Titre</th><th>Statut</th><th>Priorité</th><th>Déclaré le</th></tr></thead>
-            <tbody>{c.myProblems.map(r => (
-              <tr key={r.id} className="clickable" onClick={() => goP(r)}>
-                <td><b>{r.reference}</b></td><td>{r.title}</td>
-                <td><span className={'badge ' + badge(r.status)}>{r.status}</span></td>
-                <td><span className={'badge ' + r.priority}>{r.priority}</span></td>
-                <td>{dateFr(r.createdAt)}</td>
-              </tr>))}</tbody></table>}
-      </div>
-
-      {m && (
-        <div className="card" style={{ marginBottom: 14, opacity: .93 }}>
-          <h3 style={{ color: 'var(--navy)', marginBottom: 10 }}>Analyses en cours sans cause racine <span style={{ color: 'var(--muted)', fontWeight: 600 }}>({m.inAnalysisNoRootCause.length})</span></h3>
-          {m.inAnalysisNoRootCause.length === 0
-            ? <p style={{ color: 'var(--muted)', fontSize: 13 }}>Toutes les analyses en cours ont une cause racine identifiée.</p>
-            : <table><thead><tr><th>Référence</th><th>Titre</th><th>Priorité</th><th>Analyses</th></tr></thead>
-              <tbody>{m.inAnalysisNoRootCause.map(r => (
-                <tr key={r.id} className="clickable" onClick={() => goP(r)}>
-                  <td><b>{r.reference}</b></td><td>{r.title}</td>
-                  <td><span className={'badge ' + r.priority}>{r.priority}</span></td>
-                  <td>{r.analysesCount}</td>
-                </tr>))}</tbody></table>}
         </div>
       )}
 
-      <p style={{ marginTop: 8 }}>
-        Les indicateurs et la volumétrie de l'application sont dans le <Link to="/reports">Reporting →</Link>
-      </p>
+      <Group id="urgent" title="Urgent" total={urgent}>
+        <List title="Mes actions en retard" tone="red" rows={myOverdue} onRow={goP}
+          hint="Échéance dépassée : à traiter ou à replanifier."
+          render={r => <Row reference={r.problem.reference} title={r.title}
+            meta={<><Roles roles={r.myRoles} /><span className="row-date is-late">{dateFr(r.dueDate)}</span></>} />} />
+        {m && <List title="Incidents majeurs en cours" tone="red" rows={m.majorIncidents} onRow={goItem}
+          hint="Coordonner le rétablissement et la communication." render={itemRow} />}
+      </Group>
+
+      {m && <Group id="decisions" title="Décisions" total={decide}>
+        <List title="En attente de votre décision" tone="blue" rows={m.decisions} onRow={goItem}
+          hint="Changements à autoriser, demandes à approuver, améliorations à valider." render={itemRow} />
+        <List title="Problèmes à qualifier" tone="blue" rows={m.toQualify} onRow={goP}
+          hint="Nouveaux problèmes : impact, urgence et catégorie à confirmer."
+          render={r => <Row reference={r.reference} title={r.title}
+            meta={<><span className={'badge ' + r.priority}>{r.priority}</span><span className="row-who">{r.createdByDisplayName}</span><span className="row-date">{dateFr(r.createdAt)}</span></>} />} />
+      </Group>}
+
+      {m && <Group id="relances" title="Relances" total={chase}>
+        <List title="Actions en retard, toutes équipes" tone="amber" rows={m.overdueActions} onRow={goP}
+          hint="À relancer auprès des responsables (R)."
+          render={r => <Row reference={r.problem.reference} title={r.title}
+            meta={<><span className="row-who">{r.responsibles.join(', ') || '—'}</span><span className="row-date is-late">{dateFr(r.dueDate)}</span></>} />} />
+        <List title="Erreurs connues sans action corrective" tone="amber" rows={m.knownErrorsNoAction} onRow={goP}
+          hint="Une erreur connue doit porter au moins une action planifiée."
+          render={r => <Row reference={r.reference} title={r.title}
+            meta={<span className={'badge ' + r.priority}>{r.priority}</span>} />} />
+        <List title="Revues échues" tone="amber" rows={m.reviewsDue} onRow={goItem}
+          hint="Articles publiés et SLA en vigueur dont la date de revue est passée." render={itemRow} />
+      </Group>}
+
+      <Group id="travail" title="Mon travail" total={work}>
+        <List title="Mes actions en cours" tone="emerald" rows={myTodo} onRow={goP}
+          render={r => <Row reference={r.problem.reference} title={r.title}
+            meta={<><Roles roles={r.myRoles} /><span className="row-status">{r.status}</span>{r.dueDate && <span className="row-date">{dateFr(r.dueDate)}</span>}</>} />} />
+        <List title="Mes dossiers ouverts" tone="emerald" rows={c.myAssignments} onRow={goItem}
+          hint="Incidents, demandes, changements et améliorations dont vous êtes responsable." render={itemRow} />
+      </Group>
+
+      <Group id="suivi" title="À suivre" total={follow}>
+        <div className="c-follow">
+          <List title="Mes problèmes déclarés" tone="neutral" rows={c.myProblems} onRow={goP}
+            render={r => <Row reference={r.reference} title={r.title}
+              meta={<span className={'badge ' + badge(r.status)}>{r.status}</span>} />} />
+          {m && <List title="Analyses sans cause racine" tone="neutral" rows={m.inAnalysisNoRootCause} onRow={goP}
+            render={r => <Row reference={r.reference} title={r.title}
+              meta={<span className="row-who">{r.analysesCount} analyse{r.analysesCount > 1 ? 's' : ''}</span>} />} />}
+        </div>
+      </Group>
+
+      <p className="c-foot">Indicateurs et volumétrie : <Link to="/reports">Reporting</Link></p>
     </>
   )
 }
