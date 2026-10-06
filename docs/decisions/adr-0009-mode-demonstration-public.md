@@ -44,6 +44,12 @@ Les mots de passe de démonstration sont **publics**, écrits dans le fichier et
 - Les données d'exemple (problèmes, incidents…) restent à ajouter : l'application démarre
   vide.
 
+## Addendum — 2026-10-06
+
+Le mode démonstration charge désormais un jeu de données d'exemple fictif, par l'API
+(service `donnees`, `demo/donnees/charger.py`) : la console et le reporting ont de quoi
+montrer dès la première connexion. Le reste de la décision est inchangé.
+
 ## Alternatives envisagées
 
 - **Authentification locale de secours** (comptes en base, mode « dev ») — écarté : un
