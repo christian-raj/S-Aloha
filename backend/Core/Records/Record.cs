@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using SAloha.Api.Core.Data;
 
 namespace SAloha.Api.Core.Records;
@@ -58,4 +59,23 @@ public static class Dates
         DateTimeKind.Local => d.Value.ToUniversalTime(),
         _ => DateTime.SpecifyKind(d.Value, DateTimeKind.Utc)
     };
+}
+
+/// <summary>
+/// Longueurs maximales ([MaxLength]) contrôlées avant l'enregistrement : sans
+/// cela, PostgreSQL refuse la ligne et le client reçoit une 500 sans motif.
+/// </summary>
+public static class Lengths
+{
+    public static string? Check(object entity)
+    {
+        foreach (var prop in entity.GetType().GetProperties())
+        {
+            var max = prop.GetCustomAttribute<MaxLengthAttribute>()?.Length;
+            if (max is null || prop.PropertyType != typeof(string)) continue;
+            if (prop.GetValue(entity) is string v && v.Length > max)
+                return $"Le champ « {char.ToLowerInvariant(prop.Name[0])}{prop.Name[1..]} » dépasse {max} caractères ({v.Length}).";
+        }
+        return null;
+    }
 }

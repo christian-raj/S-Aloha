@@ -65,8 +65,10 @@ Les processus autres que les problèmes héritent d'un même socle :
   détail, création avec référence (`References.CreateAsync`), modification avec contrôle
   du statut, suppression (Admin, liens compris). Un module ne déclare que son préfixe,
   ses statuts et ses règles : `Apply` (champs et valeurs fermées), `RequiresManager`
-  (statuts réservés), `CheckTransition` (pré-conditions), `OnStatusChanged` (horodatages),
-  `InitialStatus`, `ManagerOnly` (référentiels), `Filter`/`Search`/`WithDetails`.
+  (statuts réservés), `CheckStatus` (conditions du statut, vérifiées à chaque
+  enregistrement), `OnStatusChanged` (horodatages), `InitialStatus`, `ManagerOnly`
+  (référentiels), `Filter`/`Search`/`WithDetails`, `ListItems` (colonnes du registre).
+  Les longueurs `[MaxLength]` sont contrôlées avant l'enregistrement (`Lengths`).
 - **`References.CreateAsync`** — référence annuelle `XXX-AAAA-NNNN` (plus grand numéro + 1,
   nouvelle tentative sur collision de l'index unique) ; utilisée aussi par les problèmes.
 
@@ -174,6 +176,8 @@ Détails (registre des modules, thème, design) : [frontend.md](frontend.md).
   [revue fonctionnelle](../archives/revue-fonctionnelle-2026-10-06.md) — 6 tests d'API
   (`ProblemReferenceTests`, `ProblemLifecycleTests`) et 4 tests d'interface
   (`ProblemDetail.test.jsx`, `FtaTree.test.jsx`), qui échouent tous sur le code d'avant correctif ;
-  modules ITIL 4 — 16 tests d'API (`ItilModulesTests` : référence et statut inconnu par module,
-  créations simultanées, décisions de gestionnaire, pré-conditions, liens, console) et 2 tests
+  modules ITIL 4 — 23 tests d'API (`ItilModulesTests` : référence et statut inconnu par module,
+  créations simultanées, décisions de gestionnaire, conditions de statut, liens, console,
+  constats de la revue de code : changement rejeté, type d'un changement autorisé, amélioration
+  abandonnée, conditions tenues hors changement de statut, longueurs, registre allégé) et 2 tests
   d'interface (`RecordForm.test.jsx` : conversions formulaire ↔ API).

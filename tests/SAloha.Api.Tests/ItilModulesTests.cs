@@ -213,4 +213,77 @@ public class ItilModulesTests(ApiFixture api)
         Assert.Contains(m.GetProperty("decisions").EnumerateArray(), d => Id(d) == Id(req) && Str(d, "type") == "request");
         Assert.Contains(m.GetProperty("majorIncidents").EnumerateArray(), d => Id(d) == Id(inc));
     }
+
+    // --- Revue de code du 2026-10-06 ---
+
+    [Fact]
+    public async Task Changement_rejete_ne_peut_etre_ni_planifie_ni_mis_en_oeuvre_ni_clos()
+    {
+        var user = api.Client("User");
+        var c = await Create(user, "/api/changes", Change("Rejeté", "Normal"));
+        await Json(await Put(api.Client("Manager"), "/api/changes", Id(c), Change("Rejeté", "Normal", "Rejeté")));
+
+        foreach (var to in new[] { "Planifié", "Mis en œuvre", "Clos" })
+            Assert.Equal(HttpStatusCode.BadRequest,
+                (await Put(user, "/api/changes", Id(c), Change("Rejeté", "Normal", to, "Réussi"))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Changement_autorise_ne_change_plus_de_type()
+    {
+        var user = api.Client("User");
+        var c = await Create(user, "/api/changes", Change("Standard détourné", "Standard"));
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await Put(user, "/api/changes", Id(c), Change("Standard détourné", "Urgent", "Autorisé"))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Amelioration_abandonnee_ne_repart_pas_sans_nouvelle_validation()
+    {
+        var user = api.Client("User");
+        var manager = api.Client("Manager");
+        object Dto(string? status) => new { title = "Abandon", step = 1, priority = "Moyenne", status };
+        var a = await Create(user, "/api/improvements", Dto(null));
+        await Json(await Put(manager, "/api/improvements", Id(a), Dto("Validée")));
+        await Json(await Put(manager, "/api/improvements", Id(a), Dto("Abandonnée")));
+
+        Assert.Equal(HttpStatusCode.BadRequest, (await Put(user, "/api/improvements", Id(a), Dto("En cours"))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Les_conditions_d_un_statut_tiennent_aussi_quand_on_modifie_sans_changer_de_statut()
+    {
+        var user = api.Client("User");
+        var i = await Create(user, "/api/incidents", Incident("Invariant"));
+        await Json(await Put(user, "/api/incidents", Id(i), Incident("Invariant", "Résolu", "Redémarrage")));
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await Put(user, "/api/incidents", Id(i), Incident("Invariant", "Résolu", ""))).StatusCode);
+
+        var c = await Create(user, "/api/changes", Change("Invariant", "Standard"));
+        await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos", "Réussi")));
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos"))).StatusCode);
+    }
+
+    [Theory]
+    [InlineData("/api/incidents")]
+    [InlineData("/api/problems")]
+    public async Task Texte_trop_long_refuse_en_400_et_non_500(string path)
+    {
+        var res = await api.Client().PostAsJsonAsync(path, new
+        {
+            title = new string('x', 201), description = "d", impact = "Moyen", urgency = "Moyenne",
+            category = "c", affectedService = "s"
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task La_liste_des_articles_ne_renvoie_pas_leur_contenu()
+    {
+        var client = api.Client();
+        await Create(client, "/api/knowledge", new { title = "Léger", articleType = "FAQ", content = new string('c', 5000) });
+        var list = await Json(await client.GetAsync("/api/knowledge"));
+        Assert.All(list.EnumerateArray(), a => Assert.False(a.TryGetProperty("content", out _)));
+    }
 }

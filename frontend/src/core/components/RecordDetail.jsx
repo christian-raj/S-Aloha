@@ -4,8 +4,7 @@ import { getUser } from '../../api'
 import RecordForm, { toForm, toPayload } from './RecordForm'
 import StatusBadge from './StatusBadge'
 import LinkedItems from './LinkedItems'
-
-const dateFr = d => new Date(d).toLocaleDateString('fr-FR')
+import { dateFr } from '../fields'
 
 /** Édition : statut + champs ; recréé (clé) à chaque rechargement de l'enregistrement. */
 function Editor({ config, record, onSaved }) {

@@ -25,8 +25,8 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         return null;
     }
 
-    protected override string? CheckTransition(Incident e, string to) =>
-        Incident.Done.Contains(to) && string.IsNullOrWhiteSpace(e.Resolution)
+    protected override string? CheckStatus(Incident e, string status) =>
+        Incident.Done.Contains(status) && string.IsNullOrWhiteSpace(e.Resolution)
             ? "Décrire la résolution avant de résoudre ou clore l'incident." : null;
 
     protected override void OnStatusChanged(Incident e, string from)

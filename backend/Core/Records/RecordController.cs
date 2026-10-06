@@ -42,14 +42,22 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     protected virtual bool StatusChosenAtCreation => false;
     /// <summary>Statuts que seul un gestionnaire peut poser (autoriser, approuver, publier…).</summary>
     protected virtual bool RequiresManager(string status) => false;
-    /// <summary>Pré-condition d'un changement de statut : message d'erreur (400) ou null.</summary>
-    protected virtual string? CheckTransition(T e, string to) => null;
+    /// <summary>
+    /// Conditions du statut <paramref name="status"/> (résolution renseignée,
+    /// autorisation obtenue…) : message d'erreur (400) ou null. Vérifiées à
+    /// l'entrée dans le statut ET à chaque modification ultérieure : vider la
+    /// résolution d'un incident résolu est refusé comme le serait sa résolution
+    /// sans description. <c>e.Status</c> est encore le statut actuel.
+    /// </summary>
+    protected virtual string? CheckStatus(T e, string status) => null;
     /// <summary>Effets d'un changement de statut (horodatages) ; <c>from</c> vide à la création.</summary>
     protected virtual void OnStatusChanged(T e, string from) { }
     protected virtual IQueryable<T> Filter(IQueryable<T> q) => q;
     protected virtual IQueryable<T> Search(IQueryable<T> q, string key) =>
         q.Where(x => x.Title.ToLower().Contains(key) || x.Reference.ToLower().Contains(key));
     protected virtual IQueryable<T> WithDetails(IQueryable<T> q) => q;
+    /// <summary>Lignes du registre : un module allège ici ses champs volumineux (contenu, plans).</summary>
+    protected virtual async Task<IEnumerable<object>> ListItems(IQueryable<T> q) => await q.ToListAsync();
 
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? q, [FromQuery] string? owner)
@@ -63,7 +71,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
             var key = (owner == "me" ? Me : owner).ToLower();
             query = query.Where(x => x.OwnerId != null && x.OwnerId.ToLower() == key);
         }
-        return Ok(await query.OrderByDescending(x => x.CreatedAt).ToListAsync());
+        return Ok(await ListItems(query.OrderByDescending(x => x.CreatedAt)));
     }
 
     [HttpGet("{id:int}")]
@@ -103,15 +111,20 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         var error = Fill(e, dto, false) ?? await ValidateAsync(e);
         if (error is not null) return BadRequest(new { message = error });
 
-        if (dto.Status is not null && dto.Status != e.Status)
+        var target = dto.Status ?? e.Status;
+        var changing = target != e.Status;
+        if (changing)
         {
-            error = Allowed.Check("Statut", dto.Status, Statuses);
+            error = Allowed.Check("Statut", target, Statuses);
             if (error is not null) return BadRequest(new { message = error });
-            if (RequiresManager(dto.Status) && !IsManager) return Forbid();
-            error = CheckTransition(e, dto.Status);
-            if (error is not null) return BadRequest(new { message = error });
+            if (RequiresManager(target) && !IsManager) return Forbid();
+        }
+        error = CheckStatus(e, target);
+        if (error is not null) return BadRequest(new { message = error });
+        if (changing)
+        {
             var from = e.Status;
-            e.Status = dto.Status;
+            e.Status = target;
             OnStatusChanged(e, from);
         }
         e.UpdatedAt = DateTime.UtcNow;
@@ -142,6 +155,6 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         e.OwnerType = hasOwner ? dto.OwnerType ?? "User" : null;
         e.OwnerId = hasOwner ? dto.OwnerId : null;
         e.OwnerDisplayName = hasOwner ? dto.OwnerDisplayName ?? dto.OwnerId : null;
-        return Apply(e, dto, creating);
+        return Apply(e, dto, creating) ?? Lengths.Check(e);
     }
 }

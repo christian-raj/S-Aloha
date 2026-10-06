@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Itil;
 using SAloha.Api.Core.Links;
+using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ProblemManagement;
 
@@ -47,14 +48,17 @@ public class ProblemsController(AppDbContext db) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(ProblemDto dto)
     {
-        var p = await References.CreateAsync(db, "PRB", () => new Problem
+        Problem Build() => new()
         {
             Title = dto.Title, Description = dto.Description,
             Impact = dto.Impact, Urgency = dto.Urgency,
             Priority = Priority.Compute(dto.Impact, dto.Urgency),
             Category = dto.Category, AffectedService = dto.AffectedService,
             CreatedBy = Me, CreatedByDisplayName = MyDisplay
-        });
+        };
+        var error = Lengths.Check(Build());
+        if (error is not null) return BadRequest(new { message = error });
+        var p = await References.CreateAsync(db, "PRB", Build);
         return CreatedAtAction(nameof(Get), new { id = p.Id }, p);
     }
 
@@ -77,6 +81,8 @@ public class ProblemsController(AppDbContext db) : ControllerBase
             // compter dans le MTTR comme résolu (M4, revue du 2026-10-06).
             p.ClosedAt = dto.Status == "Clos" ? DateTime.UtcNow : null;
         }
+        var error = Lengths.Check(p);
+        if (error is not null) return BadRequest(new { message = error });
         p.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
         return Ok(p);

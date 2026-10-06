@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
+using SAloha.Api.Modules.IncidentManagement;
 
 namespace SAloha.Api.Core.Pilotage;
 
@@ -50,7 +51,7 @@ public class ReportsController(AppDbContext db) : ControllerBase
         {
             IncidentMttrHours = incidentMttrHours,
             ChangeSuccessRate = changeSuccessRate,
-            MajorIncidentsOpen = await db.Incidents.CountAsync(i => i.IsMajor && i.Status != "Résolu" && i.Status != "Clos"),
+            MajorIncidentsOpen = await db.Incidents.CountAsync(i => i.IsMajor && !Incident.Done.Contains(i.Status)),
             Processes = processes,
             ProblemsByStatus = problems.GroupBy(p => p.Status)
                 .Select(g => new { Status = g.Key, Count = g.Count() }),

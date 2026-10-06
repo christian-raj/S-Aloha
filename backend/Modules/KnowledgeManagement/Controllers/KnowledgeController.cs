@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
 
@@ -25,14 +26,22 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     // Publier engage l'organisation : réservé aux gestionnaires.
     protected override bool RequiresManager(string status) => status == "Publié";
 
-    protected override string? CheckTransition(KnowledgeArticle e, string to) =>
-        to == "Publié" && string.IsNullOrWhiteSpace(e.Content) ? "Un article publié doit avoir un contenu." : null;
+    protected override string? CheckStatus(KnowledgeArticle e, string status) =>
+        status == "Publié" && string.IsNullOrWhiteSpace(e.Content) ? "Un article publié doit avoir un contenu." : null;
 
     protected override void OnStatusChanged(KnowledgeArticle e, string from)
     {
         if (e.Status == "Publié") { e.PublishedAt = DateTime.UtcNow; e.PublishedBy = MyDisplay; }
         else if (e.Status == "Brouillon") { e.PublishedAt = null; e.PublishedBy = null; }
     }
+
+    // Le registre n'affiche pas le contenu, potentiellement long : il reste dans la fiche.
+    protected override async Task<IEnumerable<object>> ListItems(IQueryable<KnowledgeArticle> q) =>
+        await q.Select(a => new
+        {
+            a.Id, a.Reference, a.Title, a.Status, a.ArticleType, a.Keywords, a.ReviewDate,
+            a.OwnerId, a.OwnerDisplayName, a.CreatedAt
+        }).ToListAsync();
 
     // La recherche porte aussi sur les mots-clés et le contenu.
     protected override IQueryable<KnowledgeArticle> Search(IQueryable<KnowledgeArticle> q, string key) =>

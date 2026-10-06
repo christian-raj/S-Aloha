@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ProblemManagement;
 
@@ -49,6 +50,8 @@ public class ActionsController(AppDbContext db) : ControllerBase
                 AssigneeId = r.AssigneeId, AssigneeDisplayName = r.AssigneeDisplayName
             }).ToList()
         };
+        var error = LengthError(action);
+        if (error is not null) return BadRequest(new { message = error });
         db.Actions.Add(action);
         await db.SaveChangesAsync();
         return Ok(action);
@@ -71,9 +74,14 @@ public class ActionsController(AppDbContext db) : ControllerBase
             Role = r.Role, AssigneeType = r.AssigneeType,
             AssigneeId = r.AssigneeId, AssigneeDisplayName = r.AssigneeDisplayName
         }).ToList();
+        var error = LengthError(a);
+        if (error is not null) return BadRequest(new { message = error });
         await db.SaveChangesAsync();
         return Ok(a);
     }
+
+    private static string? LengthError(CorrectiveAction a) =>
+        Lengths.Check(a) ?? a.Raci.Select(Lengths.Check).FirstOrDefault(e => e is not null);
 
     [HttpDelete("api/actions/{id:int}")]
     [Authorize(Policy = "Manager")]

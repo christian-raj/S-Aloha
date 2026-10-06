@@ -128,7 +128,14 @@ S'appliquent aux processus des sections 9 à 15 (socle `Core/Records` de l'API).
 - **Statut de création** imposé par le processus (on ne crée pas un changement « Autorisé ») ;
   exceptions : CI et services, inventaires dont le statut est choisi à la saisie.
 - **Transitions** libres entre statuts, sauf : statuts réservés aux gestionnaires (403 sinon)
-  et pré-conditions propres à chaque processus (400 avec le motif).
+  et conditions propres à chaque processus (400 avec le motif).
+- Les **conditions d'un statut** sont vérifiées à l'entrée dans le statut **et à chaque
+  modification ultérieure** : vider la résolution d'un incident résolu ou le résultat d'un
+  changement clos est refusé.
+- **Longueurs** : un texte qui dépasse la taille de sa colonne est refusé (400, champ et
+  limite indiqués) ; vaut aussi pour les problèmes, analyses et actions.
+- Les **registres** du changement et des connaissances ne renvoient pas les champs longs
+  (plans, contenu) : ils restent dans la fiche.
 - **Dates de transition** posées à l'entrée du statut et **effacées à la sortie** (réouverture),
   comme `ClosedAt` des problèmes (M4).
 - **Responsable** : un utilisateur ou groupe AD (assigné, propriétaire, porteur selon le
@@ -159,7 +166,7 @@ S'appliquent aux processus des sections 9 à 15 (socle `Core/Records` de l'API).
 `Soumise → Approuvée | Rejetée ; Approuvée → En cours → Satisfaite → Close`
 
 - **Approuvée** et **Rejetée** : gestionnaire uniquement ; l'approbation horodate `ApprovedAt` / `ApprovedBy`.
-- **En cours**, **Satisfaite** et **Close** exigent une demande approuvée (une demande rejetée peut être close).
+- **En cours**, **Satisfaite** et **Close** exigent une demande approuvée : une demande **rejetée est terminée** (ni traitée, ni close).
 - Revenir à **Soumise** ou passer à **Rejetée** efface l'approbation. `FulfilledAt` au passage à Satisfaite ; `ClosedAt` à Close.
 - Champs : objet demandé (obligatoire), bénéficiaire AD, échéance souhaitée, responsable du traitement.
 
@@ -172,7 +179,8 @@ S'appliquent aux processus des sections 9 à 15 (socle `Core/Records` de l'API).
 - Types : **Standard** (modèle déjà évalué : créé directement **Autorisé**, autorisation
   « Modèle standard (pré-autorisé) »), **Normal**, **Urgent**. Risque : Faible, Moyen, Élevé.
 - **Autorisé** et **Rejeté** : gestionnaire uniquement (autorité de changement) ; l'autorisation horodate `AuthorizedAt` / `AuthorizedBy`.
-- **Planifié**, **Mis en œuvre** et **Clos** exigent un changement autorisé ; **Planifié** exige un début planifié ; **Clos** exige le résultat (*Réussi* ou *Échoué*), sauf pour un changement rejeté.
+- **Planifié**, **Mis en œuvre** et **Clos** exigent un changement autorisé ; **Planifié** exige un début planifié ; **Clos** exige le résultat (*Réussi* ou *Échoué*). Un changement **rejeté est terminé** : ni planifié, ni mis en œuvre, ni clos.
+- Le **type** d'un changement autorisé ne peut plus changer (un standard pré-autorisé passé en urgent garderait une autorisation jamais donnée) : créer un nouveau changement.
 - Revenir à Demandé ou Évalué efface l'autorisation. La fin planifiée ne peut précéder le début.
 - **Calendrier des changements** : changements non rejetés ayant un début planifié, depuis une semaine, regroupés par semaine.
 
@@ -221,4 +229,5 @@ S'appliquent aux processus des sections 9 à 15 (socle `Core/Records` de l'API).
   la vision ? — Où en sommes-nous ? — Où voulons-nous être ? — Comment y parvenir ? —
   Passer à l'action — Y sommes-nous parvenus ? — Comment maintenir la dynamique ?*
 - **Validée** et **Abandonnée** : gestionnaire uniquement. **En cours** et **Réalisée** exigent
-  une amélioration validée ; **Réalisée** exige le résultat constaté.
+  une amélioration validée ; **Réalisée** exige le résultat constaté. **Abandonner** (comme
+  revenir à Proposée) retire la validation : relancer l'amélioration demande une nouvelle validation.

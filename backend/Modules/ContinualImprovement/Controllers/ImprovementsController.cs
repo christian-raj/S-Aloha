@@ -26,11 +26,11 @@ public class ImprovementsController(AppDbContext db) : RecordController<Improvem
     // Engager des moyens ou y renoncer est une décision de gestionnaire.
     protected override bool RequiresManager(string status) => status is "Validée" or "Abandonnée";
 
-    protected override string? CheckTransition(Improvement e, string to)
+    protected override string? CheckStatus(Improvement e, string status)
     {
-        if (to is "En cours" or "Réalisée" && e.ValidatedAt is null)
+        if (status is "En cours" or "Réalisée" && e.ValidatedAt is null)
             return "L'amélioration doit d'abord être validée par un gestionnaire.";
-        if (to == "Réalisée" && string.IsNullOrWhiteSpace(e.Outcome))
+        if (status == "Réalisée" && string.IsNullOrWhiteSpace(e.Outcome))
             return "Décrire le résultat constaté avant de déclarer l'amélioration réalisée.";
         return null;
     }
@@ -38,7 +38,9 @@ public class ImprovementsController(AppDbContext db) : RecordController<Improvem
     protected override void OnStatusChanged(Improvement e, string from)
     {
         if (e.Status == "Validée") { e.ValidatedAt = DateTime.UtcNow; e.ValidatedBy = MyDisplay; }
-        else if (e.Status == "Proposée") { e.ValidatedAt = null; e.ValidatedBy = null; }
+        // Abandonner retire la validation : relancer l'amélioration demande une
+        // nouvelle décision de gestionnaire.
+        else if (e.Status is "Proposée" or "Abandonnée") { e.ValidatedAt = null; e.ValidatedBy = null; }
         e.CompletedAt = e.Status == "Réalisée" ? DateTime.UtcNow : null;
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ProblemManagement;
 
@@ -26,6 +27,8 @@ public class AnalysesController(AppDbContext db) : ControllerBase
             DataJson = dto.DataJson, Conclusion = dto.Conclusion,
             CreatedBy = User.Identity?.Name ?? ""
         };
+        var error = Lengths.Check(a);
+        if (error is not null) return BadRequest(new { message = error });
         db.Analyses.Add(a);
         // un problème avec analyse en cours passe "En analyse" s'il était Nouveau
         var p = await db.Problems.FindAsync(problemId);

@@ -24,8 +24,9 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
 
     protected override bool RequiresManager(string status) => status is "Approuvée" or "Rejetée";
 
-    protected override string? CheckTransition(ServiceRequest e, string to) =>
-        e.ApprovedAt is null && (to is "En cours" or "Satisfaite" || (to == "Close" && e.Status != "Rejetée"))
+    // Une demande rejetée est terminée : elle n'est ni traitée ni close.
+    protected override string? CheckStatus(ServiceRequest e, string status) =>
+        e.ApprovedAt is null && status is "En cours" or "Satisfaite" or "Close"
             ? "La demande doit d'abord être approuvée par un gestionnaire." : null;
 
     protected override void OnStatusChanged(ServiceRequest e, string from)

@@ -22,6 +22,10 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         if (error is not null) return error;
         if (dto.PlannedStart is not null && dto.PlannedEnd is not null && dto.PlannedEnd < dto.PlannedStart)
             return "La fin planifiée précède le début planifié.";
+        // L'autorisation vaut pour un type donné : un standard pré-autorisé
+        // passé en urgent garderait sinon une autorisation jamais donnée.
+        if (!creating && e.AuthorizedAt is not null && dto.ChangeType != e.ChangeType)
+            return "Le type d'un changement autorisé ne peut plus changer : créer un nouveau changement.";
         e.ChangeType = dto.ChangeType!; e.Risk = dto.Risk!;
         e.PlannedStart = Dates.Utc(dto.PlannedStart); e.PlannedEnd = Dates.Utc(dto.PlannedEnd);
         e.ImplementationPlan = dto.ImplementationPlan ?? ""; e.BackoutPlan = dto.BackoutPlan ?? "";
@@ -34,13 +38,14 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
 
     protected override bool RequiresManager(string status) => status is "Autorisé" or "Rejeté";
 
-    protected override string? CheckTransition(Change e, string to)
+    // Un changement rejeté est terminé : il n'est ni planifié, ni mis en œuvre, ni clos.
+    protected override string? CheckStatus(Change e, string status)
     {
-        if (to is "Planifié" or "Mis en œuvre" or "Clos" && e.AuthorizedAt is null && e.Status != "Rejeté")
+        if (status is "Planifié" or "Mis en œuvre" or "Clos" && e.AuthorizedAt is null)
             return "Le changement doit d'abord être autorisé par un gestionnaire.";
-        if (to == "Planifié" && e.PlannedStart is null)
+        if (status == "Planifié" && e.PlannedStart is null)
             return "Renseigner le début planifié pour inscrire le changement au calendrier.";
-        if (to == "Clos" && e.Status != "Rejeté" && e.Outcome is null)
+        if (status == "Clos" && e.Outcome is null)
             return "Renseigner le résultat (Réussi ou Échoué) avant de clore le changement.";
         return null;
     }
@@ -55,6 +60,14 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         else if (e.Status is "Demandé" or "Évalué" or "Rejeté") { e.AuthorizedAt = null; e.AuthorizedBy = null; }
         e.ClosedAt = e.Status == "Clos" ? DateTime.UtcNow : null;
     }
+
+    // Le registre n'affiche pas les plans : ils restent dans la fiche.
+    protected override async Task<IEnumerable<object>> ListItems(IQueryable<Change> q) =>
+        await q.Select(c => new
+        {
+            c.Id, c.Reference, c.Title, c.Status, c.ChangeType, c.Risk, c.PlannedStart, c.PlannedEnd,
+            c.OwnerId, c.OwnerDisplayName, c.CreatedAt
+        }).ToListAsync();
 
     /// <summary>Calendrier des changements : changements planifiés non rejetés, à partir d'une date.</summary>
     [HttpGet("schedule")]
