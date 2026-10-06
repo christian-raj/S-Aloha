@@ -157,6 +157,7 @@ Détails (registre des modules, thème, design) : [frontend.md](frontend.md).
 
 ## 8. Build et déploiement
 
+- Évaluation sur Kubernetes (MicroK8s) avec un annuaire Samba AD de démonstration : [`deploy/k8s/`](../../deploy/k8s/README.md), voir [exploitation](exploitation.md#kubernetes-évaluation).
 - `docker compose up -d --build` : build multi-étapes (SDK .NET → runtime ASP.NET ; node → nginx), projet compose `s-aloha`.
 - Frontend exposé sur **:80**, API sur **:8080** (Swagger : `/swagger`).
 - Configuration, Active Directory, mise à jour d'une installation existante : [`exploitation.md`](exploitation.md).
