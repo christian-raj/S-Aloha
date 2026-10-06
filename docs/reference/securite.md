@@ -78,7 +78,7 @@ Réglages du dépôt GitHub public, en place depuis le 2026-10-06 :
 | Dependabot (alertes, correctifs, versions) | Alerte et PR de correctif dès qu'un avis touche une dépendance ; mises à jour hebdomadaires groupées (npm, NuGet, Docker, Actions) |
 | CodeQL (configuration par défaut) | Analyse statique C# et JavaScript à chaque push et chaque semaine |
 | CI ([architecture § Intégration continue](architecture.md#intégration-continue)) | Tests, build, audit des dépendances, santé de la doc |
-| Règles de `main` | Ni suppression ni push forcé ; pour une pull request, CI au vert et historique linéaire |
+| Règles de `main` | Ni suppression ni push forcé ; toute modification passe par une pull request, CI au vert (DCO compris) et historique linéaire. Aucune dérogation, administrateur compris |
 | Actions | Seules les actions publiées par GitHub ; jeton en lecture seule ; workflows d'un contributeur externe soumis à approbation |
 
 Première analyse CodeQL : une alerte, `cs/log-forging` (gravité moyenne). L'identifiant
