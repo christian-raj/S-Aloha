@@ -26,6 +26,7 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 | 🗺️ [Plan d'action](plan-action.md) | Les chantiers ouverts | Vivant : se vide en avançant |
 | 🗃️ [Archives](archives/readme.md) | Constats datés et journaux des sujets traités | Figé |
 | 🔄 [Protocole](protocole-documentation.md) | La routine qui tient tout cela à jour | Vivant |
+| 🌱 [Stratégie communauté](strategie-communaute.md) | Attirer contributeurs et sponsors | Revue chaque trimestre |
 
 Le cycle : un constat daté part en **archives** ; ce qu'il révèle de durable rejoint la
 **référence** ; ce qu'il reste à faire va au **plan** ; ce qui est tranché devient une
