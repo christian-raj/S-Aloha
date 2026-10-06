@@ -19,7 +19,12 @@ public class ProblemsController(AppDbContext db) : ControllerBase
         var query = db.Problems.AsNoTracking().AsQueryable();
         if (!string.IsNullOrEmpty(status)) query = query.Where(p => p.Status == status);
         if (!string.IsNullOrEmpty(q))
-            query = query.Where(p => p.Title.Contains(q) || p.Reference.Contains(q));
+        {
+            // Insensible à la casse : Contains devient un LIKE, sensible à la
+            // casse sous PostgreSQL — « vpn » ne trouvait pas « VPN » (M5).
+            var key = q.Trim().ToLower();
+            query = query.Where(p => p.Title.ToLower().Contains(key) || p.Reference.ToLower().Contains(key));
+        }
         var items = await query.OrderByDescending(p => p.CreatedAt)
             .Select(p => new { p.Id, p.Reference, p.Title, p.Status, p.Priority, p.Category,
                                p.AffectedService, p.CreatedByDisplayName, p.CreatedAt,
@@ -102,7 +107,9 @@ public class ProblemsController(AppDbContext db) : ControllerBase
         if (dto.Status != null && dto.Status != p.Status)
         {
             p.Status = dto.Status;
-            if (dto.Status == "Clos") p.ClosedAt = DateTime.UtcNow;
+            // Rouvert, un problème n'est plus clos : garder ClosedAt le faisait
+            // compter dans le MTTR comme résolu (M4, revue du 2026-10-06).
+            p.ClosedAt = dto.Status == "Clos" ? DateTime.UtcNow : null;
         }
         p.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();

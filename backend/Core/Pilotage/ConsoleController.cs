@@ -17,12 +17,19 @@ public class ConsoleController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> Get()
     {
         var me = User.Identity?.Name ?? "";
+        // L'AD ignore la casse des identifiants : la comparaison aussi (M2,
+        // revue du 2026-10-06). Couvre les données enregistrées avant que le
+        // jeton ne porte le sAMAccountName de l'annuaire.
+        var meKey = me.ToLowerInvariant();
         var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "User";
-        var now = DateTime.UtcNow;
+        // L'échéance est une date (stockée à minuit UTC) : une action n'est en
+        // retard qu'à partir du LENDEMAIN de son échéance, pas dès le matin
+        // du jour même (M6, revue du 2026-10-06).
+        var today = DateTime.UtcNow.Date;
 
         // --- Bloc personnel (tous les rôles) ---
         var myProblems = await db.Problems.AsNoTracking()
-            .Where(p => p.CreatedBy == me && p.Status != "Clos")
+            .Where(p => p.CreatedBy.ToLower() == meKey && p.Status != "Clos")
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new { p.Id, p.Reference, p.Title, p.Status, p.Priority, p.CreatedAt })
             .Take(10).ToListAsync();
@@ -30,14 +37,14 @@ public class ConsoleController(AppDbContext db) : ControllerBase
         var myActions = await db.Actions.AsNoTracking()
             .Include(a => a.Raci).Include(a => a.Problem)
             .Where(a => a.Status != "Terminée" && a.Status != "Annulée"
-                        && a.Raci.Any(r => r.AssigneeId == me))
+                        && a.Raci.Any(r => r.AssigneeId.ToLower() == meKey))
             .OrderBy(a => a.DueDate)
             .Select(a => new
             {
                 a.Id, a.Title, a.Status, a.DueDate,
-                MyRoles = a.Raci.Where(r => r.AssigneeId == me).Select(r => r.Role),
+                MyRoles = a.Raci.Where(r => r.AssigneeId.ToLower() == meKey).Select(r => r.Role),
                 Problem = new { a.Problem!.Id, a.Problem.Reference, a.Problem.Title },
-                Overdue = a.DueDate != null && a.DueDate < now
+                Overdue = a.DueDate != null && a.DueDate < today
             }).ToListAsync();
 
         object? management = null;
@@ -62,7 +69,7 @@ public class ConsoleController(AppDbContext db) : ControllerBase
             var overdue = await db.Actions.AsNoTracking()
                 .Include(a => a.Raci).Include(a => a.Problem)
                 .Where(a => a.Status != "Terminée" && a.Status != "Annulée"
-                            && a.DueDate != null && a.DueDate < now)
+                            && a.DueDate != null && a.DueDate < today)
                 .Select(a => new
                 {
                     a.Id, a.Title, a.DueDate,

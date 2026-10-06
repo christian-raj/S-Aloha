@@ -17,7 +17,10 @@ public class ActionsController(AppDbContext db) : ControllerBase
             .Include(a => a.Raci).Include(a => a.Problem).AsQueryable();
         if (!string.IsNullOrEmpty(status)) q = q.Where(a => a.Status == status);
         if (!string.IsNullOrEmpty(assignee))
-            q = q.Where(a => a.Raci.Any(r => r.AssigneeId == assignee));
+        {
+            var key = assignee.ToLowerInvariant(); // l'AD ignore la casse (M2)
+            q = q.Where(a => a.Raci.Any(r => r.AssigneeId.ToLower() == key));
+        }
         var items = await q.OrderBy(a => a.DueDate).Select(a => new
         {
             a.Id, a.Title, a.Status, a.DueDate, a.CompletedAt,

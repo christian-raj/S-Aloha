@@ -13,7 +13,7 @@ public class ReportsController(AppDbContext db) : ControllerBase
     [HttpGet("summary")]
     public async Task<IActionResult> Summary()
     {
-        var now = DateTime.UtcNow;
+        var today = DateTime.UtcNow.Date; // en retard à partir du lendemain de l'échéance (M6)
         var problems = await db.Problems.AsNoTracking().ToListAsync();
         var actions = await db.Actions.AsNoTracking().Include(a => a.Raci).ToListAsync();
 
@@ -34,7 +34,7 @@ public class ReportsController(AppDbContext db) : ControllerBase
                 .Select(g => new { Status = g.Key, Count = g.Count() }),
             OverdueActions = actions
                 .Where(a => a.Status != "Terminée" && a.Status != "Annulée"
-                            && a.DueDate != null && a.DueDate < now)
+                            && a.DueDate != null && a.DueDate < today)
                 .Select(a => new { a.Id, a.Title, a.DueDate,
                     Responsibles = a.Raci.Where(r => r.Role == "R").Select(r => r.AssigneeDisplayName) }),
             MttrDays = mttrDays,

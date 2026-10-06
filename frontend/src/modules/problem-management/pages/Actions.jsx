@@ -13,7 +13,10 @@ export default function Actions() {
     .then(setItems).catch(e => setError(e.message))
   useEffect(() => { load() }, [status, mine])
 
-  const overdue = a => a.dueDate && !['Terminée', 'Annulée'].includes(a.status) && new Date(a.dueDate) < new Date()
+  // En retard à partir du LENDEMAIN de l'échéance, comme côté API (M6) :
+  // comparer des dates AAAA-MM-JJ, pas un instant à minuit UTC.
+  const overdue = a => a.dueDate && !['Terminée', 'Annulée'].includes(a.status)
+    && a.dueDate.slice(0, 10) < new Date().toISOString().slice(0, 10)
 
   return (
     <>

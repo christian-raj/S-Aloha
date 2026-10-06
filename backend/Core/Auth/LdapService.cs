@@ -21,15 +21,20 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger)
     private LdapConnection ServiceConnect() =>
         Connect(config["Ldap:BindUser"]!, config["Ldap:BindPassword"]!);
 
-    /// <summary>Authentifie l'utilisateur et retourne (displayName, rôle applicatif) ou null.</summary>
-    public (string DisplayName, string Role)? Authenticate(string username, string password)
+    /// <summary>
+    /// Authentifie l'utilisateur et retourne (sAMAccountName de l'annuaire,
+    /// displayName, rôle applicatif) ou null. L'identifiant renvoyé est celui
+    /// de l'AD, pas la saisie : l'AD ignore la casse, l'application compare
+    /// des chaînes (M2, revue du 2026-10-06).
+    /// </summary>
+    public (string Username, string DisplayName, string Role)? Authenticate(string username, string password)
     {
         try
         {
             using var svc = ServiceConnect();
             var filter = string.Format(config["Ldap:UserFilter"] ?? "(sAMAccountName={0})", EscapeFilter(username));
             var search = svc.Search(BaseDn, LdapConnection.ScopeSub, filter,
-                new[] { "distinguishedName", "displayName", "memberOf" }, false);
+                new[] { "distinguishedName", "sAMAccountName", "displayName", "memberOf" }, false);
             if (!search.HasMore()) return null;
             var entry = search.Next();
 
@@ -41,8 +46,9 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger)
                 .Select(dn => dn.Split(',')[0].Replace("CN=", "", StringComparison.OrdinalIgnoreCase))
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+            var account = GetAttr(entry, "sAMAccountName") ?? username;
             var role = ResolveRole(groups);
-            return role is null ? null : (display, role);
+            return role is null ? null : (account, display, role);
         }
         catch (LdapException ex)
         {
