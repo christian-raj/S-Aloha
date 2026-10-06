@@ -20,8 +20,7 @@ public sealed class ApiFixture : IAsyncLifetime
     private const string JwtKey = "cle-de-test-uniquement-0123456789abcdef0123456789abcdef0123";
 
     // Image déjà présente localement : aucun téléchargement au lancement.
-    private readonly PostgreSqlContainer _db = new PostgreSqlBuilder()
-        .WithImage("postgres:18-alpine").Build();
+    private readonly PostgreSqlContainer _db = new PostgreSqlBuilder("postgres:18-alpine").Build();
 
     private WebApplicationFactory<Program> _factory = null!;
 
