@@ -90,3 +90,28 @@ d'assistance, le dépôt étant public.
 
 La routine **ne committe pas** : le commit reste une décision du mainteneur, qui y joint
 la documentation mise à jour.
+
+## 6. Publier le wiki
+
+Le [wiki GitHub](https://github.com/christian-raj/S-Aloha/wiki) est un **miroir généré**
+de `docs/` : il offre une lecture navigable (accueil, barre latérale, une page par
+document de référence, par ADR, plan d'action et protocole), mais la documentation fait
+foi dans le dépôt ([ADR-0002](decisions/adr-0002-documentation-dans-le-depot.md)). Chaque
+page l'indique en tête ; une modification faite à la main dans le wiki est écrasée au
+passage suivant. Les archives restent dans le dépôt.
+
+Le wiki se régénère **après chaque poussée de `main` qui touche `docs/`**, pour qu'il ne
+décrive jamais un état que le dépôt public n'a pas encore :
+
+```bash
+git clone git@github.com:christian-raj/S-Aloha.wiki.git /tmp/s-aloha-wiki   # une fois
+git -C /tmp/s-aloha-wiki pull
+python3 scripts/sync-wiki.py /tmp/s-aloha-wiki
+git -C /tmp/s-aloha-wiki add -A
+git -C /tmp/s-aloha-wiki commit -m "Wiki régénéré depuis docs/ ($(git rev-parse --short HEAD))"
+git -C /tmp/s-aloha-wiki push
+```
+
+Le script réécrit les liens : un document de `docs/` devient la page du wiki
+correspondante, tout autre fichier pointe vers le dépôt, les images vers leur version
+publiée.

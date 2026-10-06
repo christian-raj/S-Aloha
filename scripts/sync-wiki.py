@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""Génère le wiki GitHub à partir de docs/ — le wiki est un miroir, jamais une source.
+
+La documentation fait foi dans le dépôt (ADR-0002) ; le wiki en offre une lecture
+navigable. Chaque page est régénérée à l'identique : une modification faite à la main
+dans le wiki est écrasée au passage suivant.
+
+    python3 scripts/sync-wiki.py <dossier-du-wiki>
+
+Le dossier est un clone de https://github.com/christian-raj/S-Aloha.wiki.git. Le script
+réécrit les pages générées, sans toucher au reste ; il ne committe pas. Procédure
+complète : docs/protocole-documentation.md § Wiki.
+"""
+import pathlib
+import posixpath
+import re
+import sys
+
+REPO = pathlib.Path(__file__).resolve().parents[1]
+GITHUB = 'https://github.com/christian-raj/S-Aloha'
+BLOB = f'{GITHUB}/blob/main'
+RAW = 'https://raw.githubusercontent.com/christian-raj/S-Aloha/main'
+
+# Pages du wiki : nom de page → fichier source. L'ordre est celui de la barre latérale.
+# Troisième champ : ce que le lecteur vient y chercher (page d'accueil).
+REFERENCE = [
+    ('Produit', 'docs/reference/produit.md', 'Comprendre la vision, les processus couverts et la feuille de route'),
+    ('Règles-métier', 'docs/reference/regles-metier.md', 'Connaître les rôles, la console, les cycles de vie, la priorité, le RACI'),
+    ('Architecture', 'docs/reference/architecture.md', 'Voir comment tout s’assemble : containers, socle, modules, API'),
+    ('Base-de-données', 'docs/reference/base-de-donnees.md', 'Lire le modèle de données et les migrations'),
+    ('Frontend', 'docs/reference/frontend.md', 'Ajouter un écran ou un module, respecter le design'),
+    ('Exploitation', 'docs/reference/exploitation.md', 'Installer, brancher l’Active Directory, mettre à jour'),
+    ('Sécurité', 'docs/reference/securite.md', 'Préparer une mise en production'),
+    ('Glossaire', 'docs/reference/glossaire.md', 'Retrouver un terme ITIL, technique ou malgache'),
+]
+PILOTAGE = [
+    ('Plan-d’action', 'docs/plan-action.md', 'Les chantiers ouverts et leur priorité'),
+    ('Décisions', 'docs/decisions/readme.md', 'Les choix structurants et pourquoi (ADR)'),
+    ('Protocole-documentaire', 'docs/protocole-documentation.md', 'La routine qui tient la documentation à jour'),
+]
+
+
+def adr_pages():
+    out = []
+    for p in sorted((REPO / 'docs/decisions').glob('adr-*.md')):
+        num = re.match(r'adr-(\d{4})', p.name).group(1)
+        out.append((f'ADR-{num}', f'docs/decisions/{p.name}', ''))
+    return out
+
+
+def pages():
+    return [(n, s) for n, s, _ in REFERENCE + PILOTAGE + adr_pages()]
+
+
+def first_heading(text):
+    m = re.search(r'^# (.+)$', text, re.M)
+    return m.group(1).strip() if m else ''
+
+
+def convert(src, text, by_source):
+    """Adapte un document de docs/ au wiki : titre, navigation, liens."""
+    base = posixpath.dirname(src)
+
+    # Le wiki affiche le nom de la page en titre, et sa barre latérale remplace la
+    # ligne de navigation <sub>…</sub> des documents.
+    text = re.sub(r'\A# .+\n+', '', text)
+    text = re.sub(r'^<sub>\[← Documentation\].*</sub>\n+', '', text, flags=re.M)
+
+    def link(m):
+        label, target = m.group(1), m.group(2)
+        if re.match(r'^(https?:|mailto:|#)', target):
+            return m.group(0)
+        path, _, frag = target.partition('#')
+        anchor = f'#{frag}' if frag else ''
+        resolved = posixpath.normpath(posixpath.join(base, path))
+        if resolved in by_source:
+            return f'[{label}]({by_source[resolved]}{anchor})'
+        if resolved == 'docs/readme.md':
+            return f'[{label}](Home)'
+        if resolved.endswith(('.png', '.jpg', '.svg', '.gif')):
+            return f'[{label}]({RAW}/{resolved})'
+        kind = 'tree' if (REPO / resolved).is_dir() else 'blob'
+        return f'[{label}]({GITHUB}/{kind}/main/{resolved}{anchor})'
+
+    # Images d'abord (![…](…)), puis liens.
+    text = re.sub(r'!\[([^\]]*)\]\(([^)\s]+)\)',
+                  lambda m: '!' + link(m)[0:], text)
+    text = re.sub(r'(?<!!)\[([^\]]*)\]\(([^)\s]+)\)', link, text)
+    text = re.sub(r'<img src="(?!https?:)([^"]+)"',
+                  lambda m: f'<img src="{RAW}/{posixpath.normpath(posixpath.join(base, m.group(1)))}"', text)
+
+    banner = (f'> 📄 Page générée depuis [`{src}`]({BLOB}/{src}) — la documentation fait foi '
+              f'dans le dépôt ; toute modification se fait là-bas, pas dans ce wiki.\n\n')
+    return banner + text
+
+
+def home(by_source):
+    def row(name, src, desc):
+        title = first_heading((REPO / src).read_text(encoding='utf-8'))
+        return f'| [{title}]({name}) | {desc} |'
+
+    ref = '\n'.join(row(*p) for p in REFERENCE)
+    pil = '\n'.join(row(*p) for p in PILOTAGE)
+    return f'''<div align="center">
+
+<img src="{RAW}/frontend/public/favicon.svg" width="64" alt="S-Aloha" />
+
+### L’excellence du service IT au cœur de votre performance.
+
+Plateforme ITIL libre (AGPLv3), branchée sur votre Active Directory.
+
+[Dépôt]({GITHUB}) · [README]({GITHUB}#readme) · [Issues]({GITHUB}/issues) · [Licence]({BLOB}/LICENSE)
+
+</div>
+
+> 📄 Ce wiki est **généré** depuis le dossier [`docs/`]({GITHUB}/tree/main/docs) du dépôt,
+> qui fait foi ([ADR-0002](ADR-0002)). Pour corriger une page, modifiez le document source.
+
+## Référence
+
+Ce qui est vrai en permanence, mis à jour avec le code.
+
+| Page | Pour |
+|---|---|
+{ref}
+
+## Décisions et pilotage
+
+| Page | Pour |
+|---|---|
+{pil}
+
+Les constats datés et les journaux des sujets traités restent dans le dépôt :
+[`docs/archives/`]({GITHUB}/tree/main/docs/archives).
+'''
+
+
+def sidebar():
+    lines = ['**[🏠 Accueil](Home)**', '', '**Référence**', '']
+    lines += [f'- [{n.replace("-", " ")}]({n})' for n, _, _ in REFERENCE]
+    lines += ['', '**Pilotage**', '']
+    lines += [f'- [{n.replace("-", " ")}]({n})' for n, _, _ in PILOTAGE]
+    lines += ['', '**Décisions**', '']
+    for n, src, _ in adr_pages():
+        title = first_heading((REPO / src).read_text(encoding='utf-8'))
+        short = title.split('—', 1)[1].strip() if '—' in title else title
+        lines.append(f'- [{n}]({n}) · {short}')
+    lines += ['', '---', f'[Dépôt]({GITHUB}) · [Archives]({GITHUB}/tree/main/docs/archives)']
+    return '\n'.join(lines) + '\n'
+
+
+FOOTER = (f'<sub>S-Aloha — logiciel libre sous [AGPLv3]({BLOB}/LICENSE) · '
+          f'Wiki généré depuis [`docs/`]({GITHUB}/tree/main/docs) par `scripts/sync-wiki.py`.</sub>\n')
+
+
+def main(argv):
+    if len(argv) != 1:
+        sys.exit(__doc__)
+    out = pathlib.Path(argv[0])
+    if not (out / '.git').exists():
+        sys.exit(f'{out} n’est pas un clone du wiki (pas de .git).')
+
+    by_source = {src: name for name, src in pages()}
+    generated = {'Home.md', '_Sidebar.md', '_Footer.md'}
+
+    for name, src in pages():
+        text = (REPO / src).read_text(encoding='utf-8')
+        (out / f'{name}.md').write_text(convert(src, text, by_source), encoding='utf-8')
+        generated.add(f'{name}.md')
+    (out / 'Home.md').write_text(home(by_source), encoding='utf-8')
+    (out / '_Sidebar.md').write_text(sidebar(), encoding='utf-8')
+    (out / '_Footer.md').write_text(FOOTER, encoding='utf-8')
+
+    # Une page dont le document source a disparu (ADR renommé…) est retirée.
+    for p in out.glob('*.md'):
+        if p.name not in generated:
+            print(f'retirée : {p.name}')
+            p.unlink()
+    print(f'{len(generated)} pages générées dans {out}')
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
