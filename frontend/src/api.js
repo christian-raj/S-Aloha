@@ -56,8 +56,13 @@ export const api = {
   },
   incidents: records('/incidents'),
   requests: records('/requests'),
-  changes: { ...records('/changes'), schedule: () => request('/changes/schedule') },
+  changes: {
+    ...records('/changes'),
+    schedule: () => request('/changes/schedule'),
+    conflicts: (id) => request(`/changes/${id}/conflicts`)
+  },
   configurationItems: {
+    impact: (id) => request(`/configuration-items/${id}/impact`),
     ...records('/configuration-items'),
     addRelation: (id, dto) => request(`/configuration-items/${id}/relations`, { method: 'POST', body: JSON.stringify(dto) }),
     removeRelation: (relId) => request('/configuration-items/relations/' + relId, { method: 'DELETE' })

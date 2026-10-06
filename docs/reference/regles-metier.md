@@ -191,6 +191,12 @@ S'appliquent aux processus des sections 9 à 15 (socle `Core/Records` de l'API).
   **standard** ne retire pas son autorisation (elle vient du modèle, pas du créneau) ; titre,
   description et responsable se modifient librement.
 - **Calendrier des changements** : changements non rejetés ayant un début planifié, depuis une semaine, regroupés par semaine.
+- **Conflit de calendrier** : deux changements non rejetés sont en conflit s'ils sont liés à
+  un **même CI** (lien inter-processus, dans un sens ou dans l'autre) et que leurs créneaux
+  **se chevauchent** (l'un commence avant que l'autre ne finisse ; deux créneaux bout à bout
+  ne se chevauchent pas). Sans fin planifiée, un changement occupe une heure. Le calendrier
+  et la fiche du changement signalent chaque conflit avec le changement et le CI en cause ;
+  le conflit n'est pas bloquant.
 
 ## 12. Gestion de la configuration des services (ITIL 4)
 
@@ -203,6 +209,11 @@ S'appliquent aux processus des sections 9 à 15 (socle `Core/Records` de l'API).
 - **Relations** orientées entre CI : *Dépend de*, *Héberge*, *Fait partie de*, *Se connecte à* ;
   la fiche montre les relations sortantes et entrantes. Pas de relation d'un CI vers
   lui-même, ni de doublon (même source, cible et type).
+- **Vue d'impact** (transitive) : **en aval**, les CI touchés si ce CI tombe ; **en amont**,
+  ceux dont il dépend. Sens de propagation d'une panne : « A *dépend de* / *se connecte à*
+  B » — la panne de B touche A ; « A *héberge* / *fait partie de* B » — la panne de A touche
+  B. Chaque CI n'apparaît qu'une fois, à sa plus courte distance, avec la relation par
+  laquelle il est atteint ; un cycle de relations ne boucle pas.
 
 ## 13. Gestion des niveaux de service (ITIL 4)
 
