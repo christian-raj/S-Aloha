@@ -13,7 +13,7 @@ local. C'est un atout en production, mais un mur pour qui veut **essayer** le pr
 `docker compose up` sans AD mène à un écran de connexion inutilisable. Un développeur
 qui découvre le dépôt, un sponsor qui l'évalue ou un relecteur d'une pull request ne
 peuvent rien voir. C'est le premier frein relevé par la
-[stratégie communauté](../strategie-communaute.md) (décision D1).
+stratégie communauté (décision D1).
 
 ## Décision
 
@@ -60,3 +60,8 @@ montrer dès la première connexion. Le reste de la décision est inchangé.
   la production.
 - **Démo en ligne seulement** — insuffisant : elle ne sert pas un contributeur qui doit
   lancer le code qu'il modifie. Elle reste prévue en complément (C8).
+
+## Addendum — 2026-10-06
+
+La stratégie communauté est devenue un document interne : le lien qui y menait dans le
+contexte ci-dessus est retiré. La décision est inchangée.

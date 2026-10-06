@@ -90,8 +90,8 @@ envisagés, à prioriser ; chacun se cale sur le guide de la pratique ITIL 4 cor
 
 ## 8. Communauté et financement
 
-Découle de la [stratégie communauté et financement](strategie-communaute.md). Les
-décisions D1 à D5 y sont détaillées avec une recommandation.
+Accueil des contributeurs et financement du projet ; canaux et contreparties publics :
+[Soutenir S-Aloha](soutenir.md).
 
 | # | Chantier | Qui |
 |---|---|---|
@@ -99,6 +99,5 @@ décisions D1 à D5 y sont détaillées avec une recommandation.
 | C5 | Tableau GitHub Projects public alimenté par ce plan (le jeton `gh` du mainteneur doit recevoir le droit `project` : `gh auth refresh -s project`) | action |
 | C6 | **Activer GitHub Sponsors** (profil du mainteneur : informations bancaires et fiscales), niveaux et contreparties ([ADR-0011](decisions/adr-0011-financement-sponsoring-et-services.md)) | action |
 | C7 | Lancement : LinuxFr, Reddit, AlternativeTo, Framalibre (textes prêts) ; téléverser l'image de partage `docs/screenshots/partage-1280x640.png` (Settings → Social preview) ; awesome-selfhosted **à partir du 2027-02-06** (première version de plus de 4 mois exigée) | action |
-| C8 | Démo en ligne réinitialisée chaque nuit | décision (D5) |
+| C8 | Démo en ligne réinitialisée chaque nuit | décision |
 | C9 | `GOVERNANCE.md` dès le deuxième contributeur régulier | décision |
-| C10 | Répondre à adityawaghamare sur #29 et #30 (proposition restée sans réponse, issues traitées en interne) ; appliquer la règle « ne pas doubler un contributeur » de la [stratégie](strategie-communaute.md#axe-2--accueillir-les-contributeurs) | action |
