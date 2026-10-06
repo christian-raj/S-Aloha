@@ -1,14 +1,16 @@
+name: s-aloha
+
 services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: problemdb
-      POSTGRES_USER: problem
+      POSTGRES_DB: saloha
+      POSTGRES_USER: saloha
       POSTGRES_PASSWORD: ChangeMe_Str0ng!
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U problem"]
+      test: ["CMD-SHELL", "pg_isready -U saloha"]
       interval: 5s
       retries: 10
 
@@ -18,19 +20,19 @@ services:
       db:
         condition: service_healthy
     environment:
-      ConnectionStrings__Default: "Host=db;Database=problemdb;Username=problem;Password=ChangeMe_Str0ng!"
+      ConnectionStrings__Default: "Host=db;Database=saloha;Username=saloha;Password=ChangeMe_Str0ng!"
       # --- Active Directory on-prem : à adapter ---
       Ldap__Host: "dc01.mondomaine.local"
       Ldap__Port: "389"
       Ldap__UseSsl: "false"
       Ldap__BaseDn: "DC=mondomaine,DC=local"
-      Ldap__BindUser: "CN=svc-problemapp,OU=Services,DC=mondomaine,DC=local"
+      Ldap__BindUser: "CN=svc-saloha,OU=Services,DC=mondomaine,DC=local"
       Ldap__BindPassword: "MotDePasseServiceAccount"
       Ldap__UserFilter: "(&(objectClass=user)(sAMAccountName={0}))"
       # --- Mapping groupes AD -> rôles applicatifs ---
-      Ldap__Groups__Admin: "GRP-PROBLEM-ADMINS"
-      Ldap__Groups__Manager: "GRP-PROBLEM-MANAGERS"
-      Ldap__Groups__User: "GRP-PROBLEM-USERS"
+      Ldap__Groups__Admin: "GRP-SALOHA-ADMINS"
+      Ldap__Groups__Manager: "GRP-SALOHA-MANAGERS"
+      Ldap__Groups__User: "GRP-SALOHA-USERS"
       Jwt__Key: "CHANGEZ-CETTE-CLE-SECRETE-DE-64-CARACTERES-MINIMUM-0123456789ab"
     ports:
       - "8080:8080"

@@ -1,9 +1,10 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ProblemManagement.Api.Data;
-using ProblemManagement.Api.Services;
+using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,12 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("Manager", p => p.RequireRole("Admin", "Manager"))
     .AddPolicy("User", p => p.RequireRole("Admin", "Manager", "User"));
 
-builder.Services.AddControllers();
+// Les entités EF portent leurs navigations dans les deux sens (Problem ↔
+// Analyses/Actions, Action ↔ RACI). Sans IgnoreCycles, renvoyer une entité
+// juste ajoutée au contexte levait une JsonException APRÈS l'enregistrement :
+// la première analyse d'un problème était créée en base mais répondait 500.
+builder.Services.AddControllers().AddJsonOptions(o =>
+    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
