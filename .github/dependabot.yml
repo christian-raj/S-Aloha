@@ -1,5 +1,7 @@
 # Mises à jour de version, regroupées et hebdomadaires. Les correctifs de
 # sécurité, eux, arrivent dès l'alerte (Dependabot security updates).
+# Les versions majeures sont ignorées : changer de React, de Vite, de .NET ou
+# d'image de base est une décision (ADR-0004), pas une mise à jour de routine.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -9,6 +11,9 @@ updates:
       frontend:
         update-types: [minor, patch]
     labels: [dependencies]
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: nuget
     directories: [/backend, /tests/SAloha.Api.Tests]
@@ -17,11 +22,17 @@ updates:
       dotnet:
         update-types: [minor, patch]
     labels: [dependencies]
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: docker
     directories: [/backend, /frontend]
     schedule: { interval: weekly, day: monday }
     labels: [dependencies]
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
@@ -30,3 +41,6 @@ updates:
       actions:
         patterns: ["*"]
     labels: [dependencies]
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
