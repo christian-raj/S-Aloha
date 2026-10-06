@@ -1,0 +1,43 @@
+# Mode démonstration : essayer S-Aloha sans Active Directory d'entreprise.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+#
+# Ajoute un contrôleur de domaine Samba AD (domaine SALOHA.LAN) et y branche l'API.
+# Comptes de démonstration, un par rôle : demo.admin, demo.manager, demo.user
+# (mots de passe ci-dessous). Mots de passe PUBLICS : jamais en production —
+# docs/reference/exploitation.md § Mode démonstration.
+
+services:
+  annuaire:
+    build: ./demo/annuaire
+    # Nom NetBIOS du contrôleur, figé au provisionnement.
+    hostname: dc01
+    # Samba AD a besoin des attributs étendus du système de fichiers.
+    privileged: true
+    environment:
+      AD_REALM: SALOHA.LAN
+      AD_DOMAIN: SALOHA
+      AD_ADMIN_PASSWORD: "Demo-Domaine-2026"
+      SVC_PASSWORD: "Demo-Service-2026"
+      DEMO_ADMIN_PASSWORD: "Demo-Admin-2026"
+      DEMO_MANAGER_PASSWORD: "Demo-Manager-2026"
+      DEMO_USER_PASSWORD: "Demo-User-2026"
+    volumes:
+      - annuaire:/data
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/127.0.0.1/389"]
+      interval: 5s
+      retries: 60
+
+  api:
+    depends_on:
+      annuaire:
+        condition: service_healthy
+    environment:
+      Ldap__Host: annuaire
+      Ldap__BaseDn: "DC=saloha,DC=lan"
+      Ldap__BindUser: "CN=svc-saloha,CN=Users,DC=saloha,DC=lan"
+      Ldap__BindPassword: "Demo-Service-2026"
+
+volumes:
+  annuaire:

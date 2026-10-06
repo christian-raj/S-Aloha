@@ -95,12 +95,11 @@ décisions D1 à D5 y sont détaillées avec une recommandation.
 
 | # | Chantier | Qui |
 |---|---|---|
-| C1 | Trancher D1 (mode démo public), D2 (DCO ou CLA, **avant toute contribution extérieure**), D3 (langue), D4 (financement) | **décision** |
-| C2 | Code de conduite, `.github/FUNDING.yml`, GitHub Discussions, résumé anglais du README | code + action |
-| C3 | **Mode démonstration** : profil compose `demo` avec annuaire Samba AD, trois comptes, données d'exemple | code (après D1) |
+| C2 | Code de conduite (attend l'adresse de contact dédiée), `.github/FUNDING.yml` (après C6), GitHub Discussions | code + action |
+| C3 | Données d'exemple pour le mode démonstration (problèmes, incidents, changements…) | code |
 | C4 | Version `v0.1.0` : notes de version, images publiées sur `ghcr.io` par la CI | code |
-| C5 | 8 à 10 issues `good first issue` / `help wanted` rédigées depuis ce plan ; tableau GitHub Projects public | action |
-| C6 | Activer GitHub Sponsors (profil du mainteneur), niveaux et contreparties | action (après D4) |
-| C7 | Lancement : LinuxFr, Reddit, awesome-selfhosted, AlternativeTo, Framalibre ; image de partage du dépôt | action (après C3, C4) |
+| C5 | Tableau GitHub Projects public alimenté par ce plan | action |
+| C6 | **Activer GitHub Sponsors** (profil du mainteneur : informations bancaires et fiscales), niveaux et contreparties ([ADR-0011](decisions/adr-0011-financement-sponsoring-et-services.md)) | action |
+| C7 | Lancement : LinuxFr, Reddit, awesome-selfhosted, AlternativeTo, Framalibre ; image de partage du dépôt | action (après C4) |
 | C8 | Démo en ligne réinitialisée chaque nuit | décision (D5) |
 | C9 | `GOVERNANCE.md` dès le deuxième contributeur régulier | décision |

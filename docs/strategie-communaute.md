@@ -120,17 +120,17 @@ régulières, une CI au vert, une politique de sécurité, une feuille de route 
 **plus d'un mainteneur** à terme. La gouvernance (qui décide, comment devenir mainteneur)
 sera écrite dans un `GOVERNANCE.md` dès le deuxième contributeur régulier.
 
-## Décisions à prendre
+## Décisions
 
-Ces choix conditionnent la suite ; chacun fera l'objet d'un ADR une fois tranché.
+Tranchées le 2026-10-06 selon les recommandations ci-dessous, sauf D5 (en attente).
 
-| # | Question | Options | Recommandation |
-|---|---|---|---|
-| D1 | Publier un **mode démonstration** avec annuaire Samba AD dans le dépôt ? | Oui, profil compose `demo` générique / Non, rester sur l'AD du client | **Oui** : c'est le frein n° 1 ; seule la version générique est publiée, sans rien de l'infrastructure locale |
-| D2 | **Accord de contribution** | DCO (signature `Signed-off-by`, léger) / CLA (cession de droits, permet une double licence commerciale future) | **DCO** si le modèle reste 100 % AGPL ; **CLA** seulement si une licence commerciale est envisagée — à trancher **avant** la première contribution extérieure, impossible à rattraper ensuite ([ADR-0006](decisions/adr-0006-licence-agplv3.md)) |
-| D3 | **Langue** | Français seul / README bilingue / tout bilingue | **README bilingue**, documentation en français : la cible est francophone, l'anglais ouvre la porte aux développeurs |
-| D4 | **Canaux de financement** | Sponsors, Open Collective, support | **GitHub Sponsors** d'abord (immédiat), Open Collective quand une entreprise demande une facture |
-| D5 | **Démo en ligne** | Oui / non, coût d'hébergement | Après D1, quand un premier sponsor couvre l'hébergement |
+| # | Question | Options | Recommandation | Décision |
+|---|---|---|---|---|
+| D1 | Publier un **mode démonstration** avec annuaire Samba AD dans le dépôt ? | Oui, profil compose `demo` générique / Non, rester sur l'AD du client | **Oui** : c'est le frein n° 1 ; seule la version générique est publiée, sans rien de l'infrastructure locale | **Oui** — [ADR-0009](decisions/adr-0009-mode-demonstration-public.md) |
+| D2 | **Accord de contribution** | DCO (signature `Signed-off-by`, léger) / CLA (cession de droits, permet une double licence commerciale future) | **DCO** si le modèle reste 100 % AGPL ; **CLA** seulement si une licence commerciale est envisagée — à trancher **avant** la première contribution extérieure, impossible à rattraper ensuite ([ADR-0006](decisions/adr-0006-licence-agplv3.md)) | **DCO** — [ADR-0010](decisions/adr-0010-certificat-d-origine-dco.md) |
+| D3 | **Langue** | Français seul / README bilingue / tout bilingue | **README bilingue**, documentation en français : la cible est francophone, l'anglais ouvre la porte aux développeurs | **README bilingue** |
+| D4 | **Canaux de financement** | Sponsors, Open Collective, support | **GitHub Sponsors** d'abord (immédiat), Open Collective quand une entreprise demande une facture | **Sponsors d'abord** — [ADR-0011](decisions/adr-0011-financement-sponsoring-et-services.md) |
+| D5 | **Démo en ligne** | Oui / non, coût d'hébergement | Après D1, quand un premier sponsor couvre l'hébergement | en attente |
 
 ## Feuille de route sur 90 jours
 
