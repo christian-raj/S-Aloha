@@ -69,5 +69,5 @@
 | Terme | Sens |
 |---|---|
 | **Aloha** | « D'abord, avant » — le service passe avant tout. |
-| **Service alohan'ny zavatra rehetra** | « Le service avant toute chose » — devise de la page de connexion. |
-| **Ny fahaiza-manao ho amin'ny tolotra tsara kokoa** | « Le savoir-faire au service d'une meilleure offre » — maxime de la page de connexion. |
+| **Service alohan'ny zavatra rehetra** | « Le service avant toute chose » — explique le nom sur la page de connexion : *aloha* signifie « d'abord » en malgache. |
+| **Ny fahaiza-manao ho amin'ny tolotra tsara kokoa** | « Le savoir-faire au service d'une meilleure offre » — maxime de la page de connexion, affichée avec cette traduction. |

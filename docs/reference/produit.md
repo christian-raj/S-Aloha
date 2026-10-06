@@ -32,7 +32,8 @@ Les rôles sont dérivés des groupes AD ; le détail des droits est dans
 
 Chaque processus ITIL est rattaché à un pilier ; les libellés sont ceux de la charte
 S-Aloha (« Alignment » compris). Source dans le code :
-`PILLARS` dans `frontend/src/modules/registry.js`.
+`PILLARS` dans `frontend/src/modules/registry.js`. Les piliers ne sont plus affichés à la
+connexion ; la barre latérale garde la lettre du pilier sur chaque module.
 
 | Lettre | Pilier | Ce qu'il recouvre |
 |---|---|---|

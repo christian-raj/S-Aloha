@@ -14,7 +14,7 @@ const FEATURES = [
   { Icon: IconChange, title: 'Encadrer les changements',
     text: 'Risque, autorisation, plan de retour arrière et calendrier des mises en production.' },
   { Icon: IconReport, title: 'Mesurer le service rendu',
-    text: 'SLA par service, MTTR des incidents et des problèmes, taux de changements réussis.' },
+    text: 'Cibles SLA par service, MTTR des incidents et des problèmes, taux de changements réussis.' },
 ]
 
 export default function Login() {

@@ -32,7 +32,7 @@ frontend/
     │   │   ├── StatusBadge.jsx   # badge de statut selon la tonalité déclarée
     │   │   └── LinkedItems.jsx   # éléments liés (tous processus), ajout par référence
     │   └── pages/
-    │       ├── Login.jsx         # panneau de marque, six piliers, formulaire AD
+    │       ├── Login.jsx         # panneau de marque (fonctionnalités : FEATURES), formulaire AD
     │       ├── Console.jsx       # « Ma console », orientée action
     │       └── Reporting.jsx     # indicateurs et volumétrie
     └── modules/
@@ -62,7 +62,7 @@ incident, relations entre CI, SLA d'un service. Les statuts réservés aux gesti
 sont désactivés dans la liste pour les autres rôles ; l'API reste seule juge.
 
 Règle de dépendance : `modules/*` peut importer `core/*` ; `core/*` n'importe aucun module,
-sauf le registre `modules/registry.js` (lu par `Layout` et `Login`).
+sauf le registre `modules/registry.js` (lu par `Layout`).
 
 ## Routes
 
@@ -149,6 +149,19 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 - **Jamais de composant déclaré dans le rendu d'un autre** : React le recrée à chaque
   rendu et la saisie perd le focus (défaut M1 de l'arbre des défaillances). Un sous-composant
   se déclare au niveau du module (ex. `FtaNode` dans `FtaTree.jsx`).
+
+### Page de connexion
+
+- Le panneau de marque (gauche) ne liste ni les modules ni les piliers S-A-L-O-H-A. De
+  haut en bas : marque, « Plateforme ITIL de la DSI », slogan, maxime malgache et sa
+  traduction, explication du nom, puis « Ce que vous y faites » : quatre blocs de
+  fonctionnalités (constante `FEATURES` de `Login.jsx` : console par rôle, cause racine et
+  RACI AD, changements, mesure du service rendu).
+- Message et blocs forment un seul ensemble centré verticalement : aucun défilement de
+  1024×768 à 1920×1080 ; contraste ≥ 8:1 pour tous les textes du panneau.
+- **Un bloc de fonctionnalité correspond à une fonctionnalité réelle** : le mettre à jour
+  quand une fonctionnalité change (ex. « Cibles SLA » tant que l'atteinte des SLA n'est pas
+  mesurée, chantier F1).
 
 ### Thème clair / sombre
 
