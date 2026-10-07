@@ -179,6 +179,10 @@ h3 { font-size: var(--fs-md); font-weight: 600; letter-spacing: -0.01em; }
 }
 .nav-section.divider { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / .07); }
 .nav-section .dot { width: 4px; height: 4px; flex-shrink: 0; background: color-mix(in srgb, var(--accent-blue) 60%, transparent); }
+/* Administration : portée globale, Admin seul — repère ambre, pour ne pas la
+   confondre avec une pratique au premier coup d'œil. */
+.nav-section.admin { color: rgb(253 230 138 / .5); }
+.nav-section.admin .dot { background: color-mix(in srgb, var(--accent-amber) 70%, transparent); }
 
 .nav-link {
   display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 12px;

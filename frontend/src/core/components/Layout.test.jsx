@@ -4,6 +4,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 let role = 'User'
+let emptySections = false
 vi.mock('../../api', () => ({ getUser: () => ({ username: 'u', displayName: 'Utilisateur', role }) }))
 
 // Registre réel, plus une sous-entrée de paramétrage réservée aux gestionnaires :
@@ -15,6 +16,11 @@ vi.mock('../../modules/registry', async (importOriginal) => {
     MODULES: real.MODULES.map((m) => m.id !== 'change' ? m : {
       ...m, pages: [...m.pages, { href: '/changes/models', label: 'Modèles (test)', roles: ['Manager', 'Admin'] }]
     }),
+    // Sections réelles (vides aujourd'hui) remplies pour le test, sauf si
+    // `emptySections` demande l'état réel.
+    SECTIONS: emptySections ? real.SECTIONS : real.SECTIONS.map((s) => ({
+      ...s, entries: [{ href: '/' + s.id + '/test', label: s.label + ' (test)', icon: 'settings' }]
+    })),
   }
 })
 
@@ -56,5 +62,19 @@ describe('Barre latérale — navigation cible', () => {
     cleanup()
     renderAt('/problems/12')
     expect(activeSublinks()).toEqual(['Registre des problèmes'])
+  })
+})
+
+describe('Sections Pilotage, Pratiques, Paramétrage, Administration', () => {
+  const sectionTitles = () => [...document.querySelectorAll('.sidebar .nav-section')].map((p) => p.textContent)
+
+  it.each([
+    ['User', ['Pilotage', 'Pratiques']],
+    ['Manager', ['Pilotage', 'Pratiques', 'Paramétrage']],
+    ['Admin', ['Pilotage', 'Pratiques', 'Paramétrage', 'Administration']],
+  ])('un %s voit les sections %j', (r, expected) => {
+    role = r
+    renderAt('/')
+    expect(sectionTitles()).toEqual(expected)
   })
 })

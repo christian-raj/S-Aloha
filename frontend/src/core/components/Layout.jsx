@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getUser } from '../../api'
-import { MODULES, visibleFor } from '../../modules/registry'
+import { MODULES, SECTIONS, visibleFor } from '../../modules/registry'
 import ThemeToggle from './ThemeToggle'
 import { SOURCE_URL, LICENSE_LABEL } from '../about'
-import { BrandMark, IconConsole, IconReport, IconLogout, IconMenu, IconClose, MODULE_ICONS } from './icons'
+import { BrandMark, IconConsole, IconReport, IconLogout, IconMenu, IconClose, MODULE_ICONS, SECTION_ICONS } from './icons'
 
 const ROLE_LABEL = { Admin: 'Administrateur', Manager: 'Gestionnaire', User: 'Utilisateur' }
 
@@ -13,8 +13,8 @@ const PILOTAGE = [
   { href: '/reports', label: 'Reporting', description: 'Indicateurs des processus', icon: IconReport },
 ]
 
-function SectionLabel({ children, divider }) {
-  return <p className={'nav-section' + (divider ? ' divider' : '')}><span className="dot" />{children}</p>
+function SectionLabel({ children, divider, tone }) {
+  return <p className={'nav-section' + (divider ? ' divider' : '') + (tone ? ' ' + tone : '')}><span className="dot" />{children}</p>
 }
 
 function NavItem({ href, label, description, icon: Icon, end, active, onClick }) {
@@ -92,9 +92,23 @@ function SidebarContent({ user, location, onClose, onLogout }) {
         {PILOTAGE.filter((item) => visibleFor(item, user?.role))
           .map((item) => <NavItem key={item.href} {...item} onClick={onClose} />)}
 
-        <SectionLabel divider>Processus ITIL</SectionLabel>
+        <SectionLabel divider>Pratiques</SectionLabel>
         {MODULES.filter((m) => visibleFor(m, user?.role)).map((m) =>
           <ModuleItem key={m.id} module={m} location={location} role={user?.role} onClick={onClose} />)}
+
+        {SECTIONS.filter((s) => visibleFor(s, user?.role)).map((s) => {
+          // Pas de section vide : sans entrée visible pour ce rôle, ni titre ni filet.
+          const entries = s.entries.filter((e) => visibleFor(e, user?.role))
+          if (entries.length === 0) return null
+          return (
+            <React.Fragment key={s.id}>
+              <SectionLabel divider tone={s.id === 'administration' ? 'admin' : undefined}>{s.label}</SectionLabel>
+              {entries.map((e) =>
+                <NavItem key={e.href} href={e.href} label={e.label} description={e.description}
+                  icon={SECTION_ICONS[e.icon] ?? IconConsole} onClick={onClose} />)}
+            </React.Fragment>
+          )
+        })}
       </nav>
 
       <div className="sidebar-foot">
