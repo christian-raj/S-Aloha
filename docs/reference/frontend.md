@@ -57,8 +57,17 @@ du socle (`RecordList`, `RecordDetail`) : client d'API (`api.js` › `records(pa
 `bad`, `closed` — classes `.badge.t-*`) et marque `manager` des statuts réservés, champs du
 formulaire (`text`, `textarea`, `select`, `date`, `datetime`, `number`, `checkbox`, `person`),
 colonnes du registre, badges et mentions de l'en-tête. Une page n'ajoute que ce qui est
-propre au processus, passé en enfant de `RecordDetail` : ouverture d'un problème depuis un
-incident, relations entre CI, SLA d'un service. Les statuts réservés aux gestionnaires
+propre au processus :
+
+- `tab = { label, render(record, reload) }` : l'**onglet propre à la pratique** — Conflits
+  (changement), Relations et impact (CI), Accords (SLA) (service) ;
+- `children(record, reload)` : complément de l'onglet **Informations** (ex. « Ouvrir un
+  problème lié » sur un incident).
+
+`RecordDetail` affiche les onglets dans l'ordre **Informations → onglet de la pratique →
+Liens** (Liens si `config.linkType`). Un onglet vide affiche un message explicite ; une
+fiche s'ouvre toujours sur Informations. La fiche Problème, hors socle, suit le même ordre :
+Informations · Analyse de cause racine · Actions correctives · Liens. Les statuts réservés aux gestionnaires
 sont désactivés dans la liste pour les autres rôles ; l'API reste seule juge.
 
 Règle de dépendance : `modules/*` peut importer `core/*` ; `core/*` n'importe aucun module,
@@ -93,7 +102,19 @@ Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont r
   `description`, `status` (`active` | `soon`) et, pour un module actif, `href`
   (point d'entrée), `routes` (préfixes d'URL qui l'activent dans la navigation), `pages`
   (sous-entrées affichées quand le module est ouvert, facultatives ; quand une sous-page en
-  prolonge une autre — `/changes/schedule` sous `/changes` — la correspondance exacte l'emporte).
+  prolonge une autre — `/changes/schedule` sous `/changes` — la correspondance exacte l'emporte) ;
+- `roles` (module ou sous-entrée, facultatif) : rôles qui voient l'entrée ; absent, tous.
+  `visibleFor(entry, role)` décide ; la barre latérale masque les entrées réservées (l'API
+  reste seule juge des droits) ;
+
+**Sous-entrée filtrée** : un `href` peut porter un filtre de registre
+(`/problems?status=Erreur+connue`) ; la page lit ce filtre dans l'URL et adapte son titre.
+Le filtre s'encode avec `URLSearchParams` **des deux côtés** (registre et page) : l'espace
+devient « + », sinon les URL ne se comparent pas.
+
+**Sous-entrée active** : correspondance de l'URL complète (chemin et filtre), puis du
+chemin, puis du préfixe. Les sous-entrées sont des `Link` (et non des `NavLink`, qui ne
+compare que le chemin) ; l'entrée active porte `aria-current="page"`.
 
 Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 
@@ -150,7 +171,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | | Catalogue de demandes (modèles) | Manager, Admin | REQ-20 | 🔜 |
 | [Problèmes](processus/gestion-des-problemes.md) | Registre des problèmes | Tous | PRB-01 | ✅ |
 | | Actions correctives (suivi transverse) | Tous | PRB-15 | ✅ |
-| | Erreurs connues (registre filtré sur le statut) | Tous | PRB-11 | ✅ (filtre) |
+| | Erreurs connues : sous-entrée `/problems?status=Erreur+connue` | Tous | PRB-11 | ✅ |
 | [Changements](processus/habilitation-des-changements.md) | Registre des changements | Tous | CHG-01 | ✅ |
 | | Calendrier des changements (conflits, **périodes de gel**) | Tous | CHG-08, CHG-09, CHG-25 | ✅ / 🔜 (gel) |
 | | Modèles de changement standard | Manager, Admin | CHG-26 | 🔜 |
@@ -173,8 +194,8 @@ un onglet sans contenu reste visible avec un état vide explicite.
 | Onglet | Contenu | Règle | Statut |
 |---|---|---|---|
 | Informations | Champs du § 3, actions de transition (§ 4) en boutons nommés par l'étape (« Prendre en charge », « Autoriser »…) | § 3 et § 4 de chaque pratique | ✅ (champs) / 🔜 (boutons de transition) |
-| Propre à la pratique | Analyses RCA et actions (problème), relations et **impact** (CI), SLA (service), conflits (changement) | PRB-05, CFG-04, SLM-02, CHG-09 | ✅ |
-| Liens | Enregistrements reliés, toutes pratiques | SOC-12 | ✅ |
+| Propre à la pratique | Analyse de cause racine et Actions correctives (problème), Relations et impact (CI), Accords (SLA) (service), Conflits (changement) | PRB-05, CFG-04, SLM-02, CHG-09 | ✅ |
+| Liens | Enregistrements reliés, toutes pratiques ; onglet dédié | SOC-12 | ✅ |
 | Commentaires | Fil public / notes de travail | SOC-24 | 🔜 |
 | Pièces jointes | | SOC-25 | 🔜 |
 | Historique | Journal d'audit de l'enregistrement | SOC-20 | 🔜 |
