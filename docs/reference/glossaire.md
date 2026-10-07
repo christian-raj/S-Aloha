@@ -53,7 +53,10 @@
 | **Module** | Implémentation d'un processus ITIL (`Modules/<Processus>`, `modules/<processus>`). |
 | **Registre** | `frontend/src/modules/registry.js`, source unique de la navigation : les processus et leur état. |
 | **Bientôt** | État d'un processus déclaré dans le registre mais sans interface (`status: 'soon'`). |
-| **Pilotage** | Section transverse de la navigation : Ma console et Reporting. |
+| **Pilotage** | Section transverse du menu : Ma console et Reporting. |
+| **Pratiques** | Section du menu qui regroupe les huit pratiques ITIL (registres et vues), visible par tous. |
+| **Paramétrage** | Section du menu réservée aux gestionnaires et administrateurs : ce qui règle le **fonctionnement des pratiques** (catalogues, modèles, périodes de gel, référentiels). |
+| **Administration** | Section du menu réservée à l'administrateur : la **plateforme** elle-même (utilisateurs et rôles, santé, journal d'audit, nettoyage). |
 | **Ma console** | Page d'accueil par rôle, orientée action : groupes Urgent, Décisions, Relances, Mon travail, À suivre. |
 | **Règle ✅ / 🔜** | Règle fonctionnelle implémentée (✅) ou à implémenter (🔜), identifiée par un code stable (`INC-06`) ; voir les [conventions](regles-metier.md#3-conventions-de-ce-référentiel). |
 | **Lot** | Ordre d'implémentation des règles 🔜 : 1 robustesse, 2 pratique ITIL complète, 3 confort ([plan du lot 1](processus/readme.md#plan-dimplémentation-conseillé--lot-1)). |
