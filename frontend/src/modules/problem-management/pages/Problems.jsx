@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../../api'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
@@ -7,7 +7,11 @@ const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
 
 export default function Problems() {
   const [items, setItems] = useState([])
-  const [status, setStatus] = useState('')
+  // Le statut vit dans l'URL : « Erreurs connues » (navigation) est ce
+  // registre filtré, et un filtre choisi ici se partage par simple lien.
+  const [params, setParams] = useSearchParams()
+  const status = params.get('status') ?? ''
+  const setStatus = (s) => setParams(s ? { status: s } : {}, { replace: true })
   const [q, setQ] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState('')
@@ -19,8 +23,10 @@ export default function Problems() {
 
   return (
     <>
-      <h1 className="page-title">Problèmes</h1>
-      <p className="page-sub">Enregistrement et suivi des problèmes (ITIL v3).</p>
+      <h1 className="page-title">{status === 'Erreur connue' ? 'Erreurs connues' : 'Problèmes'}</h1>
+      <p className="page-sub">{status === 'Erreur connue'
+        ? 'Problèmes dont la cause est identifiée et le contournement documenté, en attente de correction définitive.'
+        : 'Enregistrement et suivi des problèmes (ITIL v3).'}</p>
       {error && <div className="error">{error}</div>}
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>

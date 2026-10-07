@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getUser } from '../../api'
-import { MODULES } from '../../modules/registry'
+import { MODULES, visibleFor } from '../../modules/registry'
 import ThemeToggle from './ThemeToggle'
 import { SOURCE_URL, LICENSE_LABEL } from '../about'
 import { BrandMark, IconConsole, IconReport, IconLogout, IconMenu, IconClose, MODULE_ICONS } from './icons'
@@ -30,8 +30,12 @@ function NavItem({ href, label, description, icon: Icon, end, active, onClick })
   )
 }
 
-function ModuleItem({ module, pathname, onClick }) {
+/** Chemin d'une sous-entrée, sans son filtre (`/problems?status=…` → `/problems`). */
+const pathOf = (href) => href.split('?')[0]
+
+function ModuleItem({ module, location, role, onClick }) {
   const Icon = MODULE_ICONS[module.id]
+  const { pathname, search } = location
 
   // Un processus sans interface reste visible : la feuille de route se lit
   // dans la navigation elle-même, sans laisser croire qu'il est utilisable.
@@ -46,26 +50,32 @@ function ModuleItem({ module, pathname, onClick }) {
   }
 
   const open = module.routes.some((r) => pathname === r || pathname.startsWith(r + '/'))
-  // Une sous-page peut prolonger une autre (/changes/schedule sous /changes) :
-  // la correspondance exacte l'emporte, sinon le préfixe (fiche /changes/12).
-  const pages = module.pages ?? []
-  const exact = pages.find((p) => p.href === pathname)
-  const isOn = (p) => (exact ? p === exact : pathname.startsWith(p.href + '/'))
+  const pages = (module.pages ?? []).filter((p) => visibleFor(p, role))
+  // Une seule sous-entrée active : l'URL complète d'abord (« Erreurs connues »
+  // est le registre filtré), puis le chemin seul (registre avec un autre
+  // filtre), puis le préfixe (fiche /problems/12, sous-page /changes/schedule).
+  const active = pages.find((p) => p.href === pathname + search)
+    ?? pages.find((p) => p.href === pathname)
+    ?? pages.find((p) => pathname.startsWith(pathOf(p.href) + '/'))
   return (
     <>
       <NavItem href={module.href} label={module.label} description={module.description}
         icon={Icon} active={open} onClick={onClick} />
       {open && pages.map((p) => (
-        <NavLink key={p.href} to={p.href} end onClick={onClick}
-          className={'nav-sublink' + (isOn(p) ? ' active' : '')}>
+        // Link, pas NavLink : NavLink marquerait « active » et aria-current
+        // sur le seul chemin, donc le registre ET « Erreurs connues » (même
+        // chemin, autre filtre). L'état actif est calculé ci-dessus.
+        <Link key={p.href} to={p.href} onClick={onClick}
+          aria-current={p === active ? 'page' : undefined}
+          className={'nav-sublink' + (p === active ? ' active' : '')}>
           {p.label}
-        </NavLink>
+        </Link>
       ))}
     </>
   )
 }
 
-function SidebarContent({ user, pathname, onClose, onLogout }) {
+function SidebarContent({ user, location, onClose, onLogout }) {
   return (
     <div className="sidebar-inner">
       <div className="sidebar-glow" aria-hidden />
@@ -79,10 +89,12 @@ function SidebarContent({ user, pathname, onClose, onLogout }) {
 
       <nav className="nav">
         <SectionLabel>Pilotage</SectionLabel>
-        {PILOTAGE.map((item) => <NavItem key={item.href} {...item} onClick={onClose} />)}
+        {PILOTAGE.filter((item) => visibleFor(item, user?.role))
+          .map((item) => <NavItem key={item.href} {...item} onClick={onClose} />)}
 
         <SectionLabel divider>Processus ITIL</SectionLabel>
-        {MODULES.map((m) => <ModuleItem key={m.id} module={m} pathname={pathname} onClick={onClose} />)}
+        {MODULES.filter((m) => visibleFor(m, user?.role)).map((m) =>
+          <ModuleItem key={m.id} module={m} location={location} role={user?.role} onClick={onClose} />)}
       </nav>
 
       <div className="sidebar-foot">
@@ -104,14 +116,14 @@ function SidebarContent({ user, pathname, onClose, onLogout }) {
 export default function Layout() {
   const user = getUser()
   const nav = useNavigate()
-  const { pathname } = useLocation()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
   const logout = () => { sessionStorage.clear(); nav('/login') }
 
   return (
     <div className="shell">
       <aside className="sidebar">
-        <SidebarContent user={user} pathname={pathname} onLogout={logout} />
+        <SidebarContent user={user} location={location} onLogout={logout} />
       </aside>
 
       {open && (
@@ -119,7 +131,7 @@ export default function Layout() {
           <div className="drawer-backdrop" onClick={() => setOpen(false)} />
           <div className="drawer-panel">
             <button className="drawer-close" onClick={() => setOpen(false)} aria-label="Fermer la navigation"><IconClose /></button>
-            <SidebarContent user={user} pathname={pathname} onClose={() => setOpen(false)} onLogout={logout} />
+            <SidebarContent user={user} location={location} onClose={() => setOpen(false)} onLogout={logout} />
           </div>
         </div>
       )}

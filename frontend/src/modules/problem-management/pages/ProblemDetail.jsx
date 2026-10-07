@@ -19,7 +19,8 @@ export default function ProblemDetail() {
   const isManager = ['Admin', 'Manager'].includes(getUser()?.role)
 
   const load = () => api.problems.get(id).then(setP).catch(e => setError(e.message))
-  useEffect(() => { load() }, [id])
+  // Une autre fiche (lien suivi depuis l'onglet Liens) s'ouvre sur ses Informations.
+  useEffect(() => { setTab('infos'); load() }, [id])
   if (error) return <div className="error">{error}</div>
   if (!p) return <p>Chargement…</p>
 
@@ -33,18 +34,20 @@ export default function ProblemDetail() {
         Déclaré par {p.createdByDisplayName} le {new Date(p.createdAt).toLocaleDateString('fr-FR')}
       </p>
 
-      <div className="tabs">
-        {[['infos', 'Informations'], ['rca', 'Analyse de cause racine'], ['actions', `Actions correctives (${p.actions.length})`]]
-          .map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
+      {/* Onglets communs des fiches (docs/reference/frontend.md § Navigation
+          cible) : Informations → propres à la pratique → Liens. */}
+      <div className="tabs" role="tablist">
+        {[['infos', 'Informations'], ['rca', 'Analyse de cause racine'],
+          ['actions', `Actions correctives (${p.actions.length})`], ['links', 'Liens']]
+          .map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k}
+            className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
       </div>
 
-      {tab === 'infos' && <>
-        <Infos p={p} isManager={isManager} onSaved={load} />
-        <LinkedItems type="problem" id={p.id}
-          hint="Incidents à l'origine, changement qui corrige, article d'erreur connue…" />
-      </>}
+      {tab === 'infos' && <Infos p={p} isManager={isManager} onSaved={load} />}
       {tab === 'rca' && <Rca p={p} onSaved={load} />}
       {tab === 'actions' && <ActionsTab p={p} onSaved={load} />}
+      {tab === 'links' && <LinkedItems type="problem" id={p.id}
+        hint="Incidents à l'origine, changement qui corrige, article d'erreur connue…" />}
     </>
   )
 }
