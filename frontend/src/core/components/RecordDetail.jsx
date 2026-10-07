@@ -51,19 +51,29 @@ function Editor({ config, record, onSaved }) {
 
 /**
  * Fiche d'un enregistrement : en-tête (référence, statut, badges du module),
- * éditeur, contenu propre au module (`children(record, reload)`), éléments liés.
+ * puis les onglets communs, dans l'ordre de docs/reference/frontend.md
+ * § Navigation cible : Informations → onglet propre à la pratique → Liens.
+ *
+ * - `children(record, reload)` : complément de l'onglet Informations (action
+ *   liée à l'enregistrement, ex. « Ouvrir un problème lié ») ;
+ * - `tab = { label, render(record, reload) }` : l'onglet propre à la pratique
+ *   (relations et impact d'un CI, accords d'un service, conflits d'un changement).
  */
-export default function RecordDetail({ config, children }) {
+export default function RecordDetail({ config, children, tab }) {
   const { id } = useParams()
   const [r, setR] = useState(null)
   const [error, setError] = useState('')
   const [version, setVersion] = useState(0)
+  const [current, setCurrent] = useState('infos')
   const load = () => config.api.get(id).then(x => { setR(x); setVersion(v => v + 1) }).catch(e => setError(e.message))
-  useEffect(() => { load() }, [id])
+  // Une autre fiche (lien suivi depuis l'onglet Liens) s'ouvre sur ses Informations.
+  useEffect(() => { setCurrent('infos'); load() }, [id])
   if (error) return <div className="error">{error}</div>
   if (!r) return <p>Chargement…</p>
 
   const meta = config.meta?.(r).filter(Boolean) ?? []
+  const tabs = [['infos', 'Informations'], tab && ['practice', tab.label], config.linkType && ['links', 'Liens']]
+    .filter(Boolean)
   return (
     <>
       <p style={{ marginBottom: 8 }}><Link to={config.basePath}>← {config.title}</Link></p>
@@ -76,9 +86,18 @@ export default function RecordDetail({ config, children }) {
       </p>
       {config.help && <p style={{ color: 'var(--muted)', fontSize: 13, marginTop: -16, marginBottom: 20 }}>{config.help}</p>}
 
-      <Editor key={version} config={config} record={r} onSaved={load} />
-      {children?.(r, load)}
-      {config.linkType && <LinkedItems type={config.linkType} id={r.id} hint={config.linkHint} refreshKey={version} />}
+      <div className="tabs" role="tablist">
+        {tabs.map(([k, l]) => (
+          <button key={k} role="tab" aria-selected={current === k}
+            className={current === k ? 'on' : ''} onClick={() => setCurrent(k)}>{l}</button>))}
+      </div>
+
+      {current === 'infos' && <>
+        <Editor key={version} config={config} record={r} onSaved={load} />
+        {children?.(r, load)}
+      </>}
+      {current === 'practice' && tab.render(r, load)}
+      {current === 'links' && <LinkedItems type={config.linkType} id={r.id} hint={config.linkHint} refreshKey={version} />}
     </>
   )
 }

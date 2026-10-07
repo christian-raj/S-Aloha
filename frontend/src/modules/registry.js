@@ -7,7 +7,14 @@
  * Processus ITIL, dans l'ordre du cycle de vie du service.
  * - `href`   : point d'entrée du module ;
  * - `routes` : préfixes d'URL qui appartiennent au module (état actif) ;
- * - `pages`  : sous-entrées affichées quand le module est ouvert.
+ * - `pages`  : sous-entrées affichées quand le module est ouvert ; un `href`
+ *              peut porter un filtre (`/problems?status=…`) ;
+ * - `roles`  : (module ou sous-entrée) rôles qui voient l'entrée — absent, tous.
+ *              Réservé au paramétrage d'une pratique (Manager, Admin) : l'entrée
+ *              est masquée pour les autres rôles, que l'API refuse de toute façon.
+ *
+ * Une entrée n'apparaît que lorsque sa règle est implémentée : pas de page
+ * vide (docs/reference/frontend.md § Navigation cible).
  */
 export const MODULES = [
   {
@@ -23,6 +30,7 @@ export const MODULES = [
     href: '/problems', routes: ['/problems', '/actions'],
     pages: [
       { href: '/problems', label: 'Registre des problèmes' },
+      { href: '/problems?' + new URLSearchParams({ status: 'Erreur connue' }), label: 'Erreurs connues' },
       { href: '/actions', label: 'Actions correctives' },
     ],
   },
@@ -56,3 +64,5 @@ export const MODULES = [
   },
 ]
 
+/** L'entrée (module, sous-entrée) est-elle visible pour ce rôle ? */
+export const visibleFor = (entry, role) => !entry.roles || entry.roles.includes(role)

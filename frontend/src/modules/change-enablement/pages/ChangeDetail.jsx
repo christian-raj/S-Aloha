@@ -8,9 +8,10 @@ import { changeConfig } from '../config'
 function Conflicts({ change }) {
   const [conflicts, setConflicts] = useState([])
   useEffect(() => { api.changes.conflicts(change.id).then(setConflicts).catch(() => setConflicts([])) }, [change])
-  if (conflicts.length === 0) return null
+  if (conflicts.length === 0)
+    return <div className="card"><p style={{ color: 'var(--muted)', fontSize: 13 }}>Aucun conflit de calendrier : aucun autre changement sur les mêmes CI pendant ce créneau.</p></div>
   return (
-    <div className="error" style={{ marginTop: 16 }}>
+    <div className="error">
       <b>Conflit de calendrier</b> — ce changement chevauche :
       <ul style={{ margin: '6px 0 0 18px' }}>
         {conflicts.map(c => (
@@ -25,5 +26,5 @@ function Conflicts({ change }) {
 }
 
 export default function ChangeDetail() {
-  return <RecordDetail config={changeConfig}>{r => <Conflicts change={r} />}</RecordDetail>
+  return <RecordDetail config={changeConfig} tab={{ label: 'Conflits', render: r => <Conflicts change={r} /> }} />
 }

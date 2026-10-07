@@ -18,7 +18,7 @@ function Relations({ ci, onChanged }) {
     ...ci.incoming.map(r => ({ id: r.id, text: `${r.type.toLowerCase()} ${ci.title}`, other: r.source, before: true })),
   ]
   return (
-    <div className="card" style={{ marginTop: 16 }}>
+    <div className="card">
       <h3 style={{ color: 'var(--navy)', marginBottom: 10 }}>Relations ({rows.length})</h3>
       {error && <div className="error">{error}</div>}
       {rows.length > 0 && (
@@ -85,8 +85,9 @@ function Impact({ ci }) {
 
 export default function ConfigurationItemDetail() {
   return (
-    <RecordDetail config={ciConfig}>
-      {(r, reload) => <><Relations ci={r} onChanged={reload} /><Impact ci={r} /></>}
-    </RecordDetail>
+    <RecordDetail config={ciConfig} tab={{
+      label: 'Relations et impact',
+      render: (r, reload) => <><Relations ci={r} onChanged={reload} /><Impact ci={r} /></>
+    }} />
   )
 }

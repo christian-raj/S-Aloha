@@ -22,10 +22,11 @@ export default function LinkedItems({ type, id, hint, refreshKey }) {
   const remove = (linkId) => api.links.remove(linkId).then(load).catch(e => setError(e.message))
 
   return (
-    <div className="card" style={{ marginTop: 16 }}>
+    <div className="card">
       <h3 style={{ color: 'var(--navy)', marginBottom: 4 }}>Éléments liés ({items.length})</h3>
       {hint && <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 10 }}>{hint}</p>}
       {error && <div className="error">{error}</div>}
+      {items.length === 0 && <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 12 }}>Aucun élément lié pour l'instant.</p>}
       {items.length > 0 && (
         <table style={{ marginBottom: 12 }}>
           <thead><tr><th>Type</th><th>Référence</th><th>Titre</th><th>Statut</th><th /></tr></thead>

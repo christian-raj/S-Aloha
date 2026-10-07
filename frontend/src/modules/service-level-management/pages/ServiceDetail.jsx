@@ -7,7 +7,7 @@ import { serviceConfig } from '../config'
 /** Accords de niveau de service rattachés au service. */
 function Agreements({ service }) {
   return (
-    <div className="card" style={{ marginTop: 16 }}>
+    <div className="card">
       <h3 style={{ color: 'var(--navy)', marginBottom: 10 }}>Accords de niveau de service ({service.agreements.length})</h3>
       {service.agreements.length === 0
         ? <p style={{ color: 'var(--muted)', fontSize: 13 }}>Aucun SLA pour ce service. <Link to="/agreements">Créer un SLA →</Link></p>
@@ -23,5 +23,5 @@ function Agreements({ service }) {
 }
 
 export default function ServiceDetail() {
-  return <RecordDetail config={serviceConfig}>{r => <Agreements service={r} />}</RecordDetail>
+  return <RecordDetail config={serviceConfig} tab={{ label: 'Accords (SLA)', render: r => <Agreements service={r} /> }} />
 }
