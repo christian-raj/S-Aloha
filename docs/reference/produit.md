@@ -61,7 +61,7 @@ Indépendants des processus, accessibles à tous les rôles :
 ## Les processus
 
 Chaque processus reprend l'objectif de la pratique ITIL 4 correspondante. Règles
-détaillées : [`regles-metier.md`](regles-metier.md).
+détaillées, pratique par pratique : [`processus/`](processus/readme.md).
 
 | Processus | Objectif ITIL 4 | Ce que fait le MVP |
 |---|---|---|
@@ -87,7 +87,7 @@ problème → changement, changement → CI, problème → article d'erreur conn
    affecté à un utilisateur ou groupe AD.
 5. **Suivi et clôture** : suivi transverse des actions, retards signalés, MTTR.
 
-Règles détaillées : [`regles-metier.md`](regles-metier.md).
+Règles détaillées : [gestion des problèmes](processus/gestion-des-problemes.md).
 
 ## Ce que S-Aloha refuse de devenir
 

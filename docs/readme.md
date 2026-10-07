@@ -10,7 +10,8 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 | | Document | Pour |
 |---|---|---|
 | 🧭 | [Produit](reference/produit.md) | Comprendre la vision, les processus couverts et la feuille de route |
-| 📐 | [Règles métier](reference/regles-metier.md) | Connaître les rôles, la console, le cycle de vie, la priorité, le RACI |
+| 📐 | [Règles métier](reference/regles-metier.md) | Connaître les rôles, la console et les règles communes à toutes les pratiques |
+| 🗂️ | [Pratiques ITIL](reference/processus/readme.md) | **Spécifier ou implémenter** une pratique : une règle numérotée, un statut ✅ / 🔜, un lot |
 | 🏗️ | [Architecture](reference/architecture.md) | Voir comment tout s'assemble : containers, socle, modules, API |
 | 🗄️ | [Base de données](reference/base-de-donnees.md) | Lire le modèle de données et les formats d'analyse |
 | 🖥️ | [Frontend](reference/frontend.md) | Ajouter un écran ou un module, respecter le design |

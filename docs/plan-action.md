@@ -37,7 +37,7 @@ code qui doit s'y conformer.
 | R1 | Statut, impact, urgence, méthode, rôle RACI acceptés en texte libre | code |
 | R2 | Règles RACI vérifiées à la création seulement, pas en modification | code |
 | R3 | Date d'achèvement d'une action réécrite à chaque enregistrement | code |
-| R4 | Cycle de vie non contraint (clôture avec actions ouvertes, Clos → Nouveau) | **décision** : écrire les transitions permises dans les règles métier, puis coder |
+| R4 | Cycle de vie non contraint (clôture avec actions ouvertes, Clos → Nouveau) | code : transitions **décidées** le 2026-10-07 ([PRB-10 à PRB-14](reference/processus/gestion-des-problemes.md#4-cycle-de-vie)) |
 | R6 | AD injoignable : 500 sur l'annuaire, « identifiants invalides » au login | code |
 
 ## 4. Chantiers à arbitrer
@@ -74,19 +74,22 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 ## 7. Feuille de route fonctionnelle
 
 Les sept processus sont livrés en **MVP** ([cartographie](reference/produit.md#cartographie-des-processus-itil-et-état),
-[ADR-0007](decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)). Enrichissements
-envisagés, à prioriser ; chacun se cale sur le guide de la pratique ITIL 4 correspondante.
+[ADR-0007](decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)). Leurs enrichissements
+sont spécifiés règle par règle dans [`reference/processus/`](reference/processus/readme.md).
 
-| # | Processus | Enrichissement | Qui |
+| # | Processus | Enrichissement | Règles |
 |---|---|---|---|
-| F1 | Niveaux de service | **Mesure de l'atteinte des SLA** : rapprocher la durée de résolution des incidents (priorité, service) des cibles P1–P4 ; échéance de résolution sur l'incident | décision : rattacher l'incident à un service du catalogue plutôt qu'au texte libre « Service affecté » |
-| F2 | Incidents, Problèmes | Service affecté et catégorie tirés du catalogue et d'un référentiel, plutôt qu'en texte libre | décision (rejoint A1 : référentiels) |
-| F3 | Demandes | Catalogue de demandes (modèles d'objets demandés, approbation facultative selon le modèle) | décision |
-| F4 | Changements | Modèles de changements standard ; revue post-implémentation | code |
-| F5 | Configuration | Rattachement CI ↔ service ; import en masse | code |
-| F6 | Tous | Transitions de statut contraintes (comme R4 pour les problèmes) et historique des modifications (R5) | décision |
-| F7 | Tous | Pièces jointes, commentaires, notifications | décision |
-| F8 | Connaissances | Rendu Markdown du contenu ; suggestion d'articles depuis un incident | code |
+| F1 | Niveaux de service | **Mesure de l'atteinte des SLA** : échéances sur l'incident, respect mesuré | [INC-20 à INC-22](reference/processus/gestion-des-incidents.md), [SLM-10, SLM-13, SLM-14, SLM-20](reference/processus/gestion-des-niveaux-de-service.md) |
+| F2 | Incidents, Problèmes | Service et catégorie tirés du catalogue et d'un référentiel | [SOC-27](reference/regles-metier.md#9-traçabilité-commentaires-administration), [SLM-10](reference/processus/gestion-des-niveaux-de-service.md) |
+| F3 | Demandes | Catalogue de demandes, approbation facultative, tâches | [REQ-20 à REQ-25](reference/processus/gestion-des-demandes.md) |
+| F4 | Changements | Modèles standard, revue post-implémentation, gel, CAB | [CHG-15, CHG-20, CHG-25, CHG-26](reference/processus/habilitation-des-changements.md) |
+| F5 | Configuration | Rattachement CI ↔ service, import en masse | [CFG-21, CFG-30](reference/processus/gestion-de-la-configuration.md) |
+| F6 | Tous | Transitions contraintes, journal d'audit | [SOC-05, SOC-20](reference/regles-metier.md#5-règles-communes-aux-processus) et § 4 de chaque pratique |
+| F7 | Tous | Notifications, commentaires, pièces jointes | [SOC-21 à SOC-25](reference/regles-metier.md#8-notifications) |
+| F8 | Connaissances | Rendu Markdown, suggestion d'articles | [KB-10](reference/processus/gestion-des-connaissances.md), [INC-19](reference/processus/gestion-des-incidents.md) |
+
+Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
+([plan d'implémentation du lot 1](reference/processus/readme.md#plan-dimplémentation-conseillé--lot-1)).
 
 ## 8. Communauté et financement
 
