@@ -23,6 +23,13 @@
 
 *Comptes au 2026-10-07, sur les tableaux de règles (hors indicateurs).*
 
+## Interface et navigation
+
+La navigation de l'application (menus, sous-entrées, pages réservées aux gestionnaires,
+onglets des fiches, boutons de transition) dérive de ce référentiel :
+[frontend § Navigation cible](../frontend.md#navigation-cible). Une règle implémentée qui
+ajoute une page ou un onglet met cette section à jour dans la même PR.
+
 ## Mode d'emploi pour un agent de code
 
 1. **Lire** le [socle](../regles-metier.md) (§ 3 : conventions) puis le document de la
