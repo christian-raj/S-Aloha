@@ -80,16 +80,16 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/login` | `core/pages/Login` | — (publique) |
 | `/` | `core/pages/Console` | Pilotage |
 | `/reports` | `core/pages/Reporting` | Pilotage |
-| `/problems` | `modules/problem-management/pages/Problems` | Processus ITIL › Problèmes |
-| `/problems/:id` | `modules/problem-management/pages/ProblemDetail` | Processus ITIL › Problèmes |
-| `/actions` | `modules/problem-management/pages/Actions` | Processus ITIL › Problèmes |
-| `/incidents`, `/incidents/:id` | `modules/incident-management/pages/*` | Processus ITIL › Incidents |
-| `/requests`, `/requests/:id` | `modules/service-request-management/pages/*` | Processus ITIL › Demandes |
-| `/changes`, `/changes/schedule`, `/changes/:id` | `modules/change-enablement/pages/*` | Processus ITIL › Changements |
-| `/configuration`, `/configuration/:id` | `modules/service-configuration-management/pages/*` | Processus ITIL › Configuration |
-| `/services`, `/services/:id`, `/agreements`, `/agreements/:id` | `modules/service-level-management/pages/*` | Processus ITIL › Niveaux de service |
-| `/knowledge`, `/knowledge/:id` | `modules/knowledge-management/pages/*` | Processus ITIL › Connaissances |
-| `/improvements`, `/improvements/:id` | `modules/continual-improvement/pages/*` | Processus ITIL › Amélioration (CSI) |
+| `/problems` | `modules/problem-management/pages/Problems` | Pratiques › Problèmes |
+| `/problems/:id` | `modules/problem-management/pages/ProblemDetail` | Pratiques › Problèmes |
+| `/actions` | `modules/problem-management/pages/Actions` | Pratiques › Problèmes |
+| `/incidents`, `/incidents/:id` | `modules/incident-management/pages/*` | Pratiques › Incidents |
+| `/requests`, `/requests/:id` | `modules/service-request-management/pages/*` | Pratiques › Demandes |
+| `/changes`, `/changes/schedule`, `/changes/:id` | `modules/change-enablement/pages/*` | Pratiques › Changements |
+| `/configuration`, `/configuration/:id` | `modules/service-configuration-management/pages/*` | Pratiques › Configuration |
+| `/services`, `/services/:id`, `/agreements`, `/agreements/:id` | `modules/service-level-management/pages/*` | Pratiques › Niveaux de service |
+| `/knowledge`, `/knowledge/:id` | `modules/knowledge-management/pages/*` | Pratiques › Connaissances |
+| `/improvements`, `/improvements/:id` | `modules/continual-improvement/pages/*` | Pratiques › Amélioration (CSI) |
 
 Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont rendues dans
 `Layout`. Les droits réels sont contrôlés par l'API.
@@ -103,7 +103,15 @@ Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont r
   (point d'entrée), `routes` (préfixes d'URL qui l'activent dans la navigation), `pages`
   (sous-entrées affichées quand le module est ouvert, facultatives ; quand une sous-page en
   prolonge une autre — `/changes/schedule` sous `/changes` — la correspondance exacte l'emporte) ;
-- `roles` (module ou sous-entrée, facultatif) : rôles qui voient l'entrée ; absent, tous.
+- `SECTIONS` — les sections de menu après Pilotage et Pratiques : **Paramétrage**
+  (`id: 'settings'`, `roles: ['Manager','Admin']`) et **Administration**
+  (`id: 'administration'`, `roles: ['Admin']`), chacune avec ses `entries`. Une entrée :
+  `{ href, label, description, icon, roles? }`, où `icon` est une clé de `SECTION_ICONS`
+  (`'settings'` ou `'admin'`). Une section n'est affichée que si au moins une de ses
+  entrées est visible pour le rôle : aujourd'hui, aucune ne l'est (pas de section vide,
+  vérifié par `Layout.sections.test.jsx` sur le registre réel). Le titre de la section
+  Administration porte un marqueur ambre (`.nav-section.admin`) ;
+- `roles` (section, module ou sous-entrée, facultatif) : rôles qui voient l'entrée ; absent, tous.
   `visibleFor(entry, role)` décide ; la barre latérale masque les entrées réservées (l'API
   reste seule juge des droits) ;
 
@@ -144,12 +152,19 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
   amélioration), comme aujourd'hui.
 - Chaque pratique ouvre sur son **registre** ; les sous-entrées sont les autres **objets**
   de la pratique (§ 3 de son document) et ses **vues** (calendrier, impact).
-- Les pages de **paramétrage** d'une pratique (catalogue de demandes, modèles, périodes
-  de gel) sont des sous-entrées **réservées aux Manager et Admin** : masquées pour un User
-  (l'API les refuse de toute façon).
+- **Quatre sections**, dans cet ordre : **Pilotage** (tous), **Pratiques** (tous),
+  **Paramétrage** (Manager, Admin) et **Administration** (Admin seul).
+- **Paramétrage** = le **fonctionnement des pratiques** : catalogues, modèles, périodes,
+  référentiels qui règlent la façon dont une pratique s'exerce. Délégable aux
+  gestionnaires. **Administration** = la **plateforme** elle-même : accès et rôles,
+  sécurité, santé, traçabilité. Admin seul.
+- Une **file de travail** (brouillons à publier, CI à vérifier) n'est pas du paramétrage :
+  elle reste une sous-entrée de sa pratique, éventuellement réservée par `roles`.
+- Une section n'apparaît que si elle a **au moins une entrée visible** pour le rôle : pas de
+  section vide (registre `SECTIONS`, champ `roles` des sections et des entrées).
 - Ce qui est **propre à un enregistrement** (historique, commentaires, liens, impact) est un
   **onglet de sa fiche**, pas une entrée de menu.
-- La section **Pilotage** reste transverse à toutes les pratiques.
+- **Pilotage** reste transverse à toutes les pratiques.
 
 ### Pilotage
 
@@ -157,7 +172,6 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 |---|---|---|---|
 | Ma console | Tous | [socle § 2](regles-metier.md#2-consoles-par-rôle) | ✅ |
 | Reporting (période choisie, export) | Tous | [SOC-18, SOC-19](regles-metier.md#7-reporting) | ✅ (page) / 🔜 |
-| Administration : utilisateurs et rôles, santé, référentiels, journal d'audit | Admin | [SOC-26, SOC-27](regles-metier.md#9-traçabilité-commentaires-administration) | 🔜 |
 | Notifications : **cloche** dans l'en-tête avec compteur, pas une entrée de menu | Tous | [SOC-21](regles-metier.md#8-notifications) | 🔜 |
 
 ### Pratiques
@@ -168,23 +182,48 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | | Filtres prédéfinis du registre : mes incidents, non pris en charge, SLA en risque, majeurs | Tous | INC-06, INC-24, INC-12 | ✅ (filtres de base) / 🔜 |
 | [Demandes](processus/gestion-des-demandes.md) | Registre des demandes | Tous | REQ-01 | ✅ |
 | | Nouvelle demande **depuis le catalogue** (choix d'un modèle) | Tous | REQ-20 | 🔜 |
-| | Catalogue de demandes (modèles) | Manager, Admin | REQ-20 | 🔜 |
 | [Problèmes](processus/gestion-des-problemes.md) | Registre des problèmes | Tous | PRB-01 | ✅ |
 | | Actions correctives (suivi transverse) | Tous | PRB-15 | ✅ |
 | | Erreurs connues : sous-entrée `/problems?status=Erreur+connue` | Tous | PRB-11 | ✅ |
 | [Changements](processus/habilitation-des-changements.md) | Registre des changements | Tous | CHG-01 | ✅ |
 | | Calendrier des changements (conflits, **périodes de gel**) | Tous | CHG-08, CHG-09, CHG-25 | ✅ / 🔜 (gel) |
-| | Modèles de changement standard | Manager, Admin | CHG-26 | 🔜 |
-| | Périodes de gel | Manager, Admin | CHG-25 | 🔜 |
 | [Configuration](processus/gestion-de-la-configuration.md) | Registre des CI (filtre par type) | Tous | CFG-01, CFG-07 | ✅ |
 | | CI à vérifier | Tous (propriétaires), Manager | CFG-15 | 🔜 |
-| | Import CSV | Admin | CFG-30 | 🔜 |
 | [Niveaux de service](processus/gestion-des-niveaux-de-service.md) | Catalogue des services | Tous | SLM-01 | ✅ |
 | | Accords (SLA) | Tous | SLM-02 | ✅ |
 | | Respect des SLA (tableau mensuel) | Tous | SLM-20, SLM-21 | 🔜 |
 | [Connaissances](processus/gestion-des-connaissances.md) | Base de connaissances (recherche d'abord) | Tous | KB-04 | ✅ |
 | | Brouillons à publier | Manager, Admin | KB-21 | 🔜 |
 | [Amélioration](processus/amelioration-continue.md) | Registre d'amélioration | Tous | CSI-01 | ✅ |
+
+### Paramétrage
+
+Section réservée aux **Manager et Admin** ; elle apparaît avec sa première entrée
+implémentée. Une entrée par objet de paramétrage, regroupées par pratique dans l'ordre du
+cycle de vie.
+
+| Entrée | Visible par | Règle | Statut |
+|---|---|---|---|
+| Catégories (incidents, problèmes) | Manager, Admin | [SOC-27](regles-metier.md#9-traçabilité-commentaires-administration) | 🔜 |
+| Catalogue de demandes (modèles) | Manager, Admin | [REQ-20](processus/gestion-des-demandes.md) | 🔜 |
+| Modèles de changement standard | Manager, Admin | [CHG-26](processus/habilitation-des-changements.md) | 🔜 |
+| Périodes de gel | Manager, Admin | [CHG-25](processus/habilitation-des-changements.md) | 🔜 |
+| Import des CI (CSV) | Admin | [CFG-30](processus/gestion-de-la-configuration.md) | 🔜 |
+| Heures de service (calendriers) | Manager, Admin | [SLM-14](processus/gestion-des-niveaux-de-service.md) | 🔜 |
+
+Le **catalogue des services** reste dans la pratique Niveaux de service : c'est un objet de
+la pratique, consulté par tous, pas un réglage.
+
+### Administration
+
+Section réservée à l'**Admin** ; elle apparaît avec sa première entrée implémentée.
+
+| Entrée | Contenu | Règle | Statut |
+|---|---|---|---|
+| Utilisateurs et rôles | Utilisateurs constatés, rôle effectif, mapping groupes AD → rôles (lecture) | [SOC-26](regles-metier.md#9-traçabilité-commentaires-administration) | 🔜 |
+| Santé | Base, annuaire, version déployée | SOC-26 | 🔜 |
+| Journal d'audit | Journal global, filtrable par auteur, pratique, période | [SOC-20](regles-metier.md#9-traçabilité-commentaires-administration), SOC-26 | 🔜 |
+| Nettoyage | Doublons à fusionner ou supprimer | SOC-26 | 🔜 |
 
 ### Onglets communs des fiches
 
@@ -250,8 +289,9 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 
 - **Angles droits** : aucun `border-radius`.
 - **Police Jost** (Google Fonts), repli `system-ui`.
-- **Sidebar marine** de 272 px en dégradé, toujours sombre, en deux sections : *Pilotage*
-  (Console, Reporting) et *Processus ITIL* (le registre).
+- **Sidebar marine** de 272 px en dégradé, toujours sombre, en sections : *Pilotage*
+  (Console, Reporting), *Pratiques* (le registre), puis *Paramétrage* et *Administration*
+  selon le rôle (§ Navigation cible).
 - **Canevas à points** (`.bg-canvas`) : grille de points fine et lueurs de marque en coin,
   pour éviter un fond plat sur les pages peu denses.
 - **Badges** de statut, de priorité et de rôle RACI ; tableaux cliquables.

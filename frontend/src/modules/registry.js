@@ -1,10 +1,11 @@
-// Registre des processus ITIL couverts par S-Aloha — source unique de la
-// navigation (barre latérale). Un module passe de
+// Registre des pratiques ITIL couvertes par S-Aloha, et des sections de
+// paramétrage et d'administration — source unique de la navigation (barre
+// latérale : Pilotage, Pratiques, Paramétrage, Administration). Un module passe de
 // `soon` à `active` le jour où son interface existe : rien d'autre à toucher
 // côté navigation. Cartographie et état : docs/reference/produit.md.
 
 /**
- * Processus ITIL, dans l'ordre du cycle de vie du service.
+ * Pratiques ITIL, dans l'ordre du cycle de vie du service.
  * - `href`   : point d'entrée du module ;
  * - `routes` : préfixes d'URL qui appartiennent au module (état actif) ;
  * - `pages`  : sous-entrées affichées quand le module est ouvert ; un `href`
@@ -64,5 +65,21 @@ export const MODULES = [
   },
 ]
 
-/** L'entrée (module, sous-entrée) est-elle visible pour ce rôle ? */
+/**
+ * Sections réservées, après les pratiques. Une section n'apparaît que si elle
+ * contient au moins une entrée visible pour le rôle : vides aujourd'hui, elles
+ * restent invisibles jusqu'à leur première page (pas de section vide).
+ * - Paramétrage : le fonctionnement des pratiques (catalogue de demandes,
+ *   modèles de changement, périodes de gel, référentiels) — délégable aux
+ *   gestionnaires ;
+ * - Administration : la plateforme elle-même (utilisateurs et rôles, santé,
+ *   journal d'audit) — Admin seul.
+ * Une entrée : { href, label, description, icon (clé de SECTION_ICONS), roles? }.
+ */
+export const SECTIONS = [
+  { id: 'settings', label: 'Paramétrage', roles: ['Manager', 'Admin'], entries: [] },
+  { id: 'administration', label: 'Administration', roles: ['Admin'], entries: [] },
+]
+
+/** L'entrée (module, sous-entrée, section) est-elle visible pour ce rôle ? */
 export const visibleFor = (entry, role) => !entry.roles || entry.roles.includes(role)

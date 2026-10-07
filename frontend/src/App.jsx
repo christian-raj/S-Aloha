@@ -38,32 +38,32 @@ export default function App() {
         {/* Pilotage — transverse à tous les processus */}
         <Route index element={<Console />} />
         <Route path="reports" element={<Reporting />} />
-        {/* Processus ITIL — Gestion des incidents */}
+        {/* Pratique — Gestion des incidents */}
         <Route path="incidents" element={<Incidents />} />
         <Route path="incidents/:id" element={<IncidentDetail />} />
-        {/* Processus ITIL — Gestion des demandes de service */}
+        {/* Pratique — Gestion des demandes de service */}
         <Route path="requests" element={<Requests />} />
         <Route path="requests/:id" element={<RequestDetail />} />
-        {/* Processus ITIL — Gestion des problèmes */}
+        {/* Pratique — Gestion des problèmes */}
         <Route path="problems" element={<Problems />} />
         <Route path="problems/:id" element={<ProblemDetail />} />
         <Route path="actions" element={<Actions />} />
-        {/* Processus ITIL — Habilitation des changements */}
+        {/* Pratique — Habilitation des changements */}
         <Route path="changes" element={<Changes />} />
         <Route path="changes/schedule" element={<ChangeSchedule />} />
         <Route path="changes/:id" element={<ChangeDetail />} />
-        {/* Processus ITIL — Gestion de la configuration des services */}
+        {/* Pratique — Gestion de la configuration des services */}
         <Route path="configuration" element={<ConfigurationItems />} />
         <Route path="configuration/:id" element={<ConfigurationItemDetail />} />
-        {/* Processus ITIL — Gestion des niveaux de service */}
+        {/* Pratique — Gestion des niveaux de service */}
         <Route path="services" element={<Services />} />
         <Route path="services/:id" element={<ServiceDetail />} />
         <Route path="agreements" element={<Agreements />} />
         <Route path="agreements/:id" element={<AgreementDetail />} />
-        {/* Processus ITIL — Gestion des connaissances */}
+        {/* Pratique — Gestion des connaissances */}
         <Route path="knowledge" element={<Articles />} />
         <Route path="knowledge/:id" element={<ArticleDetail />} />
-        {/* Processus ITIL — Amélioration continue */}
+        {/* Pratique — Amélioration continue */}
         <Route path="improvements" element={<Improvements />} />
         <Route path="improvements/:id" element={<ImprovementDetail />} />
       </Route>
