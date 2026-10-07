@@ -1,10 +1,17 @@
 # 📐 Règles métier
 
-> Les règles implémentées dans la plateforme. À lire avant toute modification de logique ; à mettre à jour **dans le même commit** que le code ([ADR-0002](../decisions/adr-0002-documentation-dans-le-depot.md)).
+> Le référentiel fonctionnel de S-Aloha : ce que la plateforme fait, et ce qu'elle doit
+> faire. Ce document porte le **socle commun** ; chaque pratique ITIL a son document dans
+> [`processus/`](processus/readme.md), sur le même gabarit. À lire avant toute
+> modification de logique ; à mettre à jour **dans le même commit** que le code
+> ([ADR-0002](../decisions/adr-0002-documentation-dans-le-depot.md)).
 
 <sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
 
-Sections 1, 2, 7 et 8 : **socle**, communes à tous les processus. Sections 3 à 6 : module **Gestion des problèmes**. Sections 9 à 15 : les autres processus, en **MVP**, cadrés sur les pratiques **ITIL 4** ([ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)).
+**Pour un agent de code** : lire d'abord le § 3 (conventions), puis le document de la
+pratique concernée. Une règle **🔜 à implémenter** s'implémente avec son test, et passe en
+**✅** dans la même pull request ; une règle **✅** décrit le comportement actuel : ne pas
+le « corriger » sans modifier d'abord la règle.
 
 ## 1. Rôles et droits
 
@@ -12,22 +19,27 @@ Les rôles applicatifs sont dérivés de l'appartenance aux **groupes Active Dir
 
 | Capacité | User | Manager | Admin |
 |---|---|---|---|
-| Se connecter, consulter problèmes / analyses / actions / reporting | ✔ | ✔ | ✔ |
-| Déclarer un problème | ✔ | ✔ | ✔ |
-| Créer / modifier une analyse RCA | ✔ | ✔ | ✔ |
-| Créer / mettre à jour une action corrective et sa matrice RACI | ✔ | ✔ | ✔ |
-| Modifier un problème (titre, statut, cause racine, contournement) | ✘ | ✔ | ✔ |
-| Supprimer une analyse ou une action | ✘ | ✔ | ✔ |
-| Supprimer un problème | ✘ | ✘ | ✔ |
-| Créer et modifier incidents, demandes, changements, CI, articles, améliorations | ✔ | ✔ | ✔ |
+| Se connecter, consulter tous les enregistrements et le reporting | ✔ | ✔ | ✔ |
+| Créer et modifier problèmes (déclaration), analyses, actions, incidents, demandes, changements, CI, articles, améliorations | ✔ | ✔ | ✔ |
+| Qualifier un problème (statut, cause racine, contournement) | ✘ | ✔ | ✔ |
 | Décisions de gestionnaire : autoriser/rejeter un changement, approuver/rejeter une demande, publier un article, valider/abandonner une amélioration | ✘ | ✔ | ✔ |
 | Tenir le catalogue des services et les SLA | ✘ | ✔ | ✔ |
 | Relier deux enregistrements (et retirer un lien), relier deux CI | ✔ | ✔ | ✔ |
-| Supprimer un incident, une demande, un changement, un CI, un service, un SLA, un article, une amélioration | ✘ | ✘ | ✔ |
+| Supprimer une analyse ou une action corrective | ✘ | ✔ | ✔ |
+| Supprimer tout autre enregistrement | ✘ | ✘ | ✔ |
+
+Le détail par pratique (et les droits à venir) est au § 2 de chaque document de
+[`processus/`](processus/readme.md).
 
 Si un utilisateur appartient à plusieurs groupes, le rôle le plus élevé est retenu (ordre d'évaluation : Admin > Manager > User).
 
 L'identité retenue est le `sAMAccountName` renvoyé par l'annuaire, quelle que soit la casse saisie à la connexion ; les comparaisons d'identifiants (« Mes … » de la console, actions affectées) ignorent la casse.
+
+**Rôles applicatifs et rôles ITIL.** ITIL définit des rôles par pratique (gestionnaire des
+incidents, autorité de changement, propriétaire de service…). S-Aloha les porte par les
+trois rôles applicatifs : **Manager** = gestionnaire de pratique et autorité de décision,
+**User** = intervenant (support, exploitation, études), **Admin** = administrateur de la
+plateforme. Chaque document de pratique précise la correspondance.
 
 ## 2. Consoles par rôle
 
@@ -52,41 +64,122 @@ traiter (Urgent, Décisions, Relances, Mon travail ; les deux du milieu pour Man
 Admin) et mènent au groupe ; une tuile à zéro s'efface. Sans rien à traiter : « Tout est à jour ».
 
 La console d'un **Admin** est celle d'un Manager, avec le même contenu : une console
-d'administration propre reste à définir (A1).
+d'administration propre reste à définir (A1, § 9).
 
-Les **indicateurs de volumétrie** (totaux problèmes/actions/analyses, déclarants distincts, dernière activité) ne relèvent pas de l'action : ils ont été déplacés de la console vers la page **Reporting**, accessible à tous les rôles.
+Les **indicateurs de volumétrie** (totaux problèmes/actions/analyses, déclarants distincts, dernière activité) ne relèvent pas de l'action : ils sont sur la page **Reporting**, accessible à tous les rôles.
 
 La composition des blocs est décidée **côté serveur** (`GET /api/console`) à partir du rôle porté par le jeton : un client ne peut pas obtenir un bloc qui ne correspond pas à son rôle.
 
-## 3. Gestion des problèmes — cycle de vie
+Les blocs **à venir** propres à chaque pratique (SLA en risque, demandes en retard,
+changements sans revue post-implémentation…) sont décrits au § 8 de chaque document de
+pratique ; ils rejoignent le groupe indiqué.
+
+## 3. Conventions de ce référentiel
+
+### Statut des règles
+
+| Marque | Sens | Ce que fait un agent de code |
+|---|---|---|
+| ✅ | **Implémentée** : comportement actuel de la plateforme | La respecter ; la modifier seulement si la règle elle-même change |
+| 🔜 | **À implémenter** : comportement cible | L'implémenter avec un test d'API (et d'interface si visible), puis passer la marque à ✅ dans la même PR |
+
+### Identifiants
+
+Chaque règle porte un identifiant **stable** : `<PRÉFIXE>-<NN>` (`INC-07`, `CHG-12`). Un
+identifiant n'est jamais réattribué : une règle abandonnée reste listée avec la mention
+*retirée*. Les tests, commits et pull requests citent l'identifiant
+(« Implémente INC-12 »).
+
+| Préfixe | Document |
+|---|---|
+| `SOC` | Socle commun (ce document, § 5 à 9) |
+| `PRB` | [Gestion des problèmes](processus/gestion-des-problemes.md) |
+| `INC` | [Gestion des incidents](processus/gestion-des-incidents.md) |
+| `REQ` | [Gestion des demandes de service](processus/gestion-des-demandes.md) |
+| `CHG` | [Habilitation des changements](processus/habilitation-des-changements.md) |
+| `CFG` | [Gestion de la configuration](processus/gestion-de-la-configuration.md) |
+| `SLM` | [Gestion des niveaux de service](processus/gestion-des-niveaux-de-service.md) |
+| `KB` | [Gestion des connaissances](processus/gestion-des-connaissances.md) |
+| `CSI` | [Amélioration continue](processus/amelioration-continue.md) |
+
+### Lots
+
+Les règles 🔜 sont rangées par **lot**, qui donne l'ordre d'implémentation :
+
+| Lot | Contenu | Pourquoi d'abord |
+|---|---|---|
+| **1** | Robustesse et cohérence : validations, transitions contraintes, écarts connus | Ce que la plateforme affiche doit être juste avant d'en faire plus |
+| **2** | Pratique ITIL complète : délais et SLA mesurés, escalade, revues, catalogue | Ce qui fait passer chaque pratique du MVP à l'usage réel |
+| **3** | Confort et industrialisation : automatismes, import, enquêtes, tableaux avancés | Utile, non bloquant |
+
+Le [plan d'action](../plan-action.md) reste la liste des chantiers ; il renvoie aux
+identifiants de règles.
+
+### Gabarit d'un document de pratique
+
+Tous les documents de [`processus/`](processus/readme.md) suivent le même plan : 1. Objectif
+et périmètre · 2. Rôles et droits · 3. Données · 4. Cycle de vie · 5. Règles de gestion ·
+6. Délais, calculs et alertes · 7. Liens avec les autres pratiques · 8. Console et
+indicateurs · 9. API · 10. Scénarios d'acceptation.
+
+## 4. Les pratiques
+
+Référentiel : les **pratiques ITIL 4** ([ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)).
+
+| Pratique | Document | Objet | Maturité |
+|---|---|---|---|
+| Gestion des incidents | [gestion-des-incidents](processus/gestion-des-incidents.md) | Rétablir le service au plus vite | MVP |
+| Gestion des demandes de service | [gestion-des-demandes](processus/gestion-des-demandes.md) | Traiter les demandes prédéfinies des utilisateurs | MVP |
+| Gestion des problèmes | [gestion-des-problemes](processus/gestion-des-problemes.md) | Supprimer les causes des incidents | Complète |
+| Habilitation des changements | [habilitation-des-changements](processus/habilitation-des-changements.md) | Faire réussir les changements | MVP avancé |
+| Gestion de la configuration | [gestion-de-la-configuration](processus/gestion-de-la-configuration.md) | Connaître les CI et leurs dépendances | MVP avancé |
+| Gestion des niveaux de service | [gestion-des-niveaux-de-service](processus/gestion-des-niveaux-de-service.md) | Fixer et mesurer les engagements | MVP |
+| Gestion des connaissances | [gestion-des-connaissances](processus/gestion-des-connaissances.md) | Capitaliser et réutiliser | MVP |
+| Amélioration continue | [amelioration-continue](processus/amelioration-continue.md) | Améliorer en continu | MVP |
 
 ```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> Nouveau : déclaration
-    Nouveau --> EnAnalyse : 1re analyse RCA (automatique)
-    EnAnalyse --> ErreurConnue : cause et contournement
-    ErreurConnue --> Resolu : actions correctives
-    EnAnalyse --> Resolu
-    Resolu --> Clos : horodate ClosedAt
-    Clos --> [*]
-    EnAnalyse : En analyse
-    ErreurConnue : Erreur connue
-    Resolu : Résolu
+flowchart LR
+    INC[Incident] -- "cause inconnue, récurrence" --> PRB[Problème]
+    PRB -- "erreur connue" --> KB[Article]
+    PRB -- "correctif" --> CHG[Changement]
+    INC -- "solution" --> KB
+    REQ[Demande] -- "si modification" --> CHG
+    CHG -- "touche" --> CI[CI]
+    INC -- "affecte" --> CI
+    CI -- "supporte" --> SVC[Service]
+    SVC -- "engagements" --> SLA[SLA]
+    INC -- "mesuré contre" --> SLA
+    SLA -- "écart" --> CSI[Amélioration]
+    PRB -- "tendance" --> CSI
 ```
 
-Les statuts sont modifiables librement par un Manager ou un Admin ; le schéma montre le
-parcours nominal.
+## 5. Règles communes aux processus
 
-- Un problème est créé au statut **Nouveau** avec une référence `PRB-AAAA-NNNN` (séquence annuelle). Le numéro part du **plus grand numéro de l'année**, pas du nombre de problèmes : un numéro supprimé n'est pas réattribué, sauf s'il était le dernier de l'année. En cas de déclarations simultanées, la déclaration perdante relit le maximum et réessaie (jusqu'à 10 tentatives).
-- La création d'une première analyse RCA fait passer automatiquement un problème **Nouveau** à **En analyse**.
-- **Erreur connue** : le champ *Contournement* doit être documenté (règle de bonne pratique, non bloquante).
-- Le passage à **Clos** horodate `ClosedAt`, utilisé pour le calcul du MTTR. Un problème **rouvert** (le statut quitte Clos) voit `ClosedAt` remis à vide : seul un problème actuellement clos compte dans le MTTR. Seuls Manager et Admin changent les statuts.
-- La recherche de problèmes (titre, référence) ignore la casse.
+S'appliquent à toutes les pratiques (socle `Core/Records` de l'API pour les sept pratiques
+MVP ; le module Problèmes suit les mêmes règles par son propre code).
 
-## 4. Gestion des problèmes — priorité
+| ID | Règle | Statut | Lot |
+|---|---|---|---|
+| SOC-01 | **Référence** `XXX-AAAA-NNNN` par processus (PRB, INC, REQ, CHG, CI, SVC, SLA, KB, AMI) : plus grand numéro de l'année + 1 ; un numéro supprimé n'est pas réattribué, sauf s'il était le dernier de l'année ; en cas de création simultanée, nouvelle tentative (jusqu'à 10) | ✅ | |
+| SOC-02 | **Valeurs fermées** : statut, type, risque, impact… hors liste ⇒ 400 avec la liste des valeurs admises. Le titre est obligatoire | ✅ (problèmes : 🔜 [#28](https://github.com/christian-raj/S-Aloha/issues/28)) | 1 |
+| SOC-03 | **Statut de création** imposé par le processus (on ne crée pas un changement « Autorisé ») ; exceptions : CI et services, inventaires dont le statut est choisi à la saisie | ✅ | |
+| SOC-04 | **Transitions** : statuts réservés aux gestionnaires ⇒ 403 pour un User ; conditions propres à chaque processus ⇒ 400 avec le motif. Les transitions **non listées** dans le tableau du § 4 de chaque pratique sont aujourd'hui permises | ✅ | |
+| SOC-05 | **Transitions contraintes** : seules les transitions du tableau § 4 de chaque pratique sont permises ; toute autre ⇒ 400 « Transition de *A* vers *B* non permise ». Un Admin peut forcer une transition avec un motif obligatoire, tracé au journal d'audit (SOC-20) | 🔜 | 1 |
+| SOC-06 | Les **conditions d'un statut** sont vérifiées à l'entrée dans le statut **et à chaque modification ultérieure** (vider la résolution d'un incident résolu ⇒ 400) | ✅ | |
+| SOC-07 | **Longueurs** : un texte qui dépasse la taille de sa colonne ⇒ 400, champ et limite indiqués | ✅ | |
+| SOC-08 | **Dates de transition** (`ResolvedAt`, `ClosedAt`, `AuthorizedAt`…) posées à l'entrée du statut et **effacées à la sortie** (réouverture) | ✅ | |
+| SOC-09 | **Responsable** : un utilisateur ou groupe AD (assigné, propriétaire, porteur selon le processus) ; « Mes … » compare les identifiants sans tenir compte de la casse | ✅ | |
+| SOC-10 | **Responsable groupe** : un enregistrement dont le responsable est un **groupe AD** apparaît dans « Mon travail » de chaque membre du groupe (groupes de l'utilisateur portés par le jeton à la connexion) — résout M3 | 🔜 | 1 |
+| SOC-11 | **Recherche** (titre, référence) insensible à la casse ; filtres `status`, `q`, `owner` sur chaque registre | ✅ | |
+| SOC-12 | **Liens inter-processus** : tout enregistrement peut être relié à un autre par sa référence ; le lien se lit des deux côtés ; un doublon (dans un sens ou dans l'autre) ⇒ 409 ; supprimer un enregistrement supprime ses liens | ✅ | |
+| SOC-13 | Les **registres** du changement et des connaissances ne renvoient pas les champs longs (plans, contenu) : ils restent dans la fiche | ✅ | |
+| SOC-14 | **Suppression** réservée à l'Admin (sauf analyses et actions : Manager), avec **confirmation** dans l'interface qui rappelle la référence et le nombre de liens supprimés — résout M8 | 🔜 (API ✅, interface 🔜) | 2 |
+| SOC-15 | **Enregistrement terminé** (statut final de la pratique) : modifiable seulement par un Manager ; un User qui doit le reprendre le rouvre (transition permise) | 🔜 | 2 |
 
-La priorité est **calculée automatiquement** (matrice impact × urgence), non modifiable directement :
+## 6. Priorité
+
+Partagée par les incidents et les problèmes : la priorité est **calculée** (matrice impact
+× urgence, `Core/Itil/Priority.cs`), jamais saisie.
 
 | | Urgence Faible | Urgence Moyenne | Urgence Élevée |
 |---|---|---|---|
@@ -94,162 +187,43 @@ La priorité est **calculée automatiquement** (matrice impact × urgence), non 
 | **Impact Moyen** | P4 | P3 | P2 |
 | **Impact Élevé** | P3 | P2 | P1 |
 
-## 5. Gestion des problèmes — analyses de cause racine
-
-- Méthodologies disponibles : **5 Pourquoi**, **Ishikawa (6M)**, **Arbre des défaillances (FTA)** avec portes ET/OU.
-- Plusieurs analyses (y compris de méthodes différentes) peuvent coexister sur un même problème.
-- La « Cause racine identifiée » d'une analyse alimente son champ *Conclusion* ; la cause racine **validée** du problème est renseignée par un Manager dans la fiche du problème.
-
-## 6. Gestion des problèmes — actions correctives et matrice RACI
-
-- Chaque action porte : titre, description, échéance, statut (`À faire, En cours, Terminée, Annulée`).
-- Règles RACI **bloquantes à la création** (validées côté API) :
-  - au moins **un R** (Responsable — réalise l'action) ;
-  - exactement **un A** (Approbateur — rend compte du résultat) ;
-  - C (Consulté) et I (Informé) libres.
-- Chaque rôle RACI est affecté à un **utilisateur ou groupe AD** (recherche en direct dans l'annuaire).
-- Une action est **en retard** si son échéance est dépassée et son statut ni Terminée ni Annulée. L'échéance est une **date** : l'action n'est en retard qu'à partir du **lendemain** de la date d'échéance, jamais le jour même. La règle vaut pour la console, le reporting et le suivi des actions.
-- Le passage à **Terminée** horodate `CompletedAt`.
+| ID | Règle | Statut | Lot |
+|---|---|---|---|
+| SOC-16 | Priorité recalculée à chaque modification de l'impact ou de l'urgence | ✅ | |
+| SOC-17 | Toute modification de priorité est tracée (ancienne et nouvelle valeur, auteur) au journal d'audit (SOC-20) | 🔜 | 2 |
 
 ## 7. Reporting
 
-- **MTTR** : moyenne en jours de (`ClosedAt − CreatedAt`) sur les problèmes actuellement clos.
-- Répartitions par statut, priorité et catégorie ; liste des actions en retard avec leurs responsables (R).
-- **MTTR incidents** : moyenne en heures de (`ResolvedAt − CreatedAt`) sur les incidents actuellement résolus ou clos.
-- **Taux de changements réussis** : part des changements de résultat *Réussi* parmi ceux dont le résultat est renseigné.
-- **Incidents majeurs ouverts** ; **volumétrie par statut** de chaque processus.
+Indicateurs globaux de la page Reporting (`GET /api/reports/summary`). Les indicateurs
+propres à chaque pratique, actuels et à venir, sont au § 8 de son document.
 
-## 8. Règles communes aux processus
+- **MTTR problèmes** : moyenne en jours de (`ClosedAt − CreatedAt`) sur les problèmes actuellement clos. ✅
+- **MTTR incidents** : moyenne en heures de (`ResolvedAt − CreatedAt`) sur les incidents actuellement résolus ou clos. ✅
+- **Taux de changements réussis** : part des changements *Réussi* parmi ceux dont le résultat est renseigné. ✅
+- Répartitions des problèmes par statut, priorité, catégorie ; actions en retard et leurs responsables (R) ; incidents majeurs ouverts ; volumétrie par statut de chaque processus. ✅
 
-S'appliquent aux processus des sections 9 à 15 (socle `Core/Records` de l'API).
+| ID | Règle | Statut | Lot |
+|---|---|---|---|
+| SOC-18 | **Période** : chaque indicateur se calcule sur une période choisie (30 jours par défaut, mois, trimestre, personnalisée) | 🔜 | 2 |
+| SOC-19 | **Export CSV** de chaque tableau du reporting | 🔜 | 3 |
 
-- **Référence** `XXX-AAAA-NNNN` par processus (INC, REQ, CHG, CI, SVC, SLA, KB, AMI), même
-  règle que les problèmes : plus grand numéro de l'année + 1, nouvelle tentative en cas de
-  création simultanée.
-- **Valeurs fermées** : statut, type, risque, impact… hors liste ⇒ refus (400) avec la liste
-  des valeurs admises. Le titre est obligatoire.
-- **Statut de création** imposé par le processus (on ne crée pas un changement « Autorisé ») ;
-  exceptions : CI et services, inventaires dont le statut est choisi à la saisie.
-- **Transitions** libres entre statuts, sauf : statuts réservés aux gestionnaires (403 sinon)
-  et conditions propres à chaque processus (400 avec le motif).
-- Les **conditions d'un statut** sont vérifiées à l'entrée dans le statut **et à chaque
-  modification ultérieure** : vider la résolution d'un incident résolu ou le résultat d'un
-  changement clos est refusé.
-- **Longueurs** : un texte qui dépasse la taille de sa colonne est refusé (400, champ et
-  limite indiqués) ; vaut aussi pour les problèmes, analyses et actions.
-- Les **registres** du changement et des connaissances ne renvoient pas les champs longs
-  (plans, contenu) : ils restent dans la fiche.
-- **Dates de transition** posées à l'entrée du statut et **effacées à la sortie** (réouverture),
-  comme `ClosedAt` des problèmes (M4).
-- **Responsable** : un utilisateur ou groupe AD (assigné, propriétaire, porteur selon le
-  processus). « Mes … » compare les identifiants sans tenir compte de la casse.
-- **Recherche** (titre, référence) insensible à la casse.
-- **Liens inter-processus** : tout enregistrement peut être relié à un autre par sa
-  référence (incident → problème, changement → CI…). Le lien se lit des deux côtés ; un
-  lien en double (dans un sens ou dans l'autre) est refusé (409) ; supprimer un
-  enregistrement supprime ses liens.
+## 8. Notifications
 
-## 9. Gestion des incidents (ITIL 4)
+Aucune notification n'existe aujourd'hui. Cible : notifications **dans l'application**
+(cloche, compteur), puis par courriel (SMTP configurable).
 
-*Objectif ITIL 4 : minimiser l'impact négatif des incidents en rétablissant le service normal au plus vite.*
+| ID | Règle | Statut | Lot |
+|---|---|---|---|
+| SOC-21 | Chaque événement listé au § 6 des documents de pratique notifie ses destinataires (responsable, groupe, demandeur, gestionnaires) dans l'application | 🔜 | 2 |
+| SOC-22 | Envoi par **courriel** des mêmes notifications, configurable par utilisateur (aucun, immédiat, résumé quotidien) | 🔜 | 3 |
+| SOC-23 | Une notification porte la référence, le titre, l'événement et un lien vers la fiche ; jamais de donnée au-delà de ce que le destinataire peut consulter | 🔜 | 2 |
 
-`Nouveau → En cours ⇄ En attente → Résolu → Clos`
+## 9. Traçabilité, commentaires, administration
 
-- Priorité **P1–P4** calculée par la même matrice impact × urgence que les problèmes (§ 4).
-- Case **incident majeur** : remonte dans la console des gestionnaires tant qu'il n'est ni Résolu ni Clos.
-- **Résolu** ou **Clos** exige une *résolution* décrite. `ResolvedAt` est posé au passage à
-  Résolu (ou directement Clos) et effacé à la réouverture ; `ClosedAt` au passage à Clos.
-- **Ouvrir un problème lié** depuis l'incident : crée le problème avec les mêmes titre,
-  description, impact, urgence, catégorie et service, puis relie les deux.
-
-## 10. Gestion des demandes de service (ITIL 4)
-
-*Objectif ITIL 4 : délivrer la qualité de service convenue en traitant les demandes prédéfinies, initiées par les utilisateurs, de façon efficace et conviviale.*
-
-`Soumise → Approuvée | Rejetée ; Approuvée → En cours → Satisfaite → Close`
-
-- **Approuvée** et **Rejetée** : gestionnaire uniquement ; l'approbation horodate `ApprovedAt` / `ApprovedBy`.
-- **En cours**, **Satisfaite** et **Close** exigent une demande approuvée : une demande **rejetée est terminée** (ni traitée, ni close).
-- Revenir à **Soumise** ou passer à **Rejetée** efface l'approbation. `FulfilledAt` au passage à Satisfaite ; `ClosedAt` à Close.
-- Champs : objet demandé (obligatoire), bénéficiaire AD, échéance souhaitée, responsable du traitement.
-
-## 11. Habilitation des changements (ITIL 4)
-
-*Objectif ITIL 4 : maximiser le nombre de changements réussis en évaluant les risques, en autorisant les changements et en gérant le calendrier des changements.*
-
-`Demandé → Évalué → Autorisé | Rejeté ; Autorisé → Planifié → Mis en œuvre → Clos`
-
-- Types : **Standard** (modèle déjà évalué : créé directement **Autorisé**, autorisation
-  « Modèle standard (pré-autorisé) »), **Normal**, **Urgent**. Risque : Faible, Moyen, Élevé.
-- **Autorisé** et **Rejeté** : gestionnaire uniquement (autorité de changement) ; l'autorisation horodate `AuthorizedAt` / `AuthorizedBy`.
-- **Planifié**, **Mis en œuvre** et **Clos** exigent un changement autorisé ; **Planifié** exige un début planifié ; **Clos** exige le résultat (*Réussi* ou *Échoué*). Un changement **rejeté est terminé** : ni planifié, ni mis en œuvre, ni clos.
-- Revenir à Demandé ou Évalué efface l'autorisation. La fin planifiée ne peut précéder le début.
-- **Modifier un changement autorisé** (statut Autorisé ou Planifié) — type, risque, plan de
-  mise en œuvre, plan de retour arrière ou créneau — le **ramène à Évalué** et efface
-  l'autorisation : l'autorité de changement doit l'autoriser de nouveau. Exceptions : la
-  modification faite par un gestionnaire vaut autorisation ; replanifier un changement
-  **standard** ne retire pas son autorisation (elle vient du modèle, pas du créneau) ; titre,
-  description et responsable se modifient librement.
-- **Calendrier des changements** : changements non rejetés ayant un début planifié, depuis une semaine, regroupés par semaine.
-- **Conflit de calendrier** : deux changements non rejetés sont en conflit s'ils sont liés à
-  un **même CI** (lien inter-processus, dans un sens ou dans l'autre) et que leurs créneaux
-  **se chevauchent** (l'un commence avant que l'autre ne finisse ; deux créneaux bout à bout
-  ne se chevauchent pas). Sans fin planifiée, un changement occupe une heure. Le calendrier
-  et la fiche du changement signalent chaque conflit avec le changement et le CI en cause ;
-  le conflit n'est pas bloquant.
-
-## 12. Gestion de la configuration des services (ITIL 4)
-
-*Objectif ITIL 4 : fournir une information exacte et fiable sur la configuration des services et des éléments de configuration qui les supportent, quand et où elle est nécessaire.*
-
-`Planifié | En service | Hors service | Retiré` — statut choisi à la création (« En service » par défaut).
-
-- Un **CI** porte un nom, un type (Application, Serveur, Base de données, Réseau, Stockage,
-  Poste de travail, Logiciel, Autre), un environnement, un emplacement et un propriétaire.
-- **Relations** orientées entre CI : *Dépend de*, *Héberge*, *Fait partie de*, *Se connecte à* ;
-  la fiche montre les relations sortantes et entrantes. Pas de relation d'un CI vers
-  lui-même, ni de doublon (même source, cible et type).
-- **Vue d'impact** (transitive) : **en aval**, les CI touchés si ce CI tombe ; **en amont**,
-  ceux dont il dépend. Sens de propagation d'une panne : « A *dépend de* / *se connecte à*
-  B » — la panne de B touche A ; « A *héberge* / *fait partie de* B » — la panne de A touche
-  B. Chaque CI n'apparaît qu'une fois, à sa plus courte distance, avec la relation par
-  laquelle il est atteint ; un cycle de relations ne boucle pas.
-
-## 13. Gestion des niveaux de service (ITIL 4)
-
-*Objectif ITIL 4 : fixer des cibles claires, orientées métier, pour les niveaux de service, et évaluer, suivre et gérer la prestation au regard de ces cibles.*
-
-- **Catalogue des services** (`En conception | En service | Retiré`) : nom, criticité,
-  heures de service, responsable. Tenu par les gestionnaires.
-- **Accords de niveau de service** (`Brouillon → En vigueur → Expiré`), rattachés à un service :
-  client, disponibilité cible (%), délais de résolution P1 à P4 (heures), validité, date de
-  revue. Tenus par les gestionnaires ; supprimer un service supprime ses SLA.
-- MVP : les cibles sont **enregistrées**, pas encore **mesurées** (rapprochement incidents ↔ SLA au plan d'action).
-
-## 14. Gestion des connaissances (ITIL 4)
-
-*Objectif ITIL 4 : maintenir et améliorer l'usage efficace, efficient et pratique de l'information et des connaissances dans l'organisation.*
-
-`Brouillon → Publié → Archivé`
-
-- Types d'article : Solution, Procédure, Erreur connue, FAQ ; résumé, contenu, mots-clés, date de revue.
-- **Publié** : gestionnaire uniquement, et contenu obligatoire ; horodate `PublishedAt` / `PublishedBy`, effacés au retour en Brouillon.
-- **Retoucher un article publié** (titre, résumé, contenu ou type) le **ramène en Brouillon** :
-  la nouvelle version attend une nouvelle publication. La retouche faite par un gestionnaire
-  vaut publication ; les mots-clés, la date de revue et le responsable se modifient librement.
-- La recherche porte aussi sur les mots-clés et le contenu.
-
-## 15. Amélioration continue (ITIL 4)
-
-*Objectif ITIL 4 : aligner les pratiques et services de l'organisation sur l'évolution des besoins métier par l'amélioration continue des produits, services, pratiques et de tout élément de leur gestion.*
-
-`Proposée → Validée → En cours → Réalisée | Abandonnée`
-
-- Registre d'amélioration continue : opportunité, valeur attendue, mesure de départ et
-  mesure cible, priorité, porteur, échéance, résultat constaté.
-- Avancement selon le **modèle d'amélioration continue ITIL 4** (étape 1 à 7) : *Quelle est
-  la vision ? — Où en sommes-nous ? — Où voulons-nous être ? — Comment y parvenir ? —
-  Passer à l'action — Y sommes-nous parvenus ? — Comment maintenir la dynamique ?*
-- **Validée** et **Abandonnée** : gestionnaire uniquement. **En cours** et **Réalisée** exigent
-  une amélioration validée ; **Réalisée** exige le résultat constaté. **Abandonner** (comme
-  revenir à Proposée) retire la validation : relancer l'amélioration demande une nouvelle validation.
+| ID | Règle | Statut | Lot |
+|---|---|---|---|
+| SOC-20 | **Journal d'audit** : toute création, modification (champ, ancienne et nouvelle valeur), transition, suppression et lien est tracé (auteur, date) ; consultable sur la fiche (onglet « Historique ») ; conservé 3 ans — résout R5 | 🔜 | 1 |
+| SOC-24 | **Commentaires** : fil de commentaires sur chaque enregistrement ; un commentaire est soit **public** (visible du demandeur / bénéficiaire), soit **note de travail** (équipe IT) | 🔜 | 2 |
+| SOC-25 | **Pièces jointes** sur chaque enregistrement (10 Mo par fichier, types bureautiques et images), stockées hors base | 🔜 | 3 |
+| SOC-26 | **Console d'administration** (Admin) : utilisateurs et rôles constatés, mapping groupes AD → rôles (lecture), santé (base, annuaire, version), référentiels (catégories, services), journal d'audit global, nettoyage des doublons — résout A1 | 🔜 | 2 |
+| SOC-27 | **Référentiels** : catégories d'incident et de problème tirées d'une liste administrée, et service affecté tiré du catalogue (SLM-10), au lieu du texte libre | 🔜 | 2 |

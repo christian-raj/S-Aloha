@@ -35,6 +35,12 @@
 | **SLA** | *Service Level Agreement* : accord de niveau de service entre le fournisseur et un client, avec des cibles (disponibilité, délais de résolution). |
 | **Article de connaissance** | Solution, procédure, erreur connue documentée ou FAQ, publié après validation et revu périodiquement. |
 | **CSI** | *Continual Service Improvement* : amélioration continue des services (pratique *continual improvement* d'ITIL 4). |
+| **CAB** | *Change Advisory Board*, comité consultatif des changements : dans S-Aloha, deux gestionnaires distincts qui autorisent un changement normal à risque élevé ([CHG-20](processus/habilitation-des-changements.md)). |
+| **Revue post-implémentation** | Retour d'expérience après un changement urgent ou échoué : ce qui s'est passé, causes, enseignements ([CHG-15](processus/habilitation-des-changements.md)). |
+| **Période de gel** | Intervalle pendant lequel aucun changement non urgent ne peut être planifié ([CHG-25](processus/habilitation-des-changements.md)). |
+| **Heures de service** | Plages pendant lesquelles un service est assuré ; les délais des SLA se comptent dans ces heures ([SLM-14](processus/gestion-des-niveaux-de-service.md)). |
+| **Modèle de demande** | Demande prédéfinie du catalogue de demandes : objet, approbation requise ou non, délai cible, groupe d'exécution ([REQ-20](processus/gestion-des-demandes.md)). |
+| **Résolution au premier contact** | Incident résolu sans prise en charge ni changement de responsable ([INC-23](processus/gestion-des-incidents.md)). |
 | **Registre d'amélioration continue** (CIR) | Liste des opportunités d'amélioration, avec leur valeur attendue, leur priorité et leur avancement. |
 | **Modèle d'amélioration continue** | Démarche ITIL 4 en sept étapes : vision, situation actuelle, cible, plan, action, vérification, maintien de la dynamique. |
 | **Référence** | Identifiant d'un enregistrement : préfixe du processus, année, numéro (`INC-2026-0001`). Sert aussi à relier deux enregistrements. |
@@ -49,6 +55,8 @@
 | **Bientôt** | État d'un processus déclaré dans le registre mais sans interface (`status: 'soon'`). |
 | **Pilotage** | Section transverse de la navigation : Ma console et Reporting. |
 | **Ma console** | Page d'accueil par rôle, orientée action : groupes Urgent, Décisions, Relances, Mon travail, À suivre. |
+| **Règle ✅ / 🔜** | Règle fonctionnelle implémentée (✅) ou à implémenter (🔜), identifiée par un code stable (`INC-06`) ; voir les [conventions](regles-metier.md#3-conventions-de-ce-référentiel). |
+| **Lot** | Ordre d'implémentation des règles 🔜 : 1 robustesse, 2 pratique ITIL complète, 3 confort ([plan du lot 1](processus/readme.md#plan-dimplémentation-conseillé--lot-1)). |
 
 ## Technique
 

@@ -115,7 +115,7 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 | `Reference` | texte (20) | **unique** (index par table) — `XXX-AAAA-NNNN` |
 | `Title` | texte (200) | obligatoire ; porte le *nom* pour un CI ou un service |
 | `Description` | texte | |
-| `Status` | texte (30) | liste fermée propre au processus ([règles métier](regles-metier.md#8-règles-communes-aux-processus)) |
+| `Status` | texte (30) | liste fermée propre au processus ([règles métier](regles-metier.md#5-règles-communes-aux-processus)) |
 | `OwnerType`, `OwnerId`, `OwnerDisplayName` | texte (10 / 200 / 250), nullable | responsable AD : `User` ou `Group` |
 | `CreatedBy`, `CreatedByDisplayName` | texte (100 / 200) | |
 | `CreatedAt`, `UpdatedAt` | horodatage UTC | |

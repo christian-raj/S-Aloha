@@ -32,6 +32,15 @@ REFERENCE = [
     ('Exploitation', 'docs/reference/exploitation.md', 'Installer, brancher l’Active Directory, mettre à jour'),
     ('Sécurité', 'docs/reference/securite.md', 'Préparer une mise en production'),
     ('Glossaire', 'docs/reference/glossaire.md', 'Retrouver un terme ITIL, technique ou malgache'),
+    ('Pratiques-ITIL', 'docs/reference/processus/readme.md', 'Spécifier ou implémenter une pratique : règles numérotées, statut, lot'),
+    ('Pratique-Problèmes', 'docs/reference/processus/gestion-des-problemes.md', 'Gestion des problèmes'),
+    ('Pratique-Incidents', 'docs/reference/processus/gestion-des-incidents.md', 'Gestion des incidents'),
+    ('Pratique-Demandes', 'docs/reference/processus/gestion-des-demandes.md', 'Gestion des demandes de service'),
+    ('Pratique-Changements', 'docs/reference/processus/habilitation-des-changements.md', 'Habilitation des changements'),
+    ('Pratique-Configuration', 'docs/reference/processus/gestion-de-la-configuration.md', 'Gestion de la configuration'),
+    ('Pratique-Niveaux-de-service', 'docs/reference/processus/gestion-des-niveaux-de-service.md', 'Gestion des niveaux de service'),
+    ('Pratique-Connaissances', 'docs/reference/processus/gestion-des-connaissances.md', 'Gestion des connaissances'),
+    ('Pratique-Amélioration-continue', 'docs/reference/processus/amelioration-continue.md', 'Amélioration continue'),
 ]
 PILOTAGE = [
     ('Plan-d’action', 'docs/plan-action.md', 'Les chantiers ouverts et leur priorité'),

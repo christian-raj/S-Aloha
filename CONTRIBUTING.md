@@ -21,6 +21,9 @@ contribution est publiée sous la même licence.
 
   puis connectez-vous sur http://localhost avec `demo.admin` / `Demo-Admin-2026`
   (autres comptes : [README](README.md#essayer-en-5-minutes)).
+- Pour savoir **quoi** implémenter : chaque pratique ITIL a sa spécification dans
+  [`docs/reference/processus/`](docs/reference/processus/readme.md) ; une règle 🔜 « à
+  implémenter » porte un identifiant (`INC-06`) à citer dans votre pull request.
 - Pour comprendre le code : [architecture](docs/reference/architecture.md), et pour
   ajouter un écran ou un module : [frontend](docs/reference/frontend.md).
 - Issues, pull requests et commits sont acceptés **en français ou en anglais**.

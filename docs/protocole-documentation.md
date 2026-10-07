@@ -36,8 +36,9 @@ Chaque changement est replié dans le document de [`reference/`](reference/) con
 
 | Ce qui a changé | Document à mettre à jour |
 |---|---|
-| `backend/Modules/*/Controllers`, routes, policies | [architecture](reference/architecture.md) § API, [règles métier](reference/regles-metier.md) |
-| Règle de gestion (statuts, priorité, RACI, console) | [règles métier](reference/regles-metier.md) |
+| `backend/Modules/*/Controllers`, routes, policies | [architecture](reference/architecture.md) § API, document de la pratique dans [`processus/`](reference/processus/readme.md) (§ 2 et § 9) |
+| Règle de gestion d'une pratique (statuts, transitions, délais) | document de la pratique dans [`processus/`](reference/processus/readme.md) : marque 🔜 → ✅ quand la règle est implémentée |
+| Règle commune (rôles, console, références, priorité) | [règles métier](reference/regles-metier.md) |
 | `Models/Entities.cs`, `AppDbContext` | [base de données](reference/base-de-donnees.md) |
 | `backend/Core/Auth`, `Program.cs` (auth, CORS, JWT) | [architecture](reference/architecture.md), [sécurité](reference/securite.md) |
 | `appsettings.json`, `docker-compose.yml`, Dockerfiles | [exploitation](reference/exploitation.md) |
