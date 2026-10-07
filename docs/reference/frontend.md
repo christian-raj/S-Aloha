@@ -108,6 +108,88 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 4. Côté backend : [`architecture.md`](architecture.md#3-organisation-du-code--socle-et-modules).
 5. Mettre à jour [`produit.md`](produit.md#cartographie-des-processus-itil-et-état).
 
+## Navigation cible
+
+> Consigne pour la conception de l'interface (agent Design compris) : la navigation
+> **dérive du [référentiel fonctionnel](processus/readme.md)**. Chaque entrée ci-dessous
+> renvoie à la règle qui la justifie ; une entrée 🔜 apparaît dans le menu **quand sa
+> règle est implémentée**, jamais avant (pas de page vide). Le registre
+> `frontend/src/modules/registry.js` reste la source unique du menu.
+
+### Principes
+
+- **Ordre du cycle de vie du service** pour les pratiques (incidents → demandes →
+  problèmes → changements → configuration → niveaux de service → connaissances →
+  amélioration), comme aujourd'hui.
+- Chaque pratique ouvre sur son **registre** ; les sous-entrées sont les autres **objets**
+  de la pratique (§ 3 de son document) et ses **vues** (calendrier, impact).
+- Les pages de **paramétrage** d'une pratique (catalogue de demandes, modèles, périodes
+  de gel) sont des sous-entrées **réservées aux Manager et Admin** : masquées pour un User
+  (l'API les refuse de toute façon).
+- Ce qui est **propre à un enregistrement** (historique, commentaires, liens, impact) est un
+  **onglet de sa fiche**, pas une entrée de menu.
+- La section **Pilotage** reste transverse à toutes les pratiques.
+
+### Pilotage
+
+| Entrée | Visible par | Règle | Statut |
+|---|---|---|---|
+| Ma console | Tous | [socle § 2](regles-metier.md#2-consoles-par-rôle) | ✅ |
+| Reporting (période choisie, export) | Tous | [SOC-18, SOC-19](regles-metier.md#7-reporting) | ✅ (page) / 🔜 |
+| Administration : utilisateurs et rôles, santé, référentiels, journal d'audit | Admin | [SOC-26, SOC-27](regles-metier.md#9-traçabilité-commentaires-administration) | 🔜 |
+| Notifications : **cloche** dans l'en-tête avec compteur, pas une entrée de menu | Tous | [SOC-21](regles-metier.md#8-notifications) | 🔜 |
+
+### Pratiques
+
+| Pratique | Sous-entrée | Visible par | Règle | Statut |
+|---|---|---|---|---|
+| [Incidents](processus/gestion-des-incidents.md) | Registre des incidents | Tous | INC-01 | ✅ |
+| | Filtres prédéfinis du registre : mes incidents, non pris en charge, SLA en risque, majeurs | Tous | INC-06, INC-24, INC-12 | ✅ (filtres de base) / 🔜 |
+| [Demandes](processus/gestion-des-demandes.md) | Registre des demandes | Tous | REQ-01 | ✅ |
+| | Nouvelle demande **depuis le catalogue** (choix d'un modèle) | Tous | REQ-20 | 🔜 |
+| | Catalogue de demandes (modèles) | Manager, Admin | REQ-20 | 🔜 |
+| [Problèmes](processus/gestion-des-problemes.md) | Registre des problèmes | Tous | PRB-01 | ✅ |
+| | Actions correctives (suivi transverse) | Tous | PRB-15 | ✅ |
+| | Erreurs connues (registre filtré sur le statut) | Tous | PRB-11 | ✅ (filtre) |
+| [Changements](processus/habilitation-des-changements.md) | Registre des changements | Tous | CHG-01 | ✅ |
+| | Calendrier des changements (conflits, **périodes de gel**) | Tous | CHG-08, CHG-09, CHG-25 | ✅ / 🔜 (gel) |
+| | Modèles de changement standard | Manager, Admin | CHG-26 | 🔜 |
+| | Périodes de gel | Manager, Admin | CHG-25 | 🔜 |
+| [Configuration](processus/gestion-de-la-configuration.md) | Registre des CI (filtre par type) | Tous | CFG-01, CFG-07 | ✅ |
+| | CI à vérifier | Tous (propriétaires), Manager | CFG-15 | 🔜 |
+| | Import CSV | Admin | CFG-30 | 🔜 |
+| [Niveaux de service](processus/gestion-des-niveaux-de-service.md) | Catalogue des services | Tous | SLM-01 | ✅ |
+| | Accords (SLA) | Tous | SLM-02 | ✅ |
+| | Respect des SLA (tableau mensuel) | Tous | SLM-20, SLM-21 | 🔜 |
+| [Connaissances](processus/gestion-des-connaissances.md) | Base de connaissances (recherche d'abord) | Tous | KB-04 | ✅ |
+| | Brouillons à publier | Manager, Admin | KB-21 | 🔜 |
+| [Amélioration](processus/amelioration-continue.md) | Registre d'amélioration | Tous | CSI-01 | ✅ |
+
+### Onglets communs des fiches
+
+Toutes les fiches d'enregistrement partagent la même structure d'onglets, dans cet ordre ;
+un onglet sans contenu reste visible avec un état vide explicite.
+
+| Onglet | Contenu | Règle | Statut |
+|---|---|---|---|
+| Informations | Champs du § 3, actions de transition (§ 4) en boutons nommés par l'étape (« Prendre en charge », « Autoriser »…) | § 3 et § 4 de chaque pratique | ✅ (champs) / 🔜 (boutons de transition) |
+| Propre à la pratique | Analyses RCA et actions (problème), relations et **impact** (CI), SLA (service), conflits (changement) | PRB-05, CFG-04, SLM-02, CHG-09 | ✅ |
+| Liens | Enregistrements reliés, toutes pratiques | SOC-12 | ✅ |
+| Commentaires | Fil public / notes de travail | SOC-24 | 🔜 |
+| Pièces jointes | | SOC-25 | 🔜 |
+| Historique | Journal d'audit de l'enregistrement | SOC-20 | 🔜 |
+
+Un bouton de transition n'apparaît que si la transition est **permise** depuis le statut
+courant (tableau § 4) et **autorisée** pour le rôle (§ 2) ; ses conditions (motif, champ
+obligatoire) s'affichent dans une boîte de dialogue avant l'envoi.
+
+### Console
+
+Les blocs à venir de chaque pratique sont listés au § 8 de son document, avec leur groupe
+(Urgent, Décisions, Relances, Mon travail). La console garde ses groupes et son ordre
+([socle § 2](regles-metier.md#2-consoles-par-rôle)) ; un nouveau bloc rejoint son groupe
+sans en créer de nouveau.
+
 ## Design
 
 Langage visuel à jetons, en CSS natif sans Tailwind
