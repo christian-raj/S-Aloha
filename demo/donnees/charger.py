@@ -201,7 +201,121 @@ def main():
         'benefit': 'Respect du SLA Accès distant', 'baseline': '11 h en moyenne', 'target': '6 h',
         'outcome': None, 'dueDate': jour(45)}, 'Validée')
 
+    complements(m, u, messagerie, erp, mail, bdd, parefeu)
     print('✔ Données de démonstration chargées.')
+
+
+def complements(m, u, messagerie, erp, mail, bdd, parefeu):
+    """Second jeu : de quoi remplir registres, reporting et captures d'écran."""
+    # --- Services et SLA ---------------------------------------------------------
+    impression = creer(m, '/api/services', {**MARC, 'title': 'Impression',
+        'description': 'Impression et numérisation sur les sites.',
+        'criticality': 'Faible', 'serviceHours': 'Jours ouvrés, 8 h – 17 h'}, 'En service')
+    creer(m, '/api/services', {**MARC, 'title': 'Téléphonie IP',
+        'description': 'Postes téléphoniques et standard.', 'criticality': 'Moyenne',
+        'serviceHours': '24 h/24, 7 j/7'}, 'En conception')
+    sla = {**MARC, 'resolutionHoursP1': 4, 'resolutionHoursP2': 8, 'resolutionHoursP3': 24,
+           'resolutionHoursP4': 72, 'validFrom': jour(-180), 'validTo': jour(185)}
+    creer(m, '/api/agreements', {**sla, 'title': 'SLA Messagerie — toutes directions',
+        'description': 'Disponibilité et résolution de la messagerie.', 'serviceId': messagerie['id'],
+        'customer': 'Toutes directions', 'availabilityTarget': 99.5, 'reviewDate': jour(120)}, 'En vigueur')
+    creer(m, '/api/agreements', {**sla, 'title': 'SLA ERP — Direction financière',
+        'description': 'Engagement renforcé pendant les clôtures.', 'serviceId': erp['id'],
+        'customer': 'Direction financière', 'availabilityTarget': 99.8, 'reviewDate': jour(60)}, 'En vigueur')
+    creer(m, '/api/agreements', {**sla, 'title': 'SLA Impression — sites régionaux',
+        'description': 'En cours de négociation.', 'serviceId': impression['id'],
+        'customer': 'Sites régionaux', 'availabilityTarget': 98, 'reviewDate': None})
+
+    # --- Configuration -----------------------------------------------------------
+    def ci(titre, type_, lieu, desc, statut=None):
+        corps = {**MARC, 'title': titre, 'description': desc, 'ciType': type_,
+                 'environment': 'Production', 'location': lieu}
+        if statut:
+            corps['status'] = statut
+        return appel('POST', '/api/configuration-items', m, corps)
+    exchange = ci('APP-EXCHANGE', 'Application', 'Salle serveurs — siège', 'Messagerie Exchange.')
+    san = ci('SAN-01', 'Stockage', 'Salle serveurs — siège', 'Baie de stockage partagée.')
+    app_erp = ci('APP-ERP', 'Application', 'Salle serveurs — siège', 'Application ERP.')
+    imp = ci('IMP-TOAMASINA-01', 'Autre', 'Agence de Toamasina', 'Imprimante multifonction.', 'Hors service')
+    ci('SW-MAHAJANGA-01', 'Réseau', 'Agence de Mahajanga', 'Commutateur d’agence.')
+    for source, cible, type_ in [(exchange, mail, 'Dépend de'), (mail, san, 'Dépend de'),
+                                 (app_erp, bdd, 'Dépend de'), (bdd, san, 'Dépend de'),
+                                 (imp, parefeu, 'Se connecte à')]:
+        appel('POST', f'/api/configuration-items/{source["id"]}/relations', m,
+              {'targetReference': cible['reference'], 'type': type_})
+    lier(m, 'ci', exchange['id'], messagerie['reference'])
+    lier(m, 'ci', app_erp['id'], erp['reference'])
+    lier(m, 'ci', imp['id'], impression['reference'])
+
+    # --- Incidents ---------------------------------------------------------------
+    def incident(titre, desc, impact, urgence, cat, service, statut=None, resolution=None):
+        return creer(u, '/api/incidents', {**URSULA, 'title': titre, 'description': desc,
+            'impact': impact, 'urgency': urgence, 'category': cat, 'affectedService': service,
+            'isMajor': False, 'resolution': resolution}, statut)
+    incident('ERP inaccessible pendant la clôture mensuelle', 'Erreur de connexion à la base.',
+             'Élevé', 'Élevée', 'Application', 'ERP Finances', 'Résolu',
+             'Redémarrage du service de base de données ; surveillance renforcée.')
+    incident('Imprimante de Toamasina hors ligne', 'Plus aucune impression depuis ce matin.',
+             'Faible', 'Moyenne', 'Matériel', 'Impression', 'En attente')
+    incident('Boîte aux lettres pleine', 'Réception bloquée pour un utilisateur.',
+             'Faible', 'Faible', 'Messagerie', 'Messagerie', 'Clos', 'Archivage et quota relevé.')
+    incident('Lenteurs ERP en fin de journée', 'Temps de réponse supérieurs à 10 s.',
+             'Moyen', 'Moyenne', 'Application', 'ERP Finances')
+
+    # --- Problèmes ---------------------------------------------------------------
+    def probleme(titre, desc, impact, urgence, cat, service):
+        return appel('POST', '/api/problems', u, {'title': titre, 'description': desc,
+            'impact': impact, 'urgency': urgence, 'category': cat, 'affectedService': service,
+            'status': None, 'knownErrorWorkaround': None, 'rootCause': None})
+    p_erp = probleme('Lenteurs récurrentes de l’ERP en fin de journée',
+        'Temps de réponse dégradés chaque soir depuis trois semaines.', 'Moyen', 'Moyenne',
+        'Application', 'ERP Finances')
+    appel('POST', f'/api/problems/{p_erp["id"]}/analyses', u, {'method': 'ISHIKAWA',
+        'dataJson': json.dumps({'categories': {
+            'Méthode': ['Traitements par lots lancés à 17 h'], 'Matériel': ['Baie SAN saturée en écriture'],
+            'Main-d’œuvre': [], 'Milieu': ['Pic de saisie avant la clôture'],
+            'Matière': ['Index manquant sur les écritures'], 'Mesure': ['Pas de supervision des temps de réponse']},
+            'rootCause': ''}, ensure_ascii=False), 'conclusion': None})
+    p_mail = probleme('Boîtes aux lettres saturées', 'Quotas atteints sans alerte préalable.',
+        'Faible', 'Moyenne', 'Messagerie', 'Messagerie')
+    appel('PUT', f'/api/problems/{p_mail["id"]}', m, {'title': p_mail['title'],
+        'description': p_mail['description'], 'status': 'Clos', 'impact': 'Faible', 'urgency': 'Moyenne',
+        'category': 'Messagerie', 'affectedService': 'Messagerie', 'knownErrorWorkaround': None,
+        'rootCause': 'Aucune alerte de quota configurée sur le serveur de messagerie.'})
+
+    # --- Changements -------------------------------------------------------------
+    chg = {**MARC, 'title': 'Mise à jour du serveur de messagerie', 'description': 'Correctifs de sécurité mensuels.',
+        'changeType': 'Normal', 'risk': 'Moyen', 'plannedStart': jour(-12), 'plannedEnd': jour(-12),
+        'implementationPlan': 'Appliquer les correctifs, redémarrer, vérifier les flux.',
+        'backoutPlan': 'Désinstaller les correctifs.', 'outcome': None}
+    c = creer(m, '/api/changes', chg, 'Autorisé')
+    for statut in ['Planifié', 'Mis en œuvre']:
+        appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': statut})
+    appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': 'Clos', 'outcome': 'Réussi'})
+    lier(m, 'change', c['id'], mail['reference'])
+    ajout = creer(u, '/api/changes', {**URSULA, 'title': 'Ajout d’un index sur les écritures comptables',
+        'description': 'Correctif des lenteurs de l’ERP.', 'changeType': 'Normal', 'risk': 'Faible',
+        'plannedStart': jour(7), 'plannedEnd': jour(7), 'implementationPlan': 'Créer l’index hors production, puis en production.',
+        'backoutPlan': 'Supprimer l’index.', 'outcome': None}, 'Évalué')
+    lier(u, 'change', ajout['id'], p_erp['reference'])
+    lier(u, 'change', ajout['id'], bdd['reference'])
+
+    # --- Demandes, connaissances, amélioration -----------------------------------
+    creer(u, '/api/requests', {**URSULA, 'title': 'Accès à l’ERP pour le contrôle de gestion',
+        'description': 'Profil lecture seule.', 'requestedItem': 'Habilitation ERP',
+        'requestedFor': 'demo.user', 'requestedForDisplayName': 'Ursula Utilisatrice', 'dueDate': jour(3)})
+    for titre, type_, contenu in [
+        ('Configurer la messagerie sur un téléphone', 'Procédure', 'Paramètres du compte, serveur et authentification.'),
+        ('Que faire si l’ERP est lent ?', 'FAQ', 'Vérifier l’heure : les traitements par lots tournent à 17 h.'),
+        ('Libérer de l’espace dans sa boîte aux lettres', 'Solution', 'Archiver les messages de plus d’un an.')]:
+        creer(m, '/api/knowledge', {**MARC, 'title': titre, 'description': '', 'articleType': type_,
+            'content': contenu, 'keywords': '', 'reviewDate': jour(200)}, 'Publié')
+    for titre, etape, priorite, statut in [
+        ('Superviser les temps de réponse des applications', 4, 'Élevée', 'Validée'),
+        ('Former les agences à la résolution de premier niveau', 1, 'Moyenne', None)]:
+        creer(m, '/api/improvements', {**MARC, 'title': titre, 'description': '', 'step': etape,
+            'priority': priorite, 'benefit': 'Moins d’incidents escaladés', 'baseline': 'À mesurer',
+            'target': 'À définir', 'outcome': None, 'dueDate': jour(60)}, statut)
 
 
 if __name__ == '__main__':
