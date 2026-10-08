@@ -41,6 +41,7 @@ REFERENCE = [
     ('Pratique-Niveaux-de-service', 'docs/reference/processus/gestion-des-niveaux-de-service.md', 'Gestion des niveaux de service'),
     ('Pratique-Connaissances', 'docs/reference/processus/gestion-des-connaissances.md', 'Gestion des connaissances'),
     ('Pratique-Amélioration-continue', 'docs/reference/processus/amelioration-continue.md', 'Amélioration continue'),
+    ('Pratique-Conformité-NIS-2', 'docs/reference/processus/conformite-nis2.md', 'Conformité NIS 2'),
 ]
 PILOTAGE = [
     ('Plan-d’action', 'docs/plan-action.md', 'Les chantiers ouverts et leur priorité'),

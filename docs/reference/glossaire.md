@@ -35,6 +35,11 @@
 | **SLA** | *Service Level Agreement* : accord de niveau de service entre le fournisseur et un client, avec des cibles (disponibilité, délais de résolution). |
 | **Article de connaissance** | Solution, procédure, erreur connue documentée ou FAQ, publié après validation et revu périodiquement. |
 | **CSI** | *Continual Service Improvement* : amélioration continue des services (pratique *continual improvement* d'ITIL 4). |
+| **NIS 2** | Directive européenne (UE) 2022/2555 sur la cybersécurité des entités importantes et essentielles ; évaluée dans S-Aloha par la pratique [Conformité NIS 2](processus/conformite-nis2.md). |
+| **ReCyF** | Référentiel Cyber France de l'ANSSI : 20 objectifs, 4 piliers, 152 exigences qui déclinent NIS 2 ; seule sa structure est dans le dépôt ([ADR-0012](../decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md)). |
+| **EI / EE** | Entité importante / entité essentielle au sens de NIS 2 ; une exigence « EI/EE » s'applique aux deux, « EE » aux seules entités essentielles. |
+| **Maturité** | Niveau de 1 (Initial) à 5 (Optimisé) déduit du score d'une évaluation NIS 2, sur une échelle inspirée du CMMI (NIS-12). |
+| **Écart** | Pour une exigence évaluée : 3 moins le score obtenu ; base des actions d'amélioration (NIS-13, NIS-15). |
 | **CAB** | *Change Advisory Board*, comité consultatif des changements : dans S-Aloha, deux gestionnaires distincts qui autorisent un changement normal à risque élevé ([CHG-20](processus/habilitation-des-changements.md)). |
 | **Revue post-implémentation** | Retour d'expérience après un changement urgent ou échoué : ce qui s'est passé, causes, enseignements ([CHG-15](processus/habilitation-des-changements.md)). |
 | **Période de gel** | Intervalle pendant lequel aucun changement non urgent ne peut être planifié ([CHG-25](processus/habilitation-des-changements.md)). |

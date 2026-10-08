@@ -43,6 +43,7 @@ où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-
 | **Niveaux de service** | Catalogue, SLA et engagements | Actif (MVP) | `Modules/ServiceLevelManagement`, `modules/service-level-management` |
 | **Connaissances** | Capitalisation et formation | Actif (MVP) | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
 | **Amélioration (CSI)** | Amélioration continue des services | Actif (MVP) | `Modules/ContinualImprovement`, `modules/continual-improvement` |
+| **Conformité NIS 2** | Évaluer la conformité au Référentiel Cyber France (ANSSI) | Actif (MVP) | `Modules/ComplianceAssessment`, `modules/compliance-assessment` |
 
 **MVP** : enregistrer, suivre un cycle de vie simple, porter les décisions des
 gestionnaires et relier les processus entre eux. Référentiel : les **pratiques ITIL 4**

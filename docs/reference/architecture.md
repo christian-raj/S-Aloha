@@ -132,6 +132,9 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/services`, `/api/agreements` ; POST/PUT | User ; écriture Manager | Catalogue des services, SLA (DELETE : Admin) | Modules/ServiceLevelManagement |
 | GET/POST/PUT `/api/knowledge[/{id}]` | User | Articles ; Publié : Manager (DELETE : Admin) | Modules/KnowledgeManagement |
 | GET/POST/PUT `/api/improvements[/{id}]` | User | Améliorations ; Validée/Abandonnée : Manager (DELETE : Admin) | Modules/ContinualImprovement |
+| GET `/api/assessments[/{id}]`, `/{id}/questionnaire`, `/{id}/score` ; PUT `/{id}/responses/{requirementId}` | User | Évaluations NIS 2 : consultation, réponses, scores | Modules/ComplianceAssessment |
+| POST/PUT `/api/assessments[/{id}]`, POST `/{id}/improvements` | Manager | Création, validation, réouverture ; action d'amélioration depuis un écart (DELETE : Admin) | Modules/ComplianceAssessment |
+| GET `/api/compliance/referential` ; POST `/api/compliance/referential/import` : Admin | User | Référentiel NIS 2, import du texte des exigences | Modules/ComplianceAssessment |
 | GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
 | GET `/api/directory/search?q=` | User | Recherche utilisateurs/groupes AD (sélecteur RACI) | Core/Directory |
 | GET `/api/reports/summary` | User | Indicateurs : problèmes (statuts, priorités, catégories, retards, MTTR, volumétrie), MTTR incidents, taux de changements réussis, incidents majeurs ouverts, volumétrie par processus | Core/Pilotage |

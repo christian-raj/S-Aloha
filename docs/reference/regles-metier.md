@@ -101,6 +101,7 @@ identifiant n'est jamais réattribué : une règle abandonnée reste listée ave
 | `SLM` | [Gestion des niveaux de service](processus/gestion-des-niveaux-de-service.md) |
 | `KB` | [Gestion des connaissances](processus/gestion-des-connaissances.md) |
 | `CSI` | [Amélioration continue](processus/amelioration-continue.md) |
+| `NIS` | [Conformité NIS 2](processus/conformite-nis2.md) |
 
 ### Lots
 
@@ -136,6 +137,7 @@ Référentiel : les **pratiques ITIL 4** ([ADR-0007](../decisions/adr-0007-prati
 | Gestion des niveaux de service | [gestion-des-niveaux-de-service](processus/gestion-des-niveaux-de-service.md) | Fixer et mesurer les engagements | MVP |
 | Gestion des connaissances | [gestion-des-connaissances](processus/gestion-des-connaissances.md) | Capitaliser et réutiliser | MVP |
 | Amélioration continue | [amelioration-continue](processus/amelioration-continue.md) | Améliorer en continu | MVP |
+| Conformité NIS 2 (sécurité de l'information) | [conformite-nis2](processus/conformite-nis2.md) | Évaluer la conformité au Référentiel Cyber France | MVP |
 
 ```mermaid
 flowchart LR
@@ -151,6 +153,7 @@ flowchart LR
     INC -- "mesuré contre" --> SLA
     SLA -- "écart" --> CSI[Amélioration]
     PRB -- "tendance" --> CSI
+    EVA[Évaluation NIS 2] -- "écart" --> CSI
 ```
 
 ## 5. Règles communes aux processus

@@ -20,6 +20,7 @@
 | [Gestion des niveaux de service](gestion-des-niveaux-de-service.md) | SLM | 3 | 3 | 9 | 1 |
 | [Gestion des connaissances](gestion-des-connaissances.md) | KB | 5 | 2 | 6 | 3 |
 | [Amélioration continue](amelioration-continue.md) | CSI | 5 | 4 | 6 | 1 |
+| [Conformité NIS 2](conformite-nis2.md) | NIS | 14 | 1 | 6 | 1 |
 
 *Comptes au 2026-10-07, sur les tableaux de règles (hors indicateurs).*
 

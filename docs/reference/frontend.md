@@ -60,7 +60,9 @@ colonnes du registre, badges et mentions de l'en-tête. Une page n'ajoute que ce
 propre au processus :
 
 - `tab = { label, render(record, reload) }` : l'**onglet propre à la pratique** — Conflits
-  (changement), Relations et impact (CI), Accords (SLA) (service) ;
+  (changement), Relations et impact (CI), Accords (SLA) (service) ; une pratique à
+  plusieurs onglets passe une **liste** `[{ label, render }]` (évaluation NIS 2 :
+  Questionnaire, Synthèse) ;
 - `children(record, reload)` : complément de l'onglet **Informations** (ex. « Ouvrir un
   problème lié » sur un incident).
 
@@ -90,6 +92,8 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/services`, `/services/:id`, `/agreements`, `/agreements/:id` | `modules/service-level-management/pages/*` | Pratiques › Niveaux de service |
 | `/knowledge`, `/knowledge/:id` | `modules/knowledge-management/pages/*` | Pratiques › Connaissances |
 | `/improvements`, `/improvements/:id` | `modules/continual-improvement/pages/*` | Pratiques › Amélioration (CSI) |
+| `/assessments`, `/assessments/:id` | `modules/compliance-assessment/pages/Assessments`, `AssessmentDetail` | Pratiques › Conformité NIS 2 |
+| `/settings/nis2` | `modules/compliance-assessment/pages/ReferentialSettings` | Paramétrage › Référentiel NIS 2 (Admin) |
 
 Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont rendues dans
 `Layout`. Les droits réels sont contrôlés par l'API.
@@ -195,6 +199,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | [Connaissances](processus/gestion-des-connaissances.md) | Base de connaissances (recherche d'abord) | Tous | KB-04 | ✅ |
 | | Brouillons à publier | Manager, Admin | KB-21 | 🔜 |
 | [Amélioration](processus/amelioration-continue.md) | Registre d'amélioration | Tous | CSI-01 | ✅ |
+| [Conformité NIS 2](processus/conformite-nis2.md) | Registre des évaluations (« Évaluations ReCyF (ANSSI) ») ; fiche : Informations · Questionnaire · Synthèse · Liens | Tous | NIS-02, NIS-04, NIS-10 | ✅ |
 
 ### Paramétrage
 
@@ -210,9 +215,14 @@ cycle de vie.
 | Périodes de gel | Manager, Admin | [CHG-25](processus/habilitation-des-changements.md) | 🔜 |
 | Import des CI (CSV) | Admin | [CFG-30](processus/gestion-de-la-configuration.md) | 🔜 |
 | Heures de service (calendriers) | Manager, Admin | [SLM-14](processus/gestion-des-niveaux-de-service.md) | 🔜 |
+| Référentiel NIS 2 : structure embarquée et import du texte des exigences (`/settings/nis2`) | Admin | [NIS-20, NIS-21](processus/conformite-nis2.md) | ✅ |
 
 Le **catalogue des services** reste dans la pratique Niveaux de service : c'est un objet de
 la pratique, consulté par tous, pas un réglage.
+
+« Référentiel NIS 2 » est la **première entrée réelle** de la section : réservée à l'Admin,
+la section Paramétrage n'apparaît aujourd'hui que pour lui ; elle apparaîtra pour les
+gestionnaires avec leur première entrée.
 
 ### Administration
 
