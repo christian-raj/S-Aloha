@@ -4,8 +4,6 @@
 
 # S-Aloha
 
-### L'excellence du service IT au cœur de votre performance.
-
 La plateforme ITIL qui se branche sur votre Active Directory<br/>
 et montre à chacun **ce qui requiert son intervention, maintenant**.
 
