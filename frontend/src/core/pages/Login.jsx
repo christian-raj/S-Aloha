@@ -50,7 +50,7 @@ export default function Login() {
         <div className="login-hero-body">
           <div className="login-message">
             <p className="login-kicker">Plateforme ITIL de la DSI</p>
-            <h1>L'excellence du service IT au cœur de notre performance.</h1>
+            <h1>Piloter le service IT, de l'incident à l'amélioration.</h1>
             <p className="login-motto">
               <span lang="mg">« Ny fahaiza-manao ho amin'ny tolotra tsara kokoa. »</span>
               <span className="login-motto-fr">Le savoir-faire au service d'une meilleure offre.</span>
@@ -81,7 +81,7 @@ export default function Login() {
             <div className="brand-mark large"><BrandMark size={24} /></div>
             <div>
               <p className="brand-name large">S-Aloha</p>
-              <p className="muted small">Excellence du service IT</p>
+              <p className="muted small">Plateforme ITIL</p>
             </div>
           </div>
           <div>
