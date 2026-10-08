@@ -1,0 +1,21 @@
+Numero;Titre;Pilier
+1;Recensement des systèmes d’information;Gouvernance
+2;Mise en œuvre d’un cadre de gouvernance de la sécurité numérique;Gouvernance
+3;Maîtrise de l’écosystème;Gouvernance
+4;Intégration de la sécurité numérique dans la gestion des ressources humaines;Gouvernance
+5;Maîtrise des systèmes d’information;Protection
+6;Maîtrise des accès physiques aux locaux;Protection
+7;Sécurisation de l’architecture des systèmes d’information;Protection
+8;Sécurisation des accès distants aux systèmes d’information;Protection
+9;Protection des systèmes d’information contre les codes malveillants;Protection
+10;Gestion des identités et des accès des utilisateurs aux systèmes d’information;Protection
+11;Maîtrise de l’administration des systèmes d’information;Protection
+12;Identification et réaction aux incidents de sécurité;Défense
+13;Continuité et reprise d’activité;Résilience
+14;Réaction aux crises d’origine cyber;Résilience
+15;Exercices, tests et entraînements;Résilience
+16;Mise en œuvre d’une approche par les risques;Gouvernance
+17;Audit de la sécurité des systèmes d’information;Gouvernance
+18;Sécurisation de la configuration des ressources des systèmes d’information;Protection
+19;Administration des systèmes d’information depuis des ressources dédiées;Protection
+20;Supervision de la sécurité des systèmes d’information;Défense

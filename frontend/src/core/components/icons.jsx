@@ -30,6 +30,7 @@ export const IconConfig = (p) => <Svg {...p}><circle cx="6" cy="6" r="2.5" /><ci
 export const IconSla = (p) => <Svg {...p}><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5M9 2.5h6" /></Svg>
 export const IconKnowledge = (p) => <Svg {...p}><path d="M4 5.5C6.5 4 9.5 4 12 6c2.5-2 5.5-2 8-.5V19c-2.5-1.5-5.5-1.5-8 .5-2.5-2-5.5-2-8-.5V5.5Z" /><path d="M12 6v13.5" /></Svg>
 export const IconCsi = (p) => <Svg {...p}><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4" /></Svg>
+export const IconCompliance = (p) => <Svg {...p}><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8 7.5 9.5 4.4-1.5 7.5-4.9 7.5-9.5V6L12 3Z" /><path d="m8.8 12.2 2.2 2.2 4.2-4.6" /></Svg>
 export const IconSettings = (p) => <Svg {...p}><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></Svg>
 export const IconShield = (p) => <Svg {...p}><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8 7.5 9.5 4.4-1.5 7.5-4.9 7.5-9.5V6L12 3Z" /></Svg>
 export const IconLogout = (p) => <Svg size={15} {...p}><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" /></Svg>
@@ -51,4 +52,5 @@ export const MODULE_ICONS = {
   'service-level': IconSla,
   knowledge: IconKnowledge,
   csi: IconCsi,
+  compliance: IconCompliance,
 }

@@ -71,6 +71,19 @@ export const api = {
   agreements: records('/agreements'),
   knowledge: records('/knowledge'),
   improvements: records('/improvements'),
+  assessments: {
+    ...records('/assessments'),
+    questionnaire: (id) => request(`/assessments/${id}/questionnaire`),
+    answer: (id, requirementId, dto) =>
+      request(`/assessments/${id}/responses/${requirementId}`, { method: 'PUT', body: JSON.stringify(dto) }),
+    score: (id) => request(`/assessments/${id}/score`),
+    createImprovement: (id, code) =>
+      request(`/assessments/${id}/improvements`, { method: 'POST', body: JSON.stringify({ code }) })
+  },
+  compliance: {
+    referential: () => request('/compliance/referential'),
+    importText: (csv) => request('/compliance/referential/import', { method: 'POST', body: JSON.stringify({ csv }) })
+  },
   links: {
     list: (type, id) => request(`/links?type=${type}&id=${id}`),
     create: (dto) => request('/links', { method: 'POST', body: JSON.stringify(dto) }),

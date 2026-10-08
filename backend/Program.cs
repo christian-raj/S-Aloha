@@ -44,8 +44,13 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
 var app = builder.Build();
 
 // Schéma par migrations EF ; une base créée par l'ancien EnsureCreated est reprise telle quelle.
+// Puis structure du référentiel NIS 2 embarquée (ADR-0012), alignée à chaque démarrage.
 using (var scope = app.Services.CreateScope())
-    DatabaseSchema.Migrate(scope.ServiceProvider.GetRequiredService<AppDbContext>(), app.Logger);
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    DatabaseSchema.Migrate(db, app.Logger);
+    SAloha.Api.Modules.ComplianceAssessment.ReferentialStore.EnsureStructure(db);
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
