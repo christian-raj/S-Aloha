@@ -115,8 +115,6 @@ def home(by_source):
 
 <img src="{RAW}/frontend/public/favicon.svg" width="64" alt="S-Aloha" />
 
-### L’excellence du service IT au cœur de votre performance.
-
 Plateforme ITIL libre (AGPLv3), branchée sur votre Active Directory.
 
 [Dépôt]({GITHUB}) · [README]({GITHUB}#readme) · [Issues]({GITHUB}/issues) · [Licence]({BLOB}/LICENSE)
