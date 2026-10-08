@@ -3,7 +3,7 @@
 <sub>[← Documentation](../readme.md) · [Toutes les décisions](readme.md)</sub>
 
 - **Date** : 2026-10-08
-- **Statut** : accepté
+- **Statut** : accepté — amendé le 2026-10-08 (voir l'addendum)
 - **Décideur** : Christian Rajaonary
 
 ## Contexte
@@ -79,3 +79,20 @@ correspondances ne proviennent pas de l'ANSSI.
 - **Saisie manuelle des exigences par chaque organisation** — écarté : 152 exigences à
   ressaisir, avec un risque d'erreur sur les codes et les cibles, qui sont précisément ce
   que la structure embarquée garantit.
+
+## Addendum — 2026-10-08
+
+**Correction d'un fait du contexte.** Les correspondances entre les exigences du ReCyF et
+les mesures **ISO/IEC 27002:2022** **proviennent de l'ANSSI** : elle publie, en accès
+libre, une table de correspondance entre le ReCyF et les normes ISO/IEC 27001, 27002 et
+27005, sur son portail [MesServicesCyber](https://messervices.cyber.gouv.fr). Le contexte
+ci-dessus (« ces correspondances ne proviennent pas de l'ANSSI ») et les mentions
+« indicatifs » / « indicatives » qui en découlaient sont donc inexacts.
+
+**La décision ne change pas** : le dépôt ne versionne que les **numéros** des mesures ISO,
+sans leurs intitulés (protégés par le droit d'auteur de l'ISO), et ces numéros, tirés de
+la table de l'ANSSI, relèvent des mêmes conditions de réutilisation que le reste du
+référentiel. Les documents de référence et l'interface présentent désormais ces numéros
+comme les **mesures ISO 27002 correspondantes selon la table de correspondance de
+l'ANSSI**.
+

@@ -18,7 +18,8 @@ public class SecurityObjective
 
 /// <summary>
 /// Exigence du ReCyF. Le dépôt ne porte que sa structure (code, thématique,
-/// cibles, n° de mesures ISO 27002) ; son <see cref="Text"/> est importé par
+/// cibles, n° des mesures ISO 27002 correspondantes selon la table de
+/// correspondance de l'ANSSI, sans leurs intitulés) ; son <see cref="Text"/> est importé par
 /// un administrateur depuis le document de l'ANSSI (ADR-0012).
 /// </summary>
 public class SecurityRequirement

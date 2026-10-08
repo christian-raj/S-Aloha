@@ -26,8 +26,10 @@ d'exigences, thématiques, cibles, numéros de mesures ISO 27002) ; le **texte**
 exigences est **importé par l'administrateur** depuis le document de l'ANSSI : sa
 réutilisation commerciale est soumise à autorisation, incompatible avec l'AGPLv3
 ([ADR-0012](../../decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md)).
-Les correspondances avec les mesures **ISO/IEC 27002:2022** sont **indicatives** : elles ne
-proviennent pas de l'ANSSI, et seuls les numéros de mesures figurent, sans leurs intitulés.
+Les correspondances avec les mesures **ISO/IEC 27002:2022** sont celles de la **table de
+correspondance publiée par l'ANSSI** (ReCyF ↔ ISO/IEC 27001, 27002 et 27005, portail
+[MesServicesCyber](https://messervices.cyber.gouv.fr)) ; seuls les **numéros** des mesures
+figurent, sans leurs intitulés, protégés par le droit d'auteur de l'ISO.
 
 Hors périmètre : la déclaration d'incidents aux autorités, l'analyse de risques
 détaillée, la certification.
@@ -60,7 +62,7 @@ démarrage**.
 | Objet | Champs | Statut |
 |---|---|---|
 | Objectif (`SecurityObjectives`) | Numéro (1 à 20), titre, pilier : Gouvernance (6), Protection (9), Défense (2), Résilience (3) | ✅ |
-| Exigence (`SecurityRequirements`) | Code (ex. `5.B.4-EI/EE`), objectif, thématique, cibles (`ForImportant`, `ForEssential`), mesures ISO 27002 indicatives (numéros séparés par des espaces), ordre, **texte importé** et date d'import | ✅ |
+| Exigence (`SecurityRequirements`) | Code (ex. `5.B.4-EI/EE`), objectif, thématique, cibles (`ForImportant`, `ForEssential`), numéros des mesures ISO 27002 correspondantes selon la table de l'ANSSI (séparés par des espaces), ordre, **texte importé** et date d'import | ✅ |
 
 Cibles : 76 exigences « EI/EE » (entités importantes et essentielles) et 76 exigences
 « EE » (entités essentielles seulement) ; 130 exigences portent au moins une mesure ISO.
