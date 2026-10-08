@@ -57,7 +57,9 @@ function Editor({ config, record, onSaved }) {
  * - `children(record, reload)` : complément de l'onglet Informations (action
  *   liée à l'enregistrement, ex. « Ouvrir un problème lié ») ;
  * - `tab = { label, render(record, reload) }` : l'onglet propre à la pratique
- *   (relations et impact d'un CI, accords d'un service, conflits d'un changement).
+ *   (relations et impact d'un CI, accords d'un service, conflits d'un changement) ;
+ *   une liste `[{ label, render }, …]` quand la pratique en a plusieurs (évaluation
+ *   NIS 2 : Questionnaire, Synthèse), dans l'ordre donné.
  */
 export default function RecordDetail({ config, children, tab }) {
   const { id } = useParams()
@@ -72,8 +74,9 @@ export default function RecordDetail({ config, children, tab }) {
   if (!r) return <p>Chargement…</p>
 
   const meta = config.meta?.(r).filter(Boolean) ?? []
-  const tabs = [['infos', 'Informations'], tab && ['practice', tab.label], config.linkType && ['links', 'Liens']]
-    .filter(Boolean)
+  const practice = tab ? [].concat(tab) : []
+  const tabs = [['infos', 'Informations'], ...practice.map((t, i) => ['practice-' + i, t.label]),
+    config.linkType && ['links', 'Liens']].filter(Boolean)
   return (
     <>
       <p style={{ marginBottom: 8 }}><Link to={config.basePath}>← {config.title}</Link></p>
@@ -96,7 +99,7 @@ export default function RecordDetail({ config, children, tab }) {
         <Editor key={version} config={config} record={r} onSaved={load} />
         {children?.(r, load)}
       </>}
-      {current === 'practice' && tab.render(r, load)}
+      {practice.map((t, i) => current === 'practice-' + i && <React.Fragment key={i}>{t.render(r, load)}</React.Fragment>)}
       {current === 'links' && <LinkedItems type={config.linkType} id={r.id} hint={config.linkHint} refreshKey={version} />}
     </>
   )

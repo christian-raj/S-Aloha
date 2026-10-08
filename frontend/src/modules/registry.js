@@ -63,6 +63,11 @@ export const MODULES = [
     id: 'csi', label: 'Amélioration (CSI)', description: 'Amélioration continue des services', status: 'active',
     href: '/improvements', routes: ['/improvements'],
   },
+  {
+    // Gestion de la sécurité de l'information (ITIL 4) : évaluation NIS 2.
+    id: 'compliance', label: 'Conformité NIS 2', description: 'Évaluations ReCyF (ANSSI)', status: 'active',
+    href: '/assessments', routes: ['/assessments'],
+  },
 ]
 
 /**
@@ -77,7 +82,12 @@ export const MODULES = [
  * Une entrée : { href, label, description, icon (clé de SECTION_ICONS), roles? }.
  */
 export const SECTIONS = [
-  { id: 'settings', label: 'Paramétrage', roles: ['Manager', 'Admin'], entries: [] },
+  {
+    id: 'settings', label: 'Paramétrage', roles: ['Manager', 'Admin'], entries: [
+      { href: '/settings/nis2', label: 'Référentiel NIS 2', description: 'Structure et texte des exigences',
+        icon: 'settings', roles: ['Admin'] },
+    ]
+  },
   { id: 'administration', label: 'Administration', roles: ['Admin'], entries: [] },
 ]
 

@@ -20,6 +20,7 @@ son état actuel, et pas seulement *quel* est cet état.
 | [0009](adr-0009-mode-demonstration-public.md) | Un mode démonstration public, avec son propre annuaire Active Directory | 2026-10-06 | accepté |
 | [0010](adr-0010-certificat-d-origine-dco.md) | Les contributions sont signées sous le DCO, sans cession de droits | 2026-10-06 | accepté |
 | [0011](adr-0011-financement-sponsoring-et-services.md) | Financement par le sponsoring et les services, en commençant par GitHub Sponsors | 2026-10-06 | accepté |
+| [0012](adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md) | Référentiel NIS 2 : structure versionnée dans le dépôt, texte importé par l'administrateur | 2026-10-08 | accepté |
 
 Les choix fondateurs antérieurs à cette base (authentification AD LDAP → JWT, analyses
 RCA stockées en JSON) sont décrits dans [`reference/architecture.md`](../reference/architecture.md)

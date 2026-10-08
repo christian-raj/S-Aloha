@@ -10,6 +10,7 @@ export const ITEM_TYPES = {
   agreement: { label: 'SLA', path: '/agreements' },
   article: { label: 'Article', path: '/knowledge' },
   improvement: { label: 'Amélioration', path: '/improvements' },
+  assessment: { label: 'Évaluation NIS 2', path: '/assessments' },
 }
 
 export const hrefOf = (type, id) => `${ITEM_TYPES[type]?.path ?? ''}/${id}`

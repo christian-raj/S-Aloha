@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Modules.ChangeEnablement;
+using SAloha.Api.Modules.ComplianceAssessment;
 using SAloha.Api.Modules.ContinualImprovement;
 using SAloha.Api.Modules.IncidentManagement;
 using SAloha.Api.Modules.KnowledgeManagement;
@@ -60,6 +61,7 @@ public static class ItemLinks
         new("agreement", "SLA", db => Of(db.Agreements)),
         new("article", "KB", db => Of(db.KnowledgeArticles)),
         new("improvement", "AMI", db => Of(db.Improvements)),
+        new("assessment", "EVA", db => Of(db.Assessments)),
     ];
 
     public static Kind? ByType(string type) => Kinds.FirstOrDefault(k => k.Type == type);

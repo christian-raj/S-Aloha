@@ -25,6 +25,9 @@ import Articles from './modules/knowledge-management/pages/Articles'
 import ArticleDetail from './modules/knowledge-management/pages/ArticleDetail'
 import Improvements from './modules/continual-improvement/pages/Improvements'
 import ImprovementDetail from './modules/continual-improvement/pages/ImprovementDetail'
+import Assessments from './modules/compliance-assessment/pages/Assessments'
+import AssessmentDetail from './modules/compliance-assessment/pages/AssessmentDetail'
+import ReferentialSettings from './modules/compliance-assessment/pages/ReferentialSettings'
 
 function Private({ children }) {
   return getToken() ? children : <Navigate to="/login" replace />
@@ -66,6 +69,11 @@ export default function App() {
         {/* Pratique — Amélioration continue */}
         <Route path="improvements" element={<Improvements />} />
         <Route path="improvements/:id" element={<ImprovementDetail />} />
+        {/* Pratique — Conformité NIS 2 (gestion de la sécurité de l'information) */}
+        <Route path="assessments" element={<Assessments />} />
+        <Route path="assessments/:id" element={<AssessmentDetail />} />
+        {/* Paramétrage */}
+        <Route path="settings/nis2" element={<ReferentialSettings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

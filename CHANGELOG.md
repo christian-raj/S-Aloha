@@ -14,6 +14,10 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Conformité NIS 2** : évaluation au Référentiel Cyber France de l'ANSSI (catégorie
+  d'entité, questionnaire noté 0 à 3, scores par thématique, objectif et pilier, maturité,
+  écarts, actions d'amélioration) ; structure du référentiel embarquée, texte des exigences
+  importé par l'administrateur (ADR-0012). Première entrée de la section Paramétrage.
 - Configuration : vue d'impact d'un CI, amont et aval, transitive (#30).
 - Changements : détection des conflits au calendrier, deux changements non rejetés sur un
   même CI et des créneaux qui se chevauchent (#29).

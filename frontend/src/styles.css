@@ -499,7 +499,16 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--accent-blue
 .bar-row .lbl { width: 130px; flex-shrink: 0; color: var(--text-secondary); font-weight: 500; }
 .bar-row .bar-track { flex: 1; min-width: 0; }
 .bar-row .bar { height: 12px; background: var(--accent-blue); min-width: 4px; }
+.bar-row.stacked { flex-wrap: wrap; row-gap: 4px; }
+.bar-row.stacked .lbl { width: 100%; }
 .bar-row .val { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---- Objectif repliable (questionnaire et référentiel NIS 2) ---- */
+.obj-toggle {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 12px 0; background: none; border: none; text-align: left; color: var(--text-primary);
+}
+.obj-toggle:hover b { color: var(--accent-blue); }
 
 /* ---- Sélecteur RACI ---- */
 .raci-pick { position: relative; }

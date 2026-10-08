@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Links;
 using SAloha.Api.Modules.ChangeEnablement;
+using SAloha.Api.Modules.ComplianceAssessment;
 using SAloha.Api.Modules.ContinualImprovement;
 using SAloha.Api.Modules.IncidentManagement;
 using SAloha.Api.Modules.KnowledgeManagement;
@@ -33,6 +34,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     // Connaissances, amélioration continue
     public DbSet<KnowledgeArticle> KnowledgeArticles => Set<KnowledgeArticle>();
     public DbSet<Improvement> Improvements => Set<Improvement>();
+    // Conformité NIS 2
+    public DbSet<SecurityObjective> SecurityObjectives => Set<SecurityObjective>();
+    public DbSet<SecurityRequirement> SecurityRequirements => Set<SecurityRequirement>();
+    public DbSet<Assessment> Assessments => Set<Assessment>();
+    public DbSet<AssessmentResponse> AssessmentResponses => Set<AssessmentResponse>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -53,6 +59,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<ServiceLevelAgreement>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<KnowledgeArticle>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<Improvement>().HasIndex(x => x.Reference).IsUnique();
+        b.Entity<Assessment>().HasIndex(x => x.Reference).IsUnique();
+
+        // Le numéro de l'objectif (1 à 20) est son identifiant : pas de séquence.
+        b.Entity<SecurityObjective>().Property(o => o.Id).ValueGeneratedNever();
+        b.Entity<SecurityObjective>().HasMany(o => o.Requirements).WithOne(r => r.Objective!)
+            .HasForeignKey(r => r.ObjectiveId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<SecurityRequirement>().HasIndex(r => r.Code).IsUnique();
+        b.Entity<Assessment>().HasMany(a => a.Responses).WithOne(r => r.Assessment!)
+            .HasForeignKey(r => r.AssessmentId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<AssessmentResponse>().HasOne(r => r.Requirement).WithMany()
+            .HasForeignKey(r => r.RequirementId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<AssessmentResponse>().HasIndex(r => new { r.AssessmentId, r.RequirementId }).IsUnique();
 
         b.Entity<ConfigurationItem>().HasMany(c => c.Outgoing).WithOne(r => r.Source!)
             .HasForeignKey(r => r.SourceId).OnDelete(DeleteBehavior.Cascade);

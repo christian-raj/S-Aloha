@@ -132,19 +132,32 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 | `Agreements` (`ServiceLevelAgreement`) | SLA | `ServiceId` (FK → `Services`, cascade), `Customer`, `AvailabilityTarget` (décimal 5,2), `ResolutionHoursP1`…`P4`, `ValidFrom`, `ValidTo`, `ReviewDate` |
 | `KnowledgeArticles` (`KnowledgeArticle`) | KB | `ArticleType`, `Content`, `Keywords`, `ReviewDate`, `PublishedBy`, `PublishedAt` |
 | `Improvements` (`Improvement`) | AMI | `Step` (1–7), `Priority`, `Benefit`, `Baseline`, `Target`, `Outcome`, `DueDate`, `ValidatedBy`, `ValidatedAt`, `CompletedAt` |
+| `Assessments` (`Assessment`) | EVA | `EntityCategory` (Entité importante, Entité essentielle), `ValidatedBy`, `ValidatedAt` |
 
 ```mermaid
 erDiagram
     ConfigurationItem ||--o{ CiRelationship : "source"
     ConfigurationItem ||--o{ CiRelationship : "cible"
     ItService ||--o{ ServiceLevelAgreement : "est couvert par"
+    SecurityObjective ||--o{ SecurityRequirement : "décline"
+    Assessment ||--o{ AssessmentResponse : "contient"
+    SecurityRequirement ||--o{ AssessmentResponse : "est évaluée par"
 ```
+
+- **Référentiel NIS 2** (migration `ComplianceAssessment`) : `SecurityObjectives` (`Id` =
+  numéro 1 à 20, `Title`, `Pillar`) et `SecurityRequirements` (`Code` unique, `ObjectiveId`,
+  `Theme`, `ForImportant`, `ForEssential`, `IsoControls`, `Order`, `Text`, `TextImportedAt`),
+  alignées au démarrage sur les CSV embarqués sans écraser `Text`
+  ([ADR-0012](../decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md)).
+  `AssessmentResponses` : `AssessmentId` (cascade), `RequirementId`, `Score` (0–3, null si
+  non applicable), `NotApplicable`, `Justification`, `UpdatedBy`, `UpdatedAt` ; une réponse
+  par exigence et par évaluation.
 
 - **`CiRelationships`** : `SourceId`, `TargetId` (FK → `ConfigurationItems`, cascade des deux
   côtés), `Type` (`Dépend de`, `Héberge`, `Fait partie de`, `Se connecte à`).
 - **`ItemLinks`** (socle, `backend/Core/Links/ItemLink.cs`) : `FromType`, `FromId`, `ToType`,
   `ToId`, `CreatedBy`, `CreatedAt`. Types : `problem`, `incident`, `request`, `change`, `ci`,
-  `service`, `agreement`, `article`, `improvement`. Pas de clé étrangère (une extrémité
+  `service`, `agreement`, `article`, `improvement`, `assessment`. Pas de clé étrangère (une extrémité
   peut appartenir à n'importe quelle table) : les liens d'un enregistrement sont supprimés
   avec lui par l'API, et un lien orphelin est ignoré à la lecture. Index sur
   (`FromType`, `FromId`) et (`ToType`, `ToId`).

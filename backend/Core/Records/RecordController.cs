@@ -51,6 +51,11 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     /// </summary>
     protected virtual string? CheckStatus(T e, string status) => null;
     /// <summary>
+    /// Variante de <see cref="CheckStatus"/> pour les conditions qui
+    /// interrogent la base (toutes les exigences d'une évaluation répondues…).
+    /// </summary>
+    protected virtual Task<string?> CheckStatusAsync(T e, string status) => Task.FromResult(CheckStatus(e, status));
+    /// <summary>
     /// Statut auquel une modification faite par un non-gestionnaire ramène
     /// l'enregistrement, ou null : un article publié retouché repasse en
     /// brouillon, un changement autorisé modifié redemande une autorisation.
@@ -128,7 +133,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
             if (error is not null) return BadRequest(new { message = error });
             if (RequiresManager(target) && !IsManager) return Forbid();
         }
-        error = CheckStatus(e, target);
+        error = await CheckStatusAsync(e, target);
         if (error is not null) return BadRequest(new { message = error });
         if (changing)
         {
