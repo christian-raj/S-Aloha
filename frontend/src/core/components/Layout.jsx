@@ -83,7 +83,7 @@ function SidebarContent({ user, location, onClose, onLogout }) {
         <div className="brand-mark"><BrandMark /></div>
         <div>
           <p className="brand-name">S-Aloha</p>
-          <p className="brand-sub">Excellence du service IT</p>
+          <p className="brand-sub">Plateforme ITIL</p>
         </div>
       </div>
 
