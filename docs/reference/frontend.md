@@ -203,6 +203,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | | Brouillons à publier | Manager, Admin | KB-21 | 🔜 |
 | [Amélioration](processus/amelioration-continue.md) | Registre d'amélioration | Tous | CSI-01 | ✅ |
 | [Conformité NIS 2](processus/conformite-nis2.md) | Registre des évaluations (« Évaluations ReCyF (ANSSI) ») ; fiche : Informations · Questionnaire · Synthèse · Liens | Tous | NIS-02, NIS-04, NIS-10 | ✅ |
+| | Déclarations réglementaires : registre, échéances ; encadré « Déclarations réglementaires » et qualification sur la fiche d'un incident cyber | Tous (décisions : Manager) | [DRG-01, DRG-10](processus/declarations-reglementaires.md), INC-41 | 🔜 |
 
 ### Paramétrage
 

@@ -43,6 +43,7 @@ REFERENCE = [
     ('Pratique-Connaissances', 'docs/reference/processus/gestion-des-connaissances.md', 'Gestion des connaissances'),
     ('Pratique-Amélioration-continue', 'docs/reference/processus/amelioration-continue.md', 'Amélioration continue'),
     ('Pratique-Conformité-NIS-2', 'docs/reference/processus/conformite-nis2.md', 'Conformité NIS 2'),
+    ('Pratique-Déclarations-réglementaires', 'docs/reference/processus/declarations-reglementaires.md', 'Déclarations réglementaires'),
 ]
 PILOTAGE = [
     ('Plan-d’action', 'docs/plan-action.md', 'Les chantiers ouverts et leur priorité'),

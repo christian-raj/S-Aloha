@@ -38,6 +38,9 @@
 | **NIS 2** | Directive européenne (UE) 2022/2555 sur la cybersécurité des entités importantes et essentielles ; évaluée dans S-Aloha par la pratique [Conformité NIS 2](processus/conformite-nis2.md). |
 | **ReCyF** | Référentiel Cyber France de l'ANSSI : 20 objectifs, 4 piliers, 152 exigences qui déclinent NIS 2 ; seule sa structure est dans le dépôt ([ADR-0012](../decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md)). |
 | **EI / EE** | Entité importante / entité essentielle au sens de NIS 2 ; une exigence « EI/EE » s'applique aux deux, « EE » aux seules entités essentielles. |
+| **Déclaration réglementaire** | Déclaration d'un incident cyber à une autorité dans un délai légal (NIS 2 : ANSSI ; RGPD : CNIL), associée à l'incident ; voir [déclarations réglementaires](processus/declarations-reglementaires.md). |
+| **Incident important** | Au sens de NIS 2, incident dont l'impact sur la fourniture des services oblige à le déclarer ; la qualification revient au gestionnaire (INC-41). |
+| **Alerte précoce** | Premier envoi NIS 2 à l'autorité, sous 24 h après la prise de connaissance d'un incident important (DRG-10). |
 | **Maturité** | Niveau de 1 (Initial) à 5 (Optimisé) déduit du score d'une évaluation NIS 2, sur une échelle inspirée du CMMI (NIS-12). |
 | **Écart** | Pour une exigence évaluée : 3 moins le score obtenu ; base des actions d'amélioration (NIS-13, NIS-15). |
 | **Recherche hybride** | Recherche qui combine les **mots** (plein texte PostgreSQL) et le **sens** (similarité entre vecteurs) ; voir [recherche](recherche.md). |
