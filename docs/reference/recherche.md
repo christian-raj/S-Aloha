@@ -1,0 +1,81 @@
+# 🔎 Recherche
+
+> Recherche hybride (mots et sens) sur les contenus validés de S-Aloha : chercher dans la
+> connaissance, retrouver les cas similaires. Capacité transverse du socle, pas une
+> pratique ITIL. Préfixe des règles : **RAG**. Conventions (✅ / 🔜, lots) :
+> [règles métier](regles-metier.md#3-conventions-de-ce-référentiel). Décision :
+> [ADR-0013](../decisions/adr-0013-recherche-hybride-service-embeddings-separe.md).
+
+<sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
+
+## 1. Objectif
+
+Trouver ce que l'organisation sait déjà, même formulé autrement :
+
+- **chercher d'abord** dans la connaissance avant d'ouvrir un incident ou une demande
+  ([KB-04](processus/gestion-des-connaissances.md)) ;
+- reconnaître, depuis un incident ou un problème, les **cas similaires** déjà traités
+  ([INC-19](processus/gestion-des-incidents.md)).
+
+La recherche est **hybride** : un signal **lexical** (les mots, plein texte PostgreSQL) et
+un signal **sémantique** (le sens, vecteurs produits par le modèle `bge-m3`), fusionnés.
+Sans service d'embeddings, elle reste lexicale.
+
+## 2. Contenu indexé
+
+| Source | Indexée quand | Texte indexé | Statut |
+|---|---|---|---|
+| Article de connaissance | Statut **Publié** | Titre, résumé, contenu | ✅ |
+| Problème | Statut **Erreur connue**, **Résolu** ou **Clos** | Titre, description, « Cause racine : … », « Contournement : … » | ✅ |
+| Incident | Statut **Résolu** ou **Clos**, avec résolution | Titre, description, « Résolution : … » | ✅ |
+
+Pas de brouillon, pas d'incident en cours, pas de fichier déposé : seul le contenu
+**validé** est proposé comme réponse. La recherche n'ajoute **aucun filtre de visibilité** :
+dans S-Aloha, tous les rôles lisent tous les enregistrements.
+
+## 3. Règles
+
+| ID | Règle | Statut | Lot |
+|---|---|---|---|
+| RAG-01 | Seul le **contenu validé** est indexé (§ 2). Un enregistrement qui **quitte** ces statuts (article archivé ou repassé en brouillon, problème rouvert, incident rouvert) ou qui est **supprimé** sort de l'index : toute création, modification ou suppression d'un article, problème ou incident est mise en file, et la réindexation retire les anciens passages avant de ne recréer que ceux d'un enregistrement encore éligible. Retrait asynchrone : quelques instants | ✅ | |
+| RAG-02 | **Sans service d'embeddings** (`Embeddings:Url` vide, panne, délai dépassé : 5 s pour une recherche, 120 s pour une indexation), la recherche reste **lexicale, sans erreur** ; les passages sont créés sans vecteur et vectorisés au retour du service (au démarrage, s'il en manque) | ✅ | |
+| RAG-03 | L'index est **dérivé** : mis à jour en tâche de fond à chaque enregistrement d'un article, problème ou incident (intercepteur EF → file → indexeur, un enregistrement à la fois) ; construit au démarrage s'il est vide ; un échec d'indexation ne bloque **jamais** l'enregistrement | ✅ | |
+| RAG-04 | **Passages** de 800 caractères au plus, découpés par paragraphes ; un paragraphe trop long est découpé avec 100 caractères de recouvrement ; le titre accompagne chaque passage dans le vecteur | ✅ | |
+| RAG-05 | **Recherche libre** : lexical = `tsvector` « french » sur titre et passage (index GIN), termes en **OU**, classement `ts_rank_cd` ; sémantique = cosinus `bge-m3` ; fusion **RRF** (k = 60) au niveau de l'enregistrement (son meilleur passage) ; chaque résultat indique s'il a été trouvé **par les mots, par le sens ou les deux** | ✅ | |
+| RAG-06 | **Cas similaires** d'un incident ou d'un problème : sens sur titre et description (2 000 caractères au plus), mots sur le titre seul ; articles, problèmes et incidents indexés, l'enregistrement lui-même exclu ; 5 résultats. Un incident ouvert ne voit donc que des incidents résolus | ✅ | |
+| RAG-07 | **Plancher de similarité** cosinus `Search:MinSimilarity` = 0,5 par défaut. **Non mesuré** : à calibrer sur un jeu de requêtes réel avec `bge-m3` (RAG-10) | ✅ (valeur provisoire) | |
+| RAG-08 | **Administration › Index de recherche** (Admin) : état du service (configuré, joignable, modèle, vecteurs en mémoire), et par source : enregistrements, passages, passages avec vecteur, dernière indexation ; **reconstruction** de l'index en tâche de fond | ✅ | |
+| RAG-09 | Depuis les cas similaires d'un incident, **relier** l'article ou le problème retenu à l'incident en un clic (achève INC-19) | 🔜 | 2 |
+| RAG-10 | **Calibrage** : jeu d'au moins 30 requêtes réelles avec leurs réponses attendues ; plancher et nombre de résultats fixés d'après la précision mesurée, consignés ici | 🔜 | 1 |
+| RAG-11 | **Suggestions à la saisie** : à la création d'un incident ou d'une demande, les cas similaires s'affichent dès que le titre est saisi | 🔜 | 2 |
+| RAG-12 | **Pièces jointes** indexées (texte extrait des documents déposés, SOC-25) — phase 2, hors décision actuelle | 🔜 | 3 |
+
+## 4. Interface
+
+| Endroit | Contenu | Statut |
+|---|---|---|
+| Connaissances | Bloc « **Chercher d'abord** » sous le titre du registre (`RecordList` accepte `intro`) : recherche libre, résultats marqués mots / sens | ✅ |
+| Fiche incident, fiche problème | Encadré « **Cas similaires** » dans l'onglet Informations | ✅ |
+| Administration › Index de recherche | État et reconstruction (RAG-08) ; avis ambre si le service d'embeddings est injoignable | ✅ |
+
+## 5. API
+
+| Route | Policy | Rôle |
+|---|---|---|
+| `GET /api/search?q=&types=&limit=` | User | Recherche libre (RAG-05) ; `types` : `article`, `problem`, `incident`, séparés par des virgules |
+| `GET /api/search/similar?type=&id=` | User | Cas similaires (RAG-06) |
+| `GET /api/search/status` | Admin | État de l'index (RAG-08) |
+| `POST /api/search/reindex` | Admin | Reconstruction en tâche de fond (202) |
+
+## 6. Exploitation
+
+Service `embeddings` du compose, plafond mémoire et téléchargement du modèle, marche sans
+le service, reconstruction : [exploitation § Recherche](exploitation.md#recherche).
+
+## 7. Scénarios d'acceptation
+
+- **RAG-01** — *Étant donné* un article en Brouillon contenant « passerelle VPN », *quand* on cherche « passerelle », *alors* il n'apparaît pas ; publié, il apparaît ; archivé, il disparaît de nouveau (de même pour un problème rouvert ou un incident supprimé).
+- **RAG-02** — *Étant donné* `Embeddings:Url` vide, *quand* on cherche « coupure VPN », *alors* les résultats viennent des mots seuls, sans erreur.
+- **RAG-03** — *Étant donné* un service d'embeddings en panne, *quand* on publie un article, *alors* la publication réussit ; l'article est trouvé par les mots, puis par le sens au retour du service.
+- **RAG-05** — *Étant donné* un article « Rétablir une session VPN qui coupe », *quand* on cherche « connexion à distance qui tombe », *alors* il est trouvé **par le sens** même sans mot commun.
+- **RAG-06** — *Étant donné* l'incident en cours « VPN inaccessible », *alors* ses cas similaires listent au plus 5 éléments, sans lui-même, dont des incidents résolus et l'erreur connue liée.

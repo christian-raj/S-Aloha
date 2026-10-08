@@ -89,6 +89,12 @@ export const api = {
     create: (dto) => request('/links', { method: 'POST', body: JSON.stringify(dto) }),
     remove: (id) => request('/links/' + id, { method: 'DELETE' })
   },
+  search: {
+    query: (q, types) => request('/search?' + new URLSearchParams({ q, ...(types ? { types } : {}) })),
+    similar: (type, id) => request('/search/similar?' + new URLSearchParams({ type, id })),
+    status: () => request('/search/status'),
+    reindex: () => request('/search/reindex', { method: 'POST' })
+  },
   console: { get: () => request('/console') },
   directory: { search: (q) => request('/directory/search?q=' + encodeURIComponent(q)) },
   reports: { summary: () => request('/reports/summary') }

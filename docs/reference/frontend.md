@@ -64,7 +64,10 @@ propre au processus :
   plusieurs onglets passe une **liste** `[{ label, render }]` (évaluation NIS 2 :
   Questionnaire, Synthèse) ;
 - `children(record, reload)` : complément de l'onglet **Informations** (ex. « Ouvrir un
-  problème lié » sur un incident).
+  problème lié » et l'encadré « Cas similaires » sur un incident ; « Cas similaires » sur un
+  problème) ;
+- `RecordList` accepte un `intro` affiché sous le titre du registre (bloc « Chercher
+  d'abord » des connaissances).
 
 `RecordDetail` affiche les onglets dans l'ordre **Informations → onglet de la pratique →
 Liens** (Liens si `config.linkType`). Un onglet vide affiche un message explicite ; une
@@ -196,7 +199,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | [Niveaux de service](processus/gestion-des-niveaux-de-service.md) | Catalogue des services | Tous | SLM-01 | ✅ |
 | | Accords (SLA) | Tous | SLM-02 | ✅ |
 | | Respect des SLA (tableau mensuel) | Tous | SLM-20, SLM-21 | 🔜 |
-| [Connaissances](processus/gestion-des-connaissances.md) | Base de connaissances (recherche d'abord) | Tous | KB-04 | ✅ |
+| [Connaissances](processus/gestion-des-connaissances.md) | Base de connaissances, avec le bloc « Chercher d'abord » (recherche hybride) en tête du registre | Tous | KB-04, RAG-05 | ✅ |
 | | Brouillons à publier | Manager, Admin | KB-21 | 🔜 |
 | [Amélioration](processus/amelioration-continue.md) | Registre d'amélioration | Tous | CSI-01 | ✅ |
 | [Conformité NIS 2](processus/conformite-nis2.md) | Registre des évaluations (« Évaluations ReCyF (ANSSI) ») ; fiche : Informations · Questionnaire · Synthèse · Liens | Tous | NIS-02, NIS-04, NIS-10 | ✅ |
@@ -234,6 +237,11 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 | Santé | Base, annuaire, version déployée | SOC-26 | 🔜 |
 | Journal d'audit | Journal global, filtrable par auteur, pratique, période | [SOC-20](regles-metier.md#9-traçabilité-commentaires-administration), SOC-26 | 🔜 |
 | Nettoyage | Doublons à fusionner ou supprimer | SOC-26 | 🔜 |
+| Index de recherche | État du service d'embeddings et de l'index par source, reconstruction ; avis ambre si le service est injoignable | [RAG-08](recherche.md) | ✅ |
+
+« Index de recherche » est la **première entrée réelle** de la section : un Admin voit
+désormais les quatre sections (Pilotage, Pratiques, Paramétrage, Administration), un
+Manager deux (Pilotage, Pratiques), tant qu'aucune entrée de Paramétrage ne lui est ouverte.
 
 ### Onglets communs des fiches
 
@@ -326,7 +334,8 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 ### Page de connexion
 
 - Le panneau de marque (gauche) ne liste pas les modules. De
-  haut en bas : marque, « Plateforme ITIL de la DSI », slogan, maxime malgache et sa
+  haut en bas : marque, « Plateforme ITIL de la DSI », titre « Piloter le service IT, de
+  l'incident à l'amélioration. », maxime malgache et sa
   traduction, explication du nom, puis « Ce que vous y faites » : quatre blocs de
   fonctionnalités (constante `FEATURES` de `Login.jsx` : console par rôle, cause racine et
   RACI AD, changements, mesure du service rendu).

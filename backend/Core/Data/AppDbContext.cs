@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Links;
+using SAloha.Api.Core.Search;
 using SAloha.Api.Modules.ChangeEnablement;
 using SAloha.Api.Modules.ComplianceAssessment;
 using SAloha.Api.Modules.ContinualImprovement;
@@ -16,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     // Socle
     public DbSet<ItemLink> ItemLinks => Set<ItemLink>();
+    public DbSet<SearchPassage> SearchPassages => Set<SearchPassage>();
     // Gestion des problèmes
     public DbSet<Problem> Problems => Set<Problem>();
     public DbSet<RcaAnalysis> Analyses => Set<RcaAnalysis>();
@@ -79,6 +81,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<ItService>().HasMany(s => s.Agreements).WithOne(a => a.Service!)
             .HasForeignKey(a => a.ServiceId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<ServiceLevelAgreement>().Property(a => a.AvailabilityTarget).HasPrecision(5, 2);
+
+        // Index de recherche (ADR-0013) : plein texte « french » généré par
+        // PostgreSQL sur le titre et le passage, index GIN.
+        b.Entity<SearchPassage>()
+            .HasGeneratedTsVectorColumn(p => p.SearchVector, "french", p => new { p.Title, p.Text })
+            .HasIndex(p => p.SearchVector).HasMethod("GIN");
+        b.Entity<SearchPassage>().HasIndex(p => new { p.SourceType, p.SourceId });
 
         b.Entity<ItemLink>().HasIndex(l => new { l.FromType, l.FromId });
         b.Entity<ItemLink>().HasIndex(l => new { l.ToType, l.ToId });

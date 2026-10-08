@@ -78,7 +78,7 @@ stateDiagram-v2
 | KB-01 | Types d'article : Solution, Procédure, Erreur connue, FAQ ; résumé, contenu, mots-clés, date de revue | ✅ | |
 | KB-02 | **Publié** : gestionnaire uniquement, contenu obligatoire ; horodate `PublishedAt` / `PublishedBy`, effacés au retour en Brouillon | ✅ | |
 | KB-03 | **Retoucher un article publié** (titre, résumé, contenu ou type) le ramène en **Brouillon** ; la retouche par un gestionnaire vaut publication ; mots-clés, date de revue et responsable se modifient librement | ✅ | |
-| KB-04 | La **recherche** porte sur le titre, la référence, les mots-clés et le contenu, sans tenir compte de la casse ; le registre ne renvoie pas le contenu (SOC-13) | ✅ | |
+| KB-04 | La **recherche** du registre porte sur le titre, la référence, les mots-clés et le contenu, sans tenir compte de la casse ; le registre ne renvoie pas le contenu (SOC-13). En tête du registre, le bloc « **Chercher d'abord** » interroge la **recherche hybride** (mots et sens) sur les articles publiés, problèmes établis et incidents résolus ([RAG-05](../recherche.md)) | ✅ | |
 | KB-05 | **Revue échue** : un article Publié dont la date de revue est passée remonte dans « Relances » des gestionnaires | ✅ | |
 | KB-10 | Le contenu est rendu en **Markdown** (titres, listes, code), sans interpréter de HTML brut | 🔜 [#25](https://github.com/christian-raj/S-Aloha/issues/25) | 1 |
 | KB-11 | À la publication, une date de revue vide est fixée à **publication + 12 mois** | 🔜 | 2 |

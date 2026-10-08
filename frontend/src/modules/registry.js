@@ -88,7 +88,11 @@ export const SECTIONS = [
         icon: 'settings', roles: ['Admin'] },
     ]
   },
-  { id: 'administration', label: 'Administration', roles: ['Admin'], entries: [] },
+  {
+    id: 'administration', label: 'Administration', roles: ['Admin'], entries: [
+      { href: '/admin/search', label: 'Index de recherche', description: 'État et reconstruction', icon: 'admin' },
+    ]
+  },
 ]
 
 /** L'entrée (module, sous-entrée, section) est-elle visible pour ce rôle ? */

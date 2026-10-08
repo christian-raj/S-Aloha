@@ -40,6 +40,10 @@
 | **EI / EE** | Entité importante / entité essentielle au sens de NIS 2 ; une exigence « EI/EE » s'applique aux deux, « EE » aux seules entités essentielles. |
 | **Maturité** | Niveau de 1 (Initial) à 5 (Optimisé) déduit du score d'une évaluation NIS 2, sur une échelle inspirée du CMMI (NIS-12). |
 | **Écart** | Pour une exigence évaluée : 3 moins le score obtenu ; base des actions d'amélioration (NIS-13, NIS-15). |
+| **Recherche hybride** | Recherche qui combine les **mots** (plein texte PostgreSQL) et le **sens** (similarité entre vecteurs) ; voir [recherche](recherche.md). |
+| **Embeddings** | Vecteurs numériques qui représentent le sens d'un texte ; produits par le modèle `bge-m3`, dans le service séparé `embeddings` ([ADR-0013](../decisions/adr-0013-recherche-hybride-service-embeddings-separe.md)). |
+| **Cas similaires** | Articles, problèmes et incidents résolus proches d'un incident ou d'un problème, proposés sur sa fiche (RAG-06). |
+| **RRF** | *Reciprocal Rank Fusion* : fusion de deux classements (mots, sens) par la somme de 1 / (k + rang), avec k = 60. |
 | **CAB** | *Change Advisory Board*, comité consultatif des changements : dans S-Aloha, deux gestionnaires distincts qui autorisent un changement normal à risque élevé ([CHG-20](processus/habilitation-des-changements.md)). |
 | **Revue post-implémentation** | Retour d'expérience après un changement urgent ou échoué : ce qui s'est passé, causes, enseignements ([CHG-15](processus/habilitation-des-changements.md)). |
 | **Période de gel** | Intervalle pendant lequel aucun changement non urgent ne peut être planifié ([CHG-25](processus/habilitation-des-changements.md)). |

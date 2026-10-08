@@ -5,6 +5,7 @@ import Layout from './core/components/Layout'
 import Login from './core/pages/Login'
 import Console from './core/pages/Console'
 import Reporting from './core/pages/Reporting'
+import SearchIndexAdmin from './core/pages/SearchIndexAdmin'
 import Problems from './modules/problem-management/pages/Problems'
 import ProblemDetail from './modules/problem-management/pages/ProblemDetail'
 import Actions from './modules/problem-management/pages/Actions'
@@ -41,6 +42,8 @@ export default function App() {
         {/* Pilotage — transverse à tous les processus */}
         <Route index element={<Console />} />
         <Route path="reports" element={<Reporting />} />
+        {/* Administration */}
+        <Route path="admin/search" element={<SearchIndexAdmin />} />
         {/* Pratique — Gestion des incidents */}
         <Route path="incidents" element={<Incidents />} />
         <Route path="incidents/:id" element={<IncidentDetail />} />

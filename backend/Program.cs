@@ -5,11 +5,23 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Auth;
+using SAloha.Api.Core.Search;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(o =>
-    o.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+// Recherche hybride (ADR-0013) : index dérivé, tenu à jour en tâche de fond à
+// chaque enregistrement d'un article, d'un problème ou d'un incident.
+builder.Services.AddSingleton<IndexQueue>();
+builder.Services.AddSingleton<VectorStore>();
+builder.Services.AddSingleton<SearchIndexInterceptor>();
+builder.Services.AddHttpClient<IEmbeddingClient, OllamaEmbeddingClient>();
+builder.Services.AddScoped<SearchIndexer>();
+builder.Services.AddScoped<HybridSearch>();
+builder.Services.AddHostedService<IndexWorker>();
+
+builder.Services.AddDbContext<AppDbContext>((sp, o) => o
+    .UseNpgsql(builder.Configuration.GetConnectionString("Default"))
+    .AddInterceptors(sp.GetRequiredService<SearchIndexInterceptor>()));
 
 builder.Services.AddSingleton<LdapService>();
 builder.Services.AddSingleton<TokenService>();

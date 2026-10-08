@@ -102,6 +102,7 @@ identifiant n'est jamais réattribué : une règle abandonnée reste listée ave
 | `KB` | [Gestion des connaissances](processus/gestion-des-connaissances.md) |
 | `CSI` | [Amélioration continue](processus/amelioration-continue.md) |
 | `NIS` | [Conformité NIS 2](processus/conformite-nis2.md) |
+| `RAG` | [Recherche](recherche.md) (capacité transverse) |
 
 ### Lots
 

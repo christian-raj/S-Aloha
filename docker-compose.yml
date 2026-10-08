@@ -36,8 +36,22 @@ services:
       Ldap__Groups__Manager: "GRP-SALOHA-MANAGERS"
       Ldap__Groups__User: "GRP-SALOHA-USERS"
       Jwt__Key: "CHANGEZ-CETTE-CLE-SECRETE-DE-64-CARACTERES-MINIMUM-0123456789ab"
+      # --- Recherche hybride (ADR-0013) : service d'embeddings ci-dessous ---
+      # Vide : recherche par les mots seulement. L'API n'attend pas ce service.
+      Embeddings__Url: "http://embeddings:11434"
+      Embeddings__Model: "bge-m3"
     ports:
       - "8080:8080"
+
+  embeddings:
+    # Embeddings bge-m3 servis par Ollama, hors du processus de l'API (ADR-0013).
+    # Premier démarrage : téléchargement du modèle (~1,2 Go), gardé dans le volume.
+    image: ollama/ollama:0.40.1
+    entrypoint: ["/bin/sh", "-c", "ollama serve & until ollama list >/dev/null 2>&1; do sleep 1; done; ollama pull bge-m3 && wait"]
+    volumes:
+      - ollama:/root/.ollama
+    # bge-m3 occupe ~1,2 Go une fois chargé ; marge pour les pics de calcul.
+    mem_limit: 3g
 
   web:
     image: ghcr.io/christian-raj/s-aloha-web:${S_ALOHA_VERSION:-latest}
@@ -49,3 +63,4 @@ services:
 
 volumes:
   pgdata:
+  ollama:

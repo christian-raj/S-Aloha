@@ -113,7 +113,7 @@ stateDiagram-v2
 | INC-16 | **Incidents enfants** : un incident peut être rattaché à un incident parent (même panne) ; résoudre le parent résout ses enfants avec la même résolution | 🔜 | 3 |
 | INC-17 | **Escalade fonctionnelle** : changer le responsable vers un autre groupe est tracé (SOC-20) avec un motif | 🔜 | 2 |
 | INC-18 | **Escalade hiérarchique** : un P1, ou un incident dont l'échéance de résolution est dépassée, notifie les gestionnaires (SOC-21) | 🔜 | 2 |
-| INC-19 | **Suggestion de connaissance** : la fiche propose les articles Publiés dont les mots-clés recoupent le titre et la catégorie ; utiliser un article le relie à l'incident | 🔜 | 2 |
+| INC-19 | **Suggestion de connaissance** : l'onglet Informations de la fiche présente les « **Cas similaires** » (articles publiés, problèmes établis, incidents résolus) par la recherche hybride ([RAG-06](../recherche.md)) ; relier en un clic l'élément retenu à l'incident : [RAG-09](../recherche.md) | ✅ (relier : 🔜 RAG-09) | 2 |
 
 ## 6. Délais, calculs et alertes
 
@@ -138,7 +138,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | Incident → Problème | Cause à rechercher | INC-14, INC-15 | ✅ / 🔜 |
 | Incident → CI | CI affecté | Lien manuel ; CI Retiré refusé (CFG-14) | ✅ / 🔜 |
 | Incident → Service / SLA | Service affecté, cibles | INC-20, INC-21 | 🔜 |
-| Incident → Article | Solution utilisée | INC-19 | 🔜 |
+| Incident → Article | Solution utilisée, cas similaires | INC-19, RAG-06, RAG-09 | ✅ (suggestion) / 🔜 (lien en un clic) |
 | Incident → Changement | Changement à l'origine de l'incident | Lien manuel ; indicateur CHG-33 | ✅ / 🔜 |
 
 ## 8. Console et indicateurs

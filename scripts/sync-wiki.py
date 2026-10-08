@@ -30,6 +30,7 @@ REFERENCE = [
     ('Base-de-données', 'docs/reference/base-de-donnees.md', 'Lire le modèle de données et les migrations'),
     ('Frontend', 'docs/reference/frontend.md', 'Ajouter un écran ou un module, respecter le design'),
     ('Exploitation', 'docs/reference/exploitation.md', 'Installer, brancher l’Active Directory, mettre à jour'),
+    ('Recherche', 'docs/reference/recherche.md', 'Comprendre la recherche hybride et le service d’embeddings'),
     ('Sécurité', 'docs/reference/securite.md', 'Préparer une mise en production'),
     ('Glossaire', 'docs/reference/glossaire.md', 'Retrouver un terme ITIL, technique ou malgache'),
     ('Pratiques-ITIL', 'docs/reference/processus/readme.md', 'Spécifier ou implémenter une pratique : règles numérotées, statut, lot'),

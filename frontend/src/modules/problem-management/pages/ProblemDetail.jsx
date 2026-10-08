@@ -6,6 +6,7 @@ import Ishikawa from '../components/Ishikawa'
 import FtaTree from '../components/FtaTree'
 import RaciEditor from '../../../core/components/RaciEditor'
 import LinkedItems from '../../../core/components/LinkedItems'
+import SimilarCases from '../../../core/components/SimilarCases'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
 const METHODS = { FIVE_WHYS: '5 Pourquoi', ISHIKAWA: 'Ishikawa (6M)', FTA: 'Arbre des défaillances (FTA)' }
@@ -43,7 +44,7 @@ export default function ProblemDetail() {
             className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
       </div>
 
-      {tab === 'infos' && <Infos p={p} isManager={isManager} onSaved={load} />}
+      {tab === 'infos' && <><Infos p={p} isManager={isManager} onSaved={load} /><SimilarCases type="problem" id={p.id} /></>}
       {tab === 'rca' && <Rca p={p} onSaved={load} />}
       {tab === 'actions' && <ActionsTab p={p} onSaved={load} />}
       {tab === 'links' && <LinkedItems type="problem" id={p.id}

@@ -16,6 +16,7 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 | 🗄️ | [Base de données](reference/base-de-donnees.md) | Lire le modèle de données et les formats d'analyse |
 | 🖥️ | [Frontend](reference/frontend.md) | Ajouter un écran ou un module, respecter le design |
 | ⚙️ | [Exploitation](reference/exploitation.md) | Installer, brancher l'Active Directory, mettre à jour |
+| 🔎 | [Recherche](reference/recherche.md) | Comprendre la recherche hybride : contenu indexé, cas similaires, service d'embeddings |
 | 🛡️ | [Sécurité](reference/securite.md) | Préparer une mise en production |
 | 📖 | [Glossaire](reference/glossaire.md) | Retrouver un terme ITIL, technique ou malgache |
 

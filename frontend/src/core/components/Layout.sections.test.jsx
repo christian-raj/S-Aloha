@@ -11,11 +11,12 @@ afterEach(cleanup)
 
 const titles = () => [...document.querySelectorAll('.sidebar .nav-section')].map((p) => p.textContent)
 
-// Registre réel. Paramétrage n'a qu'une entrée, « Référentiel NIS 2 »,
-// réservée à l'Admin ; Administration n'en a encore aucune. Une section sans
-// entrée visible pour le rôle ne s'affiche pas (ni titre ni filet).
+// Registre réel. Paramétrage n'a qu'une entrée, « Référentiel NIS 2 », et
+// Administration qu'une, « Index de recherche », toutes deux réservées à
+// l'Admin. Une section sans entrée visible pour le rôle ne s'affiche pas
+// (ni titre ni filet) : un Manager ne voit donc pas Paramétrage.
 it.each([
-  ['Admin', ['Pilotage', 'Pratiques', 'Paramétrage']],
+  ['Admin', ['Pilotage', 'Pratiques', 'Paramétrage', 'Administration']],
   ['Manager', ['Pilotage', 'Pratiques']],
   ['User', ['Pilotage', 'Pratiques']],
 ])('registre réel : un %s voit les sections %j, jamais une section vide', (r, expected) => {

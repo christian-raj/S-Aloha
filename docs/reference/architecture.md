@@ -12,9 +12,10 @@ flowchart LR
     W -- "/api/" --> A["api<br/>ASP.NET Core 8"]
     A -- "EF Core" --> D[("db<br/>PostgreSQL 16")]
     A -- "LDAP(S) 389/636" --> AD[["Active Directory<br/>on-prem"]]
+    A -. "HTTP 11434, facultatif" .-> E["embeddings<br/>Ollama · bge-m3"]
 ```
 
-Trois containers orchestrés par `docker-compose.yml` : **web** (nginx sert le build React et proxifie `/api/` vers l'API), **api** (ASP.NET Core 8), **db** (PostgreSQL 16, volume persistant `pgdata`).
+Quatre containers orchestrés par `docker-compose.yml` : **web** (nginx sert le build React et proxifie `/api/` vers l'API), **api** (ASP.NET Core 8), **db** (PostgreSQL 16, volume persistant `pgdata`) et **embeddings** (Ollama, modèle `bge-m3`, réseau interne seulement), facultatif : sans lui, la recherche reste lexicale ([recherche](recherche.md), [ADR-0013](../decisions/adr-0013-recherche-hybride-service-embeddings-separe.md)).
 
 ## 2. Stack
 
@@ -138,6 +139,8 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
 | GET `/api/directory/search?q=` | User | Recherche utilisateurs/groupes AD (sélecteur RACI) | Core/Directory |
 | GET `/api/reports/summary` | User | Indicateurs : problèmes (statuts, priorités, catégories, retards, MTTR, volumétrie), MTTR incidents, taux de changements réussis, incidents majeurs ouverts, volumétrie par processus | Core/Pilotage |
+| GET `/api/search?q=&types=&limit=`, `/api/search/similar?type=&id=` | User | Recherche hybride, cas similaires ([recherche](recherche.md)) | Core/Search |
+| GET `/api/search/status`, POST `/api/search/reindex` | Admin | État et reconstruction de l'index de recherche | Core/Search |
 
 ## 7. Frontend
 

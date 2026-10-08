@@ -18,9 +18,25 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
   d'entité, questionnaire noté 0 à 3, scores par thématique, objectif et pilier, maturité,
   écarts, actions d'amélioration) ; structure du référentiel embarquée, texte des exigences
   importé par l'administrateur (ADR-0012). Première entrée de la section Paramétrage.
+- **Recherche hybride** (mots et sens) : bloc « Chercher d'abord » dans les connaissances,
+  « Cas similaires » sur les fiches incident et problème, Administration › Index de
+  recherche ; modèle `bge-m3` dans le nouveau service `embeddings` (facultatif, environ
+  1,2 Go téléchargés au premier démarrage) ; sans lui, recherche plein texte (ADR-0013).
 - Configuration : vue d'impact d'un CI, amont et aval, transitive (#30).
 - Changements : détection des conflits au calendrier, deux changements non rejetés sur un
   même CI et des créneaux qui se chevauchent (#29).
+
+### Modifié
+
+- Page de connexion : titre « Piloter le service IT, de l'incident à l'amélioration. » ;
+  sous-titre de marque « Plateforme ITIL ».
+
+### Mise à jour
+
+- `docker compose up` démarre désormais le service `embeddings` et télécharge le modèle
+  `bge-m3` (environ 1,2 Go) au premier démarrage ; pour s'en passer :
+  `docker compose up -d db api web` et `Embeddings__Url` vide
+  ([exploitation § Recherche](docs/reference/exploitation.md#recherche)).
 
 ## [0.1.0] — 2026-10-06
 
