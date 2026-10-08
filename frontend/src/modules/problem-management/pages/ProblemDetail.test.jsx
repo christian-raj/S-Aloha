@@ -18,7 +18,8 @@ vi.mock('../../../api', () => ({
       })
     },
     analyses: { create: vi.fn(), update: vi.fn() },
-    links: { list: () => Promise.resolve([]), create: vi.fn(), remove: vi.fn() }
+    links: { list: () => Promise.resolve([]), create: vi.fn(), remove: vi.fn() },
+    search: { similar: () => Promise.resolve([]) }
   }
 }))
 

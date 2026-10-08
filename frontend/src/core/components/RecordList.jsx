@@ -35,7 +35,8 @@ function NewRecord({ config, onCreated }) {
  * Registre d'un processus : recherche, filtre de statut (et filtre propre au
  * module), « mes éléments », création, tableau cliquable vers le détail.
  */
-export default function RecordList({ config }) {
+/** `intro` : contenu placé sous le titre de la page (ex. « Chercher d'abord » des connaissances). */
+export default function RecordList({ config, intro }) {
   const [items, setItems] = useState([])
   const [status, setStatus] = useState('')
   const [extra, setExtra] = useState('')
@@ -56,6 +57,7 @@ export default function RecordList({ config }) {
     <>
       <h1 className="page-title">{config.title}</h1>
       <p className="page-sub">{config.sub}</p>
+      {intro}
       {error && <div className="error">{error}</div>}
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>

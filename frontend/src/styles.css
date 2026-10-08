@@ -510,6 +510,16 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--accent-blue
 }
 .obj-toggle:hover b { color: var(--accent-blue); }
 
+/* ---- Avis d'état (service joignable ou non) ---- */
+.notice { padding: 12px 16px; margin-bottom: 16px; border: 1px solid; }
+.notice.ok { background: var(--accent-emerald-soft); border-color: color-mix(in srgb, var(--accent-emerald) 35%, transparent); }
+.notice.warn { background: var(--accent-amber-soft); border-color: color-mix(in srgb, var(--accent-amber) 35%, transparent); }
+
+/* ---- Résultats de recherche (connaissances, cas similaires) ---- */
+.search-hits { list-style: none; display: grid; gap: 12px; }
+.search-hits li { padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); }
+.search-hits li:last-child { border-bottom: none; padding-bottom: 0; }
+
 /* ---- Sélecteur RACI ---- */
 .raci-pick { position: relative; }
 .raci-results {

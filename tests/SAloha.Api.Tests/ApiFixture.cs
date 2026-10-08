@@ -4,6 +4,10 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using SAloha.Api.Core.Search;
 using Microsoft.IdentityModel.Tokens;
 using Testcontainers.PostgreSql;
 
@@ -30,7 +34,13 @@ public sealed class ApiFixture : IAsyncLifetime
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b
             .UseSetting("ConnectionStrings:Default", _db.GetConnectionString())
             .UseSetting("Jwt:Key", JwtKey)
-            .UseSetting("Jwt:Issuer", "S-Aloha"));
+            .UseSetting("Jwt:Issuer", "S-Aloha")
+            // Embeddings déterministes à la place du service Ollama (ADR-0013).
+            .ConfigureTestServices(s =>
+            {
+                s.RemoveAll<IEmbeddingClient>();
+                s.AddSingleton<IEmbeddingClient, FakeEmbeddingClient>();
+            }));
     }
 
     public HttpClient Client(string role = "Admin", string username = "hery.rakoto")

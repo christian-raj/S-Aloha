@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../../api'
 import RecordDetail from '../../../core/components/RecordDetail'
+import SimilarCases from '../../../core/components/SimilarCases'
 import { incidentConfig } from '../config'
 
 /** Un incident récurrent ou de cause inconnue ouvre un problème, relié à l'incident. */
@@ -30,5 +31,5 @@ function OpenProblem({ incident }) {
 }
 
 export default function IncidentDetail() {
-  return <RecordDetail config={incidentConfig}>{r => <OpenProblem incident={r} />}</RecordDetail>
+  return <RecordDetail config={incidentConfig}>{r => <><OpenProblem incident={r} /><SimilarCases type="incident" id={r.id} /></>}</RecordDetail>
 }
