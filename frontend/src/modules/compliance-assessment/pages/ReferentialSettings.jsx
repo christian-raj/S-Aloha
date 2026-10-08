@@ -42,8 +42,8 @@ export default function ReferentialSettings() {
           {ref.lastImport && <> · dernier import le {dateTimeFr(ref.lastImport)}</>}.
         </p>
         <p className="muted small" style={{ marginBottom: 12 }}>
-          S-Aloha fournit la structure du référentiel (objectifs, identifiants, cibles, n° des mesures ISO 27002 à titre
-          indicatif). Le texte des exigences est publié par l'<a href={ANSSI_URL} target="_blank" rel="noreferrer">ANSSI</a>,
+          S-Aloha fournit la structure du référentiel (objectifs, identifiants, cibles, et n° des mesures ISO 27002
+          correspondantes selon la table de correspondance de l'ANSSI, sans leurs intitulés). Le texte des exigences est publié par l'<a href={ANSSI_URL} target="_blank" rel="noreferrer">ANSSI</a>,
           dont la réutilisation commerciale est soumise à autorisation : importez-le depuis un fichier CSV (séparateur « ; »
           ou « , ») comportant une colonne « Référence » (ou « Code ») et une colonne « Contenu » (ou « Texte »).
           Un import ultérieur met à jour les textes modifiés sans toucher aux réponses des évaluations.

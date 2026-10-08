@@ -24,7 +24,7 @@ function RequirementRow({ assessmentId, req, readOnly, onSaved }) {
     <tr>
       <td style={{ whiteSpace: 'nowrap', verticalAlign: 'top' }}>
         <b>{req.code}</b>
-        {req.isoControls && <div className="muted small" title="Mesures ISO 27002:2022 correspondantes (indicatif)">
+        {req.isoControls && <div className="muted small" title="Mesures ISO 27002:2022 correspondantes, selon la table de correspondance de l'ANSSI">
           ISO {req.isoControls.split(' ').map(c => c.replace('27002:2022-', '')).join(', ')}</div>}
       </td>
       <td style={{ verticalAlign: 'top' }}>
