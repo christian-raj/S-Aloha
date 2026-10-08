@@ -13,7 +13,7 @@
 |---|---|---|---|---|---|
 | [Socle commun](../regles-metier.md) | SOC | 11 | 4 | 9 | 3 |
 | [Gestion des problèmes](gestion-des-problemes.md) | PRB | 10 | 10 | 9 | 1 |
-| [Gestion des incidents](gestion-des-incidents.md) | INC | 5 | 5 | 14 | 2 |
+| [Gestion des incidents](gestion-des-incidents.md) | INC | 6 | 5 | 13 | 2 |
 | [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 5 | 3 | 9 | 4 |
 | [Habilitation des changements](habilitation-des-changements.md) | CHG | 10 | 4 | 12 | 1 |
 | [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 7 | 6 | 5 | 2 |

@@ -155,6 +155,13 @@ erDiagram
 
 - **`CiRelationships`** : `SourceId`, `TargetId` (FK → `ConfigurationItems`, cascade des deux
   côtés), `Type` (`Dépend de`, `Héberge`, `Fait partie de`, `Se connecte à`).
+- **`SearchPassages`** (socle, `backend/Core/Search/SearchPassage.cs`, migration `SearchIndex`) :
+  index **dérivé** de la recherche hybride, reconstructible, jamais saisi. `SourceType`,
+  `SourceId`, `Reference`, `Title`, `Status`, `Ordinal`, `Text` (passage de 800 caractères
+  au plus), `Embedding` (`real[]`, vecteur normalisé de 1024 dimensions, null sans service
+  d'embeddings), `EmbeddingModel`, `SearchVector` (colonne **générée** par PostgreSQL :
+  `to_tsvector('french', …)` sur titre et texte, index GIN), `IndexedAt`
+  ([recherche](recherche.md), [ADR-0013](../decisions/adr-0013-recherche-hybride-service-embeddings-separe.md)).
 - **`ItemLinks`** (socle, `backend/Core/Links/ItemLink.cs`) : `FromType`, `FromId`, `ToType`,
   `ToId`, `CreatedBy`, `CreatedAt`. Types : `problem`, `incident`, `request`, `change`, `ci`,
   `service`, `agreement`, `article`, `improvement`, `assessment`. Pas de clé étrangère (une extrémité

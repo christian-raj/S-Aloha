@@ -154,6 +154,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | Problème → Article | Erreur connue publiée comme article | PRB-30, KB-12 | 🔜 |
 | Problème → Changement | Correctif mis en œuvre | PRB-27, CHG-23 | ✅ (lien manuel) / 🔜 |
 | Problème → CI | CI en cause | Lien manuel | ✅ |
+| Problème → cas similaires | Articles, problèmes et incidents proches, dans l'onglet Informations | [RAG-06](../recherche.md) | ✅ |
 | Problème → Amélioration | Tendance, cause systémique | Lien manuel | ✅ |
 
 ## 8. Console et indicateurs

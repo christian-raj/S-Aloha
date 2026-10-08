@@ -38,6 +38,7 @@ complète : [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).
 | 80 | `web` (nginx) | Frontend + proxy `/api/` |
 | 8080 | `api` | API **et Swagger** (`/swagger`), exposés directement |
 | — | `db` | Non publié hors du réseau compose |
+| — | `embeddings` | Non publié hors du réseau compose ; reçoit le texte des contenus indexés, qui **ne quitte pas le SI** (modèle exécuté localement, [ADR-0013](../decisions/adr-0013-recherche-hybride-service-embeddings-separe.md)) |
 
 ## Points de durcissement avant production
 
