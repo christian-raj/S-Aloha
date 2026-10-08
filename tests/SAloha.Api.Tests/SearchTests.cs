@@ -89,6 +89,66 @@ public class SearchTests(ApiFixture api)
         Assert.Equal("Résolu", resolved.GetProperty("status").GetString());
     }
 
+    /// <summary>Attend que la recherche NE voie PLUS la cible (retrait traité en tâche de fond).</summary>
+    private async Task WaitGone(string query, string reference)
+    {
+        for (var i = 0; i < 50; i++)
+        {
+            if (!await Finds(query, reference)) return;
+            await Task.Delay(200);
+        }
+        throw new Xunit.Sdk.XunitException($"« {query} » trouve encore {reference}");
+    }
+
+    [Fact]
+    public async Task Un_enregistrement_qui_quitte_un_statut_indexe_sort_de_l_index()
+    {
+        var manager = api.Client("Manager", "lova.rabe");
+        // Article publié puis archivé (RAG-01).
+        var reference = await PublishedArticle("Procédure XJ-ARCHIVE", "Contenu XJ-ARCHIVE");
+        await WaitFor("XJ-ARCHIVE", reference);
+        var article = await Json(await manager.GetAsync("/api/knowledge?q=XJ-ARCHIVE"));
+        var articleId = article[0].GetProperty("id").GetInt32();
+        await Json(await manager.PutAsJsonAsync($"/api/knowledge/{articleId}",
+            new { title = "Procédure XJ-ARCHIVE", description = "", status = "Archivé", articleType = "Solution", content = "Contenu XJ-ARCHIVE", keywords = "" }));
+        await WaitGone("XJ-ARCHIVE", reference);
+
+        // Problème établi puis rouvert.
+        var p = await Json(await manager.PostAsJsonAsync("/api/problems", new
+        {
+            title = "Problème QW-ROUVERT", description = "d", impact = "Moyen", urgency = "Moyenne", category = "Test", affectedService = "Test"
+        }));
+        var pid = p.GetProperty("id").GetInt32();
+        var pref = p.GetProperty("reference").GetString()!;
+        object Problem(string status) => new
+        {
+            title = "Problème QW-ROUVERT", description = "d", status, impact = "Moyen", urgency = "Moyenne", category = "Test",
+            affectedService = "Test", knownErrorWorkaround = "Relancer le service", rootCause = (string?)null
+        };
+        await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("Erreur connue")));
+        await WaitFor("QW-ROUVERT", pref);
+        await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("En analyse")));
+        await WaitGone("QW-ROUVERT", pref);
+
+        // Incident résolu puis supprimé (Admin).
+        var user = api.Client("User", "tiana.ravelo");
+        var inc = await Json(await user.PostAsJsonAsync("/api/incidents", new
+        {
+            title = "Incident ZD-SUPPRIME", description = "d", status = "Nouveau", impact = "Faible", urgency = "Faible",
+            category = "Test", affectedService = "Test", isMajor = false, resolution = (string?)null
+        }));
+        var iid = inc.GetProperty("id").GetInt32();
+        var iref = inc.GetProperty("reference").GetString()!;
+        await Json(await user.PutAsJsonAsync($"/api/incidents/{iid}", new
+        {
+            title = "Incident ZD-SUPPRIME", description = "d", status = "Résolu", impact = "Faible", urgency = "Faible",
+            category = "Test", affectedService = "Test", isMajor = false, resolution = "Corrigé"
+        }));
+        await WaitFor("ZD-SUPPRIME", iref);
+        Assert.Equal(HttpStatusCode.NoContent, (await api.Client().DeleteAsync($"/api/incidents/{iid}")).StatusCode);
+        await WaitGone("ZD-SUPPRIME", iref);
+    }
+
     [Fact]
     public async Task La_recherche_vectorielle_trouve_les_reformulations()
     {
