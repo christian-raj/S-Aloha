@@ -168,7 +168,7 @@ MVP ; le module Problèmes suit les mêmes règles par son propre code).
 | SOC-02 | **Valeurs fermées** : statut, type, risque, impact… hors liste ⇒ 400 avec la liste des valeurs admises. Le titre est obligatoire | ✅ (problèmes : 🔜 [#28](https://github.com/christian-raj/S-Aloha/issues/28)) | 1 |
 | SOC-03 | **Statut de création** imposé par le processus (on ne crée pas un changement « Autorisé ») ; exceptions : CI et services, inventaires dont le statut est choisi à la saisie | ✅ | |
 | SOC-04 | **Transitions** : statuts réservés aux gestionnaires ⇒ 403 pour un User ; conditions propres à chaque processus ⇒ 400 avec le motif. Une pratique sans tableau § 4 garde des transitions libres | ✅ | |
-| SOC-05 | **Transitions contraintes** : seules les transitions du tableau § 4 de chaque pratique sont permises ; toute autre ⇒ 400 « Transition de *A* vers *B* non permise », avec les statuts accessibles depuis *A* (ou « statut final »), y compris pour un gestionnaire. Les retours décidés par l'API (article retouché, changement modifié, première analyse d'un problème) ne passent pas par ce contrôle. L'interface ne propose que le statut courant et ses successeurs (`GET …/transitions`). Un Admin peut forcer une transition avec un motif obligatoire, tracé au journal d'audit (SOC-20) | ✅ (transitions) / 🔜 (transition forcée, avec SOC-20) | 1 |
+| SOC-05 | **Transitions contraintes** : seules les transitions du tableau § 4 de chaque pratique sont permises ; toute autre ⇒ 400 « Transition de *A* vers *B* non permise », avec les statuts accessibles depuis *A* (ou « statut final »), y compris pour un gestionnaire. Les retours décidés par l'API (article retouché, changement modifié, première analyse d'un problème) ne passent pas par ce contrôle. L'interface ne propose que le statut courant et ses successeurs (`GET …/transitions`). Un Admin peut forcer une transition avec un motif obligatoire, tracé au journal d'audit (SOC-20). Côté API : `PUT …?force=true&reason=…` ; un non-Admin qui force ⇒ 403, un motif vide ⇒ 400 ; les conditions du statut visé restent exigées | ✅ | 1 |
 | SOC-06 | Les **conditions d'un statut** sont vérifiées à l'entrée dans le statut **et à chaque modification ultérieure** (vider la résolution d'un incident résolu ⇒ 400) | ✅ | |
 | SOC-07 | **Longueurs** : un texte qui dépasse la taille de sa colonne ⇒ 400, champ et limite indiqués | ✅ | |
 | SOC-08 | **Dates de transition** (`ResolvedAt`, `ClosedAt`, `AuthorizedAt`…) posées à l'entrée du statut et **effacées à la sortie** (réouverture) | ✅ | |
@@ -194,7 +194,7 @@ Partagée par les incidents et les problèmes : la priorité est **calculée** (
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | SOC-16 | Priorité recalculée à chaque modification de l'impact ou de l'urgence | ✅ | |
-| SOC-17 | Toute modification de priorité est tracée (ancienne et nouvelle valeur, auteur) au journal d'audit (SOC-20) | 🔜 | 2 |
+| SOC-17 | Toute modification de priorité est tracée (ancienne et nouvelle valeur, auteur) au journal d'audit (SOC-20) | ✅ | 2 |
 
 ## 7. Reporting
 
@@ -226,7 +226,7 @@ Aucune notification n'existe aujourd'hui. Cible : notifications **dans l'applica
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| SOC-20 | **Journal d'audit** : toute création, modification (champ, ancienne et nouvelle valeur), transition, suppression et lien est tracé (auteur, date) ; consultable sur la fiche (onglet « Historique ») ; conservé 3 ans — résout R5 | 🔜 | 1 |
+| SOC-20 | **Journal d'audit** : toute création, modification (champ, ancienne et nouvelle valeur), transition, suppression et lien est tracé (auteur, date) ; consultable sur la fiche (onglet « Historique ») ; conservé 3 ans — résout R5. Les actions et analyses d'un problème sont tracées sur le problème, une relation entre CI sur le CI source ; les effets automatiques (horodatages, auteurs d'une décision) ne sont pas des modifications | ✅ (affectations RACI d'une action : 🔜) | 1 |
 | SOC-24 | **Commentaires** : fil de commentaires sur chaque enregistrement ; un commentaire est soit **public** (visible du demandeur / bénéficiaire), soit **note de travail** (équipe IT) | 🔜 | 2 |
 | SOC-25 | **Pièces jointes** sur chaque enregistrement (10 Mo par fichier, types bureautiques et images), stockées hors base | 🔜 | 3 |
 | SOC-26 | **Administration** (Admin seul, section de menu dédiée) : utilisateurs et rôles constatés, mapping groupes AD → rôles (lecture), santé (base, annuaire, version), journal d'audit global, nettoyage des doublons — résout A1 | 🔜 | 2 |

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Links;
 
@@ -139,9 +140,12 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         var changing = target != e.Status;
         if (changing && demoted is null)
         {
-            error = Allowed.Check("Statut", target, Statuses)
-                    ?? (Transitions is null ? null : StatusGraph.Check(Transitions, e.Status, target));
+            error = Allowed.Check("Statut", target, Statuses);
             if (error is not null) return BadRequest(new { message = error });
+            var (refused, forbidden) = ForcedTransition.Apply(HttpContext,
+                Transitions is null ? null : StatusGraph.Check(Transitions, e.Status, target));
+            if (forbidden) return Forbid();
+            if (refused is not null) return BadRequest(new { message = refused });
             if (RequiresManager(target) && !IsManager) return Forbid();
         }
         error = await CheckStatusAsync(e, target);

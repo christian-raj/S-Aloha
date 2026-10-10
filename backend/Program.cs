@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Search;
@@ -19,9 +20,13 @@ builder.Services.AddScoped<SearchIndexer>();
 builder.Services.AddScoped<HybridSearch>();
 builder.Services.AddHostedService<IndexWorker>();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<AuditInterceptor>();
+builder.Services.AddHostedService<AuditRetention>();
+
 builder.Services.AddDbContext<AppDbContext>((sp, o) => o
     .UseNpgsql(builder.Configuration.GetConnectionString("Default"))
-    .AddInterceptors(sp.GetRequiredService<SearchIndexInterceptor>()));
+    .AddInterceptors(sp.GetRequiredService<SearchIndexInterceptor>(), sp.GetRequiredService<AuditInterceptor>()));
 
 builder.Services.AddSingleton<LdapService>();
 builder.Services.AddSingleton<TokenService>();

@@ -5,7 +5,9 @@ import RecordForm, { toForm, toPayload } from './RecordForm'
 import StatusBadge from './StatusBadge'
 import LinkedItems from './LinkedItems'
 import { dateFr } from '../fields'
-import useTransitions, { reachable } from '../useTransitions'
+import useTransitions from '../useTransitions'
+import StatusField, { forceOptions } from './StatusField'
+import History, { labelsOf } from './History'
 
 /** Édition : statut + champs ; recréé (clé) à chaque rechargement de l'enregistrement. */
 function Editor({ config, record, onSaved }) {
@@ -16,9 +18,11 @@ function Editor({ config, record, onSaved }) {
   const [msg, setMsg] = useState(null)
   const nav = useNavigate()
   const graph = useTransitions(config.api.transitions)
+  const [reason, setReason] = useState('')
   const merge = patch => setF(prev => ({ ...prev, ...patch }))
+  const force = forceOptions(graph, record.status, f.status, reason)
 
-  const save = () => config.api.update(record.id, { ...toPayload(config.fields, f), status: f.status })
+  const save = () => config.api.update(record.id, { ...toPayload(config.fields, f), status: f.status }, force)
     .then(saved => {
       // L'API peut ramener le statut en arrière (article retouché, changement modifié).
       setMsg({ ok: true, text: saved.status === f.status ? 'Modifications enregistrées.'
@@ -32,19 +36,12 @@ function Editor({ config, record, onSaved }) {
   return (
     <div className="card">
       {msg && <div className="error" style={msg.ok ? { background: 'var(--blue-soft)', color: 'var(--navy)' } : undefined}>{msg.text}</div>}
-      <div className="field" style={{ maxWidth: 260 }}>
-        <label>Statut</label>
-        <select value={f.status} onChange={e => merge({ status: e.target.value })} disabled={readOnly}>
-          {config.statuses.filter(s => reachable(graph, record.status, s.value)).map(s => (
-            <option key={s.value} value={s.value}
-              disabled={s.manager && !isManager && s.value !== record.status}>
-              {s.value}{s.manager ? ' (gestionnaire)' : ''}
-            </option>))}
-        </select>
-      </div>
+      <StatusField statuses={config.statuses} current={record.status} value={f.status}
+        onChange={status => merge({ status })} graph={graph} isManager={isManager} isAdmin={role === 'Admin'}
+        disabled={readOnly} reason={reason} onReason={setReason} />
       <RecordForm fields={config.fields} form={f} onChange={merge} disabled={readOnly} />
       <div style={{ display: 'flex', gap: 10 }}>
-        {!readOnly && <button className="btn" onClick={save} disabled={!f.title}>Enregistrer</button>}
+        {!readOnly && <button className="btn" onClick={save} disabled={!f.title || (force && !reason.trim())}>Enregistrer</button>}
         {role === 'Admin' && <button className="btn danger" style={{ marginLeft: 'auto' }} onClick={remove}>Supprimer</button>}
       </div>
     </div>
@@ -78,7 +75,7 @@ export default function RecordDetail({ config, children, tab }) {
   const meta = config.meta?.(r).filter(Boolean) ?? []
   const practice = tab ? [].concat(tab) : []
   const tabs = [['infos', 'Informations'], ...practice.map((t, i) => ['practice-' + i, t.label]),
-    config.linkType && ['links', 'Liens']].filter(Boolean)
+    config.linkType && ['links', 'Liens'], config.linkType && ['history', 'Historique']].filter(Boolean)
   return (
     <>
       <p style={{ marginBottom: 8 }}><Link to={config.basePath}>← {config.title}</Link></p>
@@ -103,6 +100,7 @@ export default function RecordDetail({ config, children, tab }) {
       </>}
       {practice.map((t, i) => current === 'practice-' + i && <React.Fragment key={i}>{t.render(r, load)}</React.Fragment>)}
       {current === 'links' && <LinkedItems type={config.linkType} id={r.id} hint={config.linkHint} refreshKey={version} />}
+      {current === 'history' && <History type={config.linkType} id={r.id} labels={labelsOf(config.fields)} refreshKey={version} />}
     </>
   )
 }

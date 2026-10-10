@@ -28,23 +28,27 @@ async function request(path, options = {}) {
 }
 
 /** Client CRUD d'un processus servi par le RecordController commun de l'API. */
+/** Transition forcée par un Admin (SOC-05) : motif transmis à l'API, tracé au journal. */
+const forced = (opts) => (opts?.force ? `?force=true&reason=${encodeURIComponent(opts.reason ?? '')}` : '')
+
 const records = (path) => ({
   list: (params = {}) => request(path + '?' + new URLSearchParams(params)),
   get: (id) => request(`${path}/${id}`),
   create: (dto) => request(path, { method: 'POST', body: JSON.stringify(dto) }),
-  update: (id, dto) => request(`${path}/${id}`, { method: 'PUT', body: JSON.stringify(dto) }),
+  update: (id, dto, opts) => request(`${path}/${id}${forced(opts)}`, { method: 'PUT', body: JSON.stringify(dto) }),
   remove: (id) => request(`${path}/${id}`, { method: 'DELETE' }),
   transitions: () => request(`${path}/transitions`)
 })
 
 export const api = {
+  audit: { list: (type, id) => request(`/audit?type=${type}&id=${id}`) },
   login: (username, password) =>
     request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   problems: {
     list: (params = {}) => request('/problems?' + new URLSearchParams(params)),
     get: (id) => request('/problems/' + id),
     create: (dto) => request('/problems', { method: 'POST', body: JSON.stringify(dto) }),
-    update: (id, dto) => request('/problems/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+    update: (id, dto, opts) => request('/problems/' + id + forced(opts), { method: 'PUT', body: JSON.stringify(dto) }),
     transitions: () => request('/problems/transitions')
   },
   analyses: {

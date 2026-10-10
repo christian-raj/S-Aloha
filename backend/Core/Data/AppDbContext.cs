@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Links;
 using SAloha.Api.Core.Search;
 using SAloha.Api.Modules.ChangeEnablement;
@@ -17,6 +18,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     // Socle
     public DbSet<ItemLink> ItemLinks => Set<ItemLink>();
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
     public DbSet<SearchPassage> SearchPassages => Set<SearchPassage>();
     // Gestion des problèmes
     public DbSet<Problem> Problems => Set<Problem>();
@@ -91,5 +93,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         b.Entity<ItemLink>().HasIndex(l => new { l.FromType, l.FromId });
         b.Entity<ItemLink>().HasIndex(l => new { l.ToType, l.ToId });
+        b.Entity<AuditEntry>().HasIndex(a => new { a.EntityType, a.EntityId });
+        b.Entity<AuditEntry>().HasIndex(a => a.At);
     }
 }

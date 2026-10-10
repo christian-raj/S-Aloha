@@ -47,7 +47,6 @@ code qui doit s'y conformer.
 | M3 | Actions confiées à un groupe AD invisibles de ses membres | Groupes dans le jeton, ou résolution à la volée dans l'AD |
 | M7 | Pas d'édition d'une action (titre, échéance, RACI) | Périmètre de l'édition et droits |
 | M8 | Aucune suppression dans l'interface | Qui supprime quoi, avec quelle confirmation |
-| R5 | Aucun historique des modifications | Journal d'audit : contenu et durée de conservation |
 | A1 | **Console d'administration inexistante** (Admin = console Manager) | Décidé le 2026-10-07 : section de menu **Administration** (Admin : utilisateurs et rôles, santé, journal d'audit, nettoyage — [SOC-26](reference/regles-metier.md#9-traçabilité-commentaires-administration)) et section **Paramétrage** (Manager, Admin : référentiels — SOC-27 — et paramétrage des pratiques) ; voir [frontend § Navigation cible](reference/frontend.md#navigation-cible) |
 
 ## 5. Avant une mise en production

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Itil;
 using SAloha.Api.Core.Links;
@@ -80,7 +81,9 @@ public class ProblemsController(AppDbContext db) : ControllerBase
         p.RootCause = dto.RootCause;
         if (dto.Status != null && dto.Status != p.Status)
         {
-            var transition = StatusGraph.Check(ProblemManagement.Problem.Transitions, p.Status, dto.Status);
+            var (transition, forbidden) = ForcedTransition.Apply(HttpContext,
+                StatusGraph.Check(ProblemManagement.Problem.Transitions, p.Status, dto.Status));
+            if (forbidden) return Forbid();
             if (transition is not null) return BadRequest(new { message = transition });
             p.Status = dto.Status;
             // Rouvert, un problème n'est plus clos : garder ClosedAt le faisait
