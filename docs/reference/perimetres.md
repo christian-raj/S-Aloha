@@ -6,7 +6,7 @@
 > site, entité) ; un gestionnaire ou un intervenant n'agit que sur les enregistrements de ses
 > périmètres, l'administrateur sur tous. Règles préfixées **PER**. Statut : **spécifié, à
 > implémenter** (étape 6 du [plan du lot 1](processus/readme.md#plan-dimplémentation-conseillé--lot-1)) ;
-> les choix marqués *à confirmer* sont tranchés dans l'[ADR-0014](../decisions/adr-0014-perimetres-droits-scopes.md).
+> les choix structurants sont tranchés dans l'[ADR-0014](../decisions/adr-0014-perimetres-droits-scopes.md) (accepté).
 
 ## 1. Pourquoi
 
@@ -46,12 +46,12 @@ erDiagram
 | PER-02 | **Affectation** d'un utilisateur ou d'un **groupe AD** à un périmètre avec le rôle Manager ou User, par l'Admin ; plusieurs affectations par compte ; jamais d'Admin scopé | 🔜 | 1 |
 | PER-03 | **Rôle effectif** sur un enregistrement : le plus élevé des rôles que l'utilisateur tient sur le périmètre de l'enregistrement, directement ou par un de ses groupes (étape 5, SOC-10) ; Admin partout | 🔜 | 1 |
 | PER-04 | Tout enregistrement de pratique **porte un périmètre**, obligatoire à la création ; proposé par défaut quand l'utilisateur n'a qu'un périmètre ; on ne crée que dans un périmètre où l'on est affecté | 🔜 | 1 |
-| PER-05 | **Visibilité** : un utilisateur voit les enregistrements de ses périmètres ; les **référentiels partagés** (catalogue des services, articles publiés) restent visibles de tous — *à confirmer* (ADR-0014, D2) | 🔜 | 1 |
+| PER-05 | **Visibilité** : un utilisateur voit les enregistrements de ses périmètres ; les **référentiels partagés** (catalogue des services, articles publiés) restent visibles de tous (ADR-0014, D2) | 🔜 | 1 |
 | PER-06 | Les **décisions de gestionnaire** (autoriser, approuver, publier, valider, qualifier un problème, transitions réservées) exigent le rôle **Manager sur le périmètre** de l'enregistrement | 🔜 | 1 |
 | PER-07 | **Changer le périmètre** d'un enregistrement : Manager des deux périmètres, ou Admin ; tracé au journal d'audit (SOC-20) | 🔜 | 1 |
 | PER-08 | **Liens** entre enregistrements de périmètres différents : permis si l'utilisateur voit les deux ; un lien ne donne pas accès à l'enregistrement d'un autre périmètre | 🔜 | 1 |
 | PER-09 | **Console, reporting, recherche, cas similaires** : limités aux périmètres de l'utilisateur ; l'Admin voit tout, avec un filtre par périmètre | 🔜 | 1 |
-| PER-10 | **Reprise des données** : à la mise à niveau, un périmètre « Organisation » est créé et reçoit tous les enregistrements ; tant qu'aucune affectation n'existe, chaque utilisateur est réputé affecté à ce périmètre avec son rôle AD (comportement inchangé) — *à confirmer* (D3) | 🔜 | 1 |
+| PER-10 | **Reprise des données** : à la mise à niveau, un périmètre « Organisation » est créé et reçoit tous les enregistrements ; tant qu'aucune affectation n'existe, chaque utilisateur est réputé affecté à ce périmètre avec son rôle AD (comportement inchangé) (ADR-0014, D3) | 🔜 | 1 |
 | PER-11 | Créations, modifications, suppressions de périmètres et d'affectations sont **tracées** au journal d'audit (SOC-20) | 🔜 | 1 |
 | PER-12 | Fiche d'un périmètre : compteurs des enregistrements rattachés par pratique et liste des affectations | 🔜 | 1 |
 

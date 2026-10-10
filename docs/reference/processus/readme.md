@@ -116,7 +116,7 @@ périmètre, entrée Administration › Périmètres. Suppose l'étape 5 (groupe
 |---|---|
 | [PER-01 à PER-12](../perimetres.md) | Modèle, administration, droits et visibilité par périmètre, reprise des données |
 
-Décisions D1 à D4 à confirmer avant de coder : [ADR-0014](../../decisions/adr-0014-perimetres-droits-scopes.md).
+Décisions D1 à D4 acceptées le 2026-10-10 : [ADR-0014](../../decisions/adr-0014-perimetres-droits-scopes.md).
 
 ### Itération suivante
 
