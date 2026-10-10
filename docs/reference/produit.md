@@ -46,7 +46,8 @@ où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-
 | **Conformité NIS 2** | Évaluer la conformité au Référentiel Cyber France (ANSSI) | Actif (MVP) | `Modules/ComplianceAssessment`, `modules/compliance-assessment` |
 
 **MVP** : enregistrer, suivre un cycle de vie simple, porter les décisions des
-gestionnaires et relier les processus entre eux. Référentiel : les **pratiques ITIL 4**
+gestionnaires et relier les processus entre eux. Une pratique **sort du MVP** selon des
+critères vérifiables, règle par règle ([plan d'action § Sortie du MVP](../plan-action.md#sortie-du-mvp)). Référentiel : les **pratiques ITIL 4**
 publiées par PeopleCert/Axelos ([ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)) ;
 l'enrichissement de chaque pratique viendra ensuite ([plan d'action](../plan-action.md)).
 
