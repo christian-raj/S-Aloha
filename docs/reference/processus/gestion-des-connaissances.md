@@ -88,7 +88,7 @@ stateDiagram-v2
 | KB-15 | **Versions** : chaque publication conserve la version précédente (contenu, auteur, date), consultable sur la fiche | 🔜 | 3 |
 | KB-16 | **Quatre yeux** : un gestionnaire ne publie pas un article dont il est le seul rédacteur, sauf Admin | 🔜 | 3 |
 | KB-17 | **Revue** : à la date de revue, le responsable confirme l'article (nouvelle date de revue, sans repasser en Brouillon) ou demande son archivage | 🔜 | 2 |
-| KB-18 | **Archiver** et réactiver : gestionnaire uniquement ; transitions selon le § 4 (SOC-05) | 🔜 | 1 |
+| KB-18 | **Archiver** et réactiver : gestionnaire uniquement ; transitions selon le § 4 (SOC-05) | ✅ (transitions) / 🔜 (gestionnaire uniquement) | 1 |
 
 ## 6. Délais, calculs et alertes
 

@@ -10,6 +10,16 @@ namespace SAloha.Api.Modules.ServiceRequestManagement;
 public class ServiceRequest : Record
 {
     public static readonly string[] Statuses = ["Soumise", "Approuvée", "Rejetée", "En cours", "Satisfaite", "Close"];
+    /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
+    public static readonly Dictionary<string, string[]> Transitions = new()
+    {
+        ["Soumise"] = ["Approuvée", "Rejetée"],
+        ["Approuvée"] = ["En cours"],
+        ["En cours"] = ["Satisfaite"],
+        ["Satisfaite"] = ["En cours", "Close"],
+        ["Rejetée"] = [],
+        ["Close"] = [],
+    };
     public static readonly string[] Done = ["Rejetée", "Satisfaite", "Close"];
 
     [MaxLength(200)] public string RequestedItem { get; set; } = "";          // objet demandé

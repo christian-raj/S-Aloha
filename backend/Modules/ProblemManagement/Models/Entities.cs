@@ -5,6 +5,19 @@ namespace SAloha.Api.Modules.ProblemManagement;
 
 public class Problem : IHasReference
 {
+    /// <summary>
+    /// Transitions permises (SOC-05, PRB-10) ; liste vide : statut final. Le
+    /// passage Nouveau → En analyse est aussi automatique à la première analyse.
+    /// </summary>
+    public static readonly Dictionary<string, string[]> Transitions = new()
+    {
+        ["Nouveau"] = ["En analyse", "Clos"],
+        ["En analyse"] = ["Erreur connue", "Résolu"],
+        ["Erreur connue"] = ["Résolu", "Clos"],
+        ["Résolu"] = ["Clos", "En analyse"],
+        ["Clos"] = ["En analyse"],
+    };
+
     public int Id { get; set; }
     [MaxLength(20)] public string Reference { get; set; } = "";   // PRB-2026-0001
     [MaxLength(200)] public string Title { get; set; } = "";

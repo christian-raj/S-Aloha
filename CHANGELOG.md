@@ -28,6 +28,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Modifié
 
+- **Transitions de statut contraintes** (SOC-05) : chaque pratique n'accepte que les
+  transitions de son cycle de vie documenté ; une autre est refusée avec les statuts
+  accessibles, et la fiche ne propose plus que ceux-là. Statuts finaux : incident clos,
+  demande rejetée ou close, changement rejeté ou clos, CI retiré, SLA expiré, amélioration
+  réalisée.
+
 - Page de connexion : titre « Piloter le service IT, de l'incident à l'amélioration. » ;
   sous-titre de marque « Plateforme ITIL ».
 

@@ -72,8 +72,10 @@ propre au processus :
 `RecordDetail` affiche les onglets dans l'ordre **Informations → onglet de la pratique →
 Liens** (Liens si `config.linkType`). Un onglet vide affiche un message explicite ; une
 fiche s'ouvre toujours sur Informations. La fiche Problème, hors socle, suit le même ordre :
-Informations · Analyse de cause racine · Actions correctives · Liens. Les statuts réservés aux gestionnaires
-sont désactivés dans la liste pour les autres rôles ; l'API reste seule juge.
+Informations · Analyse de cause racine · Actions correctives · Liens. La liste des statuts
+ne propose que le statut courant et ses successeurs permis (`core/useTransitions.js`, graphe
+servi par l'API, SOC-05) ; les statuts réservés aux gestionnaires y sont désactivés pour
+les autres rôles. L'API reste seule juge.
 
 Règle de dépendance : `modules/*` peut importer `core/*` ; `core/*` n'importe aucun module,
 sauf le registre `modules/registry.js` (lu par `Layout`).

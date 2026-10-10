@@ -7,6 +7,7 @@ import FtaTree from '../components/FtaTree'
 import RaciEditor from '../../../core/components/RaciEditor'
 import LinkedItems from '../../../core/components/LinkedItems'
 import SimilarCases from '../../../core/components/SimilarCases'
+import useTransitions, { reachable } from '../../../core/useTransitions'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
 const METHODS = { FIVE_WHYS: '5 Pourquoi', ISHIKAWA: 'Ishikawa (6M)', FTA: 'Arbre des défaillances (FTA)' }
@@ -54,6 +55,7 @@ export default function ProblemDetail() {
 }
 
 function Infos({ p, isManager, onSaved }) {
+  const graph = useTransitions(api.problems.transitions)
   const [f, setF] = useState({
     title: p.title, description: p.description, status: p.status, impact: p.impact,
     urgency: p.urgency, category: p.category, affectedService: p.affectedService,
@@ -75,7 +77,7 @@ function Infos({ p, isManager, onSaved }) {
       <div className="row3">
         <div className="field"><label>Statut</label>
           <select value={f.status} onChange={set('status')} disabled={!isManager}>
-            {STATUSES.map(s => <option key={s}>{s}</option>)}</select></div>
+            {STATUSES.filter(s => reachable(graph, p.status, s)).map(s => <option key={s}>{s}</option>)}</select></div>
         <div className="field"><label>Impact</label>
           <select value={f.impact} onChange={set('impact')} disabled={!isManager}>
             <option>Faible</option><option>Moyen</option><option>Élevé</option></select></div>

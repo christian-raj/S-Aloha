@@ -40,6 +40,12 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     protected virtual string InitialStatus(T e) => Statuses[0];
     /// <summary>Inventaires (CI, services) : le statut de création est choisi à la saisie.</summary>
     protected virtual bool StatusChosenAtCreation => false;
+    /// <summary>
+    /// Transitions permises (SOC-05), tableau § 4 de chaque pratique : pour chaque
+    /// statut, les statuts accessibles. Null : transitions libres (SOC-04). Les
+    /// retours décidés par l'API (StatusAfterEdit) ne passent pas par ce graphe.
+    /// </summary>
+    protected virtual IReadOnlyDictionary<string, string[]>? Transitions => null;
     /// <summary>Statuts que seul un gestionnaire peut poser (autoriser, approuver, publier…).</summary>
     protected virtual bool RequiresManager(string status) => false;
     /// <summary>
@@ -87,6 +93,10 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         return Ok(await ListItems(query.OrderByDescending(x => x.CreatedAt)));
     }
 
+    /// <summary>Graphe des transitions permises, pour proposer les seuls statuts accessibles.</summary>
+    [HttpGet("transitions")]
+    public IActionResult GetTransitions() => Ok(Transitions ?? StatusGraph.Free(Statuses));
+
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id)
     {
@@ -129,7 +139,8 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         var changing = target != e.Status;
         if (changing && demoted is null)
         {
-            error = Allowed.Check("Statut", target, Statuses);
+            error = Allowed.Check("Statut", target, Statuses)
+                    ?? (Transitions is null ? null : StatusGraph.Check(Transitions, e.Status, target));
             if (error is not null) return BadRequest(new { message = error });
             if (RequiresManager(target) && !IsManager) return Forbid();
         }

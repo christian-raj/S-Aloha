@@ -10,6 +10,14 @@ namespace SAloha.Api.Modules.ServiceConfigurationManagement;
 public class ConfigurationItem : Record
 {
     public static readonly string[] Statuses = ["Planifié", "En service", "Hors service", "Retiré"];
+    /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
+    public static readonly Dictionary<string, string[]> Transitions = new()
+    {
+        ["Planifié"] = ["En service", "Retiré"],
+        ["En service"] = ["Hors service", "Retiré"],
+        ["Hors service"] = ["En service", "Retiré"],
+        ["Retiré"] = [],
+    };
     public static readonly string[] Types =
         ["Application", "Serveur", "Base de données", "Réseau", "Stockage", "Poste de travail", "Logiciel", "Autre"];
     public static readonly string[] Environments = ["Production", "Recette", "Développement", "Autre"];

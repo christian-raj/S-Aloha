@@ -119,7 +119,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | PRB-07 | Un Manager peut **valider la conclusion** d'une analyse comme cause racine du problème en un clic (copie dans `RootCause`) | 🔜 | 2 |
 | PRB-08 | Le passage à **Clos** horodate `ClosedAt` ; quitter Clos l'efface (SOC-08) ; seul un problème actuellement clos compte dans le MTTR | ✅ | |
 | PRB-09 | Recherche (titre, référence) insensible à la casse | ✅ | |
-| PRB-10 | **Transitions contraintes** selon le tableau du § 4 (SOC-05) ; une réouverture exige un motif — résout R4 | 🔜 | 1 |
+| PRB-10 | **Transitions contraintes** selon le tableau du § 4 (SOC-05) ; une réouverture exige un motif — résout R4 | ✅ (transitions) / 🔜 (motif) | 1 |
 | PRB-11 | **Erreur connue** exige un contournement renseigné (aujourd'hui : bonne pratique non bloquante) | 🔜 | 1 |
 | PRB-12 | **Résolu** exige une cause racine validée et aucune action corrective ouverte | 🔜 | 1 |
 | PRB-13 | **Clos** exige un code de clôture : *Corrigé* (depuis Résolu), *Erreur connue acceptée* (depuis Erreur connue), *Doublon* ou *Non retenu* (depuis Nouveau) | 🔜 | 1 |

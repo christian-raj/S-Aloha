@@ -10,6 +10,15 @@ namespace SAloha.Api.Modules.IncidentManagement;
 public class Incident : Record
 {
     public static readonly string[] Statuses = ["Nouveau", "En cours", "En attente", "Résolu", "Clos"];
+    /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
+    public static readonly Dictionary<string, string[]> Transitions = new()
+    {
+        ["Nouveau"] = ["En cours", "Résolu"],
+        ["En cours"] = ["En attente", "Résolu"],
+        ["En attente"] = ["En cours"],
+        ["Résolu"] = ["En cours", "Clos"],
+        ["Clos"] = [],   // un incident clos ne se rouvre pas : on en crée un nouveau, relié
+    };
     public static readonly string[] Done = ["Résolu", "Clos"];
 
     [MaxLength(10)] public string Impact { get; set; } = "Moyen";    // Faible, Moyen, Élevé

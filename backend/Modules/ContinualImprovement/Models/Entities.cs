@@ -11,6 +11,15 @@ namespace SAloha.Api.Modules.ContinualImprovement;
 public class Improvement : Record
 {
     public static readonly string[] Statuses = ["Proposée", "Validée", "En cours", "Réalisée", "Abandonnée"];
+    /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
+    public static readonly Dictionary<string, string[]> Transitions = new()
+    {
+        ["Proposée"] = ["Validée", "Abandonnée"],
+        ["Validée"] = ["En cours", "Abandonnée"],
+        ["En cours"] = ["Réalisée", "Abandonnée"],
+        ["Abandonnée"] = ["Proposée"],
+        ["Réalisée"] = [],
+    };
     public static readonly string[] Done = ["Réalisée", "Abandonnée"];
     public static readonly string[] Priorities = ["Faible", "Moyenne", "Élevée"];
     /// <summary>Modèle d'amélioration continue ITIL 4, étapes 1 à 7.</summary>

@@ -109,7 +109,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | REQ-05 | `FulfilledAt` posé à Satisfaite, `ClosedAt` à Close, effacés à la sortie (SOC-08) | ✅ | |
 | REQ-06 | Un **rejet** exige un motif, communiqué au demandeur | 🔜 | 1 |
 | REQ-07 | Le **bénéficiaire** vaut le demandeur par défaut ; une demande pour autrui garde les deux | 🔜 | 2 |
-| REQ-08 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejetée, Annulée et Close sont finales | 🔜 | 1 |
+| REQ-08 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejetée, Annulée et Close sont finales | ✅ / 🔜 (statut Annulée, REQ-09) | 1 |
 | REQ-09 | Statut **Annulée** : le demandeur (ou un Manager) annule une demande Soumise ou Approuvée, tant qu'elle n'est pas En cours | 🔜 | 1 |
 | REQ-10 | **Contestation** : dans les 5 jours ouvrés, le demandeur ou le bénéficiaire renvoie une demande Satisfaite En cours, avec motif | 🔜 | 2 |
 | REQ-11 | **Clôture** à la confirmation du demandeur, ou automatique 5 jours ouvrés après Satisfaite | 🔜 | 3 |

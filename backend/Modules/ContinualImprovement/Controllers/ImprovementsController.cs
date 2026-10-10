@@ -10,6 +10,7 @@ public class ImprovementsController(AppDbContext db) : RecordController<Improvem
     protected override string Code => "AMI";
     protected override string LinkType => "improvement";
     protected override string[] Statuses => Improvement.Statuses;
+    protected override IReadOnlyDictionary<string, string[]> Transitions => Improvement.Transitions;
 
     protected override string? Apply(Improvement e, ImprovementDto dto, bool creating)
     {

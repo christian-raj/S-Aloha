@@ -35,6 +35,10 @@ public class ProblemsController(AppDbContext db) : ControllerBase
         return Ok(items);
     }
 
+    /// <summary>Graphe des transitions permises (SOC-05).</summary>
+    [HttpGet("transitions")]
+    public IActionResult GetTransitions() => Ok(ProblemManagement.Problem.Transitions);
+
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id)
     {
@@ -76,6 +80,8 @@ public class ProblemsController(AppDbContext db) : ControllerBase
         p.RootCause = dto.RootCause;
         if (dto.Status != null && dto.Status != p.Status)
         {
+            var transition = StatusGraph.Check(ProblemManagement.Problem.Transitions, p.Status, dto.Status);
+            if (transition is not null) return BadRequest(new { message = transition });
             p.Status = dto.Status;
             // Rouvert, un problème n'est plus clos : garder ClosedAt le faisait
             // compter dans le MTTR comme résolu (M4, revue du 2026-10-06).

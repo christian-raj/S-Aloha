@@ -103,7 +103,7 @@ stateDiagram-v2
 | INC-06 | **Prise en charge** : passer à En cours exige un responsable ; horodate `FirstResponseAt` (délai de prise en charge, INC-21) | 🔜 | 1 |
 | INC-07 | **En attente** exige un motif fermé ; le temps passé En attente ne compte pas dans les délais SLA | 🔜 | 2 |
 | INC-08 | La résolution exige un **code de résolution** fermé ; *Doublon* exige un lien vers l'incident conservé | 🔜 | 1 |
-| INC-09 | **Transitions contraintes** selon le § 4 (SOC-05) | 🔜 | 1 |
+| INC-09 | **Transitions contraintes** selon le § 4 (SOC-05) | ✅ | 1 |
 | INC-10 | **Clôture** par un Manager, ou **automatique** 5 jours ouvrés après la résolution sans réouverture | 🔜 | 2 (manuelle) / 3 (auto) |
 | INC-11 | **Réouverture** d'un incident Résolu dans les 10 jours ouvrés, avec motif, `ReopenCount` + 1 ; au-delà, ou une fois Clos, un **nouvel** incident est créé et relié | 🔜 | 1 |
 | INC-12 | **Incident majeur** : remonte dans la console des gestionnaires tant qu'il n'est ni Résolu ni Clos | ✅ | |

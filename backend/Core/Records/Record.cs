@@ -79,3 +79,23 @@ public static class Lengths
         return null;
     }
 }
+
+/// <summary>
+/// Transitions contraintes (SOC-05) : le graphe d'une pratique liste, pour
+/// chaque statut, les statuts accessibles ; un statut sans successeur est final.
+/// </summary>
+public static class StatusGraph
+{
+    public static string? Check(IReadOnlyDictionary<string, string[]> graph, string from, string to)
+    {
+        if (from == to || (graph.TryGetValue(from, out var next) && next.Contains(to))) return null;
+        var allowed = graph.GetValueOrDefault(from, []);
+        return $"Transition de « {from} » vers « {to} » non permise. " + (allowed.Length == 0
+            ? $"« {from} » est un statut final."
+            : $"Depuis « {from} » : {string.Join(", ", allowed.Select(s => $"« {s} »"))}.");
+    }
+
+    /// <summary>Graphe sans contrainte : chaque statut mène à tous les autres (SOC-04).</summary>
+    public static Dictionary<string, string[]> Free(string[] statuses) =>
+        statuses.ToDictionary(s => s, s => statuses.Where(o => o != s).ToArray());
+}
