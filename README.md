@@ -45,12 +45,28 @@ avec portes ET/OU. Plusieurs analyses par problème, la conclusion alimente la c
 Chaque action corrective porte une échéance et une matrice **RACI** affectée à des
 personnes ou des groupes de l'annuaire. Les retards remontent tout seuls.
 
+**🧾 Un cycle de vie tenu, une trace de tout**
+Chaque pratique suit son cycle de vie ITIL : un changement s'évalue avant d'être autorisé,
+une demande s'approuve avant d'être traitée, un incident se résout avec un code et une
+description. Chaque fiche garde son **historique** : qui a changé quoi, quand, avec
+l'ancienne et la nouvelle valeur.
+
+**🔎 La bonne solution avant le ticket**
+Recherche **hybride** (mots et sens) dans la connaissance, les problèmes et les incidents
+résolus : « Chercher d'abord » avant d'ouvrir un ticket, « Cas similaires » sur chaque
+incident et problème. Le modèle tourne chez vous ; sans lui, la recherche reste plein texte.
+
+**🛡️ La conformité NIS 2 au même endroit**
+Évaluation au Référentiel Cyber France de l'ANSSI : questionnaire noté, scores par
+thématique, maturité, écarts et actions d'amélioration reliées au registre.
+
 **📊 Le pilotage sans export Excel**
 MTTR des problèmes et des incidents, taux de changements réussis, répartitions, actions
 en retard avec leurs responsables, volumétrie de chaque processus : tout est dans le Reporting.
 
 **🏠 Chez vous, en une commande, et libre**
-On-prem, trois containers, vos données restent dans votre SI. Logiciel libre sous
+On-prem, quatre containers (dont le service de recherche sémantique, facultatif), vos
+données restent dans votre SI. Logiciel libre sous
 AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 
 ## Une plateforme, tous vos processus ITIL
@@ -65,6 +81,9 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 | **Niveaux de service** — catalogue des services, SLA et dates de revue | ✅ Disponible (MVP) |
 | **Connaissances** — solutions, procédures, erreurs connues, publication validée | ✅ Disponible (MVP) |
 | **Amélioration continue** — registre et modèle ITIL 4 en 7 étapes | ✅ Disponible (MVP) |
+| **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions | ✅ Disponible |
+| **Périmètres** — droits par direction, site ou entité, affectations d'utilisateurs et de groupes AD | 🔜 [Spécifié](docs/reference/perimetres.md) |
+| **Déclarations réglementaires** — NIS 2 et RGPD, échéances 24 h / 72 h depuis l'incident | 🔜 [Spécifié](docs/reference/processus/declarations-reglementaires.md) |
 
 Chaque processus est un module, aligné sur la pratique **ITIL 4** correspondante, sur un
 socle commun : même connexion, même console, même reporting. Les enregistrements se
@@ -137,7 +156,8 @@ appartenir à l'un des groupes `GRP-SALOHA-ADMINS`, `GRP-SALOHA-MANAGERS` ou
 |---|---|
 | **Frontend** | React 18 + Vite, CSS natif à jetons, servi par nginx |
 | **API** | ASP.NET Core 8 + Entity Framework Core, Swagger sur `/swagger` |
-| **Données** | PostgreSQL 16 |
+| **Données** | PostgreSQL 16 ; migrations EF appliquées au démarrage |
+| **Recherche** | Plein texte PostgreSQL + embeddings `bge-m3` dans un service séparé, facultatif |
 | **Identité** | Active Directory (LDAP) → JWT, rôles Admin / Manager / User |
 | **Tests** | xUnit + Testcontainers (API), Vitest + Testing Library (frontend) |
 
@@ -170,10 +190,12 @@ documentation en passant par les retours d'usage.
 | | |
 |---|---|
 | 🧭 [Produit](docs/reference/produit.md) | Vision, processus ITIL couverts, feuille de route |
-| 📐 [Règles métier](docs/reference/regles-metier.md) | Rôles, console, cycle de vie, priorité, RACI |
+| 📐 [Règles métier](docs/reference/regles-metier.md) | Rôles, console, cycle de vie et transitions, priorité, historique |
 | 🏗️ [Architecture](docs/reference/architecture.md) | Containers, socle et modules, API, tests |
 | ⚙️ [Exploitation](docs/reference/exploitation.md) | Installation, Active Directory, mise à jour |
 | 🛡️ [Sécurité](docs/reference/securite.md) | Modèle d'autorisation, durcissement |
+| 🔎 [Recherche](docs/reference/recherche.md) | Recherche hybride, cas similaires, service d'embeddings |
+| 🧭 [Périmètres](docs/reference/perimetres.md) | Droits scopés par direction, site ou entité (à venir) |
 | 📦 [Journal des versions](CHANGELOG.md) | Nouveautés et consignes de mise à jour de chaque version |
 | 🤝 [Contribuer](CONTRIBUTING.md) | Issues, pull requests, contrôles avant envoi |
 | 🚨 [Signaler une faille](SECURITY.md) | En privé, jamais dans une issue publique |
@@ -189,7 +211,15 @@ their attention, ranked by severity.
 - **Processes**: problem management with root-cause analysis (5 Whys, Ishikawa, fault
   tree), RACI-based corrective actions, plus MVP modules for incidents, service requests,
   change enablement (with schedule), configuration items (CMDB), service levels,
-  knowledge and continual improvement — all linked to each other.
+  knowledge and continual improvement — all linked to each other — and a **NIS 2**
+  self-assessment against the French ANSSI reference framework.
+- **Built-in governance**: lifecycle transitions enforced per practice, mandatory fields
+  (resolution codes, rejection reasons, plans before approval…), and a full **audit trail**
+  (history tab) on every record.
+- **Hybrid search** (keywords + semantic, local `bge-m3` model) to find similar incidents,
+  problems and knowledge articles.
+- **Coming next**: perimeter-scoped permissions (by department, site or entity) and
+  regulatory incident notifications (NIS 2, GDPR).
 - **Stack**: ASP.NET Core 8, EF Core, PostgreSQL 16, React 18 + Vite, Docker Compose.
 - **Try it**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`,
   then sign in at http://localhost as `demo.admin` / `Demo-Admin-2026` (a demo directory

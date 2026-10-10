@@ -25,7 +25,6 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 - Configuration : vue d'impact d'un CI, amont et aval, transitive (#30).
 - Changements : détection des conflits au calendrier, deux changements non rejetés sur un
   même CI et des créneaux qui se chevauchent (#29).
-
 - **Historique** sur chaque fiche : journal d'audit des créations, champs modifiés
   (ancienne et nouvelle valeur), transitions, suppressions et liens, avec auteur et date ;
   conservé 3 ans (SOC-20).
@@ -43,13 +42,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
   réalisée à l'étape 6, abandon motivé ; problèmes : valeurs fermées, contournement d'une
   erreur connue, cause racine et actions terminées pour résoudre, code de clôture, règles
   RACI à la modification d'une action, date d'achèvement conservée (#23, #24, #28).
-
 - **Transitions de statut contraintes** (SOC-05) : chaque pratique n'accepte que les
   transitions de son cycle de vie documenté ; une autre est refusée avec les statuts
   accessibles, et la fiche ne propose plus que ceux-là. Statuts finaux : incident clos,
   demande rejetée ou close, changement rejeté ou clos, CI retiré, SLA expiré, amélioration
   réalisée.
-
 - Page de connexion : titre « Piloter le service IT, de l'incident à l'amélioration. » ;
   sous-titre de marque « Plateforme ITIL ».
 
