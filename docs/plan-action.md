@@ -87,9 +87,8 @@ Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 ([plan d'implémentation du lot 1](reference/processus/readme.md#plan-dimplémentation-conseillé--lot-1)).
 
 **Itération suivante** (lot 1) : étape 4 (droits et statuts), étape 5 (groupes AD dans le
-jeton), étape 6 (**périmètres**, [PER-01 à PER-12](reference/perimetres.md)) — décisions D1 à
-D4 de l'[ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md) à confirmer avant
-l'étape 6.
+jeton), étape 6 (**périmètres**, [PER-01 à PER-12](reference/perimetres.md)) — décisions D1 à D4 acceptées
+([ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md)).
 
 ## 8. Communauté et financement
 

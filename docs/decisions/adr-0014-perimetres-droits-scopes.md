@@ -3,7 +3,7 @@
 <sub>[← Documentation](../readme.md) · [Toutes les décisions](readme.md)</sub>
 
 - **Date** : 2026-10-10
-- **Statut** : proposé — décisions D1 à D4 à confirmer
+- **Statut** : accepté le 2026-10-10 — décisions D1 à D4 selon les recommandations
 - **Décideur** : Christian Rajaonary
 
 ## Contexte
@@ -14,7 +14,7 @@ Une DSI qui sert plusieurs directions, sites ou entités a besoin de limiter les
 gestionnaire — et souvent la visibilité — au périmètre de chacun. La spécification est dans
 [périmètres](../reference/perimetres.md) (règles PER-01 à PER-12).
 
-## Décision proposée
+## Décision
 
 1. **Admin global** ; **Manager** et **User** scopés par **affectations** (principal, rôle,
    périmètre), plusieurs par compte. Le groupe AD de rôle reste la **porte d'entrée** (accès,
@@ -24,9 +24,9 @@ gestionnaire — et souvent la visibilité — au périmètre de chacun. La spé
 3. Gestion par l'**Admin** dans **Administration › Périmètres** : c'est un réglage de la
    plateforme (accès et rôles), pas du fonctionnement d'une pratique.
 
-## Décisions à confirmer
+## Décisions D1 à D4
 
-| # | Question | Options | Recommandation |
+| # | Question | Options | Décision (recommandation acceptée) |
 |---|---|---|---|
 | D1 | Qui peut-on affecter ? | Utilisateurs AD seulement / groupes AD seulement / les deux | **Les deux** : le groupe pour l'échelle (une équipe entière), l'utilisateur pour l'exception. Suppose les groupes dans le jeton (étape 5, SOC-10) |
 | D2 | Visibilité hors périmètre | Rien / lecture seule de tout / lecture des seuls référentiels partagés | **Référentiels partagés** : catalogue des services et articles publiés visibles de tous ; le reste limité aux périmètres |
