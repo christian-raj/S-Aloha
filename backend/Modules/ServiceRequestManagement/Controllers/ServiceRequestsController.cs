@@ -10,6 +10,7 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
     protected override string Code => "REQ";
     protected override string LinkType => "request";
     protected override string[] Statuses => ServiceRequest.Statuses;
+    protected override IReadOnlyDictionary<string, string[]> Transitions => ServiceRequest.Transitions;
 
     protected override string? Apply(ServiceRequest e, ServiceRequestDto dto, bool creating)
     {

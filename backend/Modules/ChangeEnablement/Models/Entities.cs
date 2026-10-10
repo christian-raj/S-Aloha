@@ -10,6 +10,17 @@ namespace SAloha.Api.Modules.ChangeEnablement;
 public class Change : Record
 {
     public static readonly string[] Statuses = ["Demandé", "Évalué", "Autorisé", "Rejeté", "Planifié", "Mis en œuvre", "Clos"];
+    /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
+    public static readonly Dictionary<string, string[]> Transitions = new()
+    {
+        ["Demandé"] = ["Évalué"],
+        ["Évalué"] = ["Autorisé", "Rejeté"],
+        ["Autorisé"] = ["Planifié"],
+        ["Planifié"] = ["Mis en œuvre"],
+        ["Mis en œuvre"] = ["Clos"],
+        ["Rejeté"] = [],
+        ["Clos"] = [],
+    };
     public static readonly string[] Done = ["Rejeté", "Clos"];
     public static readonly string[] Types = ["Standard", "Normal", "Urgent"];
     public static readonly string[] Risks = ["Faible", "Moyen", "Élevé"];

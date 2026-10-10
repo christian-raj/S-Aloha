@@ -5,6 +5,7 @@ import RecordForm, { toForm, toPayload } from './RecordForm'
 import StatusBadge from './StatusBadge'
 import LinkedItems from './LinkedItems'
 import { dateFr } from '../fields'
+import useTransitions, { reachable } from '../useTransitions'
 
 /** Édition : statut + champs ; recréé (clé) à chaque rechargement de l'enregistrement. */
 function Editor({ config, record, onSaved }) {
@@ -14,6 +15,7 @@ function Editor({ config, record, onSaved }) {
   const [f, setF] = useState(() => ({ ...toForm(config.fields, record), status: record.status }))
   const [msg, setMsg] = useState(null)
   const nav = useNavigate()
+  const graph = useTransitions(config.api.transitions)
   const merge = patch => setF(prev => ({ ...prev, ...patch }))
 
   const save = () => config.api.update(record.id, { ...toPayload(config.fields, f), status: f.status })
@@ -33,7 +35,7 @@ function Editor({ config, record, onSaved }) {
       <div className="field" style={{ maxWidth: 260 }}>
         <label>Statut</label>
         <select value={f.status} onChange={e => merge({ status: e.target.value })} disabled={readOnly}>
-          {config.statuses.map(s => (
+          {config.statuses.filter(s => reachable(graph, record.status, s.value)).map(s => (
             <option key={s.value} value={s.value}
               disabled={s.manager && !isManager && s.value !== record.status}>
               {s.value}{s.manager ? ' (gestionnaire)' : ''}

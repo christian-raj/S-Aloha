@@ -33,7 +33,8 @@ const records = (path) => ({
   get: (id) => request(`${path}/${id}`),
   create: (dto) => request(path, { method: 'POST', body: JSON.stringify(dto) }),
   update: (id, dto) => request(`${path}/${id}`, { method: 'PUT', body: JSON.stringify(dto) }),
-  remove: (id) => request(`${path}/${id}`, { method: 'DELETE' })
+  remove: (id) => request(`${path}/${id}`, { method: 'DELETE' }),
+  transitions: () => request(`${path}/transitions`)
 })
 
 export const api = {
@@ -43,7 +44,8 @@ export const api = {
     list: (params = {}) => request('/problems?' + new URLSearchParams(params)),
     get: (id) => request('/problems/' + id),
     create: (dto) => request('/problems', { method: 'POST', body: JSON.stringify(dto) }),
-    update: (id, dto) => request('/problems/' + id, { method: 'PUT', body: JSON.stringify(dto) })
+    update: (id, dto) => request('/problems/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+    transitions: () => request('/problems/transitions')
   },
   analyses: {
     create: (pid, dto) => request(`/problems/${pid}/analyses`, { method: 'POST', body: JSON.stringify(dto) }),

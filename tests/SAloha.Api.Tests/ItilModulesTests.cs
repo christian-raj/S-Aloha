@@ -133,10 +133,12 @@ public class ItilModulesTests(ApiFixture api)
         var normal = await Create(user, "/api/changes", Change("Normal", "Normal"));
         Assert.Equal("Demandé", Str(normal, "status"));
         Assert.Equal(HttpStatusCode.BadRequest, (await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Planifié"))).StatusCode);
+        await Json(await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Évalué")));
         Assert.Equal(HttpStatusCode.Forbidden, (await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Autorisé"))).StatusCode);
 
         await Json(await Put(api.Client("Manager"), "/api/changes", Id(normal), Change("Normal", "Normal", "Autorisé")));
         await Json(await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Planifié")));
+        await Json(await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Mis en œuvre")));
         Assert.Equal(HttpStatusCode.BadRequest, (await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Clos"))).StatusCode);
         await Json(await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Clos", "Réussi")));
 
@@ -225,6 +227,7 @@ public class ItilModulesTests(ApiFixture api)
     {
         var user = api.Client("User");
         var c = await Create(user, "/api/changes", Change("Rejeté", "Normal"));
+        await Json(await Put(user, "/api/changes", Id(c), Change("Rejeté", "Normal", "Évalué")));
         await Json(await Put(api.Client("Manager"), "/api/changes", Id(c), Change("Rejeté", "Normal", "Rejeté")));
 
         foreach (var to in new[] { "Planifié", "Mis en œuvre", "Clos" })
@@ -245,6 +248,7 @@ public class ItilModulesTests(ApiFixture api)
 
         var manager = api.Client("Manager");
         var normal = await Create(user, "/api/changes", Change("Risque revu", "Normal"));
+        await Json(await Put(user, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Évalué")));
         await Json(await Put(manager, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Autorisé")));
         await Json(await Put(user, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Planifié")));
         var riskier = await Json(await Put(user, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Planifié", risk: "Élevé")));
@@ -300,6 +304,8 @@ public class ItilModulesTests(ApiFixture api)
             (await Put(user, "/api/incidents", Id(i), Incident("Invariant", "Résolu", ""))).StatusCode);
 
         var c = await Create(user, "/api/changes", Change("Invariant", "Standard"));
+        await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Planifié")));
+        await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Mis en œuvre")));
         await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos", "Réussi")));
         Assert.Equal(HttpStatusCode.BadRequest,
             (await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos"))).StatusCode);

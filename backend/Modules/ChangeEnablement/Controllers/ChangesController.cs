@@ -14,6 +14,7 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
     protected override string Code => "CHG";
     protected override string LinkType => "change";
     protected override string[] Statuses => Change.Statuses;
+    protected override IReadOnlyDictionary<string, string[]> Transitions => Change.Transitions;
 
     protected override string? Apply(Change e, ChangeDto dto, bool creating)
     {

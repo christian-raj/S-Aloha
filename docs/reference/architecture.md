@@ -65,7 +65,9 @@ Les processus autres que les problèmes héritent d'un même socle :
 - **`RecordController<T, TDto>`** — API CRUD commune : liste (`status`, `q`, `owner=me`),
   détail, création avec référence (`References.CreateAsync`), modification avec contrôle
   du statut, suppression (Admin, liens compris). Un module ne déclare que son préfixe,
-  ses statuts et ses règles : `Apply` (champs et valeurs fermées), `RequiresManager`
+  ses statuts et ses règles : `Transitions` (graphe des transitions permises, SOC-05,
+  servi par `GET …/transitions` ; refus 400 « Transition de A vers B non permise » avec les
+  statuts accessibles), `Apply` (champs et valeurs fermées), `RequiresManager`
   (statuts réservés), `CheckStatus` (conditions du statut, vérifiées à chaque
   enregistrement), `OnStatusChanged` (horodatages), `StatusAfterEdit` (statut auquel
   la modification d'un non-gestionnaire ramène l'enregistrement), `InitialStatus`, `ManagerOnly`

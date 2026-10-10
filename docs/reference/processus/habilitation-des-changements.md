@@ -109,7 +109,7 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 | CHG-08 | **Calendrier des changements** : changements non rejetés ayant un début planifié, depuis une semaine, regroupés par semaine | ✅ | |
 | CHG-09 | **Conflit de calendrier** : deux changements non rejetés liés à un **même CI** (lien dans un sens ou dans l'autre) dont les créneaux **se chevauchent** (bout à bout : pas de chevauchement ; sans fin, un changement occupe une heure). Signalé sur le calendrier et la fiche, avec le changement et le CI en cause ; non bloquant | ✅ | |
 | CHG-10 | Recherche (titre, référence) insensible à la casse ; le registre ne renvoie pas les plans (SOC-13) | ✅ | |
-| CHG-11 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejeté et Clos sont finaux | 🔜 | 1 |
+| CHG-11 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejeté et Clos sont finaux | ✅ | 1 |
 | CHG-12 | Passer à **Évalué** exige un plan de mise en œuvre et un plan de retour arrière renseignés (Normal et Urgent) | 🔜 | 1 |
 | CHG-13 | **Planifié** exige aussi une fin planifiée | 🔜 | 1 |
 | CHG-14 | **Dates réelles** : `ActualStart` exigé à Mis en œuvre, `ActualEnd` à Clos ; un dépassement de la fin planifiée est signalé | 🔜 | 2 |

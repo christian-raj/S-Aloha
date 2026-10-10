@@ -125,8 +125,11 @@ public class SearchTests(ApiFixture api)
             title = "Problème QW-ROUVERT", description = "d", status, impact = "Moyen", urgency = "Moyenne", category = "Test",
             affectedService = "Test", knownErrorWorkaround = "Relancer le service", rootCause = (string?)null
         };
+        await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("En analyse")));
         await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("Erreur connue")));
         await WaitFor("QW-ROUVERT", pref);
+        // Réouverture permise depuis Résolu (PRB-10) : Erreur connue → Résolu → En analyse.
+        await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("Résolu")));
         await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("En analyse")));
         await WaitGone("QW-ROUVERT", pref);
 

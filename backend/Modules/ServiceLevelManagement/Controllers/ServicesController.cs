@@ -12,6 +12,7 @@ public class ServicesController(AppDbContext db) : RecordController<ItService, I
     protected override string Code => "SVC";
     protected override string LinkType => "service";
     protected override string[] Statuses => ItService.Statuses;
+    protected override IReadOnlyDictionary<string, string[]> Transitions => ItService.Transitions;
     protected override bool ManagerOnly => true;
     protected override bool StatusChosenAtCreation => true;
 
@@ -34,6 +35,7 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
     protected override string Code => "SLA";
     protected override string LinkType => "agreement";
     protected override string[] Statuses => ServiceLevelAgreement.Statuses;
+    protected override IReadOnlyDictionary<string, string[]> Transitions => ServiceLevelAgreement.Transitions;
     protected override bool ManagerOnly => true;
 
     protected override string? Apply(ServiceLevelAgreement e, ServiceLevelAgreementDto dto, bool creating)

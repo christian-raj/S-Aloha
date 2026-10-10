@@ -10,6 +10,13 @@ namespace SAloha.Api.Modules.KnowledgeManagement;
 public class KnowledgeArticle : Record
 {
     public static readonly string[] Statuses = ["Brouillon", "Publié", "Archivé"];
+    /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
+    public static readonly Dictionary<string, string[]> Transitions = new()
+    {
+        ["Brouillon"] = ["Publié", "Archivé"],
+        ["Publié"] = ["Archivé"],   // retour en Brouillon : automatique, à la retouche (StatusAfterEdit)
+        ["Archivé"] = ["Brouillon"],
+    };
     public static readonly string[] Types = ["Solution", "Procédure", "Erreur connue", "FAQ"];
 
     [MaxLength(20)] public string ArticleType { get; set; } = "Solution";

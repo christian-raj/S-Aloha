@@ -11,6 +11,7 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
     protected override string Code => "CI";
     protected override string LinkType => "ci";
     protected override string[] Statuses => ConfigurationItem.Statuses;
+    protected override IReadOnlyDictionary<string, string[]> Transitions => ConfigurationItem.Transitions;
     protected override bool StatusChosenAtCreation => true;
     protected override string InitialStatus(ConfigurationItem e) => "En service";
 

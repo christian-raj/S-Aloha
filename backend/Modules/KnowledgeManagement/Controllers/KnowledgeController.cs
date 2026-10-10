@@ -11,6 +11,7 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     protected override string Code => "KB";
     protected override string LinkType => "article";
     protected override string[] Statuses => KnowledgeArticle.Statuses;
+    protected override IReadOnlyDictionary<string, string[]> Transitions => KnowledgeArticle.Transitions;
 
     protected override string? Apply(KnowledgeArticle e, KnowledgeArticleDto dto, bool creating)
     {

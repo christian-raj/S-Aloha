@@ -96,7 +96,7 @@ CFG-10, lot 1)** : seules les transitions ci-dessous (SOC-05).
 | CFG-05 | **Sens de propagation** d'une panne : « A *dépend de* / *se connecte à* B » — la panne de B touche A ; « A *héberge* / *fait partie de* B » — la panne de A touche B | ✅ | |
 | CFG-06 | Dans la vue d'impact, chaque CI n'apparaît qu'une fois, à sa plus courte distance, avec la relation par laquelle il est atteint ; un cycle ne boucle pas | ✅ | |
 | CFG-07 | Registre filtrable par type (`type`), statut et texte | ✅ | |
-| CFG-10 | **Transitions contraintes** selon le § 4 (SOC-05) ; Retiré est final | 🔜 | 1 |
+| CFG-10 | **Transitions contraintes** selon le § 4 (SOC-05) ; Retiré est final | ✅ | 1 |
 | CFG-11 | Le **propriétaire** est obligatoire pour un CI En service | 🔜 | 1 |
 | CFG-12 | **Retirer** un CI : Manager uniquement | 🔜 | 1 |
 | CFG-13 | Un CI relié à un **incident ou changement ouvert** ne peut pas être retiré (400, avec les références en cause) | 🔜 | 1 |

@@ -58,10 +58,11 @@ def connexion(role):
 
 
 def creer(jeton, chemin, corps, statut=None):
-    """Crée un enregistrement, puis lui donne son statut (transition contrôlée par l'API)."""
+    """Crée un enregistrement, puis lui donne son statut. Les transitions sont
+    contrôlées par l'API (SOC-05) : `statut` peut être une liste d'étapes."""
     e = appel('POST', chemin, jeton, corps)
-    if statut:
-        e = appel('PUT', f'{chemin}/{e["id"]}', jeton, {**corps, 'status': statut})
+    for etape in ([statut] if isinstance(statut, str) else statut or []):
+        e = appel('PUT', f'{chemin}/{e["id"]}', jeton, {**corps, 'status': etape})
     return e
 
 
@@ -169,7 +170,7 @@ def main():
         'changeType': 'Normal', 'risk': 'Moyen', 'plannedStart': jour(5), 'plannedEnd': jour(5),
         'implementationPlan': '1. Sauvegarder la configuration\n2. Corriger la durée de vie des clés\n3. Tester depuis une direction régionale',
         'backoutPlan': 'Restaurer la configuration sauvegardée.', 'outcome': None}
-    changement = creer(m, '/api/changes', chg, 'Autorisé')
+    changement = creer(m, '/api/changes', chg, ['Évalué', 'Autorisé'])
     appel('PUT', f'/api/changes/{changement["id"]}', m, {**chg, 'status': 'Planifié'})
     lier(m, 'change', changement['id'], p_vpn['reference'])
     lier(m, 'change', changement['id'], passerelle['reference'])
@@ -256,9 +257,9 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
              'Élevé', 'Élevée', 'Application', 'ERP Finances', 'Résolu',
              'Redémarrage du service de base de données ; surveillance renforcée.')
     incident('Imprimante de Toamasina hors ligne', 'Plus aucune impression depuis ce matin.',
-             'Faible', 'Moyenne', 'Matériel', 'Impression', 'En attente')
+             'Faible', 'Moyenne', 'Matériel', 'Impression', ['En cours', 'En attente'])
     incident('Boîte aux lettres pleine', 'Réception bloquée pour un utilisateur.',
-             'Faible', 'Faible', 'Messagerie', 'Messagerie', 'Clos', 'Archivage et quota relevé.')
+             'Faible', 'Faible', 'Messagerie', 'Messagerie', ['Résolu', 'Clos'], 'Archivage et quota relevé.')
     incident('Lenteurs ERP en fin de journée', 'Temps de réponse supérieurs à 10 s.',
              'Moyen', 'Moyenne', 'Application', 'ERP Finances')
 
@@ -288,7 +289,7 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
         'changeType': 'Normal', 'risk': 'Moyen', 'plannedStart': jour(-12), 'plannedEnd': jour(-12),
         'implementationPlan': 'Appliquer les correctifs, redémarrer, vérifier les flux.',
         'backoutPlan': 'Désinstaller les correctifs.', 'outcome': None}
-    c = creer(m, '/api/changes', chg, 'Autorisé')
+    c = creer(m, '/api/changes', chg, ['Évalué', 'Autorisé'])
     for statut in ['Planifié', 'Mis en œuvre']:
         appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': statut})
     appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': 'Clos', 'outcome': 'Réussi'})

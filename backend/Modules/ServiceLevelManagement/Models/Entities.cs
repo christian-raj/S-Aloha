@@ -7,6 +7,13 @@ namespace SAloha.Api.Modules.ServiceLevelManagement;
 public class ItService : Record
 {
     public static readonly string[] Statuses = ["En conception", "En service", "Retiré"];
+    /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
+    public static readonly Dictionary<string, string[]> Transitions = new()
+    {
+        ["En conception"] = ["En service"],
+        ["En service"] = ["Retiré"],
+        ["Retiré"] = [],
+    };
     public static readonly string[] Criticalities = ["Faible", "Moyenne", "Élevée"];
 
     [MaxLength(10)] public string Criticality { get; set; } = "Moyenne";
@@ -21,6 +28,13 @@ public class ItService : Record
 public class ServiceLevelAgreement : Record
 {
     public static readonly string[] Statuses = ["Brouillon", "En vigueur", "Expiré"];
+    /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
+    public static readonly Dictionary<string, string[]> Transitions = new()
+    {
+        ["Brouillon"] = ["En vigueur"],
+        ["En vigueur"] = ["Expiré", "Brouillon"],
+        ["Expiré"] = [],   // un nouvel accord se crée
+    };
 
     public int ServiceId { get; set; }
     public ItService? Service { get; set; }

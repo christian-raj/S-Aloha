@@ -57,6 +57,8 @@ Ordre pensé pour ne construire chaque mécanisme qu'une fois.
 
 Un tableau de transitions par pratique dans le code (`RecordController` et module
 Problèmes), refus 400 explicite, transition forcée par un Admin avec motif.
+**Fait le 2026-10-10**, sauf la transition forcée, reportée à l'étape 2 (elle s'appuie sur
+le journal d'audit pour tracer le motif).
 
 | Règle | Objet |
 |---|---|

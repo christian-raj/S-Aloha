@@ -11,6 +11,7 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
     protected override string Code => "INC";
     protected override string LinkType => "incident";
     protected override string[] Statuses => Incident.Statuses;
+    protected override IReadOnlyDictionary<string, string[]> Transitions => Incident.Transitions;
 
     protected override string? Apply(Incident e, IncidentDto dto, bool creating)
     {

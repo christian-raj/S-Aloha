@@ -79,11 +79,12 @@ public class ImpactAndConflictTests(ApiFixture api)
 
     private static readonly DateTime Day = DateTime.UtcNow.Date.AddDays(30);
 
-    private static async Task<JsonElement> Change(HttpClient c, string title, int startHour, int? endHour, JsonElement ci)
+    private static async Task<JsonElement> Change(HttpClient c, string title, int startHour, int? endHour, JsonElement ci,
+        string type = "Standard")
     {
         var chg = await Json(await c.PostAsJsonAsync("/api/changes", new
         {
-            title, changeType = "Standard", risk = "Faible",
+            title, changeType = type, risk = "Faible",
             plannedStart = Day.AddHours(startHour), plannedEnd = endHour is null ? (DateTime?)null : Day.AddHours(endHour.Value)
         }));
         await Json(await c.PostAsJsonAsync("/api/links", new { fromType = "change", fromId = Id(chg), toReference = Ref(ci) }));
@@ -124,14 +125,16 @@ public class ImpactAndConflictTests(ApiFixture api)
         var c = api.Client();
         var srv = await Ci(c, "rejet-srv");
         var a = await Change(c, "Rejet A", 10, 12, srv);
-        var b = await Change(c, "Rejet B", 11, 13, srv);
+        var b = await Change(c, "Rejet B", 11, 13, srv, "Normal");
         Assert.Single(await ConflictsOf(c, a));
 
-        await Json(await c.PutAsJsonAsync($"/api/changes/{Id(b)}", new
-        {
-            title = "Rejet B", changeType = "Standard", risk = "Faible", status = "Rejeté",
-            plannedStart = Day.AddHours(11), plannedEnd = Day.AddHours(13)
-        }));
+        // Un changement se rejette après évaluation (CHG-11).
+        foreach (var status in new[] { "Évalué", "Rejeté" })
+            await Json(await c.PutAsJsonAsync($"/api/changes/{Id(b)}", new
+            {
+                title = "Rejet B", changeType = "Normal", risk = "Faible", status,
+                plannedStart = Day.AddHours(11), plannedEnd = Day.AddHours(13)
+            }));
         Assert.Empty(await ConflictsOf(c, a));
     }
 }
