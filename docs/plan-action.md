@@ -82,6 +82,7 @@ sont spécifiés règle par règle dans [`reference/processus/`](reference/proce
 | F6 | Tous | Transitions contraintes, journal d'audit | [SOC-05, SOC-20](reference/regles-metier.md#5-règles-communes-aux-processus) et § 4 de chaque pratique |
 | F7 | Tous | Notifications, commentaires, pièces jointes | [SOC-21 à SOC-25](reference/regles-metier.md#8-notifications) |
 | F8 | Connaissances | Rendu Markdown, suggestion d'articles | [KB-10](reference/processus/gestion-des-connaissances.md), [INC-19](reference/processus/gestion-des-incidents.md) |
+| F11 | Incidents, sécurité | **Déclarations réglementaires** des incidents cyber (NIS 2 : alerte précoce 24 h, notification 72 h, rapport final ; RGPD : 72 h) associées à l'incident, échéances et alertes | [INC-40 à INC-44](reference/processus/gestion-des-incidents.md), [DRG-01 à DRG-13](reference/processus/declarations-reglementaires.md) |
 
 Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 ([plan d'implémentation du lot 1](reference/processus/readme.md#plan-dimplémentation-conseillé--lot-1)).

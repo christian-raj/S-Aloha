@@ -13,7 +13,7 @@
 |---|---|---|---|---|---|
 | [Socle commun](../regles-metier.md) | SOC | 11 | 4 | 9 | 3 |
 | [Gestion des problèmes](gestion-des-problemes.md) | PRB | 10 | 10 | 9 | 1 |
-| [Gestion des incidents](gestion-des-incidents.md) | INC | 6 | 5 | 13 | 2 |
+| [Gestion des incidents](gestion-des-incidents.md) | INC | 6 | 5 | 18 | 2 |
 | [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 5 | 3 | 9 | 4 |
 | [Habilitation des changements](habilitation-des-changements.md) | CHG | 10 | 4 | 12 | 1 |
 | [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 7 | 6 | 5 | 2 |
@@ -21,6 +21,7 @@
 | [Gestion des connaissances](gestion-des-connaissances.md) | KB | 5 | 2 | 6 | 3 |
 | [Amélioration continue](amelioration-continue.md) | CSI | 5 | 4 | 6 | 1 |
 | [Conformité NIS 2](conformite-nis2.md) | NIS | 14 | 1 | 6 | 1 |
+| [Déclarations réglementaires](declarations-reglementaires.md) | DRG | 0 | 0 | 11 | 1 |
 
 *Comptes au 2026-10-07, sur les tableaux de règles (hors indicateurs).*
 

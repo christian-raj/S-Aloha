@@ -106,6 +106,7 @@ identifiant n'est jamais réattribué : une règle abandonnée reste listée ave
 | `KB` | [Gestion des connaissances](processus/gestion-des-connaissances.md) |
 | `CSI` | [Amélioration continue](processus/amelioration-continue.md) |
 | `NIS` | [Conformité NIS 2](processus/conformite-nis2.md) |
+| `DRG` | [Déclarations réglementaires](processus/declarations-reglementaires.md) |
 | `RAG` | [Recherche](recherche.md) (capacité transverse) |
 
 ### Lots
@@ -143,6 +144,7 @@ Référentiel : les **pratiques ITIL 4** ([ADR-0007](../decisions/adr-0007-prati
 | Gestion des connaissances | [gestion-des-connaissances](processus/gestion-des-connaissances.md) | Capitaliser et réutiliser | MVP |
 | Amélioration continue | [amelioration-continue](processus/amelioration-continue.md) | Améliorer en continu | MVP |
 | Conformité NIS 2 (sécurité de l'information) | [conformite-nis2](processus/conformite-nis2.md) | Évaluer la conformité au Référentiel Cyber France | MVP |
+| Déclarations réglementaires (sécurité de l'information) | [declarations-reglementaires](processus/declarations-reglementaires.md) | Déclarer les incidents cyber aux autorités dans les délais (NIS 2, RGPD) | Spécifiée |
 
 ```mermaid
 flowchart LR
@@ -159,6 +161,7 @@ flowchart LR
     SLA -- "écart" --> CSI[Amélioration]
     PRB -- "tendance" --> CSI
     EVA[Évaluation NIS 2] -- "écart" --> CSI
+    INC -- "cyber, à déclarer" --> DRG[Déclaration réglementaire]
 ```
 
 ## 5. Règles communes aux processus
