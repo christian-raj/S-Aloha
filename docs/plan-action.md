@@ -91,6 +91,32 @@ Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 jeton), étape 6 (**périmètres**, [PER-01 à PER-12](reference/perimetres.md)) — décisions D1 à D4 acceptées
 ([ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md)).
 
+### Sortie du MVP
+
+Une pratique perd la mention **(MVP)** — dans le README et la [cartographie](reference/produit.md#cartographie-des-processus-itil-et-état) —
+quand les **prérequis communs** sont en place et que **toutes ses règles listées** ci-dessous
+sont à ✅. La mention disparaît pratique par pratique, dans la PR qui passe la dernière
+règle à ✅ (README, produit, CHANGELOG dans la même PR).
+
+**Prérequis communs** : lot 1 terminé (étapes 4 à 6, périmètres compris) ;
+[SOC-24](reference/regles-metier.md#9-traçabilité-commentaires-administration) commentaires ;
+[SOC-21](reference/regles-metier.md#8-notifications) notifications.
+
+| Pratique | Règles à ✅ (lot 1 restant, puis cœur de métier du lot 2) |
+|---|---|
+| [Incidents](reference/processus/gestion-des-incidents.md) | INC-11, INC-13 ; INC-07 (attente motivée, hors délais), INC-20 (service du catalogue), INC-21, INC-22 (échéances en heures de service), INC-24 (SLA en risque), INC-25 |
+| [Demandes](reference/processus/gestion-des-demandes.md) | REQ-09 ; REQ-20 à REQ-23 (catalogue de demandes, modèles, échéance, groupe d'exécution), REQ-30 (retard), REQ-31 |
+| [Problèmes](reference/processus/gestion-des-problemes.md) | PRB-10 (motif de réouverture), PRB-24, PRB-26 ; PRB-25 (approbation par l'A), PRB-27 (changement depuis une action), PRB-30 (article d'erreur connue), PRB-31 |
+| [Changements](reference/processus/habilitation-des-changements.md) | CHG-14, CHG-15 (dates réelles, revue post-implémentation), CHG-16 (CI reliés), CHG-20, CHG-21 (autorité selon le risque, séparation des tâches), CHG-25 (gel), CHG-26 (modèles standard), CHG-24 |
+| [Configuration](reference/processus/gestion-de-la-configuration.md) | CFG-12 à CFG-14 ; CFG-15 (vérification), CFG-20 (impact d'un changement), CFG-21 (CI ↔ service), CFG-22 |
+| [Niveaux de service](reference/processus/gestion-des-niveaux-de-service.md) | SLM-04 (expiration), SLM-10, SLM-13, SLM-14 (heures de service), **SLM-20 (mesure du respect, F1)**, SLM-22, SLM-23, SLM-24 |
+| [Connaissances](reference/processus/gestion-des-connaissances.md) | KB-10 (Markdown, [#25](https://github.com/christian-raj/S-Aloha/issues/25)) ; KB-11, KB-12, KB-17 (revue), KB-20, KB-21 (soumission à publication) |
+| [Amélioration continue](reference/processus/amelioration-continue.md) | CSI-10, CSI-12 (source, priorisation), CSI-20 (proposition par le système), CSI-21, CSI-23 |
+| [Conformité NIS 2](reference/processus/conformite-nis2.md) | NIS-18 ; NIS-08 (preuves), NIS-09 (comparaison), NIS-14, NIS-16 (revue périodique), NIS-17 (export) |
+
+Les règles du lot 3 (enquêtes, versions d'articles, import en masse…) ne conditionnent pas la
+sortie du MVP.
+
 ## 8. Communauté et financement
 
 Accueil des contributeurs et financement du projet ; canaux et contreparties publics :

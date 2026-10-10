@@ -81,9 +81,13 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 | **Niveaux de service** — catalogue des services, SLA et dates de revue | ✅ Disponible (MVP) |
 | **Connaissances** — solutions, procédures, erreurs connues, publication validée | ✅ Disponible (MVP) |
 | **Amélioration continue** — registre et modèle ITIL 4 en 7 étapes | ✅ Disponible (MVP) |
-| **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions | ✅ Disponible |
+| **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions | ✅ Disponible (MVP) |
 | **Périmètres** — droits par direction, site ou entité, affectations d'utilisateurs et de groupes AD | 🔜 [Spécifié](docs/reference/perimetres.md) |
 | **Déclarations réglementaires** — NIS 2 et RGPD, échéances 24 h / 72 h depuis l'incident | 🔜 [Spécifié](docs/reference/processus/declarations-reglementaires.md) |
+
+**(MVP)** : le processus tient son cycle de vie et ses garde-fous, mais pas encore tous ses
+enrichissements ; la mention disparaît pratique par pratique selon des
+[critères publiés](docs/plan-action.md#sortie-du-mvp).
 
 Chaque processus est un module, aligné sur la pratique **ITIL 4** correspondante, sur un
 socle commun : même connexion, même console, même reporting. Les enregistrements se
