@@ -20,6 +20,7 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         e.RequestedFor = hasBeneficiary ? dto.RequestedFor : null;
         e.RequestedForDisplayName = hasBeneficiary ? dto.RequestedForDisplayName ?? dto.RequestedFor : null;
         e.DueDate = Dates.Utc(dto.DueDate);
+        e.RejectionReason = string.IsNullOrWhiteSpace(dto.RejectionReason) ? null : dto.RejectionReason.Trim();
         return null;
     }
 
@@ -28,7 +29,10 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
     // Une demande rejetée est terminée : elle n'est ni traitée ni close.
     protected override string? CheckStatus(ServiceRequest e, string status) =>
         e.ApprovedAt is null && status is "En cours" or "Satisfaite" or "Close"
-            ? "La demande doit d'abord être approuvée par un gestionnaire." : null;
+            ? "La demande doit d'abord être approuvée par un gestionnaire."
+            // REQ-06 : un rejet se motive, le motif est communiqué au demandeur.
+            : status == "Rejetée" && e.RejectionReason is null ? "Motiver le rejet : le motif est communiqué au demandeur."
+            : null;
 
     protected override void OnStatusChanged(ServiceRequest e, string from)
     {

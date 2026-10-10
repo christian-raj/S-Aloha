@@ -33,6 +33,8 @@ export const improvementConfig = {
     { key: 'target', label: 'Mesure cible', placeholder: 'Ex. : 2 jours' },
     { key: 'outcome', label: 'Résultat constaté', type: 'textarea', rows: 2, create: false,
       placeholder: 'Obligatoire pour déclarer l\'amélioration réalisée.' },
+    { key: 'abandonReason', label: 'Motif d\'abandon', type: 'textarea', rows: 2, create: false,
+      placeholder: 'Obligatoire pour abandonner.' },
   ],
   columns: [
     { h: 'Étape', v: r => `${r.step}. ${STEPS[r.step - 1]}` },
@@ -41,6 +43,6 @@ export const improvementConfig = {
     { h: 'Échéance', v: r => dateFr(r.dueDate) },
   ],
   meta: r => [r.validatedAt && `Validée par ${r.validatedBy} le ${dateTimeFr(r.validatedAt)}`],
-  help: 'Une amélioration est validée par un gestionnaire avant d\'être engagée ; le résultat constaté est requis pour la déclarer réalisée.',
+  help: 'Validation par un gestionnaire, avec valeur attendue, mesure de départ et mesure cible. Réalisée : à l\'étape 6 au moins, avec le résultat constaté. Un abandon se motive.',
   linkHint: 'Problèmes, incidents récurrents, services ou SLA à l\'origine de l\'amélioration…',
 }

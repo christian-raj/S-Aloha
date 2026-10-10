@@ -20,7 +20,7 @@ public class ImpactAndConflictTests(ApiFixture api)
 
     private static async Task<JsonElement> Ci(HttpClient c, string name) =>
         await Json(await c.PostAsJsonAsync("/api/configuration-items",
-            new { title = name, ciType = "Serveur", environment = "Production" }));
+            new { title = name, ciType = "Serveur", environment = "Production", ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto" }));
 
     private static async Task Relate(HttpClient c, JsonElement source, JsonElement target, string type) =>
         await Json(await c.PostAsJsonAsync($"/api/configuration-items/{Id(source)}/relations",
@@ -84,7 +84,7 @@ public class ImpactAndConflictTests(ApiFixture api)
     {
         var chg = await Json(await c.PostAsJsonAsync("/api/changes", new
         {
-            title, changeType = type, risk = "Faible",
+            title, changeType = type, risk = "Faible", implementationPlan = "p", backoutPlan = "b",
             plannedStart = Day.AddHours(startHour), plannedEnd = endHour is null ? (DateTime?)null : Day.AddHours(endHour.Value)
         }));
         await Json(await c.PostAsJsonAsync("/api/links", new { fromType = "change", fromId = Id(chg), toReference = Ref(ci) }));
@@ -132,7 +132,8 @@ public class ImpactAndConflictTests(ApiFixture api)
         foreach (var status in new[] { "Évalué", "Rejeté" })
             await Json(await c.PutAsJsonAsync($"/api/changes/{Id(b)}", new
             {
-                title = "Rejet B", changeType = "Normal", risk = "Faible", status,
+                title = "Rejet B", changeType = "Normal", risk = "Faible", status, implementationPlan = "p", backoutPlan = "b",
+                rejectionReason = "Créneau occupé",
                 plannedStart = Day.AddHours(11), plannedEnd = Day.AddHours(13)
             }));
         Assert.Empty(await ConflictsOf(c, a));

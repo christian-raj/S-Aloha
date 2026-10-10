@@ -70,7 +70,8 @@ Les processus autres que les problèmes héritent d'un même socle :
   servi par `GET …/transitions` ; refus 400 « Transition de A vers B non permise » avec les
   statuts accessibles), `Apply` (champs et valeurs fermées), `RequiresManager`
   (statuts réservés), `CheckStatus` (conditions du statut, vérifiées à chaque
-  enregistrement), `OnStatusChanged` (horodatages), `StatusAfterEdit` (statut auquel
+  enregistrement), `OnStatusChanged` (horodatages), `ConflictAsync` (doublon interdit,
+  refus 409 : nom de CI unique par environnement), `StatusAfterEdit` (statut auquel
   la modification d'un non-gestionnaire ramène l'enregistrement), `InitialStatus`, `ManagerOnly`
   (référentiels), `Filter`/`Search`/`WithDetails`, `ListItems` (colonnes du registre).
   Les longueurs `[MaxLength]` sont contrôlées avant l'enregistrement (`Lengths`).

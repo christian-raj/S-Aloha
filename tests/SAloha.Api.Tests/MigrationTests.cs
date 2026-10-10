@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using SAloha.Api.Core.Data;
-using SAloha.Api.Modules.ProblemManagement;
 using Testcontainers.PostgreSql;
 
 namespace SAloha.Api.Tests;
@@ -31,8 +30,12 @@ public class MigrationTests
             var target = db.Database.GetMigrations().First(m => m.EndsWith(withItilModules ? "_ItilModules" : "_Initial"));
             await db.GetService<IMigrator>().MigrateAsync(target);
             await db.Database.ExecuteSqlRawAsync("DROP TABLE \"__EFMigrationsHistory\"");
-            db.Problems.Add(new Problem { Reference = "PRB-2025-0001", Title = "Problème d'avant la mise à niveau" });
-            await db.SaveChangesAsync();
+            // Ligne écrite en SQL avec les seules colonnes de l'ancien schéma : le
+            // modèle EF courant a des colonnes que cette base n'a pas encore.
+            await db.Database.ExecuteSqlRawAsync(
+                "INSERT INTO \"Problems\" (\"Reference\", \"Title\", \"Description\", \"Status\", \"Impact\", \"Urgency\", " +
+                "\"Priority\", \"Category\", \"AffectedService\", \"CreatedBy\", \"CreatedByDisplayName\", \"CreatedAt\", \"UpdatedAt\") " +
+                "VALUES ('PRB-2025-0001', 'Problème d''avant la mise à niveau', '', 'Nouveau', 'Moyen', 'Moyenne', 'P3', '', '', 'legacy', 'legacy', now(), now())");
         }
 
         var api = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b

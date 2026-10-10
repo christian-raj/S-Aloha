@@ -59,7 +59,8 @@ public class ProblemLifecycleTests(ApiFixture api)
         object Update(string status) => new
         {
             title = "M4 réouverture", description = "d", status, impact = "Moyen", urgency = "Moyenne",
-            category = "Test", affectedService = "Test", knownErrorWorkaround = (string?)null, rootCause = (string?)null
+            category = "Test", affectedService = "Test", knownErrorWorkaround = (string?)null, rootCause = (string?)null,
+            closureCode = "Non retenu"   // clôture depuis Nouveau (PRB-13)
         };
 
         var closed = await Json(await manager.PutAsJsonAsync($"/api/problems/{id}", Update("Clos")));

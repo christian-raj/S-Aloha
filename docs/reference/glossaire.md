@@ -52,6 +52,8 @@
 | **Résolution au premier contact** | Incident résolu sans prise en charge ni changement de responsable ([INC-23](processus/gestion-des-incidents.md)). |
 | **Registre d'amélioration continue** (CIR) | Liste des opportunités d'amélioration, avec leur valeur attendue, leur priorité et leur avancement. |
 | **Modèle d'amélioration continue** | Démarche ITIL 4 en sept étapes : vision, situation actuelle, cible, plan, action, vérification, maintien de la dynamique. |
+| **Code de résolution** | Nature de la résolution d'un incident : correctif appliqué, contournement, résolu sans action, non reproductible, doublon (relié à l'incident conservé). |
+| **Code de clôture** | Motif de clôture d'un problème : corrigé, erreur connue acceptée (risque accepté sans correctif), doublon (relié au problème conservé), non retenu. |
 | **Référence** | Identifiant d'un enregistrement : préfixe du processus, année, numéro (`INC-2026-0001`). Sert aussi à relier deux enregistrements. |
 
 ## S-Aloha

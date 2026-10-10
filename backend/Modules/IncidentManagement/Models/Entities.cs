@@ -20,6 +20,9 @@ public class Incident : Record
         ["Clos"] = [],   // un incident clos ne se rouvre pas : on en crée un nouveau, relié
     };
     public static readonly string[] Done = ["Résolu", "Clos"];
+    /// <summary>Codes de résolution (INC-08).</summary>
+    public static readonly string[] ResolutionCodes =
+        ["Correctif appliqué", "Contournement", "Résolu sans action", "Non reproductible", "Doublon"];
 
     [MaxLength(10)] public string Impact { get; set; } = "Moyen";    // Faible, Moyen, Élevé
     [MaxLength(10)] public string Urgency { get; set; } = "Moyenne"; // Faible, Moyenne, Élevée
@@ -28,6 +31,8 @@ public class Incident : Record
     [MaxLength(150)] public string AffectedService { get; set; } = "";
     public bool IsMajor { get; set; }                                // incident majeur
     public string? Resolution { get; set; }
+    [MaxLength(30)] public string? ResolutionCode { get; set; }         // INC-08
+    public DateTime? FirstResponseAt { get; set; }                       // première prise en charge (INC-06)
     public DateTime? ResolvedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
 }
@@ -35,4 +40,4 @@ public class Incident : Record
 public record IncidentDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? Impact, string? Urgency, string? Category, string? AffectedService,
-    bool IsMajor, string? Resolution) : IRecordDto;
+    bool IsMajor, string? Resolution, string? ResolutionCode = null) : IRecordDto;

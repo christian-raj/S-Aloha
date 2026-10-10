@@ -47,7 +47,7 @@ AD, créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-proce
 | `Environment` | texte 20 | ✔ | Production, Recette, Développement, Autre | ✅ |
 | `Location` | texte 150 | | Emplacement | ✅ |
 | `Status` | texte 30 | ✔ | Planifié, En service, Hors service, Retiré ; choisi à la création (défaut En service) | ✅ |
-| `Owner…` | AD | ✔ (🔜) | Propriétaire du CI | ✅ (facultatif) / 🔜 CFG-11 |
+| `Owner…` | AD | ✔ (🔜) | Propriétaire du CI | ✅ |
 | `Attributes` | clé/valeur | | Attributs propres au type (version, adresse IP, éditeur, numéro de série…) | 🔜 CFG-16 |
 | `LastVerifiedAt`, `LastVerifiedBy` | date, AD | auto | Dernière vérification | 🔜 CFG-15 |
 | `ServiceIds` | liens | | Services supportés | 🔜 CFG-21 |
@@ -80,7 +80,7 @@ CFG-10, lot 1)** : seules les transitions ci-dessous (SOC-05).
 | De → Vers | Qui | Conditions (400 sinon) | Effets | Statut |
 |---|---|---|---|---|
 | — → Planifié ou En service | Tous | Nom, type, environnement | Référence | ✅ |
-| Planifié → En service | Tous | Propriétaire renseigné | | 🔜 CFG-11 |
+| Planifié → En service | Tous | Propriétaire renseigné | | ✅ |
 | En service ⇄ Hors service | Tous | | | ✅ |
 | En service, Hors service, Planifié → Retiré | Manager | Aucun incident ni changement ouvert relié (CFG-13) | Relations conservées (historique), CI exclu des nouveaux liens (CFG-14) | 🔜 CFG-12 |
 | Retiré → … | — | Statut final | | 🔜 CFG-10 |
@@ -97,13 +97,13 @@ CFG-10, lot 1)** : seules les transitions ci-dessous (SOC-05).
 | CFG-06 | Dans la vue d'impact, chaque CI n'apparaît qu'une fois, à sa plus courte distance, avec la relation par laquelle il est atteint ; un cycle ne boucle pas | ✅ | |
 | CFG-07 | Registre filtrable par type (`type`), statut et texte | ✅ | |
 | CFG-10 | **Transitions contraintes** selon le § 4 (SOC-05) ; Retiré est final | ✅ | 1 |
-| CFG-11 | Le **propriétaire** est obligatoire pour un CI En service | 🔜 | 1 |
+| CFG-11 | Le **propriétaire** est obligatoire pour un CI En service | ✅ | 1 |
 | CFG-12 | **Retirer** un CI : Manager uniquement | 🔜 | 1 |
 | CFG-13 | Un CI relié à un **incident ou changement ouvert** ne peut pas être retiré (400, avec les références en cause) | 🔜 | 1 |
 | CFG-14 | Un CI **Retiré** ne peut plus être relié à un nouvel incident, changement ou CI (400) ; ses liens existants restent visibles | 🔜 | 1 |
 | CFG-15 | **Vérification** : le propriétaire ou un Manager atteste que la fiche est exacte (`LastVerifiedAt`) ; un CI En service non vérifié depuis **12 mois** remonte en relance au propriétaire | 🔜 | 2 |
 | CFG-16 | **Attributs par type** : chaque type de CI définit des attributs facultatifs (Serveur : système, adresse IP, CPU, mémoire ; Application : version, éditeur, URL ; Poste de travail : numéro de série, utilisateur…) | 🔜 | 3 |
-| CFG-17 | **Unicité** : deux CI non retirés ne peuvent pas avoir le même nom dans le même environnement (409) | 🔜 | 1 |
+| CFG-17 | **Unicité** : deux CI non retirés ne peuvent pas avoir le même nom dans le même environnement (409) | ✅ | 1 |
 | CFG-18 | Un CI **Hors service** relié à un service En service signale ce service « dégradé » sur la fiche du service | 🔜 | 2 |
 
 ## 6. Délais, calculs et alertes

@@ -36,6 +36,7 @@ public class Improvement : Record
     [MaxLength(300)] public string Baseline { get; set; } = "";   // mesure de départ
     [MaxLength(300)] public string Target { get; set; } = "";     // mesure cible
     public string? Outcome { get; set; }                   // résultat constaté
+    public string? AbandonReason { get; set; }             // motif d'abandon (CSI-13)
     public DateTime? DueDate { get; set; }
     [MaxLength(200)] public string? ValidatedBy { get; set; }
     public DateTime? ValidatedAt { get; set; }
@@ -45,4 +46,4 @@ public class Improvement : Record
 public record ImprovementDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     int Step, string? Priority, string? Benefit, string? Baseline, string? Target,
-    string? Outcome, DateTime? DueDate) : IRecordDto;
+    string? Outcome, DateTime? DueDate, string? AbandonReason = null) : IRecordDto;

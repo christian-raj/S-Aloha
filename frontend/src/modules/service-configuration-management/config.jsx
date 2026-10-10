@@ -31,5 +31,6 @@ export const ciConfig = {
     { h: 'Environnement', v: r => r.environment },
     { h: 'Propriétaire', v: r => r.ownerDisplayName || '—' },
   ],
+  help: 'Un CI en service a un propriétaire. Deux CI non retirés ne portent pas le même nom dans un même environnement.',
   linkHint: 'Services rendus, incidents et changements qui touchent ce CI…',
 }

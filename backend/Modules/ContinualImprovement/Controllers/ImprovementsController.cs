@@ -21,6 +21,7 @@ public class ImprovementsController(AppDbContext db) : RecordController<Improvem
         e.Benefit = dto.Benefit ?? ""; e.Baseline = dto.Baseline ?? ""; e.Target = dto.Target ?? "";
         e.Outcome = dto.Outcome;
         e.DueDate = Dates.Utc(dto.DueDate);
+        e.AbandonReason = string.IsNullOrWhiteSpace(dto.AbandonReason) ? null : dto.AbandonReason.Trim();
         return null;
     }
 
@@ -31,6 +32,16 @@ public class ImprovementsController(AppDbContext db) : RecordController<Improvem
     {
         if (status is "En cours" or "Réalisée" && e.ValidatedAt is null)
             return "L'amélioration doit d'abord être validée par un gestionnaire.";
+        // CSI-14 : une amélioration se mesure — valeur, point de départ et cible avant de l'engager.
+        if (status is "Validée" or "En cours" or "Réalisée"
+            && (string.IsNullOrWhiteSpace(e.Benefit) || string.IsNullOrWhiteSpace(e.Baseline) || string.IsNullOrWhiteSpace(e.Target)))
+            return "Renseigner la valeur attendue, la mesure de départ et la mesure cible : une amélioration se mesure.";
+        // CSI-16 : réalisée à l'étape 6 au moins, quand le résultat a été comparé à la cible.
+        if (status == "Réalisée" && e.Step < 6)
+            return "Une amélioration se déclare réalisée à l'étape 6 (« Y sommes-nous parvenus ? ») au moins.";
+        // CSI-13 : un abandon se motive.
+        if (status == "Abandonnée" && e.AbandonReason is null)
+            return "Motiver l'abandon : le motif reste visible sur la fiche.";
         if (status == "Réalisée" && string.IsNullOrWhiteSpace(e.Outcome))
             return "Décrire le résultat constaté avant de déclarer l'amélioration réalisée.";
         return null;

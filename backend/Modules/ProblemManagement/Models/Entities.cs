@@ -32,6 +32,8 @@ public class Problem : IHasReference
     [MaxLength(200)] public string CreatedByDisplayName { get; set; } = "";
     public string? KnownErrorWorkaround { get; set; }               // contournement (Known Error)
     public string? RootCause { get; set; }                          // cause racine validée
+    [MaxLength(30)] public string? ClosureCode { get; set; }        // code de clôture (PRB-13)
+    public DateTime? ResolvedAt { get; set; }                       // entrée en Résolu (PRB-14)
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ClosedAt { get; set; }

@@ -39,6 +39,11 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     protected virtual Task<string?> ValidateAsync(T e) => Task.FromResult<string?>(null);
     /// <summary>Statut de création : le premier statut, sauf règle propre au processus.</summary>
     protected virtual string InitialStatus(T e) => Statuses[0];
+    /// <summary>
+    /// Doublon interdit (ex. deux CI de même nom dans un environnement) : message
+    /// d'erreur, renvoyé en 409, ou null. Vérifié à la création et à chaque modification.
+    /// </summary>
+    protected virtual Task<string?> ConflictAsync(T e) => Task.FromResult<string?>(null);
     /// <summary>Inventaires (CI, services) : le statut de création est choisi à la saisie.</summary>
     protected virtual bool StatusChosenAtCreation => false;
     /// <summary>
@@ -113,12 +118,18 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         var error = Fill(probe, dto, true) ?? await ValidateAsync(probe)
             ?? (StatusChosenAtCreation ? Allowed.Check("Statut", dto.Status, Statuses, optional: true) : null);
         if (error is not null) return BadRequest(new { message = error });
+        // Les conditions du statut de création s'appliquent aussi (CI En service : propriétaire, CFG-11).
+        var initial = StatusChosenAtCreation && !string.IsNullOrEmpty(dto.Status) ? dto.Status : InitialStatus(probe);
+        error = await CheckStatusAsync(probe, initial);
+        if (error is not null) return BadRequest(new { message = error });
+        error = await ConflictAsync(probe);
+        if (error is not null) return Conflict(new { message = error });
 
         var e = await References.CreateAsync(db, Code, () =>
         {
             var x = new T();
             Fill(x, dto, true);
-            x.Status = StatusChosenAtCreation && !string.IsNullOrEmpty(dto.Status) ? dto.Status : InitialStatus(x);
+            x.Status = initial;
             x.CreatedBy = Me; x.CreatedByDisplayName = MyDisplay;
             OnStatusChanged(x, "");
             return x;
@@ -135,6 +146,8 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         var demoted = IsManager ? null : StatusAfterEdit(e, dto);
         var error = Fill(e, dto, false) ?? await ValidateAsync(e);
         if (error is not null) return BadRequest(new { message = error });
+        error = await ConflictAsync(e);
+        if (error is not null) return Conflict(new { message = error });
 
         var target = demoted ?? dto.Status ?? e.Status;
         var changing = target != e.Status;

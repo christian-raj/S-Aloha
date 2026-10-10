@@ -35,10 +35,8 @@ public class ActionsController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> Create(int problemId, ActionDto dto)
     {
         if (!await db.Problems.AnyAsync(p => p.Id == problemId)) return NotFound();
-        if (!dto.Raci.Any(r => r.Role == "R"))
-            return BadRequest(new { message = "Chaque action doit avoir au moins un Responsable (R)." });
-        if (dto.Raci.Count(r => r.Role == "A") != 1)
-            return BadRequest(new { message = "Chaque action doit avoir exactement un Approbateur (A)." });
+        var invalid = ProblemRules.CheckRaci(dto.Raci);
+        if (invalid is not null) return BadRequest(new { message = invalid });
 
         var action = new CorrectiveAction
         {
@@ -62,11 +60,17 @@ public class ActionsController(AppDbContext db) : ControllerBase
     {
         var a = await db.Actions.Include(x => x.Raci).FirstOrDefaultAsync(x => x.Id == id);
         if (a is null) return NotFound();
+        // PRB-02 : statut fermé ; PRB-17 : les règles RACI valent aussi à la modification (#23).
+        var invalid = Allowed.Check("Statut d'action", dto.Status, ProblemRules.ActionStatuses, optional: true)
+                      ?? ProblemRules.CheckRaci(dto.Raci);
+        if (invalid is not null) return BadRequest(new { message = invalid });
         a.Title = dto.Title; a.Description = dto.Description; a.DueDate = dto.DueDate;
-        if (dto.Status != null)
+        if (dto.Status != null && dto.Status != a.Status)
         {
-            a.Status = dto.Status;
+            // PRB-18 : CompletedAt posé au seul passage à Terminée, effacé à la sortie (#24) ;
+            // renommer une action terminée ne le change pas.
             a.CompletedAt = dto.Status == "Terminée" ? DateTime.UtcNow : null;
+            a.Status = dto.Status;
         }
         db.RaciAssignments.RemoveRange(a.Raci);
         a.Raci = dto.Raci.Select(r => new RaciAssignment

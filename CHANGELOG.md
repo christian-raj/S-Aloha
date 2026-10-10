@@ -34,6 +34,16 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Modifié
 
+- **Validations du cycle de vie** (lot 1, étape 3) : prise en charge d'un incident avec un
+  responsable (date de première prise en charge) ; code de résolution, un doublon relié à
+  l'incident conservé ; motif de rejet des demandes et des changements ; plans exigés à
+  l'évaluation d'un changement, fin planifiée ; propriétaire d'un CI ou d'un service en
+  service ; nom de CI unique par environnement ; SLA en vigueur cohérent (cibles complètes et
+  croissantes, un seul par service et client) ; amélioration mesurable à la validation,
+  réalisée à l'étape 6, abandon motivé ; problèmes : valeurs fermées, contournement d'une
+  erreur connue, cause racine et actions terminées pour résoudre, code de clôture, règles
+  RACI à la modification d'une action, date d'achèvement conservée (#23, #24, #28).
+
 - **Transitions de statut contraintes** (SOC-05) : chaque pratique n'accepte que les
   transitions de son cycle de vie documenté ; une autre est refusée avec les statuts
   accessibles, et la fiche ne propose plus que ceux-là. Statuts finaux : incident clos,

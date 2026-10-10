@@ -76,6 +76,8 @@ Prérequis des motifs (réouverture, rejet, abandon) et des transitions forcées
 
 ### Étape 3 — Validations et champs obligatoires
 
+**Fait le 2026-10-10.**
+
 | Règle | Objet |
 |---|---|
 | [SOC-02](../regles-metier.md#5-règles-communes-aux-processus), [PRB-02](gestion-des-problemes.md) | Valeurs fermées dans le module Problèmes ([#28](https://github.com/christian-raj/S-Aloha/issues/28)) |

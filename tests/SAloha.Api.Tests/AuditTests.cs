@@ -24,7 +24,8 @@ public class AuditTests(ApiFixture api)
 
     private static object Incident(string title, string impact = "Moyen", string? status = null) => new
     {
-        title, impact, urgency = "Moyenne", status, resolution = "Redémarrage"
+        title, impact, urgency = "Moyenne", status, resolution = "Redémarrage", resolutionCode = "Correctif appliqué",
+        ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto"
     };
 
     [Fact]
@@ -58,7 +59,7 @@ public class AuditTests(ApiFixture api)
         var c = api.Client();
         var i = await Json(await c.PostAsJsonAsync("/api/incidents", Incident("Audit lien")));
         var ci = await Json(await c.PostAsJsonAsync("/api/configuration-items",
-            new { title = "audit-srv", ciType = "Serveur", environment = "Production" }));
+            new { title = "audit-srv", ciType = "Serveur", environment = "Production", ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto" }));
         var link = await Json(await c.PostAsJsonAsync("/api/links",
             new { fromType = "incident", fromId = Id(i), toReference = S(ci, "reference") }));
         Assert.Equal(HttpStatusCode.NoContent, (await c.DeleteAsync($"/api/links/{link.GetProperty("linkId").GetInt32()}")).StatusCode);
@@ -132,7 +133,7 @@ public class AuditTests(ApiFixture api)
         object Dto(string? status) => new
         {
             title = "Audit PRB forcé", description = "d", status, impact = "Moyen", urgency = "Moyenne",
-            category = "c", affectedService = "s", knownErrorWorkaround = (string?)null, rootCause = (string?)null
+            category = "c", affectedService = "s", knownErrorWorkaround = (string?)null, rootCause = "Cause établie"
         };
         var p = await Json(await admin.PostAsJsonAsync("/api/problems", Dto(null)));
         Assert.Equal(HttpStatusCode.BadRequest, (await admin.PutAsJsonAsync($"/api/problems/{Id(p)}", Dto("Résolu"))).StatusCode);

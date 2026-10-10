@@ -49,7 +49,7 @@ créateur = demandeur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 | `ApprovedBy`, `ApprovedAt` | texte, date | auto | Approbation (SOC-08) | ✅ |
 | `FulfilledAt`, `ClosedAt` | date UTC | auto | Satisfaction, clôture | ✅ |
 | `CatalogItemId` | lien | ✔ (🔜) | Modèle du catalogue de demandes | 🔜 REQ-20 |
-| `RejectionReason` | texte | au rejet | Motif communiqué au demandeur | 🔜 REQ-06 |
+| `RejectionReason` | texte | au rejet | Motif communiqué au demandeur | ✅ |
 | `CancelledAt` | date UTC | auto | Annulation | 🔜 REQ-09 |
 
 **Modèle de demande** (`RequestCatalogItems`, 🔜 REQ-20) : nom, description, service du
@@ -90,7 +90,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | — → Soumise | Tous | Titre, objet demandé | Référence | ✅ |
 | — → Approuvée | Auto | Modèle sans approbation | `ApprovedBy` = « Modèle pré-approuvé » | 🔜 REQ-21 |
 | Soumise → Approuvée | Manager | | `ApprovedAt`, `ApprovedBy` | ✅ |
-| Soumise → Rejetée | Manager | Motif de rejet | | ✅ (statut) / 🔜 REQ-06 (motif) |
+| Soumise → Rejetée | Manager | Motif de rejet | | ✅ (motif) |
 | Soumise, Approuvée → Annulée | Demandeur, Manager | Pas encore En cours | `CancelledAt` | 🔜 REQ-09 |
 | Approuvée → En cours | Tous | Responsable renseigné | | ✅ (approbation exigée) / 🔜 (responsable) |
 | En cours → Satisfaite | Responsable, Manager | Toutes les tâches Terminée ou Annulée | `FulfilledAt` | ✅ (horodatage) / 🔜 REQ-25 |
@@ -107,7 +107,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | REQ-03 | **En cours**, **Satisfaite** et **Close** exigent une demande approuvée : une demande **rejetée est terminée** | ✅ | |
 | REQ-04 | Revenir à Soumise ou passer à Rejetée **efface l'approbation** | ✅ | |
 | REQ-05 | `FulfilledAt` posé à Satisfaite, `ClosedAt` à Close, effacés à la sortie (SOC-08) | ✅ | |
-| REQ-06 | Un **rejet** exige un motif, communiqué au demandeur | 🔜 | 1 |
+| REQ-06 | Un **rejet** exige un motif, communiqué au demandeur | ✅ | 1 |
 | REQ-07 | Le **bénéficiaire** vaut le demandeur par défaut ; une demande pour autrui garde les deux | 🔜 | 2 |
 | REQ-08 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejetée, Annulée et Close sont finales | ✅ / 🔜 (statut Annulée, REQ-09) | 1 |
 | REQ-09 | Statut **Annulée** : le demandeur (ou un Manager) annule une demande Soumise ou Approuvée, tant qu'elle n'est pas En cours | 🔜 | 1 |

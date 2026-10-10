@@ -118,7 +118,8 @@ def main():
         'description': 'Les sessions VPN tombent régulièrement à Toamasina.',
         'impact': 'Moyen', 'urgency': 'Moyenne', 'category': 'Réseau',
         'affectedService': 'Accès distant (VPN)', 'isMajor': False,
-        'resolution': 'Redémarrage de la passerelle : contournement en attendant l’analyse.'}, 'Résolu')
+        'resolution': 'Redémarrage de la passerelle : contournement en attendant l’analyse.',
+        'resolutionCode': 'Contournement'}, 'Résolu')
     creer(u, '/api/incidents', {**URSULA, 'title': 'Messagerie lente le matin',
         'description': 'Ouverture des boîtes aux lettres très lente entre 8 h et 9 h.',
         'impact': 'Faible', 'urgency': 'Moyenne', 'category': 'Messagerie',
@@ -252,7 +253,8 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
     def incident(titre, desc, impact, urgence, cat, service, statut=None, resolution=None):
         return creer(u, '/api/incidents', {**URSULA, 'title': titre, 'description': desc,
             'impact': impact, 'urgency': urgence, 'category': cat, 'affectedService': service,
-            'isMajor': False, 'resolution': resolution}, statut)
+            'isMajor': False, 'resolution': resolution,
+            'resolutionCode': 'Correctif appliqué' if resolution else None}, statut)
     incident('ERP inaccessible pendant la clôture mensuelle', 'Erreur de connexion à la base.',
              'Élevé', 'Élevée', 'Application', 'ERP Finances', 'Résolu',
              'Redémarrage du service de base de données ; surveillance renforcée.')
@@ -282,7 +284,8 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
     appel('PUT', f'/api/problems/{p_mail["id"]}', m, {'title': p_mail['title'],
         'description': p_mail['description'], 'status': 'Clos', 'impact': 'Faible', 'urgency': 'Moyenne',
         'category': 'Messagerie', 'affectedService': 'Messagerie', 'knownErrorWorkaround': None,
-        'rootCause': 'Aucune alerte de quota configurée sur le serveur de messagerie.'})
+        'rootCause': 'Aucune alerte de quota configurée sur le serveur de messagerie.',
+        'closureCode': 'Non retenu'})
 
     # --- Changements -------------------------------------------------------------
     chg = {**MARC, 'title': 'Mise à jour du serveur de messagerie', 'description': 'Correctifs de sécurité mensuels.',

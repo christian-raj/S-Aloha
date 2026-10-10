@@ -14,6 +14,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | Migration | Contenu |
 |---|---|
 | `Initial` | Schéma du module Problèmes : `Problems`, `Analyses`, `Actions`, `RaciAssignments` — identique à ce que créait `EnsureCreated` avant les modules ITIL 4 |
+| `Lot1Validations` | Colonnes des validations du lot 1 : `Incidents.ResolutionCode`, `Incidents.FirstResponseAt`, `ServiceRequests.RejectionReason`, `Changes.RejectionReason`, `Improvements.AbandonReason`, `Problems.ClosureCode`, `Problems.ResolvedAt` |
 | `AuditJournal` | Table `AuditEntries` du journal d'audit (SOC-20) : type et identifiant de l'enregistrement, référence recopiée, action, champ, ancienne et nouvelle valeur, motif, auteur, date ; index sur (type, identifiant) et sur la date |
 | `ItilModules` | Les dix tables des autres processus et des liens (`ItemLinks`, `Incidents`, `ServiceRequests`, `Changes`, `ConfigurationItems`, `CiRelationships`, `Services`, `Agreements`, `KnowledgeArticles`, `Improvements`) ; aucune modification des tables existantes |
 
@@ -59,6 +60,8 @@ erDiagram
 | `RootCause` | texte, nullable | cause racine **validée** |
 | `CreatedAt`, `UpdatedAt` | horodatage UTC | |
 | `ClosedAt` | horodatage UTC, nullable | posé au passage à `Clos` — base du MTTR |
+| `ClosureCode` | texte (30), nullable | `Corrigé`, `Erreur connue acceptée`, `Doublon`, `Non retenu` — exigé à la clôture, effacé à la réouverture (PRB-13) |
+| `ResolvedAt` | horodatage UTC, nullable | posé à l'entrée en `Résolu`, effacé au retour en analyse (PRB-14) |
 
 ### RcaAnalysis
 
@@ -125,14 +128,14 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 
 | Table (entité) | Préfixe | Colonnes propres |
 |---|---|---|
-| `Incidents` (`Incident`) | INC | `Impact`, `Urgency`, `Priority` (dérivée), `Category`, `AffectedService`, `IsMajor`, `Resolution`, `ResolvedAt`, `ClosedAt` |
-| `ServiceRequests` (`ServiceRequest`) | REQ | `RequestedItem`, `RequestedFor`, `RequestedForDisplayName`, `DueDate`, `ApprovedBy`, `ApprovedAt`, `FulfilledAt`, `ClosedAt` |
-| `Changes` (`Change`) | CHG | `ChangeType`, `Risk`, `PlannedStart`, `PlannedEnd`, `ImplementationPlan`, `BackoutPlan`, `Outcome`, `AuthorizedBy`, `AuthorizedAt`, `ClosedAt` |
+| `Incidents` (`Incident`) | INC | `ResolutionCode`, `FirstResponseAt`, `Impact`, `Urgency`, `Priority` (dérivée), `Category`, `AffectedService`, `IsMajor`, `Resolution`, `ResolvedAt`, `ClosedAt` |
+| `ServiceRequests` (`ServiceRequest`) | REQ | `RejectionReason`, `RequestedItem`, `RequestedFor`, `RequestedForDisplayName`, `DueDate`, `ApprovedBy`, `ApprovedAt`, `FulfilledAt`, `ClosedAt` |
+| `Changes` (`Change`) | CHG | `RejectionReason`, `ChangeType`, `Risk`, `PlannedStart`, `PlannedEnd`, `ImplementationPlan`, `BackoutPlan`, `Outcome`, `AuthorizedBy`, `AuthorizedAt`, `ClosedAt` |
 | `ConfigurationItems` (`ConfigurationItem`) | CI | `CiType`, `Environment`, `Location` |
 | `Services` (`ItService`) | SVC | `Criticality`, `ServiceHours` |
 | `Agreements` (`ServiceLevelAgreement`) | SLA | `ServiceId` (FK → `Services`, cascade), `Customer`, `AvailabilityTarget` (décimal 5,2), `ResolutionHoursP1`…`P4`, `ValidFrom`, `ValidTo`, `ReviewDate` |
 | `KnowledgeArticles` (`KnowledgeArticle`) | KB | `ArticleType`, `Content`, `Keywords`, `ReviewDate`, `PublishedBy`, `PublishedAt` |
-| `Improvements` (`Improvement`) | AMI | `Step` (1–7), `Priority`, `Benefit`, `Baseline`, `Target`, `Outcome`, `DueDate`, `ValidatedBy`, `ValidatedAt`, `CompletedAt` |
+| `Improvements` (`Improvement`) | AMI | `AbandonReason`, `Step` (1–7), `Priority`, `Benefit`, `Baseline`, `Target`, `Outcome`, `DueDate`, `ValidatedBy`, `ValidatedAt`, `CompletedAt` |
 | `Assessments` (`Assessment`) | EVA | `EntityCategory` (Entité importante, Entité essentielle), `ValidatedBy`, `ValidatedAt` |
 
 ```mermaid

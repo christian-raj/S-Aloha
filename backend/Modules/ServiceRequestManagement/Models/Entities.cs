@@ -26,6 +26,7 @@ public class ServiceRequest : Record
     [MaxLength(200)] public string? RequestedFor { get; set; }                // bénéficiaire (sAMAccountName)
     [MaxLength(250)] public string? RequestedForDisplayName { get; set; }
     public DateTime? DueDate { get; set; }
+    public string? RejectionReason { get; set; }                          // motif communiqué au demandeur (REQ-06)
     [MaxLength(200)] public string? ApprovedBy { get; set; }
     public DateTime? ApprovedAt { get; set; }
     public DateTime? FulfilledAt { get; set; }
@@ -35,4 +36,4 @@ public class ServiceRequest : Record
 public record ServiceRequestDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? RequestedItem, string? RequestedFor, string? RequestedForDisplayName,
-    DateTime? DueDate) : IRecordDto;
+    DateTime? DueDate, string? RejectionReason = null) : IRecordDto;

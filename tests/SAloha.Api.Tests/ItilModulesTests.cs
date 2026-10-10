@@ -30,7 +30,9 @@ public class ItilModulesTests(ApiFixture api)
     {
         title, description = "d", status, impact = "Élevé", urgency = "Moyenne", category = "Réseau",
         affectedService = "Messagerie", isMajor = major, resolution,
-        ownerType = owner is null ? null : "User", ownerId = owner, ownerDisplayName = owner
+        resolutionCode = resolution is null ? null : "Correctif appliqué",
+        // Un responsable : la prise en charge (En cours) l'exige (INC-06).
+        ownerType = "User", ownerId = owner ?? "hery.rakoto", ownerDisplayName = owner ?? "Hery Rakoto"
     };
 
     private static object Request(string title, string? status = null) =>
@@ -43,7 +45,8 @@ public class ItilModulesTests(ApiFixture api)
     private static object Change(string title, string type, string? status = null, string? outcome = null,
         string risk = "Moyen") => new
     {
-        title, status, changeType = type, risk, outcome, plannedStart = Slot, plannedEnd = Slot.AddHours(2)
+        title, status, changeType = type, risk, outcome, plannedStart = Slot, plannedEnd = Slot.AddHours(2),
+        implementationPlan = "Appliquer", backoutPlan = "Restaurer", rejectionReason = "Hors périmètre"
     };
 
     public static TheoryData<string, string, object> Modules => new()
@@ -51,7 +54,7 @@ public class ItilModulesTests(ApiFixture api)
         { "/api/incidents", "INC", Incident("Smoke incident") },
         { "/api/requests", "REQ", Request("Smoke demande") },
         { "/api/changes", "CHG", Change("Smoke changement", "Normal") },
-        { "/api/configuration-items", "CI", new { title = "srv-smoke", ciType = "Serveur", environment = "Production" } },
+        { "/api/configuration-items", "CI", new { title = "srv-smoke", ciType = "Serveur", environment = "Production", ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto" } },
         { "/api/services", "SVC", new { title = "Messagerie smoke", criticality = "Élevée" } },
         { "/api/knowledge", "KB", new { title = "Smoke article", articleType = "Solution", content = "c" } },
         { "/api/improvements", "AMI", new { title = "Smoke amélioration", step = 1, priority = "Moyenne" } },
@@ -171,8 +174,8 @@ public class ItilModulesTests(ApiFixture api)
     public async Task Relations_entre_CI()
     {
         var client = api.Client();
-        var app = await Create(client, "/api/configuration-items", new { title = "app-paie", ciType = "Application", environment = "Production" });
-        var srv = await Create(client, "/api/configuration-items", new { title = "srv-paie", ciType = "Serveur", environment = "Production" });
+        var app = await Create(client, "/api/configuration-items", new { title = "app-paie", ciType = "Application", environment = "Production", ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto" });
+        var srv = await Create(client, "/api/configuration-items", new { title = "srv-paie", ciType = "Serveur", environment = "Production", ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto" });
 
         await Json(await client.PostAsJsonAsync($"/api/configuration-items/{Id(app)}/relations",
             new { targetReference = Str(srv, "reference"), type = "Dépend de" }));
@@ -286,7 +289,11 @@ public class ItilModulesTests(ApiFixture api)
     {
         var user = api.Client("User");
         var manager = api.Client("Manager");
-        object Dto(string? status) => new { title = "Abandon", step = 1, priority = "Moyenne", status };
+        object Dto(string? status) => new
+        {
+            title = "Abandon", step = 1, priority = "Moyenne", status, benefit = "b", baseline = "5 j", target = "2 j",
+            abandonReason = "Priorité revue"
+        };
         var a = await Create(user, "/api/improvements", Dto(null));
         await Json(await Put(manager, "/api/improvements", Id(a), Dto("Validée")));
         await Json(await Put(manager, "/api/improvements", Id(a), Dto("Abandonnée")));
