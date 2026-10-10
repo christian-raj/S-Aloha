@@ -26,6 +26,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 - Changements : détection des conflits au calendrier, deux changements non rejetés sur un
   même CI et des créneaux qui se chevauchent (#29).
 
+- **Historique** sur chaque fiche : journal d'audit des créations, champs modifiés
+  (ancienne et nouvelle valeur), transitions, suppressions et liens, avec auteur et date ;
+  conservé 3 ans (SOC-20).
+- **Transition forcée** par un administrateur, hors du cycle de vie, avec un motif
+  obligatoire tracé à l'historique (SOC-05).
+
 ### Modifié
 
 - **Transitions de statut contraintes** (SOC-05) : chaque pratique n'accepte que les

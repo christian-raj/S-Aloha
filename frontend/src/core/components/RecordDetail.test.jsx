@@ -19,7 +19,7 @@ const config = {
 afterEach(cleanup)
 
 // docs/reference/frontend.md § Navigation cible — onglets communs des fiches.
-it('ordonne les onglets : Informations, propre à la pratique, Liens', async () => {
+it('ordonne les onglets : Informations, propre à la pratique, Liens, Historique', async () => {
   render(
     <MemoryRouter initialEntries={['/changes/7']}>
       <Routes><Route path="/changes/:id" element={
@@ -27,5 +27,5 @@ it('ordonne les onglets : Informations, propre à la pratique, Liens', async () 
     </MemoryRouter>
   )
   const tabs = (await screen.findAllByRole('tab')).map((t) => t.textContent)
-  expect(tabs).toEqual(['Informations', 'Conflits', 'Liens'])
+  expect(tabs).toEqual(['Informations', 'Conflits', 'Liens', 'Historique'])
 })

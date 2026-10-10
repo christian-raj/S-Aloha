@@ -7,9 +7,17 @@ import FtaTree from '../components/FtaTree'
 import RaciEditor from '../../../core/components/RaciEditor'
 import LinkedItems from '../../../core/components/LinkedItems'
 import SimilarCases from '../../../core/components/SimilarCases'
-import useTransitions, { reachable } from '../../../core/useTransitions'
+import useTransitions from '../../../core/useTransitions'
+import StatusField, { forceOptions } from '../../../core/components/StatusField'
+import History from '../../../core/components/History'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
+/** Libellés des champs au journal d'audit (SOC-20). */
+const LABELS = {
+  title: 'Titre', description: 'Description', impact: 'Impact', urgency: 'Urgence', priority: 'Priorité',
+  category: 'Catégorie', affectedService: 'Service affecté', knownErrorWorkaround: 'Contournement',
+  rootCause: 'Cause racine'
+}
 const METHODS = { FIVE_WHYS: '5 Pourquoi', ISHIKAWA: 'Ishikawa (6M)', FTA: 'Arbre des défaillances (FTA)' }
 const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
 
@@ -40,7 +48,7 @@ export default function ProblemDetail() {
           cible) : Informations → propres à la pratique → Liens. */}
       <div className="tabs" role="tablist">
         {[['infos', 'Informations'], ['rca', 'Analyse de cause racine'],
-          ['actions', `Actions correctives (${p.actions.length})`], ['links', 'Liens']]
+          ['actions', `Actions correctives (${p.actions.length})`], ['links', 'Liens'], ['history', 'Historique']]
           .map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k}
             className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
       </div>
@@ -48,6 +56,7 @@ export default function ProblemDetail() {
       {tab === 'infos' && <><Infos p={p} isManager={isManager} onSaved={load} /><SimilarCases type="problem" id={p.id} /></>}
       {tab === 'rca' && <Rca p={p} onSaved={load} />}
       {tab === 'actions' && <ActionsTab p={p} onSaved={load} />}
+      {tab === 'history' && <History type="problem" id={p.id} labels={LABELS} refreshKey={p.updatedAt} />}
       {tab === 'links' && <LinkedItems type="problem" id={p.id}
         hint="Incidents à l'origine, changement qui corrige, article d'erreur connue…" />}
     </>
@@ -56,6 +65,7 @@ export default function ProblemDetail() {
 
 function Infos({ p, isManager, onSaved }) {
   const graph = useTransitions(api.problems.transitions)
+  const [reason, setReason] = useState('')
   const [f, setF] = useState({
     title: p.title, description: p.description, status: p.status, impact: p.impact,
     urgency: p.urgency, category: p.category, affectedService: p.affectedService,
@@ -63,7 +73,8 @@ function Infos({ p, isManager, onSaved }) {
   })
   const [msg, setMsg] = useState('')
   const set = k => e => setF({ ...f, [k]: e.target.value })
-  const save = () => api.problems.update(p.id, f)
+  const force = forceOptions(graph, p.status, f.status, reason)
+  const save = () => api.problems.update(p.id, f, force)
     .then(() => { setMsg('Modifications enregistrées.'); onSaved() })
     .catch(e => setMsg(e.message))
 
@@ -75,9 +86,9 @@ function Infos({ p, isManager, onSaved }) {
       <div className="field"><label>Description</label>
         <textarea rows={4} value={f.description} onChange={set('description')} disabled={!isManager} /></div>
       <div className="row3">
-        <div className="field"><label>Statut</label>
-          <select value={f.status} onChange={set('status')} disabled={!isManager}>
-            {STATUSES.filter(s => reachable(graph, p.status, s)).map(s => <option key={s}>{s}</option>)}</select></div>
+        <div><StatusField statuses={STATUSES.map(value => ({ value }))} current={p.status} value={f.status}
+          onChange={status => setF({ ...f, status })} graph={graph} isManager={isManager}
+          isAdmin={getUser()?.role === 'Admin'} disabled={!isManager} reason={reason} onReason={setReason} /></div>
         <div className="field"><label>Impact</label>
           <select value={f.impact} onChange={set('impact')} disabled={!isManager}>
             <option>Faible</option><option>Moyen</option><option>Élevé</option></select></div>
@@ -98,7 +109,7 @@ function Infos({ p, isManager, onSaved }) {
         <textarea rows={2} value={f.rootCause} onChange={set('rootCause')} disabled={!isManager}
           placeholder="Renseignée à l'issue de l'analyse." /></div>
       {isManager
-        ? <button className="btn" onClick={save}>Enregistrer</button>
+        ? <button className="btn" onClick={save} disabled={force && !reason.trim()}>Enregistrer</button>
         : <p style={{ color: 'var(--muted)', fontSize: 13 }}>Seuls les gestionnaires de problèmes peuvent modifier ces informations.</p>}
     </div>
   )

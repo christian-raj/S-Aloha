@@ -257,7 +257,7 @@ un onglet sans contenu reste visible avec un état vide explicite.
 | Liens | Enregistrements reliés, toutes pratiques ; onglet dédié | SOC-12 | ✅ |
 | Commentaires | Fil public / notes de travail | SOC-24 | 🔜 |
 | Pièces jointes | | SOC-25 | 🔜 |
-| Historique | Journal d'audit de l'enregistrement | SOC-20 | 🔜 |
+| Historique | Journal d'audit de l'enregistrement (`core/components/History.jsx`) ; un Admin voit aussi, dans la liste des statuts, les transitions hors graphe, marquées « transition forcée », avec motif obligatoire (`StatusField.jsx`) | SOC-20, SOC-05 | ✅ |
 
 Un bouton de transition n'apparaît que si la transition est **permise** depuis le statut
 courant (tableau § 4) et **autorisée** pour le rôle (§ 2) ; ses conditions (motif, champ

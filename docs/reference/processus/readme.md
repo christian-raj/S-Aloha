@@ -72,6 +72,7 @@ le journal d'audit pour tracer le motif).
 | [SOC-20](../regles-metier.md#9-traçabilité-commentaires-administration) | Journal des créations, modifications, transitions, suppressions et liens ; onglet « Historique » |
 
 Prérequis des motifs (réouverture, rejet, abandon) et des transitions forcées.
+**Fait le 2026-10-10**, avec la transition forcée par un Admin (SOC-05).
 
 ### Étape 3 — Validations et champs obligatoires
 

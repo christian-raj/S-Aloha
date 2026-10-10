@@ -36,6 +36,7 @@ S-Aloha est une **plateforme modulaire** : un **socle** (*Core*) transverse à t
 backend/                              # projet SAloha.Api (namespace SAloha.Api.*)
 ├── Program.cs                        # DI, JWT, policies, CORS, migrations au démarrage
 ├── Core/                             # socle — ne dépend d'aucun module
+│   ├── Audit/                        # AuditEntry, AuditInterceptor (journal SOC-20), AuditController, ForcedTransition
 │   ├── Auth/                         # AuthController, LdapService, TokenService, AuthDtos
 │   ├── Data/                         # AppDbContext, References (XXX-AAAA-NNNN), DatabaseSchema + Migrations/
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)
@@ -139,6 +140,8 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | POST/PUT `/api/assessments[/{id}]`, POST `/{id}/improvements` | Manager | Création, validation, réouverture ; action d'amélioration depuis un écart (DELETE : Admin) | Modules/ComplianceAssessment |
 | GET `/api/compliance/referential` ; POST `/api/compliance/referential/import` : Admin | User | Référentiel NIS 2, import du texte des exigences | Modules/ComplianceAssessment |
 | GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
+| GET `/api/audit?type=&id=` | User | Historique d'un enregistrement (journal d'audit, SOC-20) | Core/Audit |
+| PUT `…/{id}?force=true&reason=` | Admin | Transition forcée hors graphe, motif obligatoire et tracé (SOC-05) | Core/Audit, socle des pratiques et module Problèmes |
 | GET `/api/directory/search?q=` | User | Recherche utilisateurs/groupes AD (sélecteur RACI) | Core/Directory |
 | GET `/api/reports/summary` | User | Indicateurs : problèmes (statuts, priorités, catégories, retards, MTTR, volumétrie), MTTR incidents, taux de changements réussis, incidents majeurs ouverts, volumétrie par processus | Core/Pilotage |
 | GET `/api/search?q=&types=&limit=`, `/api/search/similar?type=&id=` | User | Recherche hybride, cas similaires ([recherche](recherche.md)) | Core/Search |
