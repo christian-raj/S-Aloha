@@ -33,6 +33,7 @@ public class Change : Record
     public string ImplementationPlan { get; set; } = "";
     public string BackoutPlan { get; set; } = "";                     // retour arrière
     [MaxLength(10)] public string? Outcome { get; set; }              // Réussi, Échoué
+    public string? RejectionReason { get; set; }                      // motif communiqué au demandeur (CHG-17)
     [MaxLength(200)] public string? AuthorizedBy { get; set; }
     public DateTime? AuthorizedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
@@ -41,4 +42,4 @@ public class Change : Record
 public record ChangeDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? ChangeType, string? Risk, DateTime? PlannedStart, DateTime? PlannedEnd,
-    string? ImplementationPlan, string? BackoutPlan, string? Outcome) : IRecordDto;
+    string? ImplementationPlan, string? BackoutPlan, string? Outcome, string? RejectionReason = null) : IRecordDto;

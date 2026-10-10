@@ -48,7 +48,7 @@ porteur AD, créateur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 | `ValidatedBy`, `ValidatedAt`, `CompletedAt` | texte, date | auto | SOC-08 | ✅ |
 | `Source` | texte 20 | ✔ (🔜) | Suggestion, Incident, Problème, SLA, Audit, Retour client | 🔜 CSI-10 |
 | `Value`, `Effort` | entier 1–3 | à la validation | Valeur métier, effort estimé | 🔜 CSI-12 |
-| `AbandonReason` | texte | à l'abandon | Motif | 🔜 CSI-13 |
+| `AbandonReason` | texte | à l'abandon | Motif | ✅ |
 | `FollowUpDate` | date | | Date de contrôle de la durabilité (étape 7) | 🔜 CSI-15 |
 
 **Modèle d'amélioration continue ITIL 4** : 1. *Quelle est la vision ?* — 2. *Où en
@@ -81,10 +81,10 @@ stateDiagram-v2
 | De → Vers | Qui | Conditions (400 sinon) | Effets | Statut |
 |---|---|---|---|---|
 | — → Proposée | Tous | Titre, étape | Référence | ✅ |
-| Proposée → Validée | Manager | Valeur attendue, mesure de départ et mesure cible renseignées | `ValidatedAt`, `ValidatedBy` | ✅ (horodatage) / 🔜 CSI-14 |
+| Proposée → Validée | Manager | Valeur attendue, mesure de départ et mesure cible renseignées | `ValidatedAt`, `ValidatedBy` | ✅ |
 | Validée → En cours | Porteur, Manager | Validée ; porteur renseigné | | ✅ / 🔜 |
 | En cours → Réalisée | Porteur, Manager | Résultat constaté ; étape ≥ 6 | `CompletedAt` | ✅ (résultat) / 🔜 (étape) |
-| Proposée, Validée, En cours → Abandonnée | Manager | Motif | Validation retirée | ✅ / 🔜 CSI-13 |
+| Proposée, Validée, En cours → Abandonnée | Manager | Motif | Validation retirée | ✅ |
 | Abandonnée → Proposée | Tous | | Nouvelle validation nécessaire | ✅ |
 | Réalisée → … | — | Statut final | | 🔜 CSI-11 |
 
@@ -100,10 +100,10 @@ stateDiagram-v2
 | CSI-10 | **Source** de l'amélioration et lien vers l'enregistrement d'origine (incident, problème, SLA) quand il existe | 🔜 | 2 |
 | CSI-11 | **Transitions contraintes** selon le § 4 (SOC-05) ; Réalisée est finale | ✅ | 1 |
 | CSI-12 | **Priorisation** : à la validation, le gestionnaire note la valeur et l'effort (1 à 3) ; la priorité est calculée : valeur 3 et effort 1–2 → Élevée ; valeur 1 et effort 2–3 → Faible ; sinon Moyenne | 🔜 | 2 |
-| CSI-13 | **Abandon** motivé : le motif est obligatoire et visible sur la fiche | 🔜 | 1 |
-| CSI-14 | **Validation** exige valeur attendue, mesure de départ et mesure cible (une amélioration se mesure) | 🔜 | 1 |
+| CSI-13 | **Abandon** motivé : le motif est obligatoire et visible sur la fiche | ✅ | 1 |
+| CSI-14 | **Validation** exige valeur attendue, mesure de départ et mesure cible (une amélioration se mesure) | ✅ | 1 |
 | CSI-15 | **Durabilité** (étape 7) : une amélioration Réalisée peut porter une date de contrôle ; à cette date, le porteur confirme que le résultat tient, ou ouvre une nouvelle amélioration reliée | 🔜 | 3 |
-| CSI-16 | **Réalisée** exige l'étape 6 au moins (« Y sommes-nous parvenus ? ») : le résultat est comparé à la cible | 🔜 | 1 |
+| CSI-16 | **Réalisée** exige l'étape 6 au moins (« Y sommes-nous parvenus ? ») : le résultat est comparé à la cible | ✅ | 1 |
 
 ## 6. Délais, calculs et alertes
 

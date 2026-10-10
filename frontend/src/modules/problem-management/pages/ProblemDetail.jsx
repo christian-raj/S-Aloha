@@ -12,11 +12,14 @@ import StatusField, { forceOptions } from '../../../core/components/StatusField'
 import History from '../../../core/components/History'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
+/** Codes de clôture (PRB-13) selon le statut d'origine ; une transition forcée les admet tous. */
+const CLOSURE_CODES = ['Corrigé', 'Erreur connue acceptée', 'Doublon', 'Non retenu']
+const CLOSURE_FROM = { 'Résolu': ['Corrigé'], 'Erreur connue': ['Erreur connue acceptée'], Nouveau: ['Doublon', 'Non retenu'] }
 /** Libellés des champs au journal d'audit (SOC-20). */
 const LABELS = {
   title: 'Titre', description: 'Description', impact: 'Impact', urgency: 'Urgence', priority: 'Priorité',
   category: 'Catégorie', affectedService: 'Service affecté', knownErrorWorkaround: 'Contournement',
-  rootCause: 'Cause racine'
+  rootCause: 'Cause racine', closureCode: 'Code de clôture'
 }
 const METHODS = { FIVE_WHYS: '5 Pourquoi', ISHIKAWA: 'Ishikawa (6M)', FTA: 'Arbre des défaillances (FTA)' }
 const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
@@ -42,6 +45,8 @@ export default function ProblemDetail() {
         <span className={'badge ' + badge(p.status)}>{p.status}</span>{' '}
         <span className={'badge ' + p.priority}>{p.priority}</span>{' '}
         Déclaré par {p.createdByDisplayName} le {new Date(p.createdAt).toLocaleDateString('fr-FR')}
+        {p.resolvedAt && <> · Résolu le {new Date(p.resolvedAt).toLocaleDateString('fr-FR')}</>}
+        {p.closureCode && <> · Clôture : {p.closureCode}</>}
       </p>
 
       {/* Onglets communs des fiches (docs/reference/frontend.md § Navigation
@@ -69,7 +74,8 @@ function Infos({ p, isManager, onSaved }) {
   const [f, setF] = useState({
     title: p.title, description: p.description, status: p.status, impact: p.impact,
     urgency: p.urgency, category: p.category, affectedService: p.affectedService,
-    knownErrorWorkaround: p.knownErrorWorkaround || '', rootCause: p.rootCause || ''
+    knownErrorWorkaround: p.knownErrorWorkaround || '', rootCause: p.rootCause || '',
+    closureCode: p.closureCode || ''
   })
   const [msg, setMsg] = useState('')
   const set = k => e => setF({ ...f, [k]: e.target.value })
@@ -107,7 +113,15 @@ function Infos({ p, isManager, onSaved }) {
           placeholder="Solution de contournement documentée si le problème devient une erreur connue." /></div>
       <div className="field"><label>Cause racine validée</label>
         <textarea rows={2} value={f.rootCause} onChange={set('rootCause')} disabled={!isManager}
-          placeholder="Renseignée à l'issue de l'analyse." /></div>
+          placeholder="Renseignée à l'issue de l'analyse. Obligatoire pour résoudre." /></div>
+      {f.status === 'Clos' && (
+        <div className="field" style={{ maxWidth: 300 }}><label>Code de clôture *</label>
+          <select value={f.closureCode} onChange={set('closureCode')} disabled={!isManager}>
+            <option value="">—</option>
+            {(p.status === 'Clos' ? CLOSURE_CODES : CLOSURE_FROM[p.status] ?? CLOSURE_CODES)
+              .map(c => <option key={c}>{c}</option>)}
+          </select></div>
+      )}
       {isManager
         ? <button className="btn" onClick={save} disabled={force && !reason.trim()}>Enregistrer</button>
         : <p style={{ color: 'var(--muted)', fontSize: 13 }}>Seuls les gestionnaires de problèmes peuvent modifier ces informations.</p>}

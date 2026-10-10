@@ -7,6 +7,6 @@ public record ActionDto(string Title, string Description, string? Status,
 
 public record ProblemDto(string Title, string Description, string? Status, string Impact,
     string Urgency, string Category, string AffectedService,
-    string? KnownErrorWorkaround, string? RootCause);
+    string? KnownErrorWorkaround, string? RootCause, string? ClosureCode = null);
 
 public record AnalysisDto(string Method, string DataJson, string? Conclusion);

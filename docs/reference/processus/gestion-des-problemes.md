@@ -46,7 +46,7 @@ proactive, depuis une tendance), **contrôle** (analyse, contournement, erreur c
 | `Title` | texte 200 | ✔ | | ✅ |
 | `Description` | texte | | | ✅ |
 | `Status` | texte 30 | auto | Nouveau, En analyse, Erreur connue, Résolu, Clos | ✅ |
-| `Impact` / `Urgency` | texte 10 | ✔ | Faible, Moyen, Élevé / Faible, Moyenne, Élevée | ✅ (valeurs contrôlées 🔜 PRB-02) |
+| `Impact` / `Urgency` | texte 10 | ✔ | Faible, Moyen, Élevé / Faible, Moyenne, Élevée | ✅ (valeurs contrôlées ✅) |
 | `Priority` | texte 10 | calculé | P1–P4 ([matrice](../regles-metier.md#6-priorité)) | ✅ |
 | `Category`, `AffectedService` | texte 100 / 150 | | Texte libre aujourd'hui ; référentiel 🔜 SOC-27 | ✅ |
 | `KnownErrorWorkaround` | texte | | Contournement | ✅ |
@@ -55,8 +55,8 @@ proactive, depuis une tendance), **contrôle** (analyse, contournement, erreur c
 | `CreatedAt`, `UpdatedAt`, `ClosedAt` | date UTC | auto | `ClosedAt` : SOC-08 | ✅ |
 | `Source` | texte 10 | ✔ | Réactif (défaut), Proactif | 🔜 PRB-20 |
 | `OwnerType/Id/DisplayName` | AD | | Gestionnaire du problème | 🔜 PRB-21 |
-| `ClosureCode` | texte 30 | à la clôture | Corrigé, Erreur connue acceptée, Doublon, Non retenu | 🔜 PRB-13 |
-| `ResolvedAt` | date UTC | auto | Posée à l'entrée de Résolu (SOC-08) | 🔜 PRB-14 |
+| `ClosureCode` | texte 30 | à la clôture | Corrigé, Erreur connue acceptée, Doublon, Non retenu | ✅ |
+| `ResolvedAt` | date UTC | auto | Posée à l'entrée de Résolu (SOC-08) | ✅ |
 
 ### Analyse RCA (`Analyses`)
 
@@ -97,21 +97,21 @@ seules les transitions ci-dessous sont permises (SOC-05).
 |---|---|---|---|---|
 | — → Nouveau | Tous | Titre, impact, urgence | Référence, priorité calculée | ✅ |
 | Nouveau → En analyse | Auto à la 1re analyse, ou Manager | | | ✅ |
-| Nouveau → Clos | Manager | `ClosureCode` = Doublon ou Non retenu ; un doublon est relié au problème conservé | `ClosedAt` | 🔜 PRB-10, PRB-13 |
-| En analyse → Erreur connue | Manager | Contournement renseigné | Proposition d'article KB (PRB-30) | 🔜 PRB-11 |
-| En analyse → Résolu | Manager | Cause racine renseignée ; aucune action ouverte | `ResolvedAt` | 🔜 PRB-12 |
-| Erreur connue → Résolu | Manager | Cause racine renseignée ; aucune action ouverte (toutes Terminée ou Annulée), au moins une Terminée | `ResolvedAt` | 🔜 PRB-12 |
-| Erreur connue → Clos | Manager | `ClosureCode` = Erreur connue acceptée (pas de correctif, risque accepté) | `ClosedAt` | 🔜 PRB-13 |
-| Résolu → Clos | Manager | `ClosureCode` = Corrigé | `ClosedAt` | ✅ (horodatage) / 🔜 (code) |
-| Résolu → En analyse | Manager | Motif (commentaire) | `ResolvedAt` effacé | 🔜 PRB-10 |
-| Clos → En analyse | Manager | Motif (commentaire) | `ClosedAt` et `ClosureCode` effacés | ✅ (`ClosedAt`) / 🔜 |
+| Nouveau → Clos | Manager | `ClosureCode` = Doublon ou Non retenu ; un doublon est relié au problème conservé | `ClosedAt` | ✅ |
+| En analyse → Erreur connue | Manager | Contournement renseigné | Proposition d'article KB (PRB-30) | ✅ |
+| En analyse → Résolu | Manager | Cause racine renseignée ; aucune action ouverte | `ResolvedAt` | ✅ |
+| Erreur connue → Résolu | Manager | Cause racine renseignée ; aucune action ouverte (toutes Terminée ou Annulée), au moins une Terminée | `ResolvedAt` | ✅ |
+| Erreur connue → Clos | Manager | `ClosureCode` = Erreur connue acceptée (pas de correctif, risque accepté) | `ClosedAt` | ✅ |
+| Résolu → Clos | Manager | `ClosureCode` = Corrigé | `ClosedAt` | ✅ |
+| Résolu → En analyse | Manager | Motif (commentaire) | `ResolvedAt` effacé | ✅ / 🔜 PRB-10 (motif) |
+| Clos → En analyse | Manager | Motif (commentaire) | `ClosedAt` et `ClosureCode` effacés | ✅ / 🔜 PRB-10 (motif) |
 
 ## 5. Règles de gestion
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | PRB-01 | Un problème est créé au statut **Nouveau** avec une référence `PRB-AAAA-NNNN` (SOC-01) | ✅ | |
-| PRB-02 | Impact, urgence, statut, méthode d'analyse, statut d'action et rôle RACI sont des **valeurs fermées** (SOC-02) | 🔜 [#28](https://github.com/christian-raj/S-Aloha/issues/28) | 1 |
+| PRB-02 | Impact, urgence, statut, méthode d'analyse, statut d'action et rôle RACI sont des **valeurs fermées** (SOC-02) | ✅ | 1 |
 | PRB-03 | La **priorité** est calculée par la matrice impact × urgence, jamais saisie | ✅ | |
 | PRB-04 | La création d'une **première analyse** fait passer un problème Nouveau à **En analyse** | ✅ | |
 | PRB-05 | Plusieurs analyses, de méthodes différentes, peuvent coexister sur un problème. Méthodes : **5 Pourquoi**, **Ishikawa (6M)**, **arbre des défaillances (FTA)** avec portes ET/OU | ✅ | |
@@ -120,14 +120,14 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | PRB-08 | Le passage à **Clos** horodate `ClosedAt` ; quitter Clos l'efface (SOC-08) ; seul un problème actuellement clos compte dans le MTTR | ✅ | |
 | PRB-09 | Recherche (titre, référence) insensible à la casse | ✅ | |
 | PRB-10 | **Transitions contraintes** selon le tableau du § 4 (SOC-05) ; une réouverture exige un motif — résout R4 | ✅ (transitions) / 🔜 (motif) | 1 |
-| PRB-11 | **Erreur connue** exige un contournement renseigné (aujourd'hui : bonne pratique non bloquante) | 🔜 | 1 |
-| PRB-12 | **Résolu** exige une cause racine validée et aucune action corrective ouverte | 🔜 | 1 |
-| PRB-13 | **Clos** exige un code de clôture : *Corrigé* (depuis Résolu), *Erreur connue acceptée* (depuis Erreur connue), *Doublon* ou *Non retenu* (depuis Nouveau) | 🔜 | 1 |
-| PRB-14 | `ResolvedAt` posé à l'entrée de Résolu, effacé à la sortie vers En analyse | 🔜 | 1 |
+| PRB-11 | **Erreur connue** exige un contournement renseigné (aujourd'hui : bonne pratique non bloquante) | ✅ | 1 |
+| PRB-12 | **Résolu** exige une cause racine validée et aucune action corrective ouverte | ✅ | 1 |
+| PRB-13 | **Clos** exige un code de clôture : *Corrigé* (depuis Résolu), *Erreur connue acceptée* (depuis Erreur connue), *Doublon* ou *Non retenu* (depuis Nouveau) | ✅ | 1 |
+| PRB-14 | `ResolvedAt` posé à l'entrée de Résolu, effacé à la sortie vers En analyse | ✅ | 1 |
 | PRB-15 | Chaque action porte titre, description, échéance (date) et statut (À faire, En cours, Terminée, Annulée) | ✅ | |
 | PRB-16 | **RACI** à la création : au moins **un R** et exactement **un A** ; C et I libres ; chaque rôle est un utilisateur ou un groupe AD (recherche dans l'annuaire) | ✅ | |
-| PRB-17 | Les règles RACI s'appliquent aussi **à la modification** d'une action | 🔜 [#23](https://github.com/christian-raj/S-Aloha/issues/23) | 1 |
-| PRB-18 | `CompletedAt` posé **uniquement** au passage à Terminée, effacé si l'action en sort ; renommer une action terminée ne le change pas | 🔜 [#24](https://github.com/christian-raj/S-Aloha/issues/24) | 1 |
+| PRB-17 | Les règles RACI s'appliquent aussi **à la modification** d'une action | ✅ | 1 |
+| PRB-18 | `CompletedAt` posé **uniquement** au passage à Terminée, effacé si l'action en sort ; renommer une action terminée ne le change pas | ✅ | 1 |
 | PRB-19 | Une action est **en retard** si son échéance est dépassée et son statut ni Terminée ni Annulée ; l'échéance est une date : en retard à partir du **lendemain**, jamais le jour même | ✅ | |
 | PRB-20 | **Source** du problème : *Réactif* (issu d'incidents) ou *Proactif* (tendance, analyse de risque) ; un problème réactif doit être relié à au moins un incident avant de quitter Nouveau | 🔜 | 2 |
 | PRB-21 | **Gestionnaire du problème** (responsable AD) : par défaut le Manager qui qualifie ; « Mon travail » de ce gestionnaire | 🔜 | 2 |

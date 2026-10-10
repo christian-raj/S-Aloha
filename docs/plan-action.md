@@ -34,10 +34,7 @@ code qui doit s'y conformer.
 
 | # | Écart | Qui |
 |---|---|---|
-| R1 | Statut, impact, urgence, méthode, rôle RACI acceptés en texte libre | code |
-| R2 | Règles RACI vérifiées à la création seulement, pas en modification | code |
-| R3 | Date d'achèvement d'une action réécrite à chaque enregistrement | code |
-| R4 | Clôture avec actions ouvertes : les **transitions** sont contraintes depuis le 2026-10-10 (Clos → Nouveau refusé) ; restent les conditions de [PRB-11 à PRB-14](reference/processus/gestion-des-problemes.md#4-cycle-de-vie) et le motif de réouverture | code |
+| R4 | Réouverture d'un problème sans motif : transitions (2026-10-10) et conditions de clôture (PRB-11 à PRB-14) en place ; reste le motif de réouverture ([PRB-10](reference/processus/gestion-des-problemes.md#4-cycle-de-vie)), avec les commentaires (SOC-24) | code |
 | R6 | AD injoignable : 500 sur l'annuaire, « identifiants invalides » au login | code |
 
 ## 4. Chantiers à arbitrer

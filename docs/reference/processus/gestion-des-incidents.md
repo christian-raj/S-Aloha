@@ -52,8 +52,8 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `Channel` | texte 20 | | Portail, Téléphone, Courriel, Supervision, Sur place | 🔜 INC-04 |
 | `CallerId`, `CallerDisplayName` | AD | | Utilisateur affecté (déclarant métier) | 🔜 INC-05 |
 | `OnHoldReason` | texte 30 | si En attente | Attente utilisateur, Attente fournisseur, Attente changement | 🔜 INC-07 |
-| `ResolutionCode` | texte 30 | à la résolution | Correctif appliqué, Contournement, Résolu sans action, Non reproductible, Doublon | 🔜 INC-08 |
-| `FirstResponseAt` | date UTC | auto | Première prise en charge (passage à En cours) | 🔜 INC-06 |
+| `ResolutionCode` | texte 30 | à la résolution | Correctif appliqué, Contournement, Résolu sans action, Non reproductible, Doublon | ✅ |
+| `FirstResponseAt` | date UTC | auto | Première prise en charge (passage à En cours) | ✅ |
 | `ResponseDueAt`, `ResolutionDueAt` | date UTC | calculé | Échéances tirées du SLA (§ 6) | 🔜 INC-21 |
 | `ReopenCount` | entier | auto | Nombre de réouvertures | 🔜 INC-11 |
 | `ParentId` | lien | | Incident parent (incidents liés à une même panne) | 🔜 INC-16 |
@@ -82,11 +82,11 @@ stateDiagram-v2
 | De → Vers | Qui | Conditions (400 sinon) | Effets | Statut |
 |---|---|---|---|---|
 | — → Nouveau | Tous | Titre, impact, urgence | Référence, priorité | ✅ |
-| Nouveau → En cours | Tous | Responsable renseigné (utilisateur ou groupe) | `FirstResponseAt` | 🔜 INC-06 |
-| Nouveau → Résolu | Tous | Résolution et code | `ResolvedAt` ; résolu au premier contact (INC-23) | ✅ (résolution) / 🔜 (code) |
+| Nouveau → En cours | Tous | Responsable renseigné (utilisateur ou groupe) | `FirstResponseAt` | ✅ |
+| Nouveau → Résolu | Tous | Résolution et code | `ResolvedAt` ; résolu au premier contact (INC-23) | ✅ / 🔜 INC-23 (premier contact) |
 | En cours → En attente | Tous | `OnHoldReason` | Horloge SLA suspendue (INC-22) | 🔜 INC-07 |
 | En attente → En cours | Tous | | `OnHoldReason` effacé, horloge reprise | 🔜 INC-07 |
-| En cours → Résolu | Tous | Résolution et `ResolutionCode` | `ResolvedAt` | ✅ / 🔜 INC-08 |
+| En cours → Résolu | Tous | Résolution et `ResolutionCode` | `ResolvedAt` | ✅ |
 | Résolu → En cours | Tous | Motif ; dans les 10 jours ouvrés suivant la résolution | `ResolvedAt` effacé, `ReopenCount` + 1 | ✅ (effacement) / 🔜 INC-11 |
 | Résolu → Clos | Manager, ou automatique après 5 jours ouvrés | | `ClosedAt` | ✅ (horodatage) / 🔜 INC-10 |
 | Clos → … | — | Aucune : un nouvel incident est créé et relié | | 🔜 INC-11 |
@@ -100,9 +100,9 @@ stateDiagram-v2
 | INC-03 | **Résolu** ou **Clos** exige une résolution décrite, y compris aux modifications ultérieures (SOC-06) | ✅ | |
 | INC-04 | **Canal** de signalement enregistré (Portail, Téléphone, Courriel, Supervision, Sur place) | 🔜 | 2 |
 | INC-05 | **Utilisateur affecté** (AD) distinct du créateur : un agent enregistre pour un utilisateur ; l'utilisateur affecté reçoit les notifications publiques | 🔜 | 2 |
-| INC-06 | **Prise en charge** : passer à En cours exige un responsable ; horodate `FirstResponseAt` (délai de prise en charge, INC-21) | 🔜 | 1 |
+| INC-06 | **Prise en charge** : passer à En cours exige un responsable ; horodate `FirstResponseAt` (délai de prise en charge, INC-21) | ✅ | 1 |
 | INC-07 | **En attente** exige un motif fermé ; le temps passé En attente ne compte pas dans les délais SLA | 🔜 | 2 |
-| INC-08 | La résolution exige un **code de résolution** fermé ; *Doublon* exige un lien vers l'incident conservé | 🔜 | 1 |
+| INC-08 | La résolution exige un **code de résolution** fermé ; *Doublon* exige un lien vers l'incident conservé | ✅ | 1 |
 | INC-09 | **Transitions contraintes** selon le § 4 (SOC-05) | ✅ | 1 |
 | INC-10 | **Clôture** par un Manager, ou **automatique** 5 jours ouvrés après la résolution sans réouverture | 🔜 | 2 (manuelle) / 3 (auto) |
 | INC-11 | **Réouverture** d'un incident Résolu dans les 10 jours ouvrés, avec motif, `ReopenCount` + 1 ; au-delà, ou une fois Clos, un **nouvel** incident est créé et relié | 🔜 | 1 |

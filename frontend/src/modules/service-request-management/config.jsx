@@ -21,6 +21,8 @@ export const requestConfig = {
     { key: 'dueDate', label: 'Échéance souhaitée', type: 'date' },
     ownerField('Traitée par'),
     descriptionField('Précisions'),
+    { key: 'rejectionReason', label: 'Motif de rejet', type: 'textarea', rows: 2, create: false,
+      placeholder: 'Obligatoire pour rejeter : communiqué au demandeur.' },
   ],
   columns: [
     { h: 'Objet demandé', v: r => r.requestedItem },

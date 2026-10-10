@@ -25,6 +25,22 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
         return null;
     }
 
+    // CFG-11 : un CI en service a un propriétaire, à qui s'adresser.
+    protected override string? CheckStatus(ConfigurationItem e, string status) =>
+        status == "En service" && string.IsNullOrWhiteSpace(e.OwnerId)
+            ? "Désigner un propriétaire : il est obligatoire pour un CI en service." : null;
+
+    // CFG-17 : deux CI non retirés ne portent pas le même nom dans un même environnement.
+    protected override async Task<string?> ConflictAsync(ConfigurationItem e)
+    {
+        if (e.Status == "Retiré") return null;
+        var name = e.Title.ToLower();
+        var twin = await Db.ConfigurationItems.AsNoTracking()
+            .Where(c => c.Id != e.Id && c.Status != "Retiré" && c.Environment == e.Environment && c.Title.ToLower() == name)
+            .Select(c => c.Reference).FirstOrDefaultAsync();
+        return twin is null ? null : $"Un CI « {e.Title} » existe déjà en {e.Environment} ({twin}).";
+    }
+
     protected override IQueryable<ConfigurationItem> Filter(IQueryable<ConfigurationItem> q)
     {
         var type = Request.Query["type"].ToString();

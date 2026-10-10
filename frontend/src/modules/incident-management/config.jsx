@@ -25,6 +25,8 @@ export const incidentConfig = {
     { key: 'isMajor', label: 'Gravité', type: 'checkbox', checkboxLabel: 'Incident majeur' },
     { key: 'resolution', label: 'Résolution', type: 'textarea', create: false, rows: 3,
       placeholder: 'Obligatoire pour passer à Résolu ou Clos.' },
+    { key: 'resolutionCode', label: 'Code de résolution', type: 'select', create: false,
+      options: ['Correctif appliqué', 'Contournement', 'Résolu sans action', 'Non reproductible', 'Doublon'] },
   ],
   columns: [
     { h: 'Priorité', v: r => <span className={'badge ' + r.priority}>{r.priority}</span> },
@@ -35,6 +37,8 @@ export const incidentConfig = {
     <span className={'badge ' + r.priority}>{r.priority}</span>{' '}
     {r.isMajor && <span className="badge t-bad">Majeur</span>}
   </>,
-  meta: r => [r.resolvedAt && `Résolu le ${dateTimeFr(r.resolvedAt)}`],
+  meta: r => [r.firstResponseAt && `Pris en charge le ${dateTimeFr(r.firstResponseAt)}`,
+    r.resolvedAt && `Résolu le ${dateTimeFr(r.resolvedAt)}`],
+  help: 'Prise en charge (En cours) : un responsable. Résolution : description et code ; un doublon est relié à l\'incident conservé (onglet Liens).',
   linkHint: 'Problème sous-jacent, CI touchés, article de connaissance appliqué…',
 }

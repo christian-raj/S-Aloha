@@ -21,6 +21,8 @@ public class AnalysesController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> Create(int problemId, AnalysisDto dto)
     {
         if (!await db.Problems.AnyAsync(p => p.Id == problemId)) return NotFound();
+        var invalid = Allowed.Check("Méthode d'analyse", dto.Method, ProblemRules.Methods);
+        if (invalid is not null) return BadRequest(new { message = invalid });
         var a = new RcaAnalysis
         {
             ProblemId = problemId, Method = dto.Method,

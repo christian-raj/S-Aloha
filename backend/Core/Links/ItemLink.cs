@@ -73,6 +73,16 @@ public static class ItemLinks
         return Kinds.FirstOrDefault(k => k.Code == code);
     }
 
+    /// <summary>
+    /// Vrai si (type, id) est relié, dans un sens ou dans l'autre, à un autre
+    /// enregistrement du type <paramref name="otherType"/> (ex. doublon relié à
+    /// l'incident conservé, INC-08, PRB-13).
+    /// </summary>
+    public static Task<bool> IsLinkedToAsync(AppDbContext db, string type, int id, string otherType) =>
+        db.ItemLinks.AnyAsync(l =>
+            (l.FromType == type && l.FromId == id && l.ToType == otherType && !(l.ToType == type && l.ToId == id)) ||
+            (l.ToType == type && l.ToId == id && l.FromType == otherType && !(l.FromType == type && l.FromId == id)));
+
     /// <summary>Retire les liens d'un enregistrement supprimé (à enregistrer par l'appelant).</summary>
     public static void RemoveFor(AppDbContext db, string type, int id) =>
         db.ItemLinks.RemoveRange(db.ItemLinks.Where(l =>

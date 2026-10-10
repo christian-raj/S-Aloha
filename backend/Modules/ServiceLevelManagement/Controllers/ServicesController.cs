@@ -16,6 +16,11 @@ public class ServicesController(AppDbContext db) : RecordController<ItService, I
     protected override bool ManagerOnly => true;
     protected override bool StatusChosenAtCreation => true;
 
+    // SLM-11 : un service en service a un propriétaire (responsable du service).
+    protected override string? CheckStatus(ItService e, string status) =>
+        status == "En service" && string.IsNullOrWhiteSpace(e.OwnerId)
+            ? "Désigner le responsable du service : il est obligatoire pour un service en service." : null;
+
     protected override string? Apply(ItService e, ItServiceDto dto, bool creating)
     {
         var error = Allowed.Check("Criticité", dto.Criticality, ItService.Criticalities);
@@ -57,6 +62,30 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
 
     protected override async Task<string?> ValidateAsync(ServiceLevelAgreement e) =>
         await Db.Services.AnyAsync(s => s.Id == e.ServiceId) ? null : "Choisir un service du catalogue.";
+
+    /// <summary>
+    /// SLM-03 : un accord en vigueur a des cibles complètes et croissantes
+    /// (P1 ≤ P2 ≤ P3 ≤ P4), une date de début, un service en service, et il est
+    /// le seul en vigueur pour ce service et ce client.
+    /// </summary>
+    protected override async Task<string?> CheckStatusAsync(ServiceLevelAgreement e, string status)
+    {
+        if (status != "En vigueur") return null;
+        int?[] hours = [e.ResolutionHoursP1, e.ResolutionHoursP2, e.ResolutionHoursP3, e.ResolutionHoursP4];
+        if (hours.Any(h => h is null))
+            return "Renseigner les délais de résolution P1 à P4 pour mettre l'accord en vigueur.";
+        for (var i = 1; i < hours.Length; i++)
+            if (hours[i] < hours[i - 1])
+                return $"Les délais de résolution doivent croître de P1 à P4 (P{i} : {hours[i - 1]} h, P{i + 1} : {hours[i]} h).";
+        if (e.ValidFrom is null) return "Renseigner la date de début de validité.";
+        if (!await Db.Services.AnyAsync(s => s.Id == e.ServiceId && s.Status == "En service"))
+            return "Le service de l'accord doit être en service.";
+        var customer = e.Customer.ToLower();
+        var other = await Db.Agreements.AsNoTracking()
+            .Where(a => a.Id != e.Id && a.Status == "En vigueur" && a.ServiceId == e.ServiceId && a.Customer.ToLower() == customer)
+            .Select(a => a.Reference).FirstOrDefaultAsync();
+        return other is null ? null : $"Un accord est déjà en vigueur pour ce service et ce client ({other}).";
+    }
 
     protected override IQueryable<ServiceLevelAgreement> Filter(IQueryable<ServiceLevelAgreement> q) =>
         q.Include(a => a.Service);

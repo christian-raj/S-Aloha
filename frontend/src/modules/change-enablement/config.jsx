@@ -27,6 +27,8 @@ export const changeConfig = {
     { key: 'implementationPlan', label: 'Plan de mise en œuvre', type: 'textarea', rows: 3 },
     { key: 'backoutPlan', label: 'Plan de retour arrière', type: 'textarea', rows: 3 },
     { key: 'outcome', label: 'Résultat', type: 'select', options: ['Réussi', 'Échoué'], create: false },
+    { key: 'rejectionReason', label: 'Motif de rejet', type: 'textarea', rows: 2, create: false,
+      placeholder: 'Obligatoire pour rejeter : communiqué au demandeur.' },
   ],
   columns: [
     { h: 'Type', v: r => r.changeType },
@@ -34,6 +36,6 @@ export const changeConfig = {
     { h: 'Début planifié', v: r => dateTimeFr(r.plannedStart) },
   ],
   meta: r => [r.authorizedAt && `Autorisé par ${r.authorizedBy} le ${dateTimeFr(r.authorizedAt)}`],
-  help: 'Standard : pré-autorisé. Normal et urgent : autorisés par un gestionnaire avant planification. Modifier le type, le risque, les plans ou le créneau d\'un changement autorisé redemande une autorisation. Le résultat est requis pour clore.',
+  help: 'Standard : pré-autorisé. Normal et urgent : plans de mise en œuvre et de retour arrière pour l\'évaluation, puis autorisation par un gestionnaire. Planifié : début et fin. Un rejet se motive. Modifier le type, le risque, les plans ou le créneau d\'un changement autorisé redemande une autorisation. Le résultat est requis pour clore.',
   linkHint: 'Problème ou demande à l\'origine, CI modifiés…',
 }

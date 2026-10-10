@@ -26,7 +26,8 @@ public class TransitionsTests(ApiFixture api)
 
     private static object Incident(string? status = null) => new
     {
-        title = "Transition", impact = "Moyen", urgency = "Moyenne", status, resolution = "Corrigé"
+        title = "Transition", impact = "Moyen", urgency = "Moyenne", status, resolution = "Corrigé",
+        resolutionCode = "Correctif appliqué", ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto"
     };
 
     [Fact]
@@ -54,7 +55,8 @@ public class TransitionsTests(ApiFixture api)
     {
         // Demandé → Autorisé saute l'évaluation (CHG-11) : refusé même à un Manager.
         var m = api.Client("Manager");
-        var dto = new { title = "Sans évaluation", changeType = "Normal", risk = "Moyen", status = (string?)null };
+        var dto = new { title = "Sans évaluation", changeType = "Normal", risk = "Moyen", status = (string?)null,
+            implementationPlan = "p", backoutPlan = "b" };
         var c = await Json(await m.PostAsJsonAsync("/api/changes", dto));
         await Refused(await m.PutAsJsonAsync($"/api/changes/{Id(c)}", dto with { status = "Autorisé" }));
         await Json(await m.PutAsJsonAsync($"/api/changes/{Id(c)}", dto with { status = "Évalué" }));
@@ -80,7 +82,8 @@ public class TransitionsTests(ApiFixture api)
         object Dto(string? status) => new
         {
             title = "Transitions PRB", description = "d", status, impact = "Moyen", urgency = "Moyenne",
-            category = "c", affectedService = "s", knownErrorWorkaround = (string?)null, rootCause = (string?)null
+            category = "c", affectedService = "s", knownErrorWorkaround = (string?)null, rootCause = "Cause établie",
+            closureCode = "Corrigé"
         };
         var p = await Json(await m.PostAsJsonAsync("/api/problems", Dto(null)));
         await Refused(await m.PutAsJsonAsync($"/api/problems/{Id(p)}", Dto("Résolu")));

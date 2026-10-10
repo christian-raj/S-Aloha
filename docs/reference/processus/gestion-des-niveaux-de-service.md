@@ -46,7 +46,7 @@ Champs communs (référence, titre, description, statut, responsable AD, créate
 | `Status` | texte 30 | ✔ | En conception, En service, Retiré ; choisi à la création | ✅ |
 | `Criticality` | texte 10 | ✔ | Faible, Moyenne, Élevée | ✅ |
 | `ServiceHours` | texte 150 | | Heures de service, texte libre (« Lun–Ven 8 h–18 h ») | ✅ (structuré 🔜 SLM-14) |
-| `Owner…` | AD | ✔ (🔜) | Propriétaire de service | ✅ (facultatif) / 🔜 SLM-11 |
+| `Owner…` | AD | ✔ (🔜) | Propriétaire de service | ✅ |
 | `ServiceCalendar` | structure | | Jours, plages horaires, jours fériés, fuseau | 🔜 SLM-14 |
 
 ### Accord de niveau de service (`Agreements`, `SLA-AAAA-NNNN`)
@@ -89,9 +89,9 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 
 | Objet | De → Vers | Qui | Conditions (400 sinon) | Statut |
 |---|---|---|---|---|
-| Service | En conception → En service | Manager | Propriétaire renseigné, heures de service | 🔜 SLM-11 |
+| Service | En conception → En service | Manager | Propriétaire renseigné, heures de service | ✅ |
 | Service | En service → Retiré | Manager | Aucun SLA En vigueur ; aucun incident ou demande ouvert sur le service | 🔜 SLM-15 |
-| SLA | Brouillon → En vigueur | Manager | Service En service ; délais P1–P4 renseignés et croissants (P1 ≤ P2 ≤ P3 ≤ P4) ; `ValidFrom` ; pas d'autre SLA En vigueur pour le même service et le même client | 🔜 SLM-03 |
+| SLA | Brouillon → En vigueur | Manager | Service En service ; délais P1–P4 renseignés et croissants (P1 ≤ P2 ≤ P3 ≤ P4) ; `ValidFrom` ; pas d'autre SLA En vigueur pour le même service et le même client | ✅ |
 | SLA | En vigueur → Expiré | Auto, ou Manager | `ValidTo` passé (auto) | 🔜 SLM-04 |
 | SLA | En vigueur → Brouillon | Manager | Renégociation ; les mesures en cours restent sur la version précédente | 🔜 SLM-12 |
 | SLA | Expiré → … | — | Statut final ; un nouvel accord se crée | 🔜 SLM-12 |
@@ -102,11 +102,11 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 |---|---|---|---|
 | SLM-01 | **Catalogue des services** : nom, criticité, heures de service, responsable ; tenu par les gestionnaires | ✅ | |
 | SLM-02 | **SLA** rattaché à un service : client, disponibilité cible, délais de résolution P1 à P4, validité, date de revue ; tenus par les gestionnaires ; supprimer un service supprime ses SLA | ✅ | |
-| SLM-03 | Passer un SLA **En vigueur** exige des cibles complètes et croissantes, et l'unicité (service, client) parmi les SLA En vigueur | 🔜 | 1 |
+| SLM-03 | Passer un SLA **En vigueur** exige des cibles complètes et croissantes, et l'unicité (service, client) parmi les SLA En vigueur | ✅ | 1 |
 | SLM-04 | Un SLA passe **Expiré** automatiquement le lendemain de `ValidTo` | 🔜 | 2 |
 | SLM-05 | **Revue échue** : un SLA En vigueur dont la date de revue est passée remonte dans « Relances » des gestionnaires | ✅ | |
 | SLM-10 | Les incidents (INC-20), problèmes et demandes désignent leur **service** dans le catalogue (`ServiceId`) au lieu d'un texte libre | 🔜 | 2 |
-| SLM-11 | Un service **En service** a obligatoirement un propriétaire | 🔜 | 1 |
+| SLM-11 | Un service **En service** a obligatoirement un propriétaire | ✅ | 1 |
 | SLM-12 | **Transitions contraintes** selon le § 4 (SOC-05) | ✅ | 1 |
 | SLM-13 | **Délais de prise en charge** P1 à P4 dans le SLA (`ResponseHoursP1…P4`), mesurés sur `FirstResponseAt` des incidents (INC-06) | 🔜 | 2 |
 | SLM-14 | **Heures de service structurées** : jours ouvrés, plages horaires, jours fériés, fuseau (défaut : 24 h/24 et 7 j/7) ; tous les délais SLA se comptent dans ces heures | 🔜 | 2 |

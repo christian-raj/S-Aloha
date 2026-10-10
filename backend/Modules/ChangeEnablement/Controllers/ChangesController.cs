@@ -28,6 +28,7 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         e.PlannedStart = Dates.Utc(dto.PlannedStart); e.PlannedEnd = Dates.Utc(dto.PlannedEnd);
         e.ImplementationPlan = dto.ImplementationPlan ?? ""; e.BackoutPlan = dto.BackoutPlan ?? "";
         e.Outcome = string.IsNullOrEmpty(dto.Outcome) ? null : dto.Outcome;
+        e.RejectionReason = string.IsNullOrWhiteSpace(dto.RejectionReason) ? null : dto.RejectionReason.Trim();
         return null;
     }
 
@@ -58,8 +59,16 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
     {
         if (status is "Planifié" or "Mis en œuvre" or "Clos" && e.AuthorizedAt is null)
             return "Le changement doit d'abord être autorisé par un gestionnaire.";
-        if (status == "Planifié" && e.PlannedStart is null)
-            return "Renseigner le début planifié pour inscrire le changement au calendrier.";
+        // CHG-12 : un changement normal ou urgent s'évalue sur ses plans.
+        if (status == "Évalué" && e.ChangeType != "Standard"
+            && (string.IsNullOrWhiteSpace(e.ImplementationPlan) || string.IsNullOrWhiteSpace(e.BackoutPlan)))
+            return "Renseigner le plan de mise en œuvre et le plan de retour arrière pour évaluer le changement.";
+        // CHG-13 : un créneau complet pour le calendrier.
+        if (status == "Planifié" && (e.PlannedStart is null || e.PlannedEnd is null))
+            return "Renseigner le début et la fin planifiés pour inscrire le changement au calendrier.";
+        // CHG-17 : un rejet se motive, le motif est communiqué au demandeur.
+        if (status == "Rejeté" && e.RejectionReason is null)
+            return "Motiver le rejet : le motif est communiqué au demandeur.";
         if (status == "Clos" && e.Outcome is null)
             return "Renseigner le résultat (Réussi ou Échoué) avant de clore le changement.";
         return null;

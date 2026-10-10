@@ -77,7 +77,8 @@ public class SearchTests(ApiFixture api)
         object Incident(string status, string? resolution) => new
         {
             title = "Imprimante HP-M607 du 3e étage hors ligne", description = "Bourrage récurrent", status,
-            impact = "Faible", urgency = "Moyenne", category = "Poste de travail", affectedService = "Impression", isMajor = false, resolution
+            impact = "Faible", urgency = "Moyenne", category = "Poste de travail", affectedService = "Impression", isMajor = false, resolution,
+            resolutionCode = resolution is null ? null : "Correctif appliqué"
         };
         var inc = await Json(await user.PostAsJsonAsync("/api/incidents", Incident("Nouveau", null)));
         var incRef = inc.GetProperty("reference").GetString()!;
@@ -123,12 +124,22 @@ public class SearchTests(ApiFixture api)
         object Problem(string status) => new
         {
             title = "Problème QW-ROUVERT", description = "d", status, impact = "Moyen", urgency = "Moyenne", category = "Test",
-            affectedService = "Test", knownErrorWorkaround = "Relancer le service", rootCause = (string?)null
+            affectedService = "Test", knownErrorWorkaround = "Relancer le service", rootCause = "Fuite mémoire du service"
         };
         await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("En analyse")));
         await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("Erreur connue")));
         await WaitFor("QW-ROUVERT", pref);
         // Réouverture permise depuis Résolu (PRB-10) : Erreur connue → Résolu → En analyse.
+        // Une erreur connue se résout par une action corrective terminée (PRB-12).
+        var raci = new[]
+        {
+            new { role = "R", assigneeType = "User", assigneeId = "lova.rabe", assigneeDisplayName = "Lova" },
+            new { role = "A", assigneeType = "User", assigneeId = "lova.rabe", assigneeDisplayName = "Lova" }
+        };
+        var action = await Json(await manager.PostAsJsonAsync($"/api/problems/{pid}/actions",
+            new { title = "Corriger la fuite", description = "", dueDate = (DateTime?)null, raci }));
+        await Json(await manager.PutAsJsonAsync($"/api/actions/{action.GetProperty("id").GetInt32()}",
+            new { title = "Corriger la fuite", description = "", status = "Terminée", dueDate = (DateTime?)null, raci }));
         await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("Résolu")));
         await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("En analyse")));
         await WaitGone("QW-ROUVERT", pref);
@@ -145,7 +156,7 @@ public class SearchTests(ApiFixture api)
         await Json(await user.PutAsJsonAsync($"/api/incidents/{iid}", new
         {
             title = "Incident ZD-SUPPRIME", description = "d", status = "Résolu", impact = "Faible", urgency = "Faible",
-            category = "Test", affectedService = "Test", isMajor = false, resolution = "Corrigé"
+            category = "Test", affectedService = "Test", isMajor = false, resolution = "Corrigé", resolutionCode = "Correctif appliqué"
         }));
         await WaitFor("ZD-SUPPRIME", iref);
         Assert.Equal(HttpStatusCode.NoContent, (await api.Client().DeleteAsync($"/api/incidents/{iid}")).StatusCode);
