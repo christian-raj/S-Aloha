@@ -33,6 +33,10 @@ Le détail par pratique (et les droits à venir) est au § 2 de chaque document 
 
 Si un utilisateur appartient à plusieurs groupes, le rôle le plus élevé est retenu (ordre d'évaluation : Admin > Manager > User).
 
+Ces rôles valent aujourd'hui pour toute la plateforme. Leur limitation à des **périmètres**
+(direction, site, entité) est spécifiée dans [périmètres](perimetres.md) (PER-01 à PER-12, à
+implémenter).
+
 L'identité retenue est le `sAMAccountName` renvoyé par l'annuaire, quelle que soit la casse saisie à la connexion ; les comparaisons d'identifiants (« Mes … » de la console, actions affectées) ignorent la casse.
 
 **Rôles applicatifs et rôles ITIL.** ITIL définit des rôles par pratique (gestionnaire des

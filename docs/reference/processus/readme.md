@@ -106,6 +106,24 @@ Prérequis des motifs (réouverture, rejet, abandon) et des transitions forcées
 |---|---|
 | [SOC-10](../regles-metier.md#5-règles-communes-aux-processus), [PRB-26](gestion-des-problemes.md) | Groupes de l'utilisateur dans le jeton ; « Mon travail » et actions des groupes |
 
+### Étape 6 — Périmètres
+
+Droits scopés par périmètre (direction, site, entité) : affectations d'utilisateurs et de
+groupes AD, périmètre porté par chaque enregistrement, décisions de gestionnaire limitées au
+périmètre, entrée Administration › Périmètres. Suppose l'étape 5 (groupes dans le jeton).
+
+| Règle | Objet |
+|---|---|
+| [PER-01 à PER-12](../perimetres.md) | Modèle, administration, droits et visibilité par périmètre, reprise des données |
+
+Décisions D1 à D4 à confirmer avant de coder : [ADR-0014](../../decisions/adr-0014-perimetres-droits-scopes.md).
+
+### Itération suivante
+
+Étapes 4, 5 et 6, dans cet ordre : l'étape 5 fournit les groupes AD dont l'étape 6 a besoin
+pour les affectations de groupes. Suivi : issues « Étape 4 », « Étape 5 » et « Périmètres »
+du [plan d'action](../../plan-action.md#7-feuille-de-route-fonctionnelle).
+
 ### Hors étapes
 
 | Règle | Objet |
