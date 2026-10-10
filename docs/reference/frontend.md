@@ -239,6 +239,7 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 | Santé | Base, annuaire, version déployée | SOC-26 | 🔜 |
 | Journal d'audit | Journal global, filtrable par auteur, pratique, période | [SOC-20](regles-metier.md#9-traçabilité-commentaires-administration), SOC-26 | 🔜 |
 | Nettoyage | Doublons à fusionner ou supprimer | SOC-26 | 🔜 |
+| Périmètres | Périmètres (création, renommage, suppression douce, restauration), fiche avec compteurs par pratique et affectations d'utilisateurs ou de groupes AD (Manager, User) | [PER-01 à PER-12](perimetres.md) | 🔜 |
 | Index de recherche | État du service d'embeddings et de l'index par source, reconstruction ; avis ambre si le service est injoignable | [RAG-08](recherche.md) | ✅ |
 
 « Index de recherche » est la **première entrée réelle** de la section : un Admin voit

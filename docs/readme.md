@@ -17,6 +17,7 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 | 🖥️ | [Frontend](reference/frontend.md) | Ajouter un écran ou un module, respecter le design |
 | ⚙️ | [Exploitation](reference/exploitation.md) | Installer, brancher l'Active Directory, mettre à jour |
 | 🔎 | [Recherche](reference/recherche.md) | Comprendre la recherche hybride : contenu indexé, cas similaires, service d'embeddings |
+| 🧭 | [Périmètres](reference/perimetres.md) | Droits scopés par direction, site ou entité (spécifié, à implémenter) |
 | 🛡️ | [Sécurité](reference/securite.md) | Préparer une mise en production |
 | 📖 | [Glossaire](reference/glossaire.md) | Retrouver un terme ITIL, technique ou malgache |
 
