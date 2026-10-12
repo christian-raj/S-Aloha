@@ -15,6 +15,8 @@ l'historique est dans la table `__EFMigrationsHistory`
 |---|---|
 | `Initial` | Schéma du module Problèmes : `Problems`, `Analyses`, `Actions`, `RaciAssignments` — identique à ce que créait `EnsureCreated` avant les modules ITIL 4 |
 | `Lot1Validations` | Colonnes des validations du lot 1 : `Incidents.ResolutionCode`, `Incidents.FirstResponseAt`, `ServiceRequests.RejectionReason`, `Changes.RejectionReason`, `Improvements.AbandonReason`, `Problems.ClosureCode`, `Problems.ResolvedAt` |
+| `IncidentSlaMetrics` | Colonnes des indicateurs d'incident : `Incidents.ResolutionDueAt` (INC-21), `Incidents.OccurredAt` (INC-27), `Incidents.FirstContactResolution`, `Incidents.OwnerChanged` (INC-23) |
+| `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `AuditJournal` | Table `AuditEntries` du journal d'audit (SOC-20) : type et identifiant de l'enregistrement, référence recopiée, action, champ, ancienne et nouvelle valeur, motif, auteur, date ; index sur (type, identifiant) et sur la date |
 | `ItilModules` | Les dix tables des autres processus et des liens (`ItemLinks`, `Incidents`, `ServiceRequests`, `Changes`, `ConfigurationItems`, `CiRelationships`, `Services`, `Agreements`, `KnowledgeArticles`, `Improvements`) ; aucune modification des tables existantes |
@@ -129,7 +131,7 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 
 | Table (entité) | Préfixe | Colonnes propres |
 |---|---|---|
-| `Incidents` (`Incident`) | INC | `ResolutionCode`, `FirstResponseAt`, `ReopenCount`, `ReopenReason`, `Impact`, `Urgency`, `Priority` (dérivée), `Category`, `AffectedService`, `IsMajor`, `Resolution`, `ResolvedAt`, `ClosedAt` |
+| `Incidents` (`Incident`) | INC | `ResolutionCode`, `FirstResponseAt`, `ReopenCount`, `ReopenReason`, `ResolutionDueAt`, `OccurredAt`, `FirstContactResolution`, `OwnerChanged`, `Impact`, `Urgency`, `Priority` (dérivée), `Category`, `AffectedService`, `IsMajor`, `Resolution`, `ResolvedAt`, `ClosedAt` |
 | `ServiceRequests` (`ServiceRequest`) | REQ | `RejectionReason`, `RequestedItem`, `RequestedFor`, `RequestedForDisplayName`, `DueDate`, `ApprovedBy`, `ApprovedAt`, `FulfilledAt`, `ClosedAt`, `CancelledAt` |
 | `Changes` (`Change`) | CHG | `RejectionReason`, `ChangeType`, `Risk`, `PlannedStart`, `PlannedEnd`, `ImplementationPlan`, `BackoutPlan`, `Outcome`, `AuthorizedBy`, `AuthorizedAt`, `ClosedAt` |
 | `ConfigurationItems` (`ConfigurationItem`) | CI | `CiType`, `Environment`, `Location` |
@@ -138,6 +140,7 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 | `KnowledgeArticles` (`KnowledgeArticle`) | KB | `ArticleType`, `Content`, `Keywords`, `ReviewDate`, `PublishedBy`, `PublishedAt` |
 | `Improvements` (`Improvement`) | AMI | `AbandonReason`, `Step` (1–7), `Priority`, `Benefit`, `Baseline`, `Target`, `Outcome`, `DueDate`, `ValidatedBy`, `ValidatedAt`, `CompletedAt` |
 | `Assessments` (`Assessment`) | EVA | `EntityCategory` (Entité importante, Entité essentielle), `ValidatedBy`, `ValidatedAt` |
+| `Projects` (`Project`) | PRJ | `Method`, `Components` (liste séparée par des virgules), `StartDate`, `TargetEndDate`, `Budget`, `ActualCost` (décimal 14,2), business case (`Justification`, `ExpectedBenefits`, `ExpectedCosts`, `MajorRisks`), tolérances (`ToleranceDays`, `ToleranceCostPercent` décimal 6,2, `ToleranceScope`, `ToleranceQuality`), `ValidatedBy`, `ValidatedAt`, `AbandonReason`, `ClosedAt` |
 
 ```mermaid
 erDiagram
@@ -158,6 +161,17 @@ erDiagram
   non applicable), `NotApplicable`, `Justification`, `UpdatedBy`, `UpdatedAt` ; une réponse
   par exigence et par évaluation.
 
+- **Composants d'un projet** (migration `ProjectManagement`) : chaque table porte `ProjectId`
+  (FK → `Projects`, cascade), `CreatedAt`, `CreatedBy`. `ProjectPhases` (`Kind` Phase ou
+  Étape, `Name`, `Order`, `PlannedStart`, `PlannedEnd`, `Status`, `ApprovedBy`, `ApprovedAt`),
+  `Milestones` (`Name`, `PhaseId`, `DueDate`, `AchievedAt`), `Deliverables` (`Name`,
+  `Description`, `PhaseId`, `DueDate`, `Status`, `ValidatedBy`, `ValidatedAt`), `Sprints`
+  (`Name`, `Goal`, `StartDate`, `EndDate`, `Status`), `WorkItems` (`Type`, `Title`,
+  `Description`, `AcceptanceCriteria`, `Points`, `Rank`, `SprintId` indexé, `Status`,
+  `AssigneeId`, `AssigneeDisplayName`, `CompletedAt`), `ProjectRisks` (`Title`,
+  `Description`, `Probability`, `Impact`, `Response`, `OwnerDisplayName`, `Status` ; la
+  criticité est calculée, pas stockée), `ProjectIssues` (`Type`, `Title`, `Description`,
+  `Severity`, `Status`, `Resolution`, `ClosedAt`).
 - **`CiRelationships`** : `SourceId`, `TargetId` (FK → `ConfigurationItems`, cascade des deux
   côtés), `Type` (`Dépend de`, `Héberge`, `Fait partie de`, `Se connecte à`).
 - **`SearchPassages`** (socle, `backend/Core/Search/SearchPassage.cs`, migration `SearchIndex`) :
@@ -169,7 +183,7 @@ erDiagram
   ([recherche](recherche.md), [ADR-0013](../decisions/adr-0013-recherche-hybride-service-embeddings-separe.md)).
 - **`ItemLinks`** (socle, `backend/Core/Links/ItemLink.cs`) : `FromType`, `FromId`, `ToType`,
   `ToId`, `CreatedBy`, `CreatedAt`. Types : `problem`, `incident`, `request`, `change`, `ci`,
-  `service`, `agreement`, `article`, `improvement`, `assessment`. Pas de clé étrangère (une extrémité
+  `service`, `agreement`, `article`, `improvement`, `assessment`, `project`. Pas de clé étrangère (une extrémité
   peut appartenir à n'importe quelle table) : les liens d'un enregistrement sont supprimés
   avec lui par l'API, et un lien orphelin est ignoré à la lecture. Index sur
   (`FromType`, `FromId`) et (`ToType`, `ToId`).

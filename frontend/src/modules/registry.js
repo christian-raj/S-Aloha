@@ -14,6 +14,7 @@
  */
 export const GROUPS = [
   { id: 'practices', label: 'Pratiques' },
+  { id: 'projects', label: 'Projets', tone: 'projects' },
   { id: 'compliance', label: 'Conformité & réglementation', tone: 'compliance' },
 ]
 
@@ -76,6 +77,13 @@ export const MODULES = [
   {
     id: 'csi', label: 'Amélioration (CSI)', description: 'Amélioration continue des services', status: 'active',
     href: '/improvements', routes: ['/improvements'],
+  },
+  // --- Projets ---
+  {
+    // Gestion de projet : la méthode choisie (Scrum, Kanban, cycle en V,
+    // PRINCE2, hybride) active les composants et les onglets du projet.
+    id: 'project', group: 'projects', label: 'Projets', description: 'Agile, cycle en V, PRINCE2', status: 'active',
+    href: '/projects', routes: ['/projects'],
   },
   // --- Conformité & réglementation ---
   {

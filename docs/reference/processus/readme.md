@@ -22,6 +22,7 @@
 | [Amélioration continue](amelioration-continue.md) | CSI | 5 | 4 | 6 | 1 |
 | [Conformité NIS 2](conformite-nis2.md) | NIS | 14 | 1 | 6 | 1 |
 | [Déclarations réglementaires](declarations-reglementaires.md) | DRG | 0 | 0 | 11 | 1 |
+| [Gestion de projet](gestion-de-projet.md) | PRJ | 21 | 0 | 2 | 0 |
 
 *Comptes au 2026-10-07, sur les tableaux de règles (hors indicateurs).*
 

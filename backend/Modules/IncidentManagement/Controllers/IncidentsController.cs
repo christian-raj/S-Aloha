@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Itil;
 using SAloha.Api.Core.Links;
@@ -43,6 +44,12 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         e.Resolution = dto.Resolution;
         e.ResolutionCode = string.IsNullOrEmpty(dto.ResolutionCode) ? null : dto.ResolutionCode;
         e.ReopenReason = string.IsNullOrWhiteSpace(dto.ReopenReason) ? null : dto.ReopenReason.Trim();
+        // INC-27 : début constaté, jamais postérieur à la déclaration.
+        e.OccurredAt = Dates.Utc(dto.OccurredAt);
+        if (e.OccurredAt > (creating ? DateTime.UtcNow : e.CreatedAt).AddMinutes(5))
+            return "Le début constaté ne peut pas être postérieur à la déclaration de l'incident.";
+        // INC-23 : un changement de responsable exclut la résolution au premier contact.
+        if (!creating && e.OwnerId != OriginalOwner(e, creating)) e.OwnerChanged = true;
         return null;
     }
 
@@ -76,8 +83,21 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         return null;
     }
 
+    /// <summary>INC-21 : échéance recalculée à la création et quand la priorité ou le service change.</summary>
+    protected override async Task BeforeSaveAsync(Incident e, bool creating)
+    {
+        var entry = Db.Entry(e);
+        if (creating || entry.Property(x => x.Priority).IsModified || entry.Property(x => x.AffectedService).IsModified
+            || e.ResolutionDueAt is null)
+            e.ResolutionDueAt = await IncidentSla.DueAsync(Db, e);
+    }
+
     protected override void OnStatusChanged(Incident e, string from)
     {
+        // INC-23 : fixé à la première résolution ; une réouverture l'annule.
+        if (Incident.Done.Contains(e.Status) && !Incident.Done.Contains(from))
+            e.FirstContactResolution = e.FirstContactResolution ?? (e.FirstResponseAt is null && !e.OwnerChanged && e.ReopenCount == 0);
+        if (from == "Résolu" && e.Status == "En cours") e.FirstContactResolution = false;
         // INC-11 : réouverture d'un incident résolu incrémente ReopenCount ; le motif
         // est effacé à la résolution suivante (l'historique le garde), pour qu'une
         // nouvelle réouverture en exige un nouveau.

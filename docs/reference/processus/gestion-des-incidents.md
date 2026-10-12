@@ -54,7 +54,11 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `OnHoldReason` | texte 30 | si En attente | Attente utilisateur, Attente fournisseur, Attente changement | 🔜 INC-07 |
 | `ResolutionCode` | texte 30 | à la résolution | Correctif appliqué, Contournement, Résolu sans action, Non reproductible, Doublon | ✅ |
 | `FirstResponseAt` | date UTC | auto | Première prise en charge (passage à En cours) | ✅ |
-| `ResponseDueAt`, `ResolutionDueAt` | date UTC | calculé | Échéances tirées du SLA (§ 6) | 🔜 INC-21 |
+| `ResolutionDueAt` | date UTC | calculé | Échéance de résolution tirée du SLA (§ 6) | ✅ INC-21 (partiel) |
+| `ResponseDueAt` | date UTC | calculé | Échéance de prise en charge (SLM-13) | 🔜 INC-21 |
+| `OccurredAt` | date UTC | | Début constaté de l'interruption, jamais postérieur à la déclaration (MTTD) ; saisi par l'API, pas encore dans le formulaire | ✅ INC-27 |
+| `FirstContactResolution` | booléen | auto | Résolu au premier contact ; vide tant que non résolu | ✅ INC-23 |
+| `OwnerChanged` | booléen | auto | Le responsable a changé depuis la création (INC-23) | ✅ |
 | `ReopenCount` | entier | auto | Nombre de réouvertures | ✅ INC-11 |
 | `ReopenReason` | texte | à la réouverture | Motif de la dernière réouverture ; effacé à la résolution suivante (l'historique le garde) | ✅ INC-11 |
 | `ParentId` | lien | | Incident parent (incidents liés à une même panne) | 🔜 INC-16 |
@@ -141,12 +145,13 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | INC-20 | Le service affecté est choisi dans le **catalogue** (`ServiceId`) ; l'ancien texte libre est repris à la migration | 🔜 | 2 |
-| INC-21 | **Échéances** calculées à la création et au changement de priorité : `ResolutionDueAt` = création + délai de résolution de la priorité (SLA du service) ; `ResponseDueAt` = création + délai de prise en charge (SLM-13). Sans SLA : pas d'échéance | 🔜 | 2 |
+| INC-21 | **Échéances** calculées à la création et au changement de priorité : `ResolutionDueAt` = création + délai de résolution de la priorité (SLA du service) ; `ResponseDueAt` = création + délai de prise en charge (SLM-13). Sans SLA : pas d'échéance | ✅ (partiel : `ResolutionDueAt`, SLA En vigueur du service retrouvé par son nom en attendant INC-20, recalculée quand la priorité ou le service change, reprise au démarrage de l'API ; heures calendaires en attendant INC-22) / 🔜 (`ResponseDueAt`) | 2 |
 | INC-22 | Les délais se comptent en **heures de service** du service (SLM-14) et excluent le temps En attente | 🔜 | 2 |
-| INC-23 | **Résolu au premier contact** : résolu sans passer par En cours ni changer de responsable | 🔜 | 2 |
+| INC-23 | **Résolu au premier contact** : résolu sans passer par En cours, sans changement de responsable ni réouverture ; fixé à la première résolution, une réouverture le met à faux | ✅ | |
 | INC-24 | **SLA en risque** : moins de 25 % du délai de résolution restant ⇒ bloc « Urgent » de la console du responsable et des gestionnaires ; **SLA dépassé** ⇒ marqué sur la fiche et le registre | 🔜 | 2 |
 | INC-25 | Notifications (SOC-21) : affectation → responsable (ou membres du groupe) ; résolution → utilisateur affecté ; incident majeur déclaré → tous les gestionnaires ; SLA en risque → responsable | 🔜 | 2 |
 | INC-26 | Un incident **En attente** depuis plus de 5 jours ouvrés remonte en relance au responsable | 🔜 | 3 |
+| INC-27 | **Début constaté** (`OccurredAt`), facultatif, jamais postérieur à la déclaration (5 minutes de tolérance, 400 sinon) ; le MTTD en découle ([REP-11](../reporting.md)) | ✅ | |
 
 ## 7. Liens avec les autres pratiques
 
@@ -171,11 +176,12 @@ depuis plus d'une heure (Décisions, gestionnaires, lot 2), En attente prolongé
 | MTTR incidents | Moyenne en heures (`ResolvedAt − CreatedAt`), incidents résolus ou clos | ✅ |
 | Incidents majeurs ouverts | Majeurs ni Résolu ni Clos | ✅ |
 | Volumétrie par statut | | ✅ |
-| Respect du SLA | Part des incidents résolus avant `ResolutionDueAt`, par service et priorité | 🔜 INC-30 (lot 2) |
+| Respect du SLA | Part des incidents résolus avant `ResolutionDueAt`, par service et priorité | ✅ global et par service ([REP-02, REP-41](../reporting.md)) / 🔜 INC-30 (par priorité) |
+| MTTD | `CreatedAt − OccurredAt` (INC-27) | ✅ [REP-11](../reporting.md) |
 | Délai moyen de prise en charge | `FirstResponseAt − CreatedAt` | 🔜 INC-31 (lot 2) |
-| Résolution au premier contact | Part INC-23 | 🔜 INC-32 (lot 2) |
+| Résolution au premier contact | Part INC-23 | ✅ [REP-12](../reporting.md) |
 | Taux de réouverture | Incidents avec `ReopenCount` > 0 / résolus | 🔜 INC-33 (lot 2) |
-| Stock par ancienneté | Incidents ouverts par tranche d'âge (< 1 j, 1–3 j, 3–7 j, > 7 j) et priorité | 🔜 INC-34 (lot 3) |
+| Stock par ancienneté | Incidents ouverts par tranche d'âge (< 1 j, 1–3 j, 3–7 j, > 7 j) et priorité | ✅ trois tranches (< 24 h, 1 à 7 j, > 7 j, [REP-13](../reporting.md)) / 🔜 INC-34 (tranches cibles, priorité) |
 
 ## 9. API
 

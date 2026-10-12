@@ -44,6 +44,7 @@ où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-
 | **Connaissances** | Capitalisation et formation | Actif (MVP) | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
 | **Amélioration (CSI)** | Amélioration continue des services | Actif (MVP) | `Modules/ContinualImprovement`, `modules/continual-improvement` |
 | **Conformité NIS 2** | Évaluer la conformité au Référentiel Cyber France (ANSSI) | Actif (MVP) | `Modules/ComplianceAssessment`, `modules/compliance-assessment` |
+| **Projets** | Conduire les projets de la DSI : Scrum, Kanban, Cycle en V, PRINCE2, hybride | Actif (MVP) | `Modules/ProjectManagement`, `modules/project-management` |
 
 **MVP** : enregistrer, suivre un cycle de vie simple, porter les décisions des
 gestionnaires et relier les processus entre eux. Une pratique **sort du MVP** selon des
@@ -59,8 +60,9 @@ Indépendants des processus, accessibles à tous les rôles :
   (règles : [`regles-metier.md`](regles-metier.md#2-consoles-par-rôle)) ;
 - **Recherche** — recherche hybride (mots et sens) sur les contenus validés, cas
   similaires sur les fiches ([recherche](recherche.md)) ;
-- **Reporting** — indicateurs (problèmes, MTTR incidents, taux de changements réussis)
-  et volumétrie par processus.
+- **Reporting** — tableau de bord à onglets : score de santé des services, incidents
+  (MTTR, MTTD, résolution au premier contact, SLA), problèmes, changements et projets,
+  conformité ; filtres période et service, exports CSV et PDF ([reporting](reporting.md)).
 
 ## Les processus
 
@@ -76,6 +78,7 @@ détaillées, pratique par pratique : [`processus/`](processus/readme.md).
 | Niveaux de service | Des cibles claires, orientées métier, et le suivi de la prestation au regard de ces cibles | Catalogue des services ; SLA (disponibilité, délais de résolution P1–P4, revue) |
 | Connaissances | Un usage efficace, efficient et pratique de l'information et des connaissances | Articles (solution, procédure, erreur connue, FAQ), publication validée, revue |
 | Amélioration continue | Aligner les services sur l'évolution des besoins par l'amélioration continue | Registre d'amélioration, mesures de départ et cible, modèle ITIL 4 en 7 étapes, validation |
+| Gestion de projet | Faire aboutir les projets en planifiant, déléguant, suivant et maîtrisant tous leurs aspects | La méthode (Scrum, Kanban, Cycle en V, PRINCE2, hybride) active les composants : backlog, sprints et burndown, tableau, phases ou étapes, jalons, livrables, risques, business case, tolérances ; validation par un gestionnaire ([ADR-0015](../decisions/adr-0015-gestion-de-projet-methode-active-composants.md)) |
 
 Tous les enregistrements se **relient** entre eux par leur référence (incident → problème,
 problème → changement, changement → CI, problème → article d'erreur connue…).

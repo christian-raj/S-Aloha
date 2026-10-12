@@ -161,6 +161,7 @@ flowchart LR
     SLA -- "écart" --> CSI[Amélioration]
     PRB -- "tendance" --> CSI
     EVA[Évaluation NIS 2] -- "écart" --> CSI
+    PRJ[Projet] -- "mise en production" --> CHG
     INC -- "cyber, à déclarer" --> DRG[Déclaration réglementaire]
 ```
 
@@ -205,8 +206,11 @@ Partagée par les incidents et les problèmes : la priorité est **calculée** (
 
 ## 7. Reporting
 
-Indicateurs globaux de la page Reporting (`GET /api/reports/summary`). Les indicateurs
-propres à chaque pratique, actuels et à venir, sont au § 8 de son document.
+La page Reporting est un **tableau de bord à onglets** (synthèse, incidents, problèmes,
+changements et projets, conformité), filtrable par période et par service :
+[reporting](reporting.md) (règles REP). Les indicateurs propres à chaque pratique, actuels
+et à venir, sont au § 8 de son document. Indicateurs historiques, toujours servis par
+`GET /api/reports/summary` :
 
 - **MTTR problèmes** : moyenne en jours de (`ClosedAt − CreatedAt`) sur les problèmes actuellement clos. ✅
 - **MTTR incidents** : moyenne en heures de (`ResolvedAt − CreatedAt`) sur les incidents actuellement résolus ou clos. ✅
@@ -215,8 +219,8 @@ propres à chaque pratique, actuels et à venir, sont au § 8 de son document.
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| SOC-18 | **Période** : chaque indicateur se calcule sur une période choisie (30 jours par défaut, mois, trimestre, personnalisée) | 🔜 | 2 |
-| SOC-19 | **Export CSV** de chaque tableau du reporting | 🔜 | 3 |
+| SOC-18 | **Période** : chaque indicateur se calcule sur une période choisie (30 jours par défaut, mois, trimestre, personnalisée) | ✅ (tableau de bord : 7, 30, 90 jours, 12 mois, personnalisée) | |
+| SOC-19 | **Export CSV** de chaque tableau du reporting | ✅ (CSV de l'onglet actif, [REP-08](reporting.md)) | |
 
 ## 8. Notifications
 

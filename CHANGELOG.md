@@ -14,6 +14,20 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Reporting** : tableau de bord à onglets — synthèse globale avec score de santé expliqué,
+  incidents, problèmes, changements et projets, conformité et métriques ; filtres période
+  (7, 30, 90 jours, 12 mois, personnalisée) et service ; badges d'alerte sur les onglets ;
+  export CSV de l'onglet actif (Excel) et PDF de tous les onglets (règles REP).
+- **Incidents** : échéance de résolution tirée du SLA en vigueur du service (INC-21,
+  partiel), résolution au premier contact (INC-23), début constaté et MTTD (INC-27).
+
+- **Projets** (gestion de projet, ADR-0015) : la méthode — Scrum, Kanban, Cycle en V,
+  PRINCE2 ou hybride — active les composants du projet (backlog, sprints et burndown,
+  tableau, phases ou étapes, jalons, livrables, risques, incidents projet, business case,
+  tolérances). Le chef de projet crée et conduit, un gestionnaire valide le lancement ;
+  synthèse d'avancement et alertes de tolérance. Nouvelle section de menu **Projets**
+  (repère vert) entre Pratiques et Conformité & réglementation.
+
 - **Groupes AD dans le jeton** (lot 1, étape 5) : un incident, une demande, un changement,
   une amélioration ou une action confiés à un groupe AD apparaissent dans « Mon travail »,
   « Assignés à moi » et « Mes actions » de chacun de ses membres ; un membre du groupe

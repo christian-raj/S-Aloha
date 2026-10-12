@@ -36,6 +36,14 @@ public class Incident : Record
     public DateTime? ResolvedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
     public int ReopenCount { get; set; }                                 // INC-11 : nombre de réouvertures
+    /// <summary>INC-27 : début constaté de l'interruption, facultatif (MTTD = création − début).</summary>
+    public DateTime? OccurredAt { get; set; }
+    /// <summary>INC-21 : échéance de résolution tirée du SLA en vigueur du service ; null sans SLA.</summary>
+    public DateTime? ResolutionDueAt { get; set; }
+    /// <summary>Le responsable a changé depuis la création (INC-23).</summary>
+    public bool OwnerChanged { get; set; }
+    /// <summary>INC-23 : résolu sans passer par En cours ni changer de responsable ; null tant que non résolu.</summary>
+    public bool? FirstContactResolution { get; set; }
     public string? ReopenReason { get; set; }                            // INC-11 : motif de réouverture
 }
 
@@ -43,4 +51,4 @@ public record IncidentDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? Impact, string? Urgency, string? Category, string? AffectedService,
     bool IsMajor, string? Resolution, string? ResolutionCode = null,
-    string? ReopenReason = null) : IRecordDto;
+    string? ReopenReason = null, DateTime? OccurredAt = null) : IRecordDto;
