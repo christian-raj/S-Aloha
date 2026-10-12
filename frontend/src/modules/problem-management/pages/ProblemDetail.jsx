@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { api, getUser } from '../../../api'
 import FiveWhys from '../components/FiveWhys'
 import Ishikawa from '../components/Ishikawa'
@@ -23,6 +23,48 @@ const LABELS = {
 }
 const METHODS = { FIVE_WHYS: '5 Pourquoi', ISHIKAWA: 'Ishikawa (6M)', FTA: 'Arbre des défaillances (FTA)' }
 const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
+
+/**
+ * PRB-30, KB-12 : une erreur connue se documente dans la base de connaissances.
+ * L'article (type Erreur connue, brouillon) reprend le titre, les symptômes et le
+ * contournement, et se relie au problème ; s'il existe déjà, la fiche y renvoie.
+ */
+export function KnownErrorArticle({ p }) {
+  const [article, setArticle] = useState(undefined)
+  const [error, setError] = useState('')
+  const nav = useNavigate()
+  useEffect(() => {
+    api.links.list('problem', p.id)
+      .then(l => setArticle(l.find(x => x.type === 'article') ?? null)).catch(() => setArticle(null))
+  }, [p.id])
+  if (article === undefined || !(p.status === 'Erreur connue' || article)) return null
+
+  const create = async () => {
+    try {
+      const a = await api.knowledge.create({
+        title: p.title, articleType: 'Erreur connue',
+        description: `Erreur connue documentée depuis le problème ${p.reference}.`,
+        content: `## Symptômes\n\n${p.description || '—'}\n\n## Contournement\n\n${p.knownErrorWorkaround || '—'}\n\n## Problème\n\n${p.reference}`,
+        keywords: [p.category, p.affectedService].filter(Boolean).join(', ')
+      })
+      await api.links.create({ fromType: 'problem', fromId: p.id, toReference: a.reference })
+      nav('/knowledge/' + a.id)
+    } catch (e) { setError(e.message) }
+  }
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <h3 style={{ color: 'var(--navy)', marginBottom: 4 }}>Article d'erreur connue</h3>
+      {error && <div className="error">{error}</div>}
+      {article
+        ? <p style={{ fontSize: 13 }}>Documentée dans <Link to={'/knowledge/' + article.id}><b>{article.reference}</b></Link> — {article.title} ({article.status}).</p>
+        : <>
+          <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 10 }}>
+            Publier l'erreur connue dans la base de connaissances : le support applique le contournement sans attendre le correctif.</p>
+          <button className="btn ghost" onClick={create}>Créer l'article d'erreur connue</button>
+        </>}
+    </div>
+  )
+}
 
 export default function ProblemDetail() {
   const { id } = useParams()
@@ -58,7 +100,7 @@ export default function ProblemDetail() {
             className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
       </div>
 
-      {tab === 'infos' && <><Infos p={p} isManager={isManager} onSaved={load} /><SimilarCases type="problem" id={p.id} /></>}
+      {tab === 'infos' && <><Infos p={p} isManager={isManager} onSaved={load} /><KnownErrorArticle p={p} /><SimilarCases type="problem" id={p.id} /></>}
       {tab === 'rca' && <Rca p={p} onSaved={load} />}
       {tab === 'actions' && <ActionsTab p={p} onSaved={load} />}
       {tab === 'history' && <History type="problem" id={p.id} labels={LABELS} refreshKey={p.updatedAt} />}

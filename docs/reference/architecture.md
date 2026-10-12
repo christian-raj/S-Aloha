@@ -75,7 +75,7 @@ Les processus autres que les problèmes héritent d'un même socle :
   (statuts réservés), `CheckStatus` (conditions du statut, vérifiées à chaque
   enregistrement), `OnStatusChanged` (horodatages), `ConflictAsync` (doublon interdit,
   refus 409 : nom de CI unique par environnement), `StatusAfterEdit` (statut auquel
-  la modification d'un non-gestionnaire ramène l'enregistrement), `InitialStatus`, `ManagerOnly`
+  la modification d'un non-gestionnaire ramène l'enregistrement), `RequiresManager(from, to)` (statut réservé selon le statut d'origine : réactiver un article archivé), `InitialStatus`, `ManagerOnly`
   (référentiels), `CanCreate` et `CanEdit` (droit de créer, de modifier un enregistrement
   d'après ses valeurs enregistrées : un projet se modifie par son chef de projet ; par défaut
   `ManagerOnly`), `OnCreatedAsync` (objets dépendants créés après l'enregistrement : phases
@@ -142,7 +142,8 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET/POST/PUT `/api/changes[/{id}]`, GET `/api/changes/schedule`, GET `/api/changes/{id}/conflicts` | User | Changements, calendrier et conflits ; Autorisé/Rejeté : Manager (DELETE : Admin) | Modules/ChangeEnablement |
 | GET/POST/PUT `/api/configuration-items[/{id}]`, GET `/{id}/impact`, POST `/{id}/relations`, DELETE `/relations/{id}` | User | CI, relations et vue d'impact transitive (DELETE d'un CI : Admin) | Modules/ServiceConfigurationManagement |
 | GET `/api/services`, `/api/agreements` ; POST/PUT | User ; écriture Manager | Catalogue des services, SLA (DELETE : Admin) | Modules/ServiceLevelManagement |
-| GET/POST/PUT `/api/knowledge[/{id}]` | User | Articles ; Publié : Manager (DELETE : Admin) | Modules/KnowledgeManagement |
+| GET/POST/PUT `/api/knowledge[/{id}]` | User | Articles ; Publié, Archivé, réactivation : Manager (DELETE : Admin) | Modules/KnowledgeManagement |
+| POST `/api/knowledge/{id}/submit`, `/review`, `/archive-request` ; GET `/{id}/usage` | User ; revue et archivage : responsable ou Manager | Soumission, revue, demande d'archivage, utilisation (KB-14, KB-17, KB-21) | Modules/KnowledgeManagement |
 | GET/POST/PUT `/api/improvements[/{id}]` | User | Améliorations ; Validée/Abandonnée : Manager (DELETE : Admin) | Modules/ContinualImprovement |
 | GET `/api/assessments[/{id}]`, `/{id}/questionnaire`, `/{id}/score` ; PUT `/{id}/responses/{requirementId}` | User | Évaluations NIS 2 : consultation, réponses, scores | Modules/ComplianceAssessment |
 | POST/PUT `/api/assessments[/{id}]`, POST `/{id}/improvements` | Manager | Création, validation, réouverture ; action d'amélioration depuis un écart (DELETE : Admin) | Modules/ComplianceAssessment |

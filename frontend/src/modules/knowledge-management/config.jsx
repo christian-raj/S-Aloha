@@ -23,14 +23,20 @@ export const knowledgeConfig = {
     { key: 'reviewDate', label: 'Prochaine revue', type: 'date' },
     ownerField('Responsable de l\'article'),
     descriptionField('Résumé', 'En une ou deux phrases : à quoi sert cet article', 2),
-    { key: 'content', label: 'Contenu', type: 'textarea', rows: 12, placeholder: 'Contexte, étapes, vérifications…' },
+    { key: 'content', label: 'Contenu (Markdown)', type: 'textarea', rows: 12,
+      placeholder: '## Contexte\n…\n\n## Étapes\n1. …\n2. …\n\nCode : `commande` ou bloc entre ```' },
   ],
   columns: [
     { h: 'Type', v: r => r.articleType },
     { h: 'Mots-clés', v: r => r.keywords || '—' },
     { h: 'Revue', v: r => dateFr(r.reviewDate) },
   ],
-  meta: r => [r.publishedAt && `Publié par ${r.publishedBy} le ${dateTimeFr(r.publishedAt)}`],
-  help: 'La publication est validée par un gestionnaire ; un article publié doit avoir un contenu. Retouché par un autre utilisateur, il repasse en brouillon.',
+  meta: r => [r.publishedAt && `Publié par ${r.publishedBy} le ${dateTimeFr(r.publishedAt)}`,
+    r.lastReviewedAt && `Revu par ${r.lastReviewedBy} le ${dateFr(r.lastReviewedAt)}`],
+  badges: r => <>
+    {r.submittedAt && <span className="badge t-progress">Soumis à publication</span>}
+    {r.archiveRequestedAt && <span className="badge t-wait">Archivage demandé</span>}
+  </>,
+  help: 'Le rédacteur soumet son brouillon, un gestionnaire le publie (contenu obligatoire ; revue fixée à un an par défaut) ; retouché par un autre utilisateur, il repasse en brouillon. À la revue, le responsable confirme l\'article ou demande son archivage ; archiver et réactiver sont des décisions de gestionnaire.',
   linkHint: 'Problème (erreur connue), incidents résolus grâce à l\'article…',
 }

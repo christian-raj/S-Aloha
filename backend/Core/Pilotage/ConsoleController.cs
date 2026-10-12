@@ -105,12 +105,26 @@ public class ConsoleController(AppDbContext db) : ControllerBase
             decisions.AddRange(await InStatus(db.Changes, "change", "Demandé", "Évalué"));
             decisions.AddRange(await InStatus(db.ServiceRequests, "request", "Soumise"));
             decisions.AddRange(await InStatus(db.Improvements, "improvement", "Proposée"));
+            // Connaissances : brouillons soumis à publication (KB-21), archivages demandés à la revue (KB-17).
+            decisions.AddRange(await db.KnowledgeArticles.AsNoTracking()
+                .Where(a => a.Status == "Brouillon" && a.SubmittedAt != null).OrderBy(a => a.SubmittedAt)
+                .Select(a => new Item("article", a.Id, a.Reference, a.Title, "À publier")).ToListAsync());
+            decisions.AddRange(await db.KnowledgeArticles.AsNoTracking()
+                .Where(a => a.Status == "Publié" && a.ArchiveRequestedAt != null).OrderBy(a => a.ArchiveRequestedAt)
+                .Select(a => new Item("article", a.Id, a.Reference, a.Title, "Archivage demandé")).ToListAsync());
 
             // Revues échues : articles publiés et SLA en vigueur dont la date de revue est passée.
             var reviewsDue = new List<Item>();
             reviewsDue.AddRange(await db.KnowledgeArticles.AsNoTracking()
                 .Where(a => a.Status == "Publié" && a.ReviewDate != null && a.ReviewDate < today)
                 .Select(a => new Item("article", a.Id, a.Reference, a.Title, a.Status)).ToListAsync());
+            // KB-12 : article d'erreur connue dont le problème est clos « Corrigé » : à archiver.
+            var fixedProblems = db.Problems.Where(p => p.Status == "Clos" && p.ClosureCode == "Corrigé").Select(p => p.Id);
+            reviewsDue.AddRange(await db.KnowledgeArticles.AsNoTracking()
+                .Where(a => a.Status == "Publié" && a.ArticleType == "Erreur connue"
+                            && db.ItemLinks.Any(l => (l.FromType == "article" && l.FromId == a.Id && l.ToType == "problem" && fixedProblems.Contains(l.ToId))
+                                                  || (l.ToType == "article" && l.ToId == a.Id && l.FromType == "problem" && fixedProblems.Contains(l.FromId))))
+                .Select(a => new Item("article", a.Id, a.Reference, a.Title, "À archiver : problème corrigé")).ToListAsync());
             reviewsDue.AddRange(await db.Agreements.AsNoTracking()
                 .Where(a => a.Status == "En vigueur" && a.ReviewDate != null && a.ReviewDate < today)
                 .Select(a => new Item("agreement", a.Id, a.Reference, a.Title, a.Status)).ToListAsync());
