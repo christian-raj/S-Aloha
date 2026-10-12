@@ -62,9 +62,9 @@ export default function Reporting() {
   // La synthèse alimente aussi les badges des onglets : chargée quel que soit l'onglet ouvert.
   useEffect(() => { api.reports.dashboard('overview', query).then(setOverview).catch(e => setError(e.message)) }, [query])
   useEffect(() => {
-    setData(null); setError('')
+    setError('')
     if (tab.id === 'overview') return
-    api.reports.dashboard(tab.load, query).then(setData).catch(e => setError(e.message))
+    api.reports.dashboard(tab.load, query).then(value => setData({ tab: tab.id, value })).catch(e => setError(e.message))
   }, [tab.id, query])
 
   // Export PDF (REP-08) : tous les onglets, imprimés par le navigateur.
@@ -82,7 +82,9 @@ export default function Reporting() {
     return () => { clearTimeout(timer); window.removeEventListener('afterprint', done) }
   }, [printing])
 
-  const current = tab.id === 'overview' ? overview : data
+  // Données rattachées à l'onglet qui les a demandées : au changement d'onglet,
+  // la vue ne reçoit jamais celles de l'onglet précédent.
+  const current = tab.id === 'overview' ? overview : data?.tab === tab.id ? data.value : null
   const exportCsv = () => downloadCsv(`s-aloha-${tab.id}-${bounds.from}-${bounds.to}.csv`, [
     { title: `S-Aloha — ${tab.label}`, header: ['Période', 'Service'], rows: [[`${date(bounds.from)} – ${date(bounds.to)}`, tab.service ? service || 'Tous' : 'Sans objet']] },
     ...tab.csv(current)])

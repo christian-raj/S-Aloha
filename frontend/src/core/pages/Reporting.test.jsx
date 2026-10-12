@@ -64,6 +64,16 @@ it('passe la période et le service à l\'API, et filtre les incidents à suivre
   expect(within(table).getByText('Messagerie lente')).toBeTruthy()
 })
 
+it('change d\'onglet sans passer à la vue les données de l\'onglet précédent', async () => {
+  dashboard.mockImplementation((tab) => Promise.resolve(tab === 'overview' ? overview : tab === 'incidents' ? incidents
+    : { kpis: { open: 4, knownErrors: 1, incidentsPerProblem: 2, rcaPending: 0 }, topServices: [],
+        funnel: [{ stage: 'Identifié', count: 4 }], actions: { open: 0, overdue: 0, done: 0, overdueList: [] } }))
+  renderAt('/reports?tab=incidents')
+  expect(await screen.findByText('Paie arrêtée')).toBeTruthy()
+  fireEvent.click(screen.getByRole('tab', { name: 'Problèmes' }))
+  expect(await screen.findByText('Entonnoir de résolution')).toBeTruthy()
+})
+
 it('période personnalisée : bornes conservées ; sinon, N jours jusqu\'à aujourd\'hui inclus', () => {
   expect(periodBounds('custom', '2026-01-01', '2026-03-31')).toEqual({ from: '2026-01-01', to: '2026-03-31' })
   expect(periodBounds('30', null, null, new Date(2026, 9, 12))).toEqual({ from: '2026-09-13', to: '2026-10-12' })
