@@ -7,6 +7,7 @@ using SAloha.Api.Modules.ContinualImprovement;
 using SAloha.Api.Modules.IncidentManagement;
 using SAloha.Api.Modules.KnowledgeManagement;
 using SAloha.Api.Modules.ProblemManagement;
+using SAloha.Api.Modules.ProjectManagement;
 using SAloha.Api.Modules.ServiceConfigurationManagement;
 using SAloha.Api.Modules.ServiceLevelManagement;
 using SAloha.Api.Modules.ServiceRequestManagement;
@@ -62,6 +63,7 @@ public static class ItemLinks
         new("article", "KB", db => Of(db.KnowledgeArticles)),
         new("improvement", "AMI", db => Of(db.Improvements)),
         new("assessment", "EVA", db => Of(db.Assessments)),
+        new("project", "PRJ", db => Of(db.Projects)),
     ];
 
     public static Kind? ByType(string type) => Kinds.FirstOrDefault(k => k.Type == type);

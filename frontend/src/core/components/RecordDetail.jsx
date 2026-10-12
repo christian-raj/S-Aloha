@@ -22,7 +22,10 @@ function Editor({ config, record, onSaved }) {
   const merge = patch => setF(prev => ({ ...prev, ...patch }))
   const force = forceOptions(graph, record.status, f.status, reason)
 
-  const save = () => config.api.update(record.id, { ...toPayload(config.fields, f), status: f.status }, force)
+  // `config.keep(record)` : champs que le formulaire ne montre pas mais que la
+  // modification doit renvoyer tels quels (business case d'un projet, édité dans
+  // son onglet) — sans quoi l'API les effacerait.
+  const save = () => config.api.update(record.id, { ...(config.keep?.(record) ?? {}), ...toPayload(config.fields, f), status: f.status }, force)
     .then(saved => {
       // L'API peut ramener le statut en arrière (article retouché, changement modifié).
       setMsg({ ok: true, text: saved.status === f.status ? 'Modifications enregistrées.'
@@ -73,7 +76,8 @@ export default function RecordDetail({ config, children, tab }) {
   if (!r) return <p>Chargement…</p>
 
   const meta = config.meta?.(r).filter(Boolean) ?? []
-  const practice = tab ? [].concat(tab) : []
+  // `tab` : objet, liste, ou fonction de l'enregistrement (onglets d'un projet selon ses composants).
+  const practice = tab ? [].concat(typeof tab === 'function' ? tab(r) : tab) : []
   const tabs = [['infos', 'Informations'], ...practice.map((t, i) => ['practice-' + i, t.label]),
     config.linkType && ['links', 'Liens'], config.linkType && ['history', 'Historique']].filter(Boolean)
   return (

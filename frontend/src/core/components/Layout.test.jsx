@@ -69,9 +69,9 @@ describe('Sections Pilotage, Pratiques, Paramétrage, Administration', () => {
   const sectionTitles = () => [...document.querySelectorAll('.sidebar .nav-section')].map((p) => p.textContent)
 
   it.each([
-    ['User', ['Pilotage', 'Pratiques', 'Conformité & réglementation']],
-    ['Manager', ['Pilotage', 'Pratiques', 'Conformité & réglementation', 'Paramétrage']],
-    ['Admin', ['Pilotage', 'Pratiques', 'Conformité & réglementation', 'Paramétrage', 'Administration']],
+    ['User', ['Pilotage', 'Pratiques', 'Projets', 'Conformité & réglementation']],
+    ['Manager', ['Pilotage', 'Pratiques', 'Projets', 'Conformité & réglementation', 'Paramétrage']],
+    ['Admin', ['Pilotage', 'Pratiques', 'Projets', 'Conformité & réglementation', 'Paramétrage', 'Administration']],
   ])('un %s voit les sections %j', (r, expected) => {
     role = r
     renderAt('/')

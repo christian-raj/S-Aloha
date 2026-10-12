@@ -86,6 +86,19 @@ export const api = {
     createImprovement: (id, code) =>
       request(`/assessments/${id}/improvements`, { method: 'POST', body: JSON.stringify({ code }) })
   },
+  projects: {
+    ...records('/projects'),
+    summary: (id) => request(`/projects/${id}/summary`),
+    /** Éléments d'un projet : phases, milestones, deliverables, sprints, workitems, risks, issues. */
+    parts: (id, segment) => ({
+      list: () => request(`/projects/${id}/${segment}`),
+      create: (dto) => request(`/projects/${id}/${segment}`, { method: 'POST', body: JSON.stringify(dto) }),
+      update: (partId, dto) => request(`/projects/${id}/${segment}/${partId}`, { method: 'PUT', body: JSON.stringify(dto) }),
+      remove: (partId) => request(`/projects/${id}/${segment}/${partId}`, { method: 'DELETE' })
+    }),
+    approveStage: (id, phaseId) => request(`/projects/${id}/phases/${phaseId}/approve`, { method: 'POST' }),
+    burndown: (id, sprintId) => request(`/projects/${id}/sprints/${sprintId}/burndown`)
+  },
   compliance: {
     referential: () => request('/compliance/referential'),
     importText: (csv) => request('/compliance/referential/import', { method: 'POST', body: JSON.stringify({ csv }) })

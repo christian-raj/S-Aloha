@@ -8,6 +8,7 @@ using SAloha.Api.Modules.ContinualImprovement;
 using SAloha.Api.Modules.IncidentManagement;
 using SAloha.Api.Modules.KnowledgeManagement;
 using SAloha.Api.Modules.ProblemManagement;
+using SAloha.Api.Modules.ProjectManagement;
 using SAloha.Api.Modules.ServiceConfigurationManagement;
 using SAloha.Api.Modules.ServiceLevelManagement;
 using SAloha.Api.Modules.ServiceRequestManagement;
@@ -43,6 +44,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SecurityRequirement> SecurityRequirements => Set<SecurityRequirement>();
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<AssessmentResponse> AssessmentResponses => Set<AssessmentResponse>();
+    // Gestion de projet
+    public DbSet<Project> Projects => Set<Project>();
+    public DbSet<ProjectPhase> ProjectPhases => Set<ProjectPhase>();
+    public DbSet<Milestone> Milestones => Set<Milestone>();
+    public DbSet<Deliverable> Deliverables => Set<Deliverable>();
+    public DbSet<Sprint> Sprints => Set<Sprint>();
+    public DbSet<WorkItem> WorkItems => Set<WorkItem>();
+    public DbSet<ProjectRisk> ProjectRisks => Set<ProjectRisk>();
+    public DbSet<ProjectIssue> ProjectIssues => Set<ProjectIssue>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -64,6 +74,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<KnowledgeArticle>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<Improvement>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<Assessment>().HasIndex(x => x.Reference).IsUnique();
+        b.Entity<Project>().HasIndex(x => x.Reference).IsUnique();
+        b.Entity<Project>().Property(x => x.Budget).HasPrecision(14, 2);
+        b.Entity<Project>().Property(x => x.ActualCost).HasPrecision(14, 2);
+        b.Entity<Project>().Property(x => x.ToleranceCostPercent).HasPrecision(6, 2);
+        // Éléments d'un projet : supprimés avec lui ; le score d'un risque est calculé.
+        ConfigurePart<ProjectPhase>(b); ConfigurePart<Milestone>(b); ConfigurePart<Deliverable>(b);
+        ConfigurePart<Sprint>(b); ConfigurePart<WorkItem>(b); ConfigurePart<ProjectRisk>(b); ConfigurePart<ProjectIssue>(b);
+        b.Entity<ProjectRisk>().Ignore(r => r.Score);
+        b.Entity<WorkItem>().HasIndex(w => w.SprintId);
 
         // Le numéro de l'objectif (1 à 20) est son identifiant : pas de séquence.
         b.Entity<SecurityObjective>().Property(o => o.Id).ValueGeneratedNever();
@@ -96,4 +115,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<AuditEntry>().HasIndex(a => new { a.EntityType, a.EntityId });
         b.Entity<AuditEntry>().HasIndex(a => a.At);
     }
+
+    private static void ConfigurePart<T>(ModelBuilder b) where T : ProjectPart =>
+        b.Entity<T>().HasOne(x => x.Project).WithMany().HasForeignKey(x => x.ProjectId).OnDelete(DeleteBehavior.Cascade);
 }
