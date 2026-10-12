@@ -54,7 +54,7 @@ proactive, depuis une tendance), **contrôle** (analyse, contournement, erreur c
 | `CreatedBy`, `CreatedByDisplayName` | texte | auto | Déclarant AD | ✅ |
 | `CreatedAt`, `UpdatedAt`, `ClosedAt` | date UTC | auto | `ClosedAt` : SOC-08 | ✅ |
 | `Source` | texte 10 | ✔ | Réactif (défaut), Proactif | 🔜 PRB-20 |
-| `OwnerType/Id/DisplayName` | AD | | Gestionnaire du problème | 🔜 PRB-21 |
+| `OwnerType/Id/DisplayName` | AD | | Gestionnaire du problème (responsable du socle) ; par défaut le gestionnaire qui qualifie | ✅ PRB-21 |
 | `ClosureCode` | texte 30 | à la clôture | Corrigé, Erreur connue acceptée, Doublon, Non retenu | ✅ |
 | `ResolvedAt` | date UTC | auto | Posée à l'entrée de Résolu (SOC-08) | ✅ |
 
@@ -130,7 +130,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | PRB-18 | `CompletedAt` posé **uniquement** au passage à Terminée, effacé si l'action en sort ; renommer une action terminée ne le change pas | ✅ | 1 |
 | PRB-19 | Une action est **en retard** si son échéance est dépassée et son statut ni Terminée ni Annulée ; l'échéance est une date : en retard à partir du **lendemain**, jamais le jour même | ✅ | |
 | PRB-20 | **Source** du problème : *Réactif* (issu d'incidents) ou *Proactif* (tendance, analyse de risque) ; un problème réactif doit être relié à au moins un incident avant de quitter Nouveau | 🔜 | 2 |
-| PRB-21 | **Gestionnaire du problème** (responsable AD) : par défaut le Manager qui qualifie ; « Mon travail » de ce gestionnaire | 🔜 | 2 |
+| PRB-21 | **Gestionnaire du problème** (responsable AD, utilisateur ou groupe) : par défaut le Manager qui qualifie ; « Mon travail » de ce gestionnaire (ou des membres du groupe) | ✅ | |
 | PRB-22 | Un **incident majeur** résolu sans problème relié crée une alerte « problème à ouvrir » (voir INC-15) | 🔜 | 2 |
 | PRB-23 | **Récurrence** : un problème Résolu ou Clos qui reçoit un nouvel incident relié est signalé aux gestionnaires (« récurrence après correctif ») | 🔜 | 2 |
 | PRB-24 | **Modifier une action** (titre, description, échéance, RACI) : son R, son A (en personne ou par un groupe AD, PRB-26) ou un Manager — résout M7 | ✅ | 1 |
@@ -176,8 +176,8 @@ mes problèmes déclarés, mes actions (en retard, en cours), actions en retard 
 
 | Route | Policy | Rôle |
 |---|---|---|
-| `GET/POST /api/problems`, `GET /api/problems/{id}` | User | Liste (filtres `status`, `q`), détail, déclaration |
-| `PUT /api/problems/{id}` | Manager | Qualification, statut |
+| `GET/POST /api/problems`, `GET /api/problems/{id}` | User | Liste (filtres `status`, `q`, `owner=me`, `perimeter`), détail, déclaration — socle commun (`RecordController`) |
+| `PUT /api/problems/{id}` | Manager du périmètre | Qualification, statut, gestionnaire du problème ; `?force=true&reason=` (Admin, SOC-05) |
 | `DELETE /api/problems/{id}` | Admin | Suppression (liens compris) |
 | `GET/POST/PUT /api/problems/{id}/analyses[/{id}]`, `DELETE` : Manager | User | Analyses RCA |
 | `GET /api/actions`, `POST /api/problems/{id}/actions`, `PUT /api/actions/{id}`, `DELETE` : Manager | User | Actions et RACI |

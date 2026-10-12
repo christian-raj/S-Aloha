@@ -1043,6 +1043,18 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("KnownErrorWorkaround")
                         .HasColumnType("text");
 
+                    b.Property<string>("OwnerDisplayName")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("OwnerId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("OwnerType")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.Property<int>("PerimeterId")
                         .HasColumnType("integer");
 

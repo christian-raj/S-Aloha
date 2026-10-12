@@ -30,7 +30,7 @@ Quatre containers orchestrés par `docker-compose.yml` : **web** (nginx sert le 
 
 ## 3. Organisation du code : socle et modules
 
-S-Aloha est une **plateforme modulaire** : un **socle** (*Core*) transverse à tous les processus ITIL, et un **module** par processus. Les huit processus du registre sont implémentés ; tous sauf *Gestion des problèmes* en MVP, sur un socle commun d'enregistrement (voir [produit.md](produit.md) et [ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)).
+S-Aloha est une **plateforme modulaire** : un **socle** (*Core*) transverse à tous les processus ITIL, et un **module** par processus. Les huit processus du registre sont implémentés ; tous sauf *Gestion des problèmes* en MVP, tous sur un socle commun d'enregistrement (`Record`, `RecordController` ; les problèmes y sont passés le 2026-10-12, leurs analyses et actions restent des contrôleurs propres) (voir [produit.md](produit.md) et [ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)).
 
 ```
 backend/                              # projet SAloha.Api (namespace SAloha.Api.*)
@@ -140,8 +140,8 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 |---|---|---|---|
 | POST `/api/auth/login` | — | Authentification AD → JWT | Core/Auth |
 | GET `/api/console` | User | Console par rôle, orientée action (blocs « à traiter » / « à suivre ») | Core/Pilotage |
-| GET/POST `/api/problems`, GET `/api/problems/{id}` | User | Liste (filtres statut, texte), détail, déclaration | Modules/ProblemManagement |
-| PUT `/api/problems/{id}` | Manager | Qualification, statuts, cause racine, contournement | Modules/ProblemManagement |
+| GET/POST `/api/problems`, GET `/api/problems/{id}`, GET `/api/problems/transitions` | User | Liste (filtres statut, texte, `owner`, `perimeter`), détail, déclaration | Modules/ProblemManagement (socle) |
+| PUT `/api/problems/{id}` | Manager du périmètre | Qualification, statuts, cause racine, contournement, gestionnaire du problème ; transition forcée (Admin) | Modules/ProblemManagement (socle) |
 | DELETE `/api/problems/{id}` | Admin | Suppression | Modules/ProblemManagement |
 | GET/POST/PUT `/api/problems/{id}/analyses[...]` | User | Analyses RCA (DELETE : Manager) | Modules/ProblemManagement |
 | GET `/api/actions`, POST `/api/problems/{id}/actions`, PUT `/api/actions/{id}` | User | Actions + RACI (DELETE : Manager) | Modules/ProblemManagement |

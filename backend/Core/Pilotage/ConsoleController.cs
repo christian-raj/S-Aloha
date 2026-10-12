@@ -61,6 +61,8 @@ public class ConsoleController(AppDbContext db) : ControllerBase
 
         // Enregistrements des autres processus dont je suis responsable (assigné, propriétaire).
         var myAssignments = new List<Item>();
+        // PRB-21 : les problèmes dont je suis le gestionnaire.
+        myAssignments.AddRange(await Mine(db.Problems, "problem", meKey, groups, ["Résolu", "Clos"]));
         myAssignments.AddRange(await Mine(db.Incidents, "incident", meKey, groups, Incident.Done));
         myAssignments.AddRange(await Mine(db.ServiceRequests, "request", meKey, groups, ServiceRequest.Done));
         myAssignments.AddRange(await Mine(db.Changes, "change", meKey, groups, Change.Done));

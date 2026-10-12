@@ -94,6 +94,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Modifié
 
+- **Problèmes sur le socle commun** : le module Problèmes repose désormais, comme les autres
+  pratiques, sur `Record` et `RecordController` (registre, transitions, transition forcée,
+  périmètres, journal) ; il gagne un **gestionnaire du problème** (responsable AD, par défaut
+  le gestionnaire qui qualifie, dans son « Mon travail », PRB-21). API inchangée pour les
+  clients existants.
 - **NIS-15** : créer une action d'amélioration depuis un écart est désormais réservé aux
   gestionnaires (du périmètre de l'évaluation), comme l'indique le tableau des droits ; l'API
   l'acceptait de tout utilisateur.
