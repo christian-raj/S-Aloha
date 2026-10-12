@@ -16,6 +16,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `Initial` | Schéma du module Problèmes : `Problems`, `Analyses`, `Actions`, `RaciAssignments` — identique à ce que créait `EnsureCreated` avant les modules ITIL 4 |
 | `Lot1Validations` | Colonnes des validations du lot 1 : `Incidents.ResolutionCode`, `Incidents.FirstResponseAt`, `ServiceRequests.RejectionReason`, `Changes.RejectionReason`, `Improvements.AbandonReason`, `Problems.ClosureCode`, `Problems.ResolvedAt` |
 | `IncidentSlaMetrics` | Colonnes des indicateurs d'incident : `Incidents.ResolutionDueAt` (INC-21), `Incidents.OccurredAt` (INC-27), `Incidents.FirstContactResolution`, `Incidents.OwnerChanged` (INC-23) |
+| `KnowledgeLifecycle` | Colonnes du cycle des articles : `KnowledgeArticles.SubmittedAt`, `SubmittedBy` (KB-21), `LastReviewedAt`, `LastReviewedBy`, `ArchiveRequestedAt`, `ArchiveRequestedBy`, `ArchiveRequestReason` (KB-17) |
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `Perimeters` | Tables `Perimeters` (nom unique, description, suppression douce) et `PerimeterAssignments` (principal AD utilisateur ou groupe, rôle Manager ou User ; unique par périmètre, principal et rôle) ; périmètre « Organisation » (Id 1) créé ; colonne `PerimeterId` (FK, index, défaut 1) sur `Problems` et chaque table de pratique : l'existant est rattaché à « Organisation » ([périmètres](perimetres.md), PER-10) |
@@ -139,7 +140,7 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 | `ConfigurationItems` (`ConfigurationItem`) | CI | `CiType`, `Environment`, `Location` |
 | `Services` (`ItService`) | SVC | `Criticality`, `ServiceHours` |
 | `Agreements` (`ServiceLevelAgreement`) | SLA | `ServiceId` (FK → `Services`, cascade), `Customer`, `AvailabilityTarget` (décimal 5,2), `ResolutionHoursP1`…`P4`, `ValidFrom`, `ValidTo`, `ReviewDate` |
-| `KnowledgeArticles` (`KnowledgeArticle`) | KB | `ArticleType`, `Content`, `Keywords`, `ReviewDate`, `PublishedBy`, `PublishedAt` |
+| `KnowledgeArticles` (`KnowledgeArticle`) | KB | `ArticleType`, `Content` (Markdown), `Keywords`, `ReviewDate`, `PublishedBy`, `PublishedAt`, `SubmittedAt`, `SubmittedBy`, `LastReviewedAt`, `LastReviewedBy`, `ArchiveRequestedAt`, `ArchiveRequestedBy`, `ArchiveRequestReason` |
 | `Improvements` (`Improvement`) | AMI | `AbandonReason`, `Step` (1–7), `Priority`, `Benefit`, `Baseline`, `Target`, `Outcome`, `DueDate`, `ValidatedBy`, `ValidatedAt`, `CompletedAt` |
 | `Assessments` (`Assessment`) | EVA | `EntityCategory` (Entité importante, Entité essentielle), `ValidatedBy`, `ValidatedAt` |
 | `Projects` (`Project`) | PRJ | `Method`, `Components` (liste séparée par des virgules), `StartDate`, `TargetEndDate`, `Budget`, `ActualCost` (décimal 14,2), business case (`Justification`, `ExpectedBenefits`, `ExpectedCosts`, `MajorRisks`), tolérances (`ToleranceDays`, `ToleranceCostPercent` décimal 6,2, `ToleranceScope`, `ToleranceQuality`), `ValidatedBy`, `ValidatedAt`, `AbandonReason`, `ClosedAt` |

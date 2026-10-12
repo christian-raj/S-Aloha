@@ -142,7 +142,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| PRB-30 | Au passage à **Erreur connue**, l'interface propose de créer un article de connaissance de type *Erreur connue* (symptômes, contournement) relié au problème | 🔜 | 2 |
+| PRB-30 | Au passage à **Erreur connue**, l'interface propose de créer un article de connaissance de type *Erreur connue* (symptômes, contournement) relié au problème ; s'il existe, la fiche y renvoie | ✅ | |
 | PRB-31 | Notifications (SOC-21) : action affectée → R et A ; action en retard → R, A, gestionnaire ; problème qualifié ou clos → déclarant | 🔜 | 2 |
 | PRB-32 | Un problème **sans activité depuis 30 jours** (aucune analyse, action ni modification) remonte en relance aux gestionnaires | 🔜 | 3 |
 
@@ -151,7 +151,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
 | Incident → Problème | Un ou plusieurs incidents causés par le problème | Ouverture depuis l'incident (INC-14) ; PRB-20 | ✅ / 🔜 |
-| Problème → Article | Erreur connue publiée comme article | PRB-30, KB-12 | 🔜 |
+| Problème → Article | Erreur connue publiée comme article | PRB-30, KB-12 | ✅ |
 | Problème → Changement | Correctif mis en œuvre | PRB-27, CHG-23 | ✅ (lien manuel) / 🔜 |
 | Problème → CI | CI en cause | Lien manuel | ✅ |
 | Problème → cas similaires | Articles, problèmes et incidents proches, dans l'onglet Informations | [RAG-06](../recherche.md) | ✅ |

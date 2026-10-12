@@ -752,3 +752,19 @@ table.compact td { padding: 9px 12px; font-size: var(--fs-sm); }
   .row2, .row3, .fishbone, .kpi-row { grid-template-columns: 1fr; }
   table { display: block; overflow-x: auto; }
 }
+
+/* Contenu Markdown d'un article (KB-10) : jetons du thème, angles droits. */
+.markdown { color: var(--text-primary); line-height: 1.6; font-size: var(--fs-base); }
+.markdown > * + * { margin-top: 12px; }
+.markdown h2, .markdown h3, .markdown h4, .markdown h5, .markdown h6 { color: var(--text-primary); margin-top: 20px; }
+.markdown h2 { font-size: var(--fs-lg); }
+.markdown h3 { font-size: var(--fs-md); }
+.markdown h4, .markdown h5, .markdown h6 { font-size: var(--fs-base); }
+.markdown ul, .markdown ol { padding-left: 24px; }
+.markdown li + li { margin-top: 4px; }
+.markdown code { font-family: var(--font-mono); font-size: var(--fs-sm); background: var(--bg-surface-hover);
+  border: 1px solid var(--border-subtle); padding: 1px 5px; }
+.markdown pre { background: var(--bg-surface-hover); border: 1px solid var(--border-default); padding: 12px 14px; overflow-x: auto; }
+.markdown pre code { background: none; border: 0; padding: 0; }
+.markdown blockquote { border-left: 3px solid var(--accent-blue); padding: 4px 12px; color: var(--text-secondary); }
+.markdown a { color: var(--accent-blue); }

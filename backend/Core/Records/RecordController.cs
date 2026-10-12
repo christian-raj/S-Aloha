@@ -108,6 +108,11 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     /// <summary>Statuts que seul un gestionnaire peut poser (autoriser, approuver, publier…).</summary>
     protected virtual bool RequiresManager(string status) => false;
     /// <summary>
+    /// Variante selon le statut d'origine (réactiver un article archivé est une décision
+    /// de gestionnaire, le remettre en brouillon après une retouche ne l'est pas).
+    /// </summary>
+    protected virtual bool RequiresManager(string from, string to) => RequiresManager(to);
+    /// <summary>
     /// Conditions du statut <paramref name="status"/> (résolution renseignée,
     /// autorisation obtenue…) : message d'erreur (400) ou null. Vérifiées à
     /// l'entrée dans le statut ET à chaque modification ultérieure : vider la
@@ -255,7 +260,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
                 Transitions is null ? null : StatusGraph.Check(Transitions, e.Status, target));
             if (forbidden) return Forbid();
             if (refused is not null) return BadRequest(new { message = refused });
-            if (RequiresManager(target) && !IsManager) return Forbid();
+            if (RequiresManager(e.Status, target) && !IsManager) return Forbid();
         }
         error = await CheckStatusAsync(e, target);
         if (error is not null) return BadRequest(new { message = error });
