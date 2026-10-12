@@ -1,11 +1,25 @@
-// Registre des pratiques ITIL couvertes par S-Aloha, et des sections de
-// paramétrage et d'administration — source unique de la navigation (barre
-// latérale : Pilotage, Pratiques, Paramétrage, Administration). Un module passe de
+// Registre des pratiques ITIL et des modules de conformité couverts par
+// S-Aloha, et des sections de paramétrage et d'administration — source unique
+// de la navigation (barre latérale : Pilotage, Pratiques, Conformité &
+// réglementation, Paramétrage, Administration). Un module passe de
 // `soon` à `active` le jour où son interface existe : rien d'autre à toucher
 // côté navigation. Cartographie et état : docs/reference/produit.md.
 
 /**
- * Pratiques ITIL, dans l'ordre du cycle de vie du service.
+ * Groupes de modules, dans l'ordre de la barre latérale. Les pratiques ITIL
+ * d'un côté ; de l'autre, les obligations réglementaires (NIS 2, RGPD…) qui
+ * ne relèvent pas d'une pratique ITIL : les mêler surchargerait la liste des
+ * pratiques et brouillerait le cycle de vie du service. `tone` : repère de
+ * couleur du titre de section.
+ */
+export const GROUPS = [
+  { id: 'practices', label: 'Pratiques' },
+  { id: 'compliance', label: 'Conformité & réglementation', tone: 'compliance' },
+]
+
+/**
+ * Modules, dans l'ordre du cycle de vie du service pour les pratiques.
+ * - `group`  : groupe de la barre latérale (GROUPS) ; absent, « practices » ;
  * - `href`   : point d'entrée du module ;
  * - `routes` : préfixes d'URL qui appartiennent au module (état actif) ;
  * - `pages`  : sous-entrées affichées quand le module est ouvert ; un `href`
@@ -63,12 +77,17 @@ export const MODULES = [
     id: 'csi', label: 'Amélioration (CSI)', description: 'Amélioration continue des services', status: 'active',
     href: '/improvements', routes: ['/improvements'],
   },
+  // --- Conformité & réglementation ---
   {
-    // Gestion de la sécurité de l'information (ITIL 4) : évaluation NIS 2.
-    id: 'compliance', label: 'Conformité NIS 2', description: 'Évaluations ReCyF (ANSSI)', status: 'active',
+    // Évaluation de conformité NIS 2 au Référentiel Cyber France de l'ANSSI.
+    // Les déclarations réglementaires (DRG) rejoindront ce groupe avec leur interface.
+    id: 'compliance', group: 'compliance', label: 'NIS 2', description: 'Évaluations ReCyF (ANSSI)', status: 'active',
     href: '/assessments', routes: ['/assessments'],
   },
 ]
+
+/** Groupe d'un module (GROUPS) : « practices » par défaut. */
+export const groupOf = (module) => module.group ?? 'practices'
 
 /**
  * Sections réservées, après les pratiques. Une section n'apparaît que si elle

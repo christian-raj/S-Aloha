@@ -16,9 +16,9 @@ const titles = () => [...document.querySelectorAll('.sidebar .nav-section')].map
 // l'Admin. Une section sans entrée visible pour le rôle ne s'affiche pas
 // (ni titre ni filet) : un Manager ne voit donc pas Paramétrage.
 it.each([
-  ['Admin', ['Pilotage', 'Pratiques', 'Paramétrage', 'Administration']],
-  ['Manager', ['Pilotage', 'Pratiques']],
-  ['User', ['Pilotage', 'Pratiques']],
+  ['Admin', ['Pilotage', 'Pratiques', 'Conformité & réglementation', 'Paramétrage', 'Administration']],
+  ['Manager', ['Pilotage', 'Pratiques', 'Conformité & réglementation']],
+  ['User', ['Pilotage', 'Pratiques', 'Conformité & réglementation']],
 ])('registre réel : un %s voit les sections %j, jamais une section vide', (r, expected) => {
   role = r
   render(<MemoryRouter><Routes><Route path="*" element={<Layout />} /></Routes></MemoryRouter>)

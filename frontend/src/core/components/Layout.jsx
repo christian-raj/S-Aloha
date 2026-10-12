@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getUser } from '../../api'
-import { MODULES, SECTIONS, visibleFor } from '../../modules/registry'
+import { GROUPS, MODULES, SECTIONS, groupOf, visibleFor } from '../../modules/registry'
 import ThemeToggle from './ThemeToggle'
 import { SOURCE_URL, LICENSE_LABEL } from '../about'
 import { BrandMark, IconConsole, IconReport, IconLogout, IconMenu, IconClose, MODULE_ICONS, SECTION_ICONS } from './icons'
@@ -16,6 +16,50 @@ const PILOTAGE = [
 function SectionLabel({ children, divider, tone }) {
   return <p className={'nav-section' + (divider ? ' divider' : '') + (tone ? ' ' + tone : '')}><span className="dot" />{children}</p>
 }
+
+const COLLAPSED_KEY = 's-aloha-nav-collapsed'
+
+/** Groupes repliés par l'utilisateur, mémorisés dans ce navigateur (confort, pas une donnée). */
+function useCollapsed() {
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY) || '[]')) } catch { return new Set() }
+  })
+  const toggle = (id) => setCollapsed((prev) => {
+    const next = new Set(prev)
+    if (next.has(id)) next.delete(id); else next.add(id)
+    try { localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...next])) } catch { /* stockage indisponible : l'état reste en mémoire */ }
+    return next
+  })
+  return [collapsed, toggle]
+}
+
+const Chevron = () => (
+  <svg className="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="m6 9 6 6 6-6" /></svg>
+)
+
+/**
+ * Section repliable de la barre latérale (Pratiques, Conformité &
+ * réglementation, Paramétrage, Administration). La section qui contient la
+ * page ouverte reste dépliée : on ne cache jamais où l'on se trouve.
+ */
+function NavGroup({ id, label, tone, current, collapsed, onToggle, children }) {
+  const expanded = current || !collapsed.has(id)
+  return (
+    <div className="nav-group">
+      <button type="button" className={'nav-section divider collapsible' + (tone ? ' ' + tone : '')}
+        aria-expanded={expanded} aria-controls={'nav-group-' + id} aria-disabled={current || undefined}
+        title={current ? 'Contient la page ouverte' : expanded ? 'Replier la section' : 'Déplier la section'}
+        onClick={() => !current && onToggle(id)}>
+        <span className="dot" /><span className="nav-section-label">{label}</span><Chevron />
+      </button>
+      {expanded && <div id={'nav-group-' + id} className="nav-group-items">{children}</div>}
+    </div>
+  )
+}
+
+/** La page ouverte relève-t-elle de ce préfixe d'URL ? */
+const within = (pathname, prefix) => pathname === prefix || pathname.startsWith(prefix + '/')
 
 function NavItem({ href, label, description, icon: Icon, end, active, onClick }) {
   return (
@@ -75,7 +119,8 @@ function ModuleItem({ module, location, role, onClick }) {
   )
 }
 
-function SidebarContent({ user, location, onClose, onLogout }) {
+function SidebarContent({ user, location, collapsed, onToggle, onClose, onLogout }) {
+  const role = user?.role
   return (
     <div className="sidebar-inner">
       <div className="sidebar-glow" aria-hidden />
@@ -92,21 +137,30 @@ function SidebarContent({ user, location, onClose, onLogout }) {
         {PILOTAGE.filter((item) => visibleFor(item, user?.role))
           .map((item) => <NavItem key={item.href} {...item} onClick={onClose} />)}
 
-        <SectionLabel divider>Pratiques</SectionLabel>
-        {MODULES.filter((m) => visibleFor(m, user?.role)).map((m) =>
-          <ModuleItem key={m.id} module={m} location={location} role={user?.role} onClick={onClose} />)}
-
-        {SECTIONS.filter((s) => visibleFor(s, user?.role)).map((s) => {
-          // Pas de section vide : sans entrée visible pour ce rôle, ni titre ni filet.
-          const entries = s.entries.filter((e) => visibleFor(e, user?.role))
-          if (entries.length === 0) return null
+        {GROUPS.map((g) => {
+          // Pas de section vide : sans module visible pour ce rôle, ni titre ni filet.
+          const modules = MODULES.filter((m) => groupOf(m) === g.id && visibleFor(m, role))
+          if (modules.length === 0) return null
+          const current = modules.some((m) => m.routes?.some((r) => within(location.pathname, r)))
           return (
-            <React.Fragment key={s.id}>
-              <SectionLabel divider tone={s.id === 'administration' ? 'admin' : undefined}>{s.label}</SectionLabel>
+            <NavGroup key={g.id} id={g.id} label={g.label} tone={g.tone} current={current}
+              collapsed={collapsed} onToggle={onToggle}>
+              {modules.map((m) => <ModuleItem key={m.id} module={m} location={location} role={role} onClick={onClose} />)}
+            </NavGroup>
+          )
+        })}
+
+        {SECTIONS.filter((s) => visibleFor(s, role)).map((s) => {
+          const entries = s.entries.filter((e) => visibleFor(e, role))
+          if (entries.length === 0) return null
+          const current = entries.some((e) => within(location.pathname, e.href))
+          return (
+            <NavGroup key={s.id} id={s.id} label={s.label} tone={s.id === 'administration' ? 'admin' : undefined}
+              current={current} collapsed={collapsed} onToggle={onToggle}>
               {entries.map((e) =>
                 <NavItem key={e.href} href={e.href} label={e.label} description={e.description}
                   icon={SECTION_ICONS[e.icon] ?? IconConsole} onClick={onClose} />)}
-            </React.Fragment>
+            </NavGroup>
           )
         })}
       </nav>
@@ -132,12 +186,14 @@ export default function Layout() {
   const nav = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
+  // Un seul état pour la barre latérale et le tiroir mobile.
+  const [collapsed, toggleCollapsed] = useCollapsed()
   const logout = () => { sessionStorage.clear(); nav('/login') }
 
   return (
     <div className="shell">
       <aside className="sidebar">
-        <SidebarContent user={user} location={location} onLogout={logout} />
+        <SidebarContent user={user} location={location} collapsed={collapsed} onToggle={toggleCollapsed} onLogout={logout} />
       </aside>
 
       {open && (
@@ -145,7 +201,7 @@ export default function Layout() {
           <div className="drawer-backdrop" onClick={() => setOpen(false)} />
           <div className="drawer-panel">
             <button className="drawer-close" onClick={() => setOpen(false)} aria-label="Fermer la navigation"><IconClose /></button>
-            <SidebarContent user={user} location={location} onClose={() => setOpen(false)} onLogout={logout} />
+            <SidebarContent user={user} location={location} collapsed={collapsed} onToggle={toggleCollapsed} onClose={() => setOpen(false)} onLogout={logout} />
           </div>
         </div>
       )}

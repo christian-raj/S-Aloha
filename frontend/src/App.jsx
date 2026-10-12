@@ -72,7 +72,7 @@ export default function App() {
         {/* Pratique — Amélioration continue */}
         <Route path="improvements" element={<Improvements />} />
         <Route path="improvements/:id" element={<ImprovementDetail />} />
-        {/* Pratique — Conformité NIS 2 (gestion de la sécurité de l'information) */}
+        {/* Conformité & réglementation — NIS 2 (évaluation au ReCyF) */}
         <Route path="assessments" element={<Assessments />} />
         <Route path="assessments/:id" element={<AssessmentDetail />} />
         {/* Paramétrage */}
