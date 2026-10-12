@@ -74,7 +74,7 @@ public class AssessmentResponse
 
 public record AssessmentDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
-    string? EntityCategory) : IRecordDto;
+    string? EntityCategory, int? PerimeterId = null) : IRecordDto;
 
 public record ResponseDto(int? Score, bool NotApplicable, string? Justification);
 public record GapActionDto(string Code);

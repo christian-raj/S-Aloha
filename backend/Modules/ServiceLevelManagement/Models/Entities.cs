@@ -51,10 +51,10 @@ public class ServiceLevelAgreement : Record
 
 public record ItServiceDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
-    string? Criticality, string? ServiceHours) : IRecordDto;
+    string? Criticality, string? ServiceHours, int? PerimeterId = null) : IRecordDto;
 
 public record ServiceLevelAgreementDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     int ServiceId, string? Customer, decimal? AvailabilityTarget,
     int? ResolutionHoursP1, int? ResolutionHoursP2, int? ResolutionHoursP3, int? ResolutionHoursP4,
-    DateTime? ValidFrom, DateTime? ValidTo, DateTime? ReviewDate) : IRecordDto;
+    DateTime? ValidFrom, DateTime? ValidTo, DateTime? ReviewDate, int? PerimeterId = null) : IRecordDto;

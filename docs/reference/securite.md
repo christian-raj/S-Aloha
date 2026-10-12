@@ -29,7 +29,10 @@ Trois policies imbriquées dans `backend/Program.cs` :
 | `Manager` | Manager, Admin |
 | `Admin` | Admin |
 
-Toute route sauf `/api/auth/login` exige au minimum `User`. Le frontend masque des
+Toute route sauf `/api/auth/login` exige au minimum `User`. Au-delà des policies, le
+**rôle effectif par périmètre** (`Core/Perimeters/PerimeterAccess`, [périmètres](perimetres.md))
+décide de la visibilité (404 hors de ses périmètres) et des décisions de gestionnaire (403),
+dans le socle des pratiques et le module Problèmes. Le frontend masque des
 actions selon le rôle, mais **le contrôle fait foi côté API**. La console est composée
 côté serveur : un client ne reçoit jamais un bloc non autorisé pour son rôle. Matrice
 complète : [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).

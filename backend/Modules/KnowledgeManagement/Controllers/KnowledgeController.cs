@@ -12,6 +12,8 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     protected override string LinkType => "article";
     protected override string[] Statuses => KnowledgeArticle.Statuses;
     protected override IReadOnlyDictionary<string, string[]> Transitions => KnowledgeArticle.Transitions;
+    // ADR-0014 D2 : un article publié se lit dans toute l'organisation.
+    protected override System.Linq.Expressions.Expression<Func<KnowledgeArticle, bool>> SharedWithAll => a => a.Status == "Publié";
 
     protected override string? Apply(KnowledgeArticle e, KnowledgeArticleDto dto, bool creating)
     {

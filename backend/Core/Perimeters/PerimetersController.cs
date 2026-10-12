@@ -13,15 +13,25 @@ namespace SAloha.Api.Core.Perimeters;
 /// </summary>
 [ApiController]
 [Authorize(Policy = "User")]
-public class PerimetersController(AppDbContext db) : ControllerBase
+public class PerimetersController(AppDbContext db, PerimeterAccess access) : ControllerBase
 {
     private string Me => User.Identity?.Name ?? "";
 
-    /// <summary>Périmètres en service, pour les sélecteurs.</summary>
+    /// <summary>
+    /// Mes périmètres en service, avec mon rôle sur chacun (PER-03) : sélecteurs de
+    /// création et de déplacement. L'Admin les a tous.
+    /// </summary>
     [HttpGet("api/perimeters")]
-    public async Task<IActionResult> Visible() =>
-        Ok(await db.Perimeters.AsNoTracking().Where(p => p.DeletedAt == null).OrderBy(p => p.Name)
-            .Select(p => new { p.Id, p.Name, p.Description }).ToListAsync());
+    public async Task<IActionResult> Visible()
+    {
+        var scope = await access.GetAsync();
+        var ids = scope.Ids.ToList();
+        var list = await db.Perimeters.AsNoTracking()
+            .Where(p => p.DeletedAt == null && (scope.Global || ids.Contains(p.Id))).OrderBy(p => p.Name)
+            .Select(p => new { p.Id, p.Name, p.Description }).ToListAsync();
+        return Ok(list.Select(p => new { p.Id, p.Name, p.Description,
+            Role = scope.Global ? "Admin" : scope.Roles[p.Id] }));
+    }
 
     /// <summary>Tous les périmètres, supprimés compris (grisés, restaurables).</summary>
     [HttpGet("api/admin/perimeters")]

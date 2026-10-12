@@ -98,7 +98,7 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
     public async Task<IActionResult> Schedule([FromQuery] DateTime? from)
     {
         var start = Dates.Utc(from) ?? DateTime.UtcNow.Date.AddDays(-7);
-        var items = await Db.Changes.AsNoTracking()
+        var items = await (await InScopeAsync(Db.Changes.AsNoTracking()))
             .Where(c => c.PlannedStart != null && c.Status != "Rejeté"
                         && (c.PlannedEnd ?? c.PlannedStart) >= start)
             .OrderBy(c => c.PlannedStart)
@@ -106,19 +106,29 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
                                c.PlannedStart, c.PlannedEnd, c.OwnerDisplayName })
             .ToListAsync();
         var conflicts = await ConflictsAsync();
+        var visible = await VisibleChangeIdsAsync();
         return Ok(items.Select(c => new
         {
             c.Id, c.Reference, c.Title, c.Status, c.ChangeType, c.Risk, c.PlannedStart, c.PlannedEnd,
-            c.OwnerDisplayName, Conflicts = conflicts.GetValueOrDefault(c.Id, [])
+            c.OwnerDisplayName, Conflicts = Visible(conflicts.GetValueOrDefault(c.Id, []), visible)
         }));
     }
 
     /// <summary>Conflits de calendrier d'un changement (vide s'il n'en a pas).</summary>
     [HttpGet("{id:int}/conflicts")]
     public async Task<IActionResult> Conflicts(int id) =>
-        await Db.Changes.AnyAsync(c => c.Id == id)
-            ? Ok((await ConflictsAsync()).GetValueOrDefault(id, []))
+        await VisibleAsync(id)
+            ? Ok(Visible((await ConflictsAsync()).GetValueOrDefault(id, []), await VisibleChangeIdsAsync()))
             : NotFound();
+
+    /// <summary>PER-08 : un conflit avec un changement d'un autre périmètre est signalé sans le décrire.</summary>
+    private async Task<HashSet<int>?> VisibleChangeIdsAsync() =>
+        (await ScopeAsync()).Global ? null
+            : (await (await InScopeAsync(Db.Changes.AsNoTracking())).Select(c => c.Id).ToListAsync()).ToHashSet();
+
+    private static List<Conflict> Visible(List<Conflict> list, HashSet<int>? visible) =>
+        visible is null ? list : list.Select(c => visible.Contains(c.ChangeId) ? c
+            : c with { ChangeId = 0, ChangeReference = "Autre périmètre", ChangeTitle = "Changement d'un autre périmètre" }).ToList();
 
     /// <summary>Conflit : un autre changement planifié sur le même CI, sur un créneau qui chevauche.</summary>
     public record Conflict(int CiId, string CiReference, string CiTitle, int ChangeId, string ChangeReference, string ChangeTitle);

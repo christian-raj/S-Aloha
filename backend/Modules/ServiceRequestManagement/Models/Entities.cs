@@ -38,4 +38,4 @@ public class ServiceRequest : Record
 public record ServiceRequestDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? RequestedItem, string? RequestedFor, string? RequestedForDisplayName,
-    DateTime? DueDate, string? RejectionReason = null) : IRecordDto;
+    DateTime? DueDate, string? RejectionReason = null, int? PerimeterId = null) : IRecordDto;

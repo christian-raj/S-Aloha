@@ -84,7 +84,7 @@ public record ProjectDto(string Title, string? Description, string? Status,
     decimal? Budget, decimal? ActualCost,
     string? Justification, string? ExpectedBenefits, string? ExpectedCosts, string? MajorRisks,
     int? ToleranceDays, decimal? ToleranceCostPercent, string? ToleranceScope, string? ToleranceQuality,
-    string? AbandonReason = null) : IRecordDto;
+    string? AbandonReason = null, int? PerimeterId = null) : IRecordDto;
 
 /// <summary>Élément rattaché à un projet (phase, sprint, élément de travail…).</summary>
 public abstract class ProjectPart

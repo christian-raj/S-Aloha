@@ -14,6 +14,8 @@ public class ServicesController(AppDbContext db) : RecordController<ItService, I
     protected override string[] Statuses => ItService.Statuses;
     protected override IReadOnlyDictionary<string, string[]> Transitions => ItService.Transitions;
     protected override bool ManagerOnly => true;
+    // ADR-0014 D2 : le catalogue des services se consulte dans toute l'organisation.
+    protected override System.Linq.Expressions.Expression<Func<ItService, bool>> SharedWithAll => _ => true;
     protected override bool StatusChosenAtCreation => true;
 
     // SLM-11 : un service en service a un propriétaire (responsable du service).

@@ -46,4 +46,4 @@ public class Improvement : Record
 public record ImprovementDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     int Step, string? Priority, string? Benefit, string? Baseline, string? Target,
-    string? Outcome, DateTime? DueDate, string? AbandonReason = null) : IRecordDto;
+    string? Outcome, DateTime? DueDate, string? AbandonReason = null, int? PerimeterId = null) : IRecordDto;

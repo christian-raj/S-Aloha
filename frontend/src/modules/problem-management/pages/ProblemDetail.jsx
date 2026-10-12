@@ -10,6 +10,7 @@ import SimilarCases from '../../../core/components/SimilarCases'
 import useTransitions from '../../../core/useTransitions'
 import StatusField, { forceOptions } from '../../../core/components/StatusField'
 import History from '../../../core/components/History'
+import usePerimeters, { perimeterName } from '../../../core/usePerimeters'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
 /** Codes de clôture (PRB-13) selon le statut d'origine ; une transition forcée les admet tous. */
@@ -29,13 +30,16 @@ export default function ProblemDetail() {
   const [p, setP] = useState(null)
   const [tab, setTab] = useState('infos')
   const [error, setError] = useState('')
-  const isManager = ['Admin', 'Manager'].includes(getUser()?.role)
+  const perimeters = usePerimeters()
 
   const load = () => api.problems.get(id).then(setP).catch(e => setError(e.message))
   // Une autre fiche (lien suivi depuis l'onglet Liens) s'ouvre sur ses Informations.
   useEffect(() => { setTab('infos'); load() }, [id])
   if (error) return <div className="error">{error}</div>
   if (!p) return <p>Chargement…</p>
+  // PER-06 : qualifier le problème revient au gestionnaire de son périmètre (le rôle AD tant que la liste manque).
+  const here = perimeters.find(x => x.id === p.perimeterId)?.role
+  const isManager = ['Admin', 'Manager'].includes(here ?? getUser()?.role)
 
   return (
     <>
@@ -47,6 +51,7 @@ export default function ProblemDetail() {
         Déclaré par {p.createdByDisplayName} le {new Date(p.createdAt).toLocaleDateString('fr-FR')}
         {p.resolvedAt && <> · Résolu le {new Date(p.resolvedAt).toLocaleDateString('fr-FR')}</>}
         {p.closureCode && <> · Clôture : {p.closureCode}</>}
+        {perimeters.length > 1 && <> · Périmètre : {perimeterName(perimeters, p.perimeterId)}</>}
       </p>
 
       {/* Onglets communs des fiches (docs/reference/frontend.md § Navigation

@@ -29,4 +29,4 @@ public class KnowledgeArticle : Record
 
 public record KnowledgeArticleDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
-    string? ArticleType, string? Content, string? Keywords, DateTime? ReviewDate) : IRecordDto;
+    string? ArticleType, string? Content, string? Keywords, DateTime? ReviewDate, int? PerimeterId = null) : IRecordDto;

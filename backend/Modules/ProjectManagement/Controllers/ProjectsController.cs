@@ -24,7 +24,8 @@ public class ProjectsController(AppDbContext db) : RecordController<Project, Pro
     protected override bool CanEdit(Project e)
     {
         _savedStatus = e.Status;
-        return ProjectRights.IsLead(e, User);
+        // PRJ-04 : chef de projet, ou gestionnaire du périmètre du projet (PER-06).
+        return IsManager || ProjectRights.IsOwner(e, User);
     }
 
     // PRJ-08 : le chef de projet propose, un gestionnaire valide le cadrage
@@ -119,7 +120,7 @@ public class ProjectsController(AppDbContext db) : RecordController<Project, Pro
     public async Task<IActionResult> Summary(int id)
     {
         var p = await Db.Projects.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-        if (p is null) return NotFound();
+        if (p is null || !await VisibleAsync(p)) return NotFound();
         var items = await Db.WorkItems.AsNoTracking().Where(w => w.ProjectId == id).ToListAsync();
         var phases = await Db.ProjectPhases.AsNoTracking().Where(x => x.ProjectId == id).ToListAsync();
         var deliverables = await Db.Deliverables.AsNoTracking().Where(x => x.ProjectId == id).ToListAsync();
@@ -162,9 +163,12 @@ public class ProjectsController(AppDbContext db) : RecordController<Project, Pro
 /// <summary>Droits communs au projet et à ses éléments.</summary>
 public static class ProjectRights
 {
-    /// <summary>PRJ-04 : chef de projet (responsable du projet) ou gestionnaire.</summary>
-    public static bool IsLead(Project p, System.Security.Claims.ClaimsPrincipal user) =>
-        user.IsInRole("Manager") || user.IsInRole("Admin")
-        || (p.OwnerType != "Group" && p.OwnerId is not null
-            && string.Equals(p.OwnerId, user.Identity?.Name, StringComparison.OrdinalIgnoreCase));
+    /// <summary>PRJ-04 : chef de projet (responsable du projet) ou gestionnaire de son périmètre (PER-06).</summary>
+    public static bool IsLead(Project p, System.Security.Claims.ClaimsPrincipal user, Core.Perimeters.PerimeterScope scope) =>
+        scope.ManagerOn(p.PerimeterId) || IsOwner(p, user);
+
+    /// <summary>Le chef de projet est une personne (pas un groupe).</summary>
+    public static bool IsOwner(Project p, System.Security.Claims.ClaimsPrincipal user) =>
+        p.OwnerType != "Group" && p.OwnerId is not null
+        && string.Equals(p.OwnerId, user.Identity?.Name, StringComparison.OrdinalIgnoreCase);
 }

@@ -42,4 +42,4 @@ public class Change : Record
 public record ChangeDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? ChangeType, string? Risk, DateTime? PlannedStart, DateTime? PlannedEnd,
-    string? ImplementationPlan, string? BackoutPlan, string? Outcome, string? RejectionReason = null) : IRecordDto;
+    string? ImplementationPlan, string? BackoutPlan, string? Outcome, string? RejectionReason = null, int? PerimeterId = null) : IRecordDto;

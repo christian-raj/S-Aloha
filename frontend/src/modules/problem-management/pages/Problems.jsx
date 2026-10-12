@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../../api'
+import PerimeterSelect from '../../../core/components/PerimeterSelect'
+import usePerimeters from '../../../core/usePerimeters'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
 const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
@@ -71,12 +73,15 @@ export default function Problems() {
 function NewProblem({ onCreated }) {
   const [f, setF] = useState({ title: '', description: '', impact: 'Moyen', urgency: 'Moyenne', category: '', affectedService: '' })
   const [error, setError] = useState('')
+  const [perimeterId, setPerimeterId] = useState(null)
+  const perimeters = usePerimeters()
   const set = k => e => setF({ ...f, [k]: e.target.value })
-  const submit = () => api.problems.create(f).then(onCreated).catch(e => setError(e.message))
+  const submit = () => api.problems.create({ ...f, perimeterId }).then(onCreated).catch(e => setError(e.message))
   return (
     <div className="card" style={{ marginBottom: 20 }}>
       <h3 style={{ color: 'var(--navy)', marginBottom: 14 }}>Déclarer un problème</h3>
       {error && <div className="error">{error}</div>}
+      <PerimeterSelect perimeters={perimeters} value={perimeterId} onChange={setPerimeterId} required />
       <div className="field"><label>Titre</label>
         <input value={f.title} onChange={set('title')} placeholder="Ex. : Latence récurrente sur l'ERP en fin de mois" /></div>
       <div className="field"><label>Description</label>
@@ -96,7 +101,7 @@ function NewProblem({ onCreated }) {
           <select value={f.urgency} onChange={set('urgency')}>
             <option>Faible</option><option>Moyenne</option><option>Élevée</option></select></div>
       </div>
-      <button className="btn" onClick={submit} disabled={!f.title}>Enregistrer le problème</button>
+      <button className="btn" onClick={submit} disabled={!f.title || (perimeters.length > 1 && !perimeterId)}>Enregistrer le problème</button>
     </div>
   )
 }
