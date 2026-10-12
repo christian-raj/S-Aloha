@@ -70,7 +70,7 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
     public async Task<IActionResult> Questionnaire(int id)
     {
         var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-        if (e is null) return NotFound();
+        if (e is null || !await VisibleAsync(e)) return NotFound();
         var objectives = await Db.SecurityObjectives.AsNoTracking().Include(o => o.Requirements)
             .OrderBy(o => o.Id).ToListAsync();
         var responses = await Db.AssessmentResponses.AsNoTracking()
@@ -105,7 +105,7 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
     public async Task<IActionResult> Answer(int id, int requirementId, ResponseDto dto)
     {
         var e = await Db.Assessments.FirstOrDefaultAsync(x => x.Id == id);
-        if (e is null) return NotFound();
+        if (e is null || !await VisibleAsync(e)) return NotFound();
         if (e.Status == "Validée")
             return BadRequest(new { message = "Une évaluation validée est figée : un gestionnaire doit la rouvrir." });
         var requirement = await Db.SecurityRequirements.FindAsync(requirementId);
@@ -133,7 +133,7 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
     public async Task<IActionResult> Score(int id)
     {
         var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-        if (e is null) return NotFound();
+        if (e is null || !await VisibleAsync(e)) return NotFound();
         var requirements = await Db.SecurityRequirements.AsNoTracking().Include(r => r.Objective)
             .OrderBy(r => r.Order).ToListAsync();
         var responses = await Db.AssessmentResponses.AsNoTracking()
@@ -188,7 +188,10 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
     public async Task<IActionResult> CreateImprovement(int id, GapActionDto dto)
     {
         var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-        if (e is null) return NotFound();
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        // Décision de gestionnaire, sur le périmètre de l'évaluation (PER-06).
+        ActOn(e.PerimeterId);
+        if (!IsManager) return Forbid();
         var requirement = await Db.SecurityRequirements.Include(r => r.Objective).FirstOrDefaultAsync(r => r.Code == dto.Code);
         if (requirement is null) return NotFound();
         var response = await Db.AssessmentResponses.AsNoTracking()
@@ -206,6 +209,7 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
 
         var improvement = await References.CreateAsync(Db, "AMI", () => new Improvement
         {
+            PerimeterId = e.PerimeterId,
             Title = (prefix + requirement.Theme).Length > 200 ? (prefix + requirement.Theme)[..200] : prefix + requirement.Theme,
             Description = $"Écart relevé par l'évaluation {e.Reference} sur l'exigence {requirement.Code} "
                 + $"(objectif de sécurité {requirement.ObjectiveId} — {requirement.Objective!.Title}) : "

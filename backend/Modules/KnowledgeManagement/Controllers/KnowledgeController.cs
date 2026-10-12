@@ -13,6 +13,8 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     protected override string LinkType => "article";
     protected override string[] Statuses => KnowledgeArticle.Statuses;
     protected override IReadOnlyDictionary<string, string[]> Transitions => KnowledgeArticle.Transitions;
+    // ADR-0014 D2 : un article publié se lit dans toute l'organisation.
+    protected override System.Linq.Expressions.Expression<Func<KnowledgeArticle, bool>> SharedWithAll => a => a.Status == "Publié";
 
     protected override string? Apply(KnowledgeArticle e, KnowledgeArticleDto dto, bool creating)
     {
@@ -61,7 +63,10 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     public async Task<IActionResult> Submit(int id)
     {
         var e = await Db.KnowledgeArticles.FindAsync(id);
-        if (e is null) return NotFound();
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        // Agir sur l'article suppose d'être dans son périmètre (PER-05, PER-06).
+        if (!(await ScopeAsync()).Sees(e.PerimeterId)) return Forbid();
+        ActOn(e.PerimeterId);
         if (e.Status != "Brouillon") return BadRequest(new { message = "Seul un brouillon se soumet à publication." });
         if (string.IsNullOrWhiteSpace(e.Content)) return BadRequest(new { message = "Rédiger le contenu avant de soumettre l'article." });
         e.SubmittedAt = DateTime.UtcNow; e.SubmittedBy = MyDisplay;
@@ -74,7 +79,10 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     public async Task<IActionResult> Review(int id, ReviewDto dto)
     {
         var e = await Db.KnowledgeArticles.FindAsync(id);
-        if (e is null) return NotFound();
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        // Agir sur l'article suppose d'être dans son périmètre (PER-05, PER-06).
+        if (!(await ScopeAsync()).Sees(e.PerimeterId)) return Forbid();
+        ActOn(e.PerimeterId);
         if (e.Status != "Publié") return BadRequest(new { message = "Seul un article publié se revoit." });
         if (!OwnsOrManages(e)) return Forbid();
         var next = Dates.Utc(dto.NextReviewDate) ?? DateTime.UtcNow.Date.AddMonths(12);
@@ -91,7 +99,10 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     public async Task<IActionResult> RequestArchive(int id, ArchiveRequestDto dto)
     {
         var e = await Db.KnowledgeArticles.FindAsync(id);
-        if (e is null) return NotFound();
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        // Agir sur l'article suppose d'être dans son périmètre (PER-05, PER-06).
+        if (!(await ScopeAsync()).Sees(e.PerimeterId)) return Forbid();
+        ActOn(e.PerimeterId);
         if (e.Status != "Publié") return BadRequest(new { message = "Seul un article publié se propose à l'archivage." });
         if (!OwnsOrManages(e)) return Forbid();
         if (string.IsNullOrWhiteSpace(dto.Reason)) return BadRequest(new { message = "Motiver la demande d'archivage." });
@@ -107,7 +118,7 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     [HttpGet("{id:int}/usage")]
     public async Task<IActionResult> Usage(int id)
     {
-        if (!await Db.KnowledgeArticles.AnyAsync(a => a.Id == id)) return NotFound();
+        if (!await VisibleAsync(id)) return NotFound();
         var others = await Db.ItemLinks.AsNoTracking()
             .Where(l => (l.FromType == LinkType && l.FromId == id) || (l.ToType == LinkType && l.ToId == id))
             .Select(l => l.FromType == LinkType && l.FromId == id ? l.ToType : l.FromType).ToListAsync();

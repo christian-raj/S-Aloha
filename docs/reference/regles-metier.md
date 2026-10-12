@@ -33,6 +33,13 @@ Le détail par pratique (et les droits à venir) est au § 2 de chaque document 
 
 Si un utilisateur appartient à plusieurs groupes, le rôle le plus élevé est retenu (ordre d'évaluation : Admin > Manager > User).
 
+**Périmètres** ([périmètres](perimetres.md), ADR-0014) : le rôle AD donne l'**accès** et le
+statut d'Admin ; Manager et User s'exercent **par périmètre**, selon les affectations
+(directes ou par groupe AD). « Consulter tous les enregistrements » se lit « ceux de ses
+périmètres », plus le catalogue des services et les articles publiés ; une décision de
+gestionnaire exige d'être Manager du périmètre de l'enregistrement. Un compte sans aucune
+affectation garde son rôle AD sur le périmètre « Organisation ».
+
 Ces rôles valent aujourd'hui pour toute la plateforme. Leur limitation à des **périmètres**
 (direction, site, entité) est spécifiée dans [périmètres](perimetres.md) (PER-01 à PER-12, à
 implémenter).

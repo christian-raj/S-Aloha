@@ -42,7 +42,7 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)
 │   ├── Itil/                         # Priority (matrice impact × urgence → P1–P4)
 │   ├── Links/                        # ItemLink, registre ItemLinks, LinksController (liens inter-processus)
-│   ├── Perimeters/                   # Perimeter, PerimeterAssignment, PerimetersController (périmètres, ADR-0014)
+│   ├── Perimeters/                   # Perimeter, PerimeterAssignment, PerimeterAccess (rôle effectif), PerimetersController (ADR-0014)
 │   ├── Pilotage/                     # ConsoleController, ReportsController, DashboardController (vues transverses)
 │   └── Records/                      # Record (entité de base), RecordController<T,TDto>, Allowed, Dates
 └── Modules/
@@ -72,7 +72,7 @@ Les processus autres que les problèmes héritent d'un même socle :
   ses statuts et ses règles : `Transitions` (graphe des transitions permises, SOC-05,
   servi par `GET …/transitions` ; refus 400 « Transition de A vers B non permise » avec les
   statuts accessibles), `Apply` (champs et valeurs fermées), `RequiresManager`
-  (statuts réservés), `CheckStatus` (conditions du statut, vérifiées à chaque
+  (statuts réservés — `IsManager` vaut sur le périmètre de l'enregistrement, PER-06), `CheckStatus` (conditions du statut, vérifiées à chaque
   enregistrement), `OnStatusChanged` (horodatages), `ConflictAsync` (doublon interdit,
   refus 409 : nom de CI unique par environnement), `StatusAfterEdit` (statut auquel
   la modification d'un non-gestionnaire ramène l'enregistrement), `RequiresManager(from, to)` (statut réservé selon le statut d'origine : réactiver un article archivé), `InitialStatus`, `ManagerOnly`
@@ -84,6 +84,14 @@ Les processus autres que les problèmes héritent d'un même socle :
   Les longueurs `[MaxLength]` sont contrôlées avant l'enregistrement (`Lengths`).
 - **`References.CreateAsync`** — référence annuelle `XXX-AAAA-NNNN` (plus grand numéro + 1,
   nouvelle tentative sur collision de l'index unique) ; utilisée aussi par les problèmes.
+
+**Portée par périmètre** (`Core/Perimeters/PerimeterAccess`, [PER-03 à PER-07](perimetres.md)) :
+rôle effectif de l'utilisateur sur chaque périmètre, chargé une fois par requête. Le socle
+filtre les registres (`InScopeAsync`), répond 404 hors portée (`VisibleAsync`, aussi pour les
+routes propres d'un module), évalue `IsManager` sur le périmètre de l'enregistrement
+(`ActOn`) et contrôle le choix (`ChooseAsync`) et le changement (`CheckMoveAsync`) de
+périmètre. `SharedWithAll` déclare un référentiel lisible de tous (catalogue des services,
+articles publiés).
 
 Règles de dépendance :
 - un **module** peut utiliser le socle (auth, annuaire, `AppDbContext`) ;

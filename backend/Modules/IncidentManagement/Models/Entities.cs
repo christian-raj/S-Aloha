@@ -51,4 +51,4 @@ public record IncidentDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? Impact, string? Urgency, string? Category, string? AffectedService,
     bool IsMajor, string? Resolution, string? ResolutionCode = null,
-    string? ReopenReason = null, DateTime? OccurredAt = null) : IRecordDto;
+    string? ReopenReason = null, DateTime? OccurredAt = null, int? PerimeterId = null) : IRecordDto;

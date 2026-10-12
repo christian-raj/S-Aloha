@@ -5,6 +5,8 @@ using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Links;
+using SAloha.Api.Core.Perimeters;
+using System.Linq.Expressions;
 
 namespace SAloha.Api.Core.Records;
 
@@ -23,7 +25,49 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     protected AppDbContext Db => db;
     protected string Me => User.Identity?.Name ?? "";
     protected string MyDisplay => User.FindFirst("displayName")?.Value ?? Me;
-    protected bool IsManager => User.IsInRole("Manager") || User.IsInRole("Admin");
+    /// <summary>
+    /// Gestionnaire sur le périmètre de l'enregistrement traité (PER-06) : Manager
+    /// de ce périmètre, ou Admin. Hors d'une action sur un enregistrement, le rôle AD.
+    /// </summary>
+    protected bool IsManager => _scope is not null && _perimeter is not null
+        ? _scope.ManagerOn(_perimeter.Value)
+        : User.IsInRole("Manager") || User.IsInRole("Admin");
+
+    private PerimeterScope? _scope;
+    private int? _perimeter;
+    /// <summary>Portée de l'utilisateur (PER-03), chargée une fois par requête.</summary>
+    protected async Task<PerimeterScope> ScopeAsync() => _scope ??= await Access.GetAsync();
+    private PerimeterAccess Access => HttpContext.RequestServices.GetRequiredService<PerimeterAccess>();
+    /// <summary>
+    /// Référentiel partagé (ADR-0014 D2) : enregistrements visibles de tous, quel que soit
+    /// leur périmètre (catalogue des services, articles publiés) ; null : aucun.
+    /// </summary>
+    protected virtual Expression<Func<T, bool>>? SharedWithAll => null;
+    /// <summary>Visible de l'utilisateur : dans ses périmètres, ou partagé (PER-05).</summary>
+    protected async Task<bool> VisibleAsync(T e) =>
+        (await ScopeAsync()).Sees(e.PerimeterId) || (SharedWithAll?.Compile()(e) ?? false);
+    /// <summary>Pour les routes propres d'un module (impact, questionnaire…) : l'enregistrement est-il visible ?</summary>
+    protected async Task<bool> VisibleAsync(int id)
+    {
+        var e = await db.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        return e is not null && await VisibleAsync(e);
+    }
+    /// <summary>Enregistrements visibles de l'utilisateur (PER-05).</summary>
+    protected async Task<IQueryable<T>> InScopeAsync(IQueryable<T> q)
+    {
+        var scope = await ScopeAsync();
+        if (scope.Global) return q;
+        var ids = scope.Ids.ToList();
+        // Une seule instance : chaque lecture de SharedWithAll construit une nouvelle expression.
+        var shared = SharedWithAll;
+        if (shared is null) return q.Where(x => ids.Contains(x.PerimeterId));
+        var p = shared.Parameters[0];
+        var inScope = Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(int)],
+            Expression.Constant(ids), Expression.Property(p, nameof(Record.PerimeterId)));
+        return q.Where(Expression.Lambda<Func<T, bool>>(Expression.OrElse(inScope, shared.Body), p));
+    }
+    /// <summary>Les règles de gestionnaire valent désormais sur ce périmètre (PER-06).</summary>
+    protected void ActOn(int perimeterId) => _perimeter = perimeterId;
 
     /// <summary>Préfixe de référence (INC, CHG…).</summary>
     protected abstract string Code { get; }
@@ -106,9 +150,11 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     protected virtual async Task<IEnumerable<object>> ListItems(IQueryable<T> q) => await q.ToListAsync();
 
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? q, [FromQuery] string? owner)
+    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? q, [FromQuery] string? owner,
+        [FromQuery] int? perimeter)
     {
-        var query = Filter(db.Set<T>().AsNoTracking());
+        var query = Filter(await InScopeAsync(db.Set<T>().AsNoTracking()));
+        if (perimeter is not null) query = query.Where(x => x.PerimeterId == perimeter);
         if (!string.IsNullOrEmpty(status)) query = query.Where(x => x.Status == status);
         // Insensible à la casse, comme l'annuaire (M2, M5).
         if (!string.IsNullOrWhiteSpace(q)) query = Search(query, q.Trim().ToLower());
@@ -139,14 +185,22 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     public async Task<IActionResult> Get(int id)
     {
         var e = await WithDetails(db.Set<T>().AsNoTracking()).FirstOrDefaultAsync(x => x.Id == id);
-        return e is null ? NotFound() : Ok(e);
+        // Hors de ses périmètres, l'enregistrement n'existe pas pour l'utilisateur (PER-05).
+        return e is null || !await VisibleAsync(e) ? NotFound() : Ok(e);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create(TDto dto)
     {
+        // PER-04 : périmètre obligatoire, proposé quand l'utilisateur n'en a qu'un ; on ne
+        // crée que dans un périmètre où l'on est affecté.
+        await ScopeAsync();
+        var (perimeterId, refused, forbidden) = await Access.ChooseAsync(dto.PerimeterId);
+        if (forbidden) return Forbid();
+        if (refused is not null) return BadRequest(new { message = refused });
+        ActOn(perimeterId!.Value);
         if (!CanCreate()) return Forbid();
-        var probe = new T();
+        var probe = new T { PerimeterId = perimeterId.Value };
         var error = Fill(probe, dto, true) ?? await ValidateAsync(probe)
             ?? (StatusChosenAtCreation ? Allowed.Check("Statut", dto.Status, Statuses, optional: true) : null);
         if (error is not null) return BadRequest(new { message = error });
@@ -159,7 +213,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
 
         var e = await References.CreateAsync(db, Code, () =>
         {
-            var x = new T();
+            var x = new T { PerimeterId = perimeterId.Value };
             Fill(x, dto, true);
             x.Status = initial;
             x.CreatedBy = Me; x.CreatedByDisplayName = MyDisplay;
@@ -176,8 +230,20 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     public async Task<IActionResult> Update(int id, TDto dto)
     {
         var e = await db.Set<T>().FindAsync(id);
-        if (e is null) return NotFound();
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        var scope = await ScopeAsync();
+        // Partagé mais hors de ses périmètres (article publié d'une autre entité) : lecture seule.
+        if (!scope.Sees(e.PerimeterId)) return Forbid();
+        ActOn(e.PerimeterId);
         if (!CanEdit(e)) return Forbid();
+        // PER-07 : changer de périmètre exige d'être gestionnaire des deux (ou Admin).
+        var moveTo = dto.PerimeterId is { } wanted && wanted != e.PerimeterId ? wanted : (int?)null;
+        if (moveTo is not null)
+        {
+            var (moveError, moveForbidden) = await Access.CheckMoveAsync(e.PerimeterId, moveTo.Value);
+            if (moveForbidden) return Forbid();
+            if (moveError is not null) return BadRequest(new { message = moveError });
+        }
         var demoted = IsManager ? null : StatusAfterEdit(e, dto);
         var error = Fill(e, dto, false) ?? await ValidateAsync(e);
         if (error is not null) return BadRequest(new { message = error });
@@ -204,6 +270,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
             e.Status = target;
             OnStatusChanged(e, from);
         }
+        if (moveTo is not null) e.PerimeterId = moveTo.Value;
         e.UpdatedAt = DateTime.UtcNow;
         await BeforeSaveAsync(e, false);
         await db.SaveChangesAsync();

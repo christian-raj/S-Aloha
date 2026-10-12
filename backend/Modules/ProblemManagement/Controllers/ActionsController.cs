@@ -3,20 +3,31 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ProblemManagement;
 
 [ApiController]
 [Authorize(Policy = "User")]
-public class ActionsController(AppDbContext db) : ControllerBase
+public class ActionsController(AppDbContext db, PerimeterAccess access) : ControllerBase
 {
+    /// <summary>Périmètre du problème s'il est visible de l'utilisateur (PER-05), sinon null.</summary>
+    private async Task<int?> VisiblePerimeterAsync(int problemId)
+    {
+        var perimeter = await db.Problems.Where(p => p.Id == problemId).Select(p => (int?)p.PerimeterId).FirstOrDefaultAsync();
+        return perimeter is not null && (await access.GetAsync()).Sees(perimeter.Value) ? perimeter : null;
+    }
+
     /// <summary>Toutes les actions (suivi transverse), filtrables par responsable ou statut.</summary>
     [HttpGet("api/actions")]
     public async Task<IActionResult> All([FromQuery] string? assignee, [FromQuery] string? status)
     {
         var q = db.Actions.AsNoTracking()
             .Include(a => a.Raci).Include(a => a.Problem).AsQueryable();
+        // PER-05 : les actions des problèmes de ses périmètres.
+        var scope = await access.GetAsync();
+        if (!scope.Global) { var ids = scope.Ids.ToList(); q = q.Where(a => ids.Contains(a.Problem!.PerimeterId)); }
         if (!string.IsNullOrEmpty(status)) q = q.Where(a => a.Status == status);
         if (!string.IsNullOrEmpty(assignee))
         {
@@ -38,7 +49,7 @@ public class ActionsController(AppDbContext db) : ControllerBase
     [HttpPost("api/problems/{problemId:int}/actions")]
     public async Task<IActionResult> Create(int problemId, ActionDto dto)
     {
-        if (!await db.Problems.AnyAsync(p => p.Id == problemId)) return NotFound();
+        if (await VisiblePerimeterAsync(problemId) is null) return NotFound();
         var invalid = ProblemRules.CheckRaci(dto.Raci);
         if (invalid is not null) return BadRequest(new { message = invalid });
 
@@ -64,12 +75,13 @@ public class ActionsController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> Update(int id, ActionDto dto)
     {
         var a = await db.Actions.Include(x => x.Raci).FirstOrDefaultAsync(x => x.Id == id);
-        if (a is null) return NotFound();
+        var perimeter = a is null ? null : await VisiblePerimeterAsync(a.ProblemId);
+        if (a is null || perimeter is null) return NotFound();
 
         // PRB-24 : modifier une action (titre, description, échéance, RACI) est réservé
         // à son R, son A ou un gestionnaire (M7) ; mettre à jour son statut reste ouvert à tous.
         // Un membre du groupe AD désigné R ou A en a les droits (PRB-26).
-        var isManager = User.IsInRole("Manager") || User.IsInRole("Admin");
+        var isManager = (await access.GetAsync()).ManagerOn(perimeter.Value);   // PER-06
         var isRorA = a.Raci.Any(r => r.Role is "R" or "A" && User.Designates(r.AssigneeType, r.AssigneeId));
         if (!isManager && !isRorA && !StatusOnly(a, dto)) return Forbid();
 
@@ -112,11 +124,13 @@ public class ActionsController(AppDbContext db) : ControllerBase
         Lengths.Check(a) ?? a.Raci.Select(Lengths.Check).FirstOrDefault(e => e is not null);
 
     [HttpDelete("api/actions/{id:int}")]
-    [Authorize(Policy = "Manager")]
     public async Task<IActionResult> Delete(int id)
     {
         var a = await db.Actions.FindAsync(id);
-        if (a is null) return NotFound();
+        var perimeter = a is null ? null : await VisiblePerimeterAsync(a.ProblemId);
+        if (a is null || perimeter is null) return NotFound();
+        // Supprimer une action : gestionnaire du périmètre du problème (PER-06).
+        if (!(await access.GetAsync()).ManagerOn(perimeter.Value)) return Forbid();
         db.Actions.Remove(a);
         await db.SaveChangesAsync();
         return NoContent();

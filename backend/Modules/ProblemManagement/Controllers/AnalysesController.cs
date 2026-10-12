@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ProblemManagement;
@@ -9,18 +10,25 @@ namespace SAloha.Api.Modules.ProblemManagement;
 [ApiController]
 [Route("api/problems/{problemId:int}/analyses")]
 [Authorize(Policy = "User")]
-public class AnalysesController(AppDbContext db) : ControllerBase
+public class AnalysesController(AppDbContext db, PerimeterAccess access) : ControllerBase
 {
+    /// <summary>Périmètre du problème s'il est visible de l'utilisateur (PER-05), sinon null.</summary>
+    private async Task<int?> VisiblePerimeterAsync(int problemId)
+    {
+        var perimeter = await db.Problems.Where(p => p.Id == problemId).Select(p => (int?)p.PerimeterId).FirstOrDefaultAsync();
+        return perimeter is not null && (await access.GetAsync()).Sees(perimeter.Value) ? perimeter : null;
+    }
+
     [HttpGet]
     public async Task<IActionResult> List(int problemId) =>
-        Ok(await db.Analyses.AsNoTracking()
+        await VisiblePerimeterAsync(problemId) is null ? NotFound() : Ok(await db.Analyses.AsNoTracking()
             .Where(a => a.ProblemId == problemId)
             .OrderBy(a => a.CreatedAt).ToListAsync());
 
     [HttpPost]
     public async Task<IActionResult> Create(int problemId, AnalysisDto dto)
     {
-        if (!await db.Problems.AnyAsync(p => p.Id == problemId)) return NotFound();
+        if (await VisiblePerimeterAsync(problemId) is null) return NotFound();
         var invalid = Allowed.Check("Méthode d'analyse", dto.Method, ProblemRules.Methods);
         if (invalid is not null) return BadRequest(new { message = invalid });
         var a = new RcaAnalysis
@@ -42,6 +50,7 @@ public class AnalysesController(AppDbContext db) : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int problemId, int id, AnalysisDto dto)
     {
+        if (await VisiblePerimeterAsync(problemId) is null) return NotFound();
         var a = await db.Analyses.FirstOrDefaultAsync(x => x.Id == id && x.ProblemId == problemId);
         if (a is null) return NotFound();
         a.DataJson = dto.DataJson; a.Conclusion = dto.Conclusion; a.UpdatedAt = DateTime.UtcNow;
@@ -50,9 +59,12 @@ public class AnalysesController(AppDbContext db) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Policy = "Manager")]
     public async Task<IActionResult> Delete(int problemId, int id)
     {
+        // Supprimer une analyse : gestionnaire du périmètre du problème (PER-06).
+        var perimeter = await VisiblePerimeterAsync(problemId);
+        if (perimeter is null) return NotFound();
+        if (!(await access.GetAsync()).ManagerOn(perimeter.Value)) return Forbid();
         var a = await db.Analyses.FirstOrDefaultAsync(x => x.Id == id && x.ProblemId == problemId);
         if (a is null) return NotFound();
         db.Analyses.Remove(a);

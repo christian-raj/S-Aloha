@@ -95,7 +95,7 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
     [HttpGet("{id:int}/impact")]
     public async Task<IActionResult> Impact(int id)
     {
-        if (!await Db.ConfigurationItems.AnyAsync(c => c.Id == id)) return NotFound();
+        if (!await VisibleAsync(id)) return NotFound();
         var relations = await Db.CiRelationships.AsNoTracking().ToListAsync();
         // Arcs « la panne de From touche To », avec la relation d'origine.
         var impacts = relations.Select(r => CiRelationship.FailureFlowsFromTarget(r.Type)
@@ -107,11 +107,16 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
 
         var ids = downstream.Concat(upstream).SelectMany(n => new[] { n.Id, n.Via }).Distinct().ToList();
         var cis = await Db.ConfigurationItems.AsNoTracking().Where(c => ids.Contains(c.Id))
-            .Select(c => new { c.Id, c.Reference, c.Title, c.CiType, c.Status }).ToDictionaryAsync(c => c.Id);
+            .Select(c => new { c.Id, c.Reference, c.Title, c.CiType, c.Status, c.PerimeterId }).ToDictionaryAsync(c => c.Id);
+        // PER-08 : le parcours suit tout le graphe, mais un CI d'un autre périmètre n'est pas décrit.
+        var scope = await ScopeAsync();
+        string Name(int ciId, string text) => scope.Sees(cis[ciId].PerimeterId) ? text : "CI d'un autre périmètre";
         object Describe(ImpactNode n) => new
         {
-            cis[n.Id].Id, cis[n.Id].Reference, cis[n.Id].Title, cis[n.Id].CiType, cis[n.Id].Status,
-            n.Depth, n.Relation, Via = new { cis[n.Via].Id, cis[n.Via].Reference, cis[n.Via].Title }
+            Id = scope.Sees(cis[n.Id].PerimeterId) ? n.Id : 0,
+            Reference = Name(n.Id, cis[n.Id].Reference), Title = Name(n.Id, cis[n.Id].Title), cis[n.Id].CiType, cis[n.Id].Status,
+            n.Depth, n.Relation,
+            Via = new { Id = scope.Sees(cis[n.Via].PerimeterId) ? n.Via : 0, Reference = Name(n.Via, cis[n.Via].Reference), Title = Name(n.Via, cis[n.Via].Title) }
         };
         return Ok(new { Downstream = downstream.Select(Describe), Upstream = upstream.Select(Describe) });
     }
@@ -143,10 +148,11 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
         var error = Allowed.Check("Type de relation", dto.Type, CiRelationship.Types);
         if (error is not null) return BadRequest(new { message = error });
         var source = await Db.ConfigurationItems.FirstOrDefaultAsync(c => c.Id == id);
-        if (source is null) return NotFound();
+        if (source is null || !await VisibleAsync(source)) return NotFound();
         var reference = dto.TargetReference.Trim().ToUpper();
         var target = await Db.ConfigurationItems.FirstOrDefaultAsync(c => c.Reference == reference);
-        if (target is null) return BadRequest(new { message = $"Aucun CI de référence « {dto.TargetReference} »." });
+        // PER-08 : relier suppose de voir les deux CI.
+        if (target is null || !await VisibleAsync(target)) return BadRequest(new { message = $"Aucun CI de référence « {dto.TargetReference} »." });
         if (target.Id == id) return BadRequest(new { message = "Un CI ne peut pas être relié à lui-même." });
         // CFG-14 : un CI retiré ne peut plus être relié.
         if (source.Status == "Retiré" || target.Status == "Retiré")
@@ -164,7 +170,7 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
     public async Task<IActionResult> RemoveRelation(int relationId)
     {
         var rel = await Db.CiRelationships.FindAsync(relationId);
-        if (rel is null) return NotFound();
+        if (rel is null || !await VisibleAsync(rel.SourceId)) return NotFound();
         Db.CiRelationships.Remove(rel);
         await Db.SaveChangesAsync();
         return NoContent();

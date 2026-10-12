@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ProjectManagement;
@@ -29,11 +30,23 @@ public abstract class ProjectPartController<T, TDto>(AppDbContext db) : Controll
     protected virtual Task<string?> ValidateAsync(T e, T? before) => Task.FromResult<string?>(null);
     protected virtual Task OnSavingAsync(T e, T? before) => Task.CompletedTask;
 
-    protected bool IsLead(Project p) => ProjectRights.IsLead(p, User);
+    private PerimeterScope? _scope;
+    /// <summary>Portée de l'utilisateur (PER-03), chargée une fois par requête.</summary>
+    protected async Task<PerimeterScope> ScopeAsync() =>
+        _scope ??= await HttpContext.RequestServices.GetRequiredService<PerimeterAccess>().GetAsync();
+    /// <summary>Chef de projet ou gestionnaire du périmètre du projet ; la portée est chargée par <see cref="ProjectAsync"/>.</summary>
+    protected bool IsLead(Project p) => ProjectRights.IsLead(p, User, _scope!);
+
+    /// <summary>Le projet, s'il est visible de l'utilisateur (PER-05) ; null sinon.</summary>
+    protected async Task<Project?> ProjectAsync(int projectId)
+    {
+        var p = await db.Projects.AsNoTracking().FirstOrDefaultAsync(x => x.Id == projectId);
+        return p is not null && (await ScopeAsync()).Sees(p.PerimeterId) ? p : null;
+    }
 
     private async Task<(Project? Project, IActionResult? Error)> Load(int projectId, bool writing)
     {
-        var p = await db.Projects.AsNoTracking().FirstOrDefaultAsync(x => x.Id == projectId);
+        var p = await ProjectAsync(projectId);
         if (p is null) return (null, NotFound());
         if (!Components.Any(p.Has))
             return (null, BadRequest(new { message = $"Composant non activé pour ce projet ({p.Method})." }));

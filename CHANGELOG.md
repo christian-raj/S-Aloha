@@ -14,6 +14,14 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Périmètres — droits et visibilité** (lot 1, étape 6, deuxième partie) : chacun voit les
+  enregistrements de ses périmètres (plus le catalogue des services et les articles publiés)
+  et crée dans l'un d'eux (choix proposé dès qu'il en a plusieurs) ; les décisions de
+  gestionnaire exigent d'être Manager du périmètre de l'enregistrement, et le rôle par
+  périmètre prime sur le rôle AD ; déplacer un enregistrement exige d'être gestionnaire des
+  deux périmètres, et se trace au journal. Un compte sans affectation garde son rôle AD sur
+  « Organisation » (PER-03 à PER-07, PER-10 amendé).
+
 - **Connaissances au-delà du MVP** : contenu rendu en **Markdown** sans HTML brut (onglet
   Lecture, KB-10) ; date de revue fixée à un an à la publication (KB-11) ; article
   d'erreur connue créé depuis le problème, puis proposé à l'archivage quand le problème est
@@ -86,6 +94,9 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Modifié
 
+- **NIS-15** : créer une action d'amélioration depuis un écart est désormais réservé aux
+  gestionnaires (du périmètre de l'évaluation), comme l'indique le tableau des droits ; l'API
+  l'acceptait de tout utilisateur.
 - **Validations du cycle de vie** (lot 1, étape 3) : prise en charge d'un incident avec un
   responsable (date de première prise en charge) ; code de résolution, un doublon relié à
   l'incident conservé ; motif de rejet des demandes et des changements ; plans exigés à

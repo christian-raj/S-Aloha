@@ -5,6 +5,7 @@ using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Itil;
 using SAloha.Api.Core.Links;
+using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ProblemManagement;
@@ -12,15 +13,19 @@ namespace SAloha.Api.Modules.ProblemManagement;
 [ApiController]
 [Route("api/problems")]
 [Authorize(Policy = "User")]
-public class ProblemsController(AppDbContext db) : ControllerBase
+public class ProblemsController(AppDbContext db, PerimeterAccess access) : ControllerBase
 {
     private string Me => User.Identity?.Name ?? "";
     private string MyDisplay => User.FindFirst("displayName")?.Value ?? Me;
 
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? q)
+    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? q, [FromQuery] int? perimeter)
     {
         var query = db.Problems.AsNoTracking().AsQueryable();
+        // PER-05 : les problèmes de ses périmètres.
+        var scope = await access.GetAsync();
+        if (!scope.Global) { var ids = scope.Ids.ToList(); query = query.Where(p => ids.Contains(p.PerimeterId)); }
+        if (perimeter is not null) query = query.Where(p => p.PerimeterId == perimeter);
         if (!string.IsNullOrEmpty(status)) query = query.Where(p => p.Status == status);
         if (!string.IsNullOrEmpty(q))
         {
@@ -30,7 +35,7 @@ public class ProblemsController(AppDbContext db) : ControllerBase
             query = query.Where(p => p.Title.ToLower().Contains(key) || p.Reference.ToLower().Contains(key));
         }
         var items = await query.OrderByDescending(p => p.CreatedAt)
-            .Select(p => new { p.Id, p.Reference, p.Title, p.Status, p.Priority, p.Category,
+            .Select(p => new { p.Id, p.Reference, p.Title, p.Status, p.Priority, p.Category, p.PerimeterId,
                                p.AffectedService, p.CreatedByDisplayName, p.CreatedAt,
                                ActionsCount = p.Actions.Count }).ToListAsync();
         return Ok(items);
@@ -47,7 +52,7 @@ public class ProblemsController(AppDbContext db) : ControllerBase
             .Include(x => x.Analyses)
             .Include(x => x.Actions).ThenInclude(a => a.Raci)
             .FirstOrDefaultAsync(x => x.Id == id);
-        return p is null ? NotFound() : Ok(p);
+        return p is null || !(await access.GetAsync()).Sees(p.PerimeterId) ? NotFound() : Ok(p);
     }
 
     [HttpPost]
@@ -55,8 +60,13 @@ public class ProblemsController(AppDbContext db) : ControllerBase
     {
         var invalid = ClosedValues(dto);
         if (invalid is not null) return BadRequest(new { message = invalid });
+        // PER-04 : périmètre choisi, ou l'unique périmètre de l'utilisateur.
+        var (perimeterId, refused, forbidden) = await access.ChooseAsync(dto.PerimeterId);
+        if (forbidden) return Forbid();
+        if (refused is not null) return BadRequest(new { message = refused });
         Problem Build() => new()
         {
+            PerimeterId = perimeterId!.Value,
             Title = dto.Title, Description = dto.Description,
             Impact = dto.Impact, Urgency = dto.Urgency,
             Priority = Priority.Compute(dto.Impact, dto.Urgency),
@@ -70,11 +80,20 @@ public class ProblemsController(AppDbContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Policy = "Manager")]
     public async Task<IActionResult> Update(int id, ProblemDto dto)
     {
         var p = await db.Problems.FindAsync(id);
-        if (p is null) return NotFound();
+        var scope = await access.GetAsync();
+        if (p is null || !scope.Sees(p.PerimeterId)) return NotFound();
+        // Qualifier un problème : gestionnaire de son périmètre (PER-06).
+        if (!scope.ManagerOn(p.PerimeterId)) return Forbid();
+        if (dto.PerimeterId is { } moveTo && moveTo != p.PerimeterId)
+        {
+            var (moveError, moveForbidden) = await access.CheckMoveAsync(p.PerimeterId, moveTo);
+            if (moveForbidden) return Forbid();
+            if (moveError is not null) return BadRequest(new { message = moveError });
+            p.PerimeterId = moveTo;
+        }
         var invalid = ClosedValues(dto) ?? Allowed.Check("Code de clôture", dto.ClosureCode, ProblemRules.ClosureCodes, optional: true);
         if (invalid is not null) return BadRequest(new { message = invalid });
         p.Title = dto.Title; p.Description = dto.Description;

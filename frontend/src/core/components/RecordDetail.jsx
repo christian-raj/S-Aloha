@@ -8,11 +8,20 @@ import { dateFr } from '../fields'
 import useTransitions from '../useTransitions'
 import StatusField, { forceOptions } from './StatusField'
 import History, { labelsOf } from './History'
+import PerimeterSelect from './PerimeterSelect'
+import usePerimeters, { perimeterName } from '../usePerimeters'
 
 /** Édition : statut + champs ; recréé (clé) à chaque rechargement de l'enregistrement. */
 function Editor({ config, record, onSaved }) {
   const role = getUser()?.role
-  const isManager = ['Admin', 'Manager'].includes(role)
+  const perimeters = usePerimeters()
+  // PER-06 : gestionnaire du périmètre de l'enregistrement (ADR-0014 D4 : le rôle par
+  // périmètre prime sur le rôle AD) ; tant que la liste n'est pas chargée, le rôle AD.
+  const here = perimeters.find(p => p.id === record.perimeterId)?.role
+  const isManager = ['Admin', 'Manager'].includes(here ?? role)
+  const [perimeterId, setPerimeterId] = useState(record.perimeterId)
+  // PER-07 : déplacer vers un périmètre dont on est aussi gestionnaire.
+  const targets = perimeters.filter(p => ['Admin', 'Manager'].includes(p.role))
   const readOnly = config.managerOnly && !isManager
   const [f, setF] = useState(() => ({ ...toForm(config.fields, record), status: record.status }))
   const [msg, setMsg] = useState(null)
@@ -25,7 +34,8 @@ function Editor({ config, record, onSaved }) {
   // `config.keep(record)` : champs que le formulaire ne montre pas mais que la
   // modification doit renvoyer tels quels (business case d'un projet, édité dans
   // son onglet) — sans quoi l'API les effacerait.
-  const save = () => config.api.update(record.id, { ...(config.keep?.(record) ?? {}), ...toPayload(config.fields, f), status: f.status }, force)
+  const save = () => config.api.update(record.id, { ...(config.keep?.(record) ?? {}), ...toPayload(config.fields, f), status: f.status,
+    perimeterId: perimeterId !== record.perimeterId ? perimeterId : null }, force)
     .then(saved => {
       // L'API peut ramener le statut en arrière (article retouché, changement modifié).
       setMsg({ ok: true, text: saved.status === f.status ? 'Modifications enregistrées.'
@@ -42,6 +52,8 @@ function Editor({ config, record, onSaved }) {
       <StatusField statuses={config.statuses} current={record.status} value={f.status}
         onChange={status => merge({ status })} graph={graph} isManager={isManager} isAdmin={role === 'Admin'}
         disabled={readOnly} reason={reason} onReason={setReason} />
+      {isManager && targets.some(p => p.id === record.perimeterId) &&
+        <PerimeterSelect perimeters={targets} value={perimeterId} onChange={setPerimeterId} disabled={readOnly} />}
       <RecordForm fields={config.fields} form={f} onChange={merge} disabled={readOnly} />
       <div style={{ display: 'flex', gap: 10 }}>
         {!readOnly && <button className="btn" onClick={save} disabled={!f.title || (force && !reason.trim())}>Enregistrer</button>}
@@ -69,13 +81,15 @@ export default function RecordDetail({ config, children, tab }) {
   const [error, setError] = useState('')
   const [version, setVersion] = useState(0)
   const [current, setCurrent] = useState('infos')
+  const perimeters = usePerimeters()
   const load = () => config.api.get(id).then(x => { setR(x); setVersion(v => v + 1) }).catch(e => setError(e.message))
   // Une autre fiche (lien suivi depuis l'onglet Liens) s'ouvre sur ses Informations.
   useEffect(() => { setCurrent('infos'); load() }, [id])
   if (error) return <div className="error">{error}</div>
   if (!r) return <p>Chargement…</p>
 
-  const meta = config.meta?.(r).filter(Boolean) ?? []
+  const meta = [perimeters.length > 1 && `Périmètre : ${perimeterName(perimeters, r.perimeterId)}`,
+    ...(config.meta?.(r) ?? [])].filter(Boolean)
   // `tab` : objet, liste, ou fonction de l'enregistrement (onglets d'un projet selon ses composants).
   const practice = tab ? [].concat(typeof tab === 'function' ? tab(r) : tab) : []
   const tabs = [['infos', 'Informations'], ...practice.map((t, i) => ['practice-' + i, t.label]),

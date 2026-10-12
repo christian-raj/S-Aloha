@@ -42,7 +42,7 @@ public class PhasesController(AppDbContext db) : ProjectPartController<ProjectPh
     [HttpPost("{id:int}/approve")]
     public async Task<IActionResult> Approve(int projectId, int id)
     {
-        var p = await Db.Projects.AsNoTracking().FirstOrDefaultAsync(x => x.Id == projectId);
+        var p = await ProjectAsync(projectId);
         if (p is null) return NotFound();
         if (!IsLead(p)) return Forbid();
         var e = await Db.ProjectPhases.FirstOrDefaultAsync(x => x.Id == id && x.ProjectId == projectId);
@@ -145,6 +145,7 @@ public class SprintsController(AppDbContext db) : ProjectPartController<Sprint, 
     [HttpGet("{id:int}/burndown")]
     public async Task<IActionResult> Burndown(int projectId, int id)
     {
+        if (await ProjectAsync(projectId) is null) return NotFound();
         var s = await Db.Sprints.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.ProjectId == projectId);
         if (s is null) return NotFound();
         if (s.StartDate is null || s.EndDate is null) return BadRequest(new { message = "Le sprint n'a pas de dates." });

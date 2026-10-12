@@ -192,8 +192,9 @@ public class AuditInterceptor(IHttpContextAccessor http, ILogger<AuditIntercepto
         foreach (var p in entry.Properties.Where(p => p.IsModified))
         {
             var name = p.Metadata.Name;
+            // PER-07 : le changement de périmètre se trace, contrairement aux autres identifiants.
             if (name is "Reference" or "DataJson" or "OwnerType" || name.EndsWith("At") || name.EndsWith("By")
-                || name.EndsWith("Id") || name.EndsWith("ByDisplayName")) continue;
+                || (name.EndsWith("Id") && name != "PerimeterId") || name.EndsWith("ByDisplayName")) continue;
             var (old, now) = (Format(p.OriginalValue), Format(p.CurrentValue));
             if (old == now) continue;
             yield return (char.ToLowerInvariant(name[0]) + name[1..], old, now);

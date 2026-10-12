@@ -139,9 +139,11 @@ public class ComplianceAssessmentTests(ApiFixture api)
 
         // NIS-15 : l'écart devient une action d'amélioration reliée, une seule fois.
         var code = gap.GetProperty("code").GetString();
-        var improvement = await Json(await user.PostAsJsonAsync($"/api/assessments/{id}/improvements", new { code }));
+        // Décision de gestionnaire (NIS-15, tableau des droits) : un User est refusé.
+        Assert.Equal(HttpStatusCode.Forbidden, (await user.PostAsJsonAsync($"/api/assessments/{id}/improvements", new { code })).StatusCode);
+        var improvement = await Json(await manager.PostAsJsonAsync($"/api/assessments/{id}/improvements", new { code }));
         Assert.StartsWith("AMI-", improvement.GetProperty("reference").GetString());
-        var again = await user.PostAsJsonAsync($"/api/assessments/{id}/improvements", new { code });
+        var again = await manager.PostAsJsonAsync($"/api/assessments/{id}/improvements", new { code });
         Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
         var links = await Json(await user.GetAsync($"/api/links?type=assessment&id={id}"));
         Assert.Contains(links.EnumerateArray(), l => l.GetProperty("reference").GetString() == improvement.GetProperty("reference").GetString());

@@ -30,6 +30,7 @@ frontend/
     │   │   ├── RecordDetail.jsx  # fiche : en-tête, éditeur, contenu propre, éléments liés
     │   │   ├── RecordForm.jsx    # formulaire décrit par des champs ; conversions API ↔ formulaire
     │   │   ├── StatusBadge.jsx   # badge de statut selon la tonalité déclarée
+    │   │   ├── PerimeterSelect.jsx # choix du périmètre (création, déplacement), masqué avec un seul périmètre ; core/usePerimeters.js
     │   │   ├── Markdown.jsx      # rendu Markdown sûr (éléments React, jamais de HTML brut), KB-10
     │   │   └── LinkedItems.jsx   # éléments liés (tous processus), ajout par référence
     │   └── pages/

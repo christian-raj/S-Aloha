@@ -38,6 +38,8 @@ public interface IRecordDto
     string? OwnerType { get; }
     string? OwnerId { get; }
     string? OwnerDisplayName { get; }
+    /// <summary>Périmètre choisi (PER-04) ; null : celui de l'utilisateur s'il n'en a qu'un, ou inchangé.</summary>
+    int? PerimeterId { get; }
 }
 
 /// <summary>Contrôle des valeurs fermées (statuts, types…) : message d'erreur ou null.</summary>

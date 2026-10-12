@@ -7,9 +7,10 @@
 > périmètres, l'administrateur sur tous. Règles préfixées **PER**. Statut : **spécifié, à
 > implémenter** (étape 6 du [plan du lot 1](processus/readme.md#plan-dimplémentation-conseillé--lot-1)) ;
 > les choix structurants sont tranchés dans l'[ADR-0014](../decisions/adr-0014-perimetres-droits-scopes.md) (accepté).
-> **Avancement** : modèle, reprise des données et API d'administration livrés (PER-01, PER-02,
-> PER-10 à PER-12) ; droits et visibilité par périmètre (PER-03 à PER-09) et écran
-> d'administration à venir.
+> **Avancement** : modèle, reprise des données et API d'administration (PER-01, PER-02,
+> PER-10 à PER-12) ; rôle effectif, création, visibilité, décisions et déplacement par
+> périmètre (PER-03 à PER-07). À venir : liens, console, reporting et recherche (PER-08,
+> PER-09), écran d'administration.
 
 ## 1. Pourquoi
 
@@ -47,14 +48,14 @@ erDiagram
 |---|---|---|---|
 | PER-01 | **Périmètre** : nom unique (insensible à la casse) et description ; créé, renommé et supprimé par l'**Admin** seul. Suppression **douce** (restaurable) ; suppression définitive seulement si aucun enregistrement ni affectation n'y est rattaché (409 sinon, avec les compteurs). « Organisation » ne se supprime pas | ✅ (API) / 🔜 (écran) | |
 | PER-02 | **Affectation** d'un utilisateur ou d'un **groupe AD** à un périmètre avec le rôle Manager ou User, par l'Admin ; plusieurs affectations par compte ; jamais d'Admin scopé | ✅ (API) / 🔜 (écran) | |
-| PER-03 | **Rôle effectif** sur un enregistrement : le plus élevé des rôles que l'utilisateur tient sur le périmètre de l'enregistrement, directement ou par un de ses groupes (étape 5, SOC-10) ; Admin partout | 🔜 | 1 |
-| PER-04 | Tout enregistrement de pratique **porte un périmètre**, obligatoire à la création ; proposé par défaut quand l'utilisateur n'a qu'un périmètre ; on ne crée que dans un périmètre où l'on est affecté | 🔜 | 1 |
-| PER-05 | **Visibilité** : un utilisateur voit les enregistrements de ses périmètres ; les **référentiels partagés** (catalogue des services, articles publiés) restent visibles de tous (ADR-0014, D2) | 🔜 | 1 |
-| PER-06 | Les **décisions de gestionnaire** (autoriser, approuver, publier, valider, qualifier un problème, transitions réservées) exigent le rôle **Manager sur le périmètre** de l'enregistrement | 🔜 | 1 |
-| PER-07 | **Changer le périmètre** d'un enregistrement : Manager des deux périmètres, ou Admin ; tracé au journal d'audit (SOC-20) | 🔜 | 1 |
+| PER-03 | **Rôle effectif** sur un enregistrement : le plus élevé des rôles que l'utilisateur tient sur le périmètre de l'enregistrement, directement ou par un de ses groupes (étape 5, SOC-10) ; Admin partout ; le rôle par périmètre prime sur le rôle AD (D4) | ✅ | |
+| PER-04 | Tout enregistrement de pratique **porte un périmètre**, obligatoire à la création ; proposé par défaut quand l'utilisateur n'a qu'un périmètre (sélecteur masqué) ; on ne crée que dans un périmètre où l'on est affecté (403), jamais dans un périmètre supprimé (400) | ✅ | |
+| PER-05 | **Visibilité** : un utilisateur voit les enregistrements de ses périmètres ; les **référentiels partagés** (catalogue des services, articles publiés) restent visibles de tous (ADR-0014, D2), en lecture seule hors de ses périmètres ; hors de ses périmètres, un enregistrement répond 404 (fiche et routes propres : impact d'un CI, questionnaire NIS 2, éléments et synthèse d'un projet, analyses et actions d'un problème) | ✅ | |
+| PER-06 | Les **décisions de gestionnaire** (autoriser, approuver, publier, valider, qualifier un problème, transitions réservées) exigent le rôle **Manager sur le périmètre** de l'enregistrement ; chef de projet ou gestionnaire du périmètre pour un projet (PRJ-04) | ✅ | |
+| PER-07 | **Changer le périmètre** d'un enregistrement : Manager des deux périmètres, ou Admin ; tracé au journal d'audit (SOC-20, champ `perimeterId`) | ✅ | |
 | PER-08 | **Liens** entre enregistrements de périmètres différents : permis si l'utilisateur voit les deux ; un lien ne donne pas accès à l'enregistrement d'un autre périmètre | 🔜 | 1 |
 | PER-09 | **Console, reporting, recherche, cas similaires** : limités aux périmètres de l'utilisateur ; l'Admin voit tout, avec un filtre par périmètre | 🔜 | 1 |
-| PER-10 | **Reprise des données** : à la mise à niveau, un périmètre « Organisation » est créé et reçoit tous les enregistrements ; tant qu'aucune affectation n'existe, chaque utilisateur est réputé affecté à ce périmètre avec son rôle AD (comportement inchangé) (ADR-0014, D3) | ✅ (rattachement par la migration `Perimeters`) | |
+| PER-10 | **Reprise des données** : à la mise à niveau, un périmètre « Organisation » est créé et reçoit tous les enregistrements ; un compte qu'**aucune affectation** ne désigne (ni directement ni par ses groupes) est réputé affecté à ce périmètre avec son rôle AD (comportement inchangé) (ADR-0014, D3). *Amendé le 2026-10-12 : la règle valait « tant qu'aucune affectation n'existe » ; la première affectation créée par l'Admin aurait alors coupé l'accès de tous les autres comptes* | ✅ (rattachement par la migration `Perimeters`) | |
 | PER-11 | Créations, modifications, suppressions de périmètres et d'affectations sont **tracées** au journal d'audit (SOC-20) | ✅ | |
 | PER-12 | Fiche d'un périmètre : compteurs des enregistrements rattachés par pratique et liste des affectations | ✅ (API) / 🔜 (écran) | |
 
@@ -74,10 +75,10 @@ et ses affectations.
 
 | Route | Policy | Rôle |
 |---|---|---|
-| GET `/api/perimeters` | User | Périmètres en service (sélecteurs) ; limités aux périmètres de l'utilisateur avec PER-05 🔜 |
+| GET `/api/perimeters` | User | Mes périmètres en service, avec mon rôle sur chacun (sélecteurs) ; tous pour l'Admin |
 | GET/POST/PUT `/api/admin/perimeters[/{id}]`, DELETE `…/{id}` (douce), POST `…/{id}/restore`, DELETE `…/{id}/purge` | Admin | Gestion des périmètres |
 | GET/POST `/api/admin/perimeters/{id}/assignments`, DELETE `/api/admin/assignments/{id}` | Admin | Affectations |
-| `PerimeterId` sur chaque enregistrement (lu ✅) ; choix à la création et `?perimeter=` sur les listes 🔜 | selon PER-05, PER-06 | Portée |
+| `perimeterId` sur chaque enregistrement et dans les DTO (création, déplacement) ; `?perimeter=` sur les listes | selon PER-04 à PER-07 | Portée |
 
 ## 6. Scénarios d'acceptation
 

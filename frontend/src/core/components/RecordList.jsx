@@ -3,21 +3,28 @@ import { useNavigate } from 'react-router-dom'
 import { getUser } from '../../api'
 import RecordForm, { toForm, toPayload } from './RecordForm'
 import StatusBadge from './StatusBadge'
+import PerimeterSelect from './PerimeterSelect'
+import usePerimeters from '../usePerimeters'
 
 const isManagerRole = () => ['Admin', 'Manager'].includes(getUser()?.role)
 
 /** Formulaire de création : champs de la configuration, statut initial si le module le permet. */
 function NewRecord({ config, onCreated }) {
   const [f, setF] = useState(() => ({ ...toForm(config.fields), status: '' }))
+  const [perimeterId, setPerimeterId] = useState(null)
   const [error, setError] = useState('')
+  const perimeters = usePerimeters()
   const merge = patch => setF(prev => ({ ...prev, ...patch }))
-  const submit = () => config.api.create({ ...toPayload(config.fields, f), status: f.status || null })
+  const submit = () => config.api.create({ ...toPayload(config.fields, f), status: f.status || null, perimeterId })
     .then(onCreated).catch(e => setError(e.message))
+  // PER-04 : avec plusieurs périmètres, le choix est obligatoire.
   const missing = config.fields.some(fd => fd.required && fd.create !== false && fd.type !== 'checkbox' && !f[fd.key])
+    || (perimeters.length > 1 && !perimeterId)
   return (
     <div className="card" style={{ marginBottom: 20 }}>
       <h3 style={{ color: 'var(--navy)', marginBottom: 14 }}>{config.createTitle}</h3>
       {error && <div className="error">{error}</div>}
+      <PerimeterSelect perimeters={perimeters} value={perimeterId} onChange={setPerimeterId} required />
       {config.statusAtCreation && (
         <div className="field" style={{ maxWidth: 240 }}><label>Statut</label>
           <select value={f.status} onChange={e => merge({ status: e.target.value })}>

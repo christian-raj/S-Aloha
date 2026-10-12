@@ -109,6 +109,7 @@ export const api = {
     referential: () => request('/compliance/referential'),
     importText: (csv) => request('/compliance/referential/import', { method: 'POST', body: JSON.stringify({ csv }) })
   },
+  perimeters: { mine: () => request('/perimeters') },
   links: {
     list: (type, id) => request(`/links?type=${type}&id=${id}`),
     create: (dto) => request('/links', { method: 'POST', body: JSON.stringify(dto) }),

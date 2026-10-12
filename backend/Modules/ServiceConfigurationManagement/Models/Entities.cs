@@ -51,6 +51,6 @@ public class CiRelationship
 
 public record ConfigurationItemDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
-    string? CiType, string? Environment, string? Location) : IRecordDto;
+    string? CiType, string? Environment, string? Location, int? PerimeterId = null) : IRecordDto;
 
 public record CiRelationshipDto(string TargetReference, string Type);
