@@ -31,7 +31,7 @@ proactive, depuis une tendance), **contrôle** (analyse, contournement, erreur c
 | Déclarer un problème | ✔ | ✔ | ✔ | ✅ |
 | Créer / modifier une analyse RCA | ✔ | ✔ | ✔ | ✅ |
 | Créer / mettre à jour le statut d'une action corrective | ✔ | ✔ | ✔ | ✅ |
-| Modifier une action (titre, échéance, RACI) | R ou A de l'action | ✔ | ✔ | 🔜 PRB-24 |
+| Modifier une action (titre, échéance, RACI) | R ou A de l'action | ✔ | ✔ | ✅ PRB-24 |
 | Qualifier : statut, impact, urgence, catégorie, cause racine, contournement | ✘ | ✔ | ✔ | ✅ |
 | Supprimer une analyse ou une action | ✘ | ✔ | ✔ | ✅ |
 | Supprimer un problème | ✘ | ✘ | ✔ | ✅ |
@@ -133,7 +133,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | PRB-21 | **Gestionnaire du problème** (responsable AD) : par défaut le Manager qui qualifie ; « Mon travail » de ce gestionnaire | 🔜 | 2 |
 | PRB-22 | Un **incident majeur** résolu sans problème relié crée une alerte « problème à ouvrir » (voir INC-15) | 🔜 | 2 |
 | PRB-23 | **Récurrence** : un problème Résolu ou Clos qui reçoit un nouvel incident relié est signalé aux gestionnaires (« récurrence après correctif ») | 🔜 | 2 |
-| PRB-24 | **Modifier une action** (titre, description, échéance, RACI) : son R, son A ou un Manager — résout M7 | 🔜 | 1 |
+| PRB-24 | **Modifier une action** (titre, description, échéance, RACI) : son R, son A ou un Manager — résout M7 | ✅ | 1 |
 | PRB-25 | Une action ne passe à **Terminée** que si son A l'approuve (ou un Manager) : un R la passe à *En cours*, puis demande l'approbation | 🔜 | 2 |
 | PRB-26 | Les actions confiées à un **groupe AD** apparaissent pour chaque membre du groupe (SOC-10) — résout M3 | 🔜 | 1 |
 | PRB-27 | Depuis une action, **créer un changement** lié (correctif à mettre en œuvre) : titre et description repris | 🔜 | 2 |

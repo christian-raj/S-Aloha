@@ -26,10 +26,10 @@ public class ItilModulesTests(ApiFixture api)
     private static string Str(JsonElement e, string p) => e.GetProperty(p).GetString()!;
 
     private static object Incident(string title, string? status = null, string? resolution = null,
-        string? owner = null, bool major = false) => new
+        string? owner = null, bool major = false, string? reopenReason = null) => new
     {
         title, description = "d", status, impact = "Élevé", urgency = "Moyenne", category = "Réseau",
-        affectedService = "Messagerie", isMajor = major, resolution,
+        affectedService = "Messagerie", isMajor = major, resolution, reopenReason,
         resolutionCode = resolution is null ? null : "Correctif appliqué",
         // Un responsable : la prise en charge (En cours) l'exige (INC-06).
         ownerType = "User", ownerId = owner ?? "hery.rakoto", ownerDisplayName = owner ?? "Hery Rakoto"
@@ -107,7 +107,7 @@ public class ItilModulesTests(ApiFixture api)
         var resolved = await Json(await Put(client, "/api/incidents", Id(i), Incident("Résolution", "Résolu", "Redémarrage")));
         Assert.NotEqual(JsonValueKind.Null, resolved.GetProperty("resolvedAt").ValueKind);
 
-        var reopened = await Json(await Put(client, "/api/incidents", Id(i), Incident("Résolution", "En cours", "Redémarrage")));
+        var reopened = await Json(await Put(client, "/api/incidents", Id(i), Incident("Résolution", "En cours", "Redémarrage", reopenReason: "Symptôme réapparu")));
         Assert.Equal(JsonValueKind.Null, reopened.GetProperty("resolvedAt").ValueKind);
     }
 

@@ -31,6 +31,20 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 - **Transition forcée** par un administrateur, hors du cycle de vie, avec un motif
   obligatoire tracé à l'historique (SOC-05).
 
+- **Droits et statuts — étape 4 du lot 1** :
+  - Incidents : réouverture encadrée — fenêtre de 10 jours ouvrés, motif obligatoire (à
+    renouveler à chaque réouverture), compteur `ReopenCount` (INC-11) ; caractère majeur
+    déclaré ou retiré par un Manager seulement, priorité forcée P1, responsable nominatif
+    (pas un groupe) désigné par un Manager (INC-13).
+  - Demandes de service : statut **Annulée** (final), annulation réservée au demandeur ou
+    à un Manager, date `CancelledAt` tracée (REQ-09).
+  - Configuration : retrait d'un CI réservé au Manager (CFG-12), bloqué si un incident ou
+    changement ouvert est lié au CI (CFG-13), liaison interdite vers ou depuis un CI Retiré
+    (CFG-14).
+  - Problèmes : modification d'une action (titre, description, échéance, RACI) réservée
+    au R, à l'A ou à un Manager ; la mise à jour du seul statut reste ouverte à tous
+    (PRB-24 — résout M7).
+
 ### Modifié
 
 - **Validations du cycle de vie** (lot 1, étape 3) : prise en charge d'un incident avec un

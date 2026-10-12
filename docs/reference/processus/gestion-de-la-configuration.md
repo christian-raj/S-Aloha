@@ -31,7 +31,7 @@ découverte automatique du réseau.
 | Action | User | Manager | Admin | Statut |
 |---|---|---|---|---|
 | Créer, modifier un CI, gérer ses relations | ✔ | ✔ | ✔ | ✅ |
-| Passer un CI à **Retiré** | ✘ | ✔ | ✔ | 🔜 CFG-12 |
+| Passer un CI à **Retiré** | ✘ | ✔ | ✔ | ✅ CFG-12 |
 | Enregistrer une vérification | Propriétaire | ✔ | ✔ | 🔜 CFG-15 |
 | Importer en masse | ✘ | ✘ | ✔ | 🔜 CFG-30 |
 | Supprimer | ✘ | ✘ | ✔ | ✅ |
@@ -98,9 +98,9 @@ CFG-10, lot 1)** : seules les transitions ci-dessous (SOC-05).
 | CFG-07 | Registre filtrable par type (`type`), statut et texte | ✅ | |
 | CFG-10 | **Transitions contraintes** selon le § 4 (SOC-05) ; Retiré est final | ✅ | 1 |
 | CFG-11 | Le **propriétaire** est obligatoire pour un CI En service | ✅ | 1 |
-| CFG-12 | **Retirer** un CI : Manager uniquement | 🔜 | 1 |
-| CFG-13 | Un CI relié à un **incident ou changement ouvert** ne peut pas être retiré (400, avec les références en cause) | 🔜 | 1 |
-| CFG-14 | Un CI **Retiré** ne peut plus être relié à un nouvel incident, changement ou CI (400) ; ses liens existants restent visibles | 🔜 | 1 |
+| CFG-12 | **Retirer** un CI : Manager uniquement | ✅ | 1 |
+| CFG-13 | Un CI relié à un **incident ou changement ouvert** ne peut pas être retiré (400, avec les références en cause) | ✅ | 1 |
+| CFG-14 | Un CI **Retiré** ne peut plus être relié à un nouvel incident, changement ou CI (400) ; ses liens existants restent visibles | ✅ | 1 |
 | CFG-15 | **Vérification** : le propriétaire ou un Manager atteste que la fiche est exacte (`LastVerifiedAt`) ; un CI En service non vérifié depuis **12 mois** remonte en relance au propriétaire | 🔜 | 2 |
 | CFG-16 | **Attributs par type** : chaque type de CI définit des attributs facultatifs (Serveur : système, adresse IP, CPU, mémoire ; Application : version, éditeur, URL ; Poste de travail : numéro de série, utilisateur…) | 🔜 | 3 |
 | CFG-17 | **Unicité** : deux CI non retirés ne peuvent pas avoir le même nom dans le même environnement (409) | ✅ | 1 |

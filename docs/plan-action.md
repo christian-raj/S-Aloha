@@ -42,7 +42,6 @@ code qui doit s'y conformer.
 | # | Chantier | Décision à prendre |
 |---|---|---|
 | M3 | Actions confiées à un groupe AD invisibles de ses membres | Groupes dans le jeton, ou résolution à la volée dans l'AD |
-| M7 | Pas d'édition d'une action (titre, échéance, RACI) | Périmètre de l'édition et droits |
 | M8 | Aucune suppression dans l'interface | Qui supprime quoi, avec quelle confirmation |
 | A1 | **Console d'administration inexistante** (Admin = console Manager) | Décidé le 2026-10-07 : section de menu **Administration** (Admin : utilisateurs et rôles, santé, journal d'audit, nettoyage — [SOC-26](reference/regles-metier.md#9-traçabilité-commentaires-administration)) et section **Paramétrage** (Manager, Admin : référentiels — SOC-27 — et paramétrage des pratiques) ; voir [frontend § Navigation cible](reference/frontend.md#navigation-cible) |
 
@@ -63,7 +62,6 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 |---|---|---|
 | Q1 | **Tests** : socle en place (API : xUnit + Testcontainers ; frontend : Vitest), B1–B3 et M1, M2, M4–M6 couverts ; étendre aux scénarios R1–R6 | code |
 | Q2 | **CI** : build backend et frontend, `python3 scripts/check-docs.py` | code |
-| Q3 | Retirer `puppeteer-core` des dépendances du frontend (inutilisé, alourdit l'image) | décision |
 | Q4 | Créer les issues GitHub des sections 1 à 7 et les lier ici | action |
 
 ## 7. Feuille de route fonctionnelle
@@ -87,9 +85,10 @@ sont spécifiés règle par règle dans [`reference/processus/`](reference/proce
 Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 ([plan d'implémentation du lot 1](reference/processus/readme.md#plan-dimplémentation-conseillé--lot-1)).
 
-**Itération suivante** (lot 1) : étape 4 (droits et statuts), étape 5 (groupes AD dans le
-jeton), étape 6 (**périmètres**, [PER-01 à PER-12](reference/perimetres.md)) — décisions D1 à D4 acceptées
-([ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md)).
+**Itération suivante** (lot 1) : étape 5 (groupes AD dans le jeton), étape 6
+(**périmètres**, [PER-01 à PER-12](reference/perimetres.md)) — décisions D1 à D4 acceptées
+([ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md)). Étape 4 terminée le
+2026-10-11 (INC-11, INC-13, REQ-09, CFG-12 à CFG-14, PRB-24).
 
 ### Sortie du MVP
 

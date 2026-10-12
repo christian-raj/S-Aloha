@@ -32,7 +32,7 @@ une modification non standard du SI (→ [changement](habilitation-des-changemen
 |---|---|---|---|---|
 | Soumettre, modifier, traiter une demande approuvée | ✔ | ✔ | ✔ | ✅ |
 | Approuver / rejeter | ✘ | ✔ | ✔ | ✅ |
-| Annuler sa propre demande avant traitement | Demandeur | ✔ | ✔ | 🔜 REQ-09 |
+| Annuler sa propre demande avant traitement | Demandeur | ✔ | ✔ | ✅ REQ-09 |
 | Tenir le catalogue de demandes | ✘ | ✔ | ✔ | 🔜 REQ-20 |
 | Supprimer | ✘ | ✘ | ✔ | ✅ |
 
@@ -50,7 +50,7 @@ créateur = demandeur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 | `FulfilledAt`, `ClosedAt` | date UTC | auto | Satisfaction, clôture | ✅ |
 | `CatalogItemId` | lien | ✔ (🔜) | Modèle du catalogue de demandes | 🔜 REQ-20 |
 | `RejectionReason` | texte | au rejet | Motif communiqué au demandeur | ✅ |
-| `CancelledAt` | date UTC | auto | Annulation | 🔜 REQ-09 |
+| `CancelledAt` | date UTC | auto | Annulation | ✅ REQ-09 |
 
 **Modèle de demande** (`RequestCatalogItems`, 🔜 REQ-20) : nom, description, service du
 catalogue, approbation requise (oui/non), délai cible (heures de service), groupe
@@ -91,12 +91,12 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | — → Approuvée | Auto | Modèle sans approbation | `ApprovedBy` = « Modèle pré-approuvé » | 🔜 REQ-21 |
 | Soumise → Approuvée | Manager | | `ApprovedAt`, `ApprovedBy` | ✅ |
 | Soumise → Rejetée | Manager | Motif de rejet | | ✅ (motif) |
-| Soumise, Approuvée → Annulée | Demandeur, Manager | Pas encore En cours | `CancelledAt` | 🔜 REQ-09 |
+| Soumise, Approuvée → Annulée | Demandeur, Manager | Pas encore En cours | `CancelledAt` | ✅ REQ-09 |
 | Approuvée → En cours | Tous | Responsable renseigné | | ✅ (approbation exigée) / 🔜 (responsable) |
 | En cours → Satisfaite | Responsable, Manager | Toutes les tâches Terminée ou Annulée | `FulfilledAt` | ✅ (horodatage) / 🔜 REQ-25 |
 | Satisfaite → En cours | Demandeur, bénéficiaire, Manager | Motif ; dans les 5 jours ouvrés | `FulfilledAt` effacé | 🔜 REQ-10 |
 | Satisfaite → Close | Demandeur, Manager, ou auto après 5 jours ouvrés | | `ClosedAt` | ✅ (horodatage) / 🔜 REQ-11 |
-| Rejetée, Annulée, Close → … | — | Statuts finaux | | 🔜 REQ-08 |
+| Rejetée, Annulée, Close → … | — | Statuts finaux | | ✅ REQ-08 |
 
 ## 5. Règles de gestion
 
@@ -109,8 +109,8 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | REQ-05 | `FulfilledAt` posé à Satisfaite, `ClosedAt` à Close, effacés à la sortie (SOC-08) | ✅ | |
 | REQ-06 | Un **rejet** exige un motif, communiqué au demandeur | ✅ | 1 |
 | REQ-07 | Le **bénéficiaire** vaut le demandeur par défaut ; une demande pour autrui garde les deux | 🔜 | 2 |
-| REQ-08 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejetée, Annulée et Close sont finales | ✅ / 🔜 (statut Annulée, REQ-09) | 1 |
-| REQ-09 | Statut **Annulée** : le demandeur (ou un Manager) annule une demande Soumise ou Approuvée, tant qu'elle n'est pas En cours | 🔜 | 1 |
+| REQ-08 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejetée, Annulée et Close sont finales | ✅ | 1 |
+| REQ-09 | Statut **Annulée** : le demandeur (ou un Manager) annule une demande Soumise ou Approuvée, tant qu'elle n'est pas En cours | ✅ | 1 |
 | REQ-10 | **Contestation** : dans les 5 jours ouvrés, le demandeur ou le bénéficiaire renvoie une demande Satisfaite En cours, avec motif | 🔜 | 2 |
 | REQ-11 | **Clôture** à la confirmation du demandeur, ou automatique 5 jours ouvrés après Satisfaite | 🔜 | 3 |
 | REQ-12 | Une demande qui révèle un **besoin non standard** se requalifie : créer un changement (ou un incident) relié, puis annuler la demande avec ce motif | 🔜 | 2 |

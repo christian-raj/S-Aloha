@@ -93,13 +93,15 @@ Prérequis des motifs (réouverture, rejet, abandon) et des transitions forcées
 
 ### Étape 4 — Droits et statuts
 
+**Fait le 2026-10-11.**
+
 | Règle | Objet |
 |---|---|
 | [INC-11](gestion-des-incidents.md) | Réouverture encadrée, compteur |
 | [INC-13](gestion-des-incidents.md) | Incident majeur déclaré par un Manager |
 | [REQ-09](gestion-des-demandes.md) | Statut Annulée, annulation par le demandeur |
 | [CFG-12](gestion-de-la-configuration.md), [CFG-13](gestion-de-la-configuration.md), [CFG-14](gestion-de-la-configuration.md) | Retrait d'un CI : Manager, sans enregistrement ouvert ; CI retiré non reliable |
-| [PRB-24](gestion-des-problemes.md) | Modifier une action : R, A ou Manager |
+| [PRB-24](gestion-des-problemes.md) | Modifier une action : R, A ou Manager — résout M7 |
 
 ### Étape 5 — Groupes AD
 
@@ -121,9 +123,9 @@ Décisions D1 à D4 acceptées le 2026-10-10 : [ADR-0014](../../decisions/adr-00
 
 ### Itération suivante
 
-Étapes 4, 5 et 6, dans cet ordre : l'étape 5 fournit les groupes AD dont l'étape 6 a besoin
-pour les affectations de groupes. Suivi : issues « Étape 4 », « Étape 5 » et « Périmètres »
-du [plan d'action](../../plan-action.md#7-feuille-de-route-fonctionnelle).
+Étapes 5 et 6 (étape 4 terminée le 2026-10-11) : l'étape 5 fournit les groupes AD dont
+l'étape 6 a besoin pour les affectations de groupes. Suivi : issues « Étape 5 » et
+« Périmètres » du [plan d'action](../../plan-action.md#7-feuille-de-route-fonctionnelle).
 
 ### Hors étapes
 

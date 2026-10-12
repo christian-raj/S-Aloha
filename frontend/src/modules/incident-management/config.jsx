@@ -22,11 +22,13 @@ export const incidentConfig = {
     { key: 'category', label: 'Catégorie', placeholder: 'Réseau, Poste de travail, Application…' },
     { key: 'affectedService', label: 'Service affecté', placeholder: 'Ex. : Messagerie' },
     ownerField('Assigné à'),
-    { key: 'isMajor', label: 'Gravité', type: 'checkbox', checkboxLabel: 'Incident majeur' },
+    { key: 'isMajor', label: 'Gravité', type: 'checkbox', checkboxLabel: 'Incident majeur', managerOnly: true },
     { key: 'resolution', label: 'Résolution', type: 'textarea', create: false, rows: 3,
       placeholder: 'Obligatoire pour passer à Résolu ou Clos.' },
     { key: 'resolutionCode', label: 'Code de résolution', type: 'select', create: false,
       options: ['Correctif appliqué', 'Contournement', 'Résolu sans action', 'Non reproductible', 'Doublon'] },
+    { key: 'reopenReason', label: 'Motif de réouverture', type: 'textarea', create: false, rows: 2,
+      placeholder: 'Obligatoire pour rouvrir un incident résolu.' },
   ],
   columns: [
     { h: 'Priorité', v: r => <span className={'badge ' + r.priority}>{r.priority}</span> },
@@ -38,7 +40,8 @@ export const incidentConfig = {
     {r.isMajor && <span className="badge t-bad">Majeur</span>}
   </>,
   meta: r => [r.firstResponseAt && `Pris en charge le ${dateTimeFr(r.firstResponseAt)}`,
-    r.resolvedAt && `Résolu le ${dateTimeFr(r.resolvedAt)}`],
-  help: 'Prise en charge (En cours) : un responsable. Résolution : description et code ; un doublon est relié à l\'incident conservé (onglet Liens).',
+    r.resolvedAt && `Résolu le ${dateTimeFr(r.resolvedAt)}`,
+    r.reopenCount > 0 && `Rouvert ${r.reopenCount} fois`],
+  help: 'Prise en charge (En cours) : un responsable. Résolution : description et code ; un doublon est relié à l\'incident conservé (onglet Liens). Réouverture : un motif, dans les 10 jours ouvrés. Incident majeur : déclaré par un gestionnaire.',
   linkHint: 'Problème sous-jacent, CI touchés, article de connaissance appliqué…',
 }

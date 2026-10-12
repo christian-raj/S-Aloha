@@ -59,6 +59,19 @@ public static class Dates
         DateTimeKind.Local => d.Value.ToUniversalTime(),
         _ => DateTime.SpecifyKind(d.Value, DateTimeKind.Utc)
     };
+
+    /// <summary>Date décalée de <paramref name="businessDays"/> jours ouvrés (samedi et dimanche exclus).</summary>
+    public static DateTime AddBusinessDays(DateTime start, int businessDays)
+    {
+        var cur = start;
+        while (businessDays > 0)
+        {
+            cur = cur.AddDays(1);
+            if (cur.DayOfWeek != DayOfWeek.Saturday && cur.DayOfWeek != DayOfWeek.Sunday)
+                businessDays--;
+        }
+        return cur;
+    }
 }
 
 /// <summary>

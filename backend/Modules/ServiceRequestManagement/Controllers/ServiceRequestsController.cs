@@ -27,12 +27,18 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
     protected override bool RequiresManager(string status) => status is "Approuvée" or "Rejetée";
 
     // Une demande rejetée est terminée : elle n'est ni traitée ni close.
-    protected override string? CheckStatus(ServiceRequest e, string status) =>
-        e.ApprovedAt is null && status is "En cours" or "Satisfaite" or "Close"
-            ? "La demande doit d'abord être approuvée par un gestionnaire."
-            // REQ-06 : un rejet se motive, le motif est communiqué au demandeur.
-            : status == "Rejetée" && e.RejectionReason is null ? "Motiver le rejet : le motif est communiqué au demandeur."
-            : null;
+    protected override string? CheckStatus(ServiceRequest e, string status)
+    {
+        if (e.ApprovedAt is null && status is "En cours" or "Satisfaite" or "Close")
+            return "La demande doit d'abord être approuvée par un gestionnaire.";
+        // REQ-06 : un rejet se motive, le motif est communiqué au demandeur.
+        if (status == "Rejetée" && e.RejectionReason is null)
+            return "Motiver le rejet : le motif est communiqué au demandeur.";
+        // REQ-09 : annulation par le demandeur ou un gestionnaire.
+        if (status == "Annulée" && !IsManager && !string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase))
+            return "Seul le demandeur ou un gestionnaire peut annuler la demande.";
+        return null;
+    }
 
     protected override void OnStatusChanged(ServiceRequest e, string from)
     {
@@ -41,5 +47,6 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         e.FulfilledAt = e.Status is "Satisfaite" or "Close" && e.ApprovedAt is not null
             ? e.FulfilledAt ?? DateTime.UtcNow : null;
         e.ClosedAt = e.Status == "Close" ? DateTime.UtcNow : null;
+        e.CancelledAt = e.Status == "Annulée" ? DateTime.UtcNow : null;
     }
 }
