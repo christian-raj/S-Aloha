@@ -4,6 +4,7 @@ import { Kpi, Tolerance } from './charts'
 import { date, dateTime, fmt } from './exportCsv'
 
 const DAY = 86400000
+const short = (d) => d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
 const RISK_TONE = (score) => score >= 15 ? 't-bad' : score >= 8 ? 't-wait' : 't-done'
 
 /** Calendrier simplifié des changements à venir (REP-33) : une barre par changement sur 30 jours. */
@@ -15,21 +16,26 @@ function Gantt({ items }) {
   return (
     <figure className="card chart-card">
       <figcaption><h3>Changements des 30 prochains jours</h3></figcaption>
+      <div className="chart-legend">
+        <span><i className="swatch c3" />Standard</span><span><i className="swatch c1" />Normal</span><span><i className="swatch c2" />Urgent</span>
+      </div>
       {items.length === 0 ? <p className="muted small">Aucun changement planifié.</p> : (
         <div className="gantt" role="list">
           <div className="gantt-scale" aria-hidden>
-            {weeks.map(w => <span key={w} style={{ left: `${(w / 30) * 100}%` }}>{date(new Date(start.getTime() + w * DAY))}</span>)}
+            {weeks.map(w => <span key={w} style={{ left: `${(w / 30) * 100}%` }}>{short(new Date(start.getTime() + w * DAY))}</span>)}
           </div>
           {items.map(c => {
             const left = pos(c.plannedStart)
             const width = Math.max(1.2, pos(c.plannedEnd ?? c.plannedStart) - left)
             return (
               <div className="gantt-row" role="listitem" key={c.id}>
-                <span className="lbl"><Link to={`/changes/${c.id}`}>{c.reference}</Link> {c.title}</span>
+                <div className="gantt-head">
+                  <span className="lbl"><Link to={`/changes/${c.id}`}>{c.reference}</Link> {c.title}</span>
+                  <span className="val">{c.changeType} · {dateTime(c.plannedStart)}</span>
+                </div>
                 <div className="gantt-track" title={`${dateTime(c.plannedStart)} → ${dateTime(c.plannedEnd)}`}>
                   <div className={`gantt-bar type-${c.changeType}`} style={{ left: `${left}%`, width: `${width}%` }} />
                 </div>
-                <span className="val">{c.changeType} · {date(c.plannedStart)}</span>
               </div>)
           })}
         </div>

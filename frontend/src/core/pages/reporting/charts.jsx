@@ -35,6 +35,9 @@ export function LineChart({ title, days, series, unit = '' }) {
   // Étiquettes de fin écartées d'au moins 13 px pour rester lisibles quand les courbes se rejoignent.
   const ends = series.map(s => ({ s, py: y(days[last][s.key]) })).sort((a, b) => a.py - b.py)
   ends.forEach((e, i) => { if (i && e.py - ends[i - 1].py < 13) e.py = ends[i - 1].py + 13 })
+  // Puis remontées en bloc si la dernière sort du cadre (séries toutes à zéro).
+  const overflow = ends.length ? ends[ends.length - 1].py - (H - M.bottom - 2) : 0
+  if (overflow > 0) ends.forEach(e => { e.py -= overflow })
 
   const onMove = (e) => {
     const r = e.currentTarget.getBoundingClientRect()
