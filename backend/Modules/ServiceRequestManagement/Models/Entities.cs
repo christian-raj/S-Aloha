@@ -9,18 +9,19 @@ namespace SAloha.Api.Modules.ServiceRequestManagement;
 /// </summary>
 public class ServiceRequest : Record
 {
-    public static readonly string[] Statuses = ["Soumise", "Approuvée", "Rejetée", "En cours", "Satisfaite", "Close"];
+    public static readonly string[] Statuses = ["Soumise", "Approuvée", "Rejetée", "Annulée", "En cours", "Satisfaite", "Close"];
     /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
     public static readonly Dictionary<string, string[]> Transitions = new()
     {
-        ["Soumise"] = ["Approuvée", "Rejetée"],
-        ["Approuvée"] = ["En cours"],
+        ["Soumise"] = ["Approuvée", "Rejetée", "Annulée"],
+        ["Approuvée"] = ["En cours", "Annulée"],
         ["En cours"] = ["Satisfaite"],
         ["Satisfaite"] = ["En cours", "Close"],
         ["Rejetée"] = [],
+        ["Annulée"] = [],
         ["Close"] = [],
     };
-    public static readonly string[] Done = ["Rejetée", "Satisfaite", "Close"];
+    public static readonly string[] Done = ["Rejetée", "Annulée", "Satisfaite", "Close"];
 
     [MaxLength(200)] public string RequestedItem { get; set; } = "";          // objet demandé
     [MaxLength(200)] public string? RequestedFor { get; set; }                // bénéficiaire (sAMAccountName)
@@ -31,6 +32,7 @@ public class ServiceRequest : Record
     public DateTime? ApprovedAt { get; set; }
     public DateTime? FulfilledAt { get; set; }
     public DateTime? ClosedAt { get; set; }
+    public DateTime? CancelledAt { get; set; }                            // REQ-09 : annulation par le demandeur
 }
 
 public record ServiceRequestDto(string Title, string? Description, string? Status,

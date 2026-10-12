@@ -35,9 +35,12 @@ public class Incident : Record
     public DateTime? FirstResponseAt { get; set; }                       // première prise en charge (INC-06)
     public DateTime? ResolvedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
+    public int ReopenCount { get; set; }                                 // INC-11 : nombre de réouvertures
+    public string? ReopenReason { get; set; }                            // INC-11 : motif de réouverture
 }
 
 public record IncidentDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? Impact, string? Urgency, string? Category, string? AffectedService,
-    bool IsMajor, string? Resolution, string? ResolutionCode = null) : IRecordDto;
+    bool IsMajor, string? Resolution, string? ResolutionCode = null,
+    string? ReopenReason = null) : IRecordDto;

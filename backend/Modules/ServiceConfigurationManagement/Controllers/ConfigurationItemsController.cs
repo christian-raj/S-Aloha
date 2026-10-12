@@ -25,10 +25,45 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
         return null;
     }
 
-    // CFG-11 : un CI en service a un propriétaire, à qui s'adresser.
-    protected override string? CheckStatus(ConfigurationItem e, string status) =>
-        status == "En service" && string.IsNullOrWhiteSpace(e.OwnerId)
-            ? "Désigner un propriétaire : il est obligatoire pour un CI en service." : null;
+    // CFG-12 : retirer un CI est réservé aux gestionnaires.
+    protected override bool RequiresManager(string status) => status == "Retiré";
+
+    // CFG-11 : un CI en service a un propriétaire.
+    // CFG-13 : un CI relié à un incident ou changement ouvert ne peut pas être retiré.
+    protected override async Task<string?> CheckStatusAsync(ConfigurationItem e, string status)
+    {
+        if (status == "En service" && string.IsNullOrWhiteSpace(e.OwnerId))
+            return "Désigner un propriétaire : il est obligatoire pour un CI en service.";
+
+        if (status == "Retiré")
+        {
+            var openIncidents = await (
+                from link in Db.ItemLinks
+                where (link.FromType == "ci" && link.FromId == e.Id && link.ToType == "incident")
+                   || (link.ToType == "ci" && link.ToId == e.Id && link.FromType == "incident")
+                let incId = link.FromType == "incident" ? link.FromId : link.ToId
+                join inc in Db.Incidents on incId equals inc.Id
+                where !IncidentManagement.Incident.Done.Contains(inc.Status)
+                select inc.Reference
+            ).ToListAsync();
+
+            var openChanges = await (
+                from link in Db.ItemLinks
+                where (link.FromType == "ci" && link.FromId == e.Id && link.ToType == "change")
+                   || (link.ToType == "ci" && link.ToId == e.Id && link.FromType == "change")
+                let chgId = link.FromType == "change" ? link.FromId : link.ToId
+                join chg in Db.Changes on chgId equals chg.Id
+                where !ChangeEnablement.Change.Done.Contains(chg.Status)
+                select chg.Reference
+            ).ToListAsync();
+
+            var openRefs = openIncidents.Concat(openChanges).ToList();
+            if (openRefs.Count > 0)
+                return $"Ce CI est relié à des enregistrements encore ouverts : {string.Join(", ", openRefs)}.";
+        }
+
+        return null;
+    }
 
     // CFG-17 : deux CI non retirés ne portent pas le même nom dans un même environnement.
     protected override async Task<string?> ConflictAsync(ConfigurationItem e)
@@ -107,11 +142,15 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
     {
         var error = Allowed.Check("Type de relation", dto.Type, CiRelationship.Types);
         if (error is not null) return BadRequest(new { message = error });
-        if (!await Db.ConfigurationItems.AnyAsync(c => c.Id == id)) return NotFound();
+        var source = await Db.ConfigurationItems.FirstOrDefaultAsync(c => c.Id == id);
+        if (source is null) return NotFound();
         var reference = dto.TargetReference.Trim().ToUpper();
         var target = await Db.ConfigurationItems.FirstOrDefaultAsync(c => c.Reference == reference);
         if (target is null) return BadRequest(new { message = $"Aucun CI de référence « {dto.TargetReference} »." });
         if (target.Id == id) return BadRequest(new { message = "Un CI ne peut pas être relié à lui-même." });
+        // CFG-14 : un CI retiré ne peut plus être relié.
+        if (source.Status == "Retiré" || target.Status == "Retiré")
+            return BadRequest(new { message = "Un CI retiré ne peut plus être relié." });
         if (await Db.CiRelationships.AnyAsync(r => r.SourceId == id && r.TargetId == target.Id && r.Type == dto.Type))
             return Conflict(new { message = "Cette relation existe déjà." });
 

@@ -16,7 +16,7 @@ export const ciConfig = {
   filter: { key: 'type', label: 'Tous les types', options: CI_TYPES },
   statuses: [
     { value: 'Planifié', tone: 'new' }, { value: 'En service', tone: 'done' },
-    { value: 'Hors service', tone: 'wait' }, { value: 'Retiré', tone: 'closed' },
+    { value: 'Hors service', tone: 'wait' }, { value: 'Retiré', tone: 'closed', manager: true },
   ],
   fields: [
     titleField('Nom', 'Ex. : srv-erp-01'),

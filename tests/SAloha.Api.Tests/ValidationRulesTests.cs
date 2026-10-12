@@ -33,9 +33,10 @@ public class ValidationRulesTests(ApiFixture api)
     // ---------- Incidents ----------
 
     private static object Incident(string title, string? status = null, string? owner = null,
-        string? code = null, string? resolution = "Redémarrage") => new
+        string? code = null, string? resolution = "Redémarrage", string? reopenReason = null) => new
     {
         title, impact = "Moyen", urgency = "Moyenne", status, resolution, resolutionCode = code,
+        reopenReason,
         ownerType = owner is null ? null : "User", ownerId = owner, ownerDisplayName = owner
     };
 
@@ -50,7 +51,7 @@ public class ValidationRulesTests(ApiFixture api)
         var first = taken.GetProperty("firstResponseAt").GetString();
         Assert.NotNull(first);
         await Json(await c.PutAsJsonAsync($"/api/incidents/{Id(i)}", Incident("INC-06", "Résolu", Owner, "Correctif appliqué")));
-        var reopened = await Json(await c.PutAsJsonAsync($"/api/incidents/{Id(i)}", Incident("INC-06", "En cours", Owner, "Correctif appliqué")));
+        var reopened = await Json(await c.PutAsJsonAsync($"/api/incidents/{Id(i)}", Incident("INC-06", "En cours", Owner, "Correctif appliqué", reopenReason: "Symptôme réapparu")));
         Assert.Equal(Micro(first), Micro(reopened.GetProperty("firstResponseAt").GetString()));   // première prise en charge, jamais réécrite
     }
 

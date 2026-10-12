@@ -60,6 +60,14 @@ public class ActionsController(AppDbContext db) : ControllerBase
     {
         var a = await db.Actions.Include(x => x.Raci).FirstOrDefaultAsync(x => x.Id == id);
         if (a is null) return NotFound();
+
+        // PRB-24 : modifier une action (titre, description, échéance, RACI) est réservé
+        // à son R, son A ou un gestionnaire (M7) ; mettre à jour son statut reste ouvert à tous.
+        var me = User.Identity?.Name?.ToLowerInvariant();
+        var isManager = User.IsInRole("Manager") || User.IsInRole("Admin");
+        var isRorA = me is not null && a.Raci.Any(r => r.Role is "R" or "A" && r.AssigneeId.ToLowerInvariant() == me);
+        if (!isManager && !isRorA && !StatusOnly(a, dto)) return Forbid();
+
         // PRB-02 : statut fermé ; PRB-17 : les règles RACI valent aussi à la modification (#23).
         var invalid = Allowed.Check("Statut d'action", dto.Status, ProblemRules.ActionStatuses, optional: true)
                       ?? ProblemRules.CheckRaci(dto.Raci);
@@ -83,6 +91,17 @@ public class ActionsController(AppDbContext db) : ControllerBase
         await db.SaveChangesAsync();
         return Ok(a);
     }
+
+    /// <summary>Vrai si la requête ne change que le statut de l'action.</summary>
+    private static bool StatusOnly(CorrectiveAction a, ActionDto dto) =>
+        dto.Title == a.Title && (dto.Description ?? "") == (a.Description ?? "")
+        && Micro(Dates.Utc(dto.DueDate)) == Micro(Dates.Utc(a.DueDate))
+        && dto.Raci.Count == a.Raci.Count
+        && dto.Raci.All(r => a.Raci.Any(x => x.Role == r.Role && x.AssigneeType == r.AssigneeType
+            && string.Equals(x.AssigneeId, r.AssigneeId, StringComparison.OrdinalIgnoreCase)));
+
+    // PostgreSQL garde la microseconde, un DateTime le dixième de microseconde.
+    private static long? Micro(DateTime? d) => d?.Ticks / 10;
 
     private static string? LengthError(CorrectiveAction a) =>
         Lengths.Check(a) ?? a.Raci.Select(Lengths.Check).FirstOrDefault(e => e is not null);

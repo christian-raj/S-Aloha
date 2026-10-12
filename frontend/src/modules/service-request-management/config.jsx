@@ -11,8 +11,8 @@ export const requestConfig = {
   empty: 'Aucune demande enregistrée.', ownerLabel: 'Traitées par moi',
   statuses: [
     { value: 'Soumise', tone: 'new' }, { value: 'Approuvée', tone: 'progress', manager: true },
-    { value: 'Rejetée', tone: 'bad', manager: true }, { value: 'En cours', tone: 'progress' },
-    { value: 'Satisfaite', tone: 'done' }, { value: 'Close', tone: 'closed' },
+    { value: 'Rejetée', tone: 'bad', manager: true }, { value: 'Annulée', tone: 'closed' },
+    { value: 'En cours', tone: 'progress' }, { value: 'Satisfaite', tone: 'done' }, { value: 'Close', tone: 'closed' },
   ],
   fields: [
     titleField('Titre', 'Ex. : Accès VPN pour un nouvel arrivant'),

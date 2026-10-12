@@ -56,6 +56,11 @@ public class LinksController(AppDbContext db) : ControllerBase
             return BadRequest(new { message = $"Aucun enregistrement de référence « {dto.ToReference} »." });
         if (to.Type == from.Type && target.Id == dto.FromId)
             return BadRequest(new { message = "Un enregistrement ne peut pas être relié à lui-même." });
+        // CFG-14 : un CI retiré ne peut plus être relié.
+        if (from.Type == "ci" && await db.ConfigurationItems.AnyAsync(c => c.Id == dto.FromId && c.Status == "Retiré"))
+            return BadRequest(new { message = "Un CI retiré ne peut plus être relié." });
+        if (to.Type == "ci" && target.Status == "Retiré")
+            return BadRequest(new { message = "Un CI retiré ne peut plus être relié." });
         if (await db.ItemLinks.AnyAsync(l =>
                 (l.FromType == from.Type && l.FromId == dto.FromId && l.ToType == to.Type && l.ToId == target.Id) ||
                 (l.FromType == to.Type && l.FromId == target.Id && l.ToType == from.Type && l.ToId == dto.FromId)))

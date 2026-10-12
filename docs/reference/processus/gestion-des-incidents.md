@@ -29,9 +29,9 @@ traiter une demande prédéfinie (→ [demandes](gestion-des-demandes.md)).
 | Action | User | Manager | Admin | Statut |
 |---|---|---|---|---|
 | Créer, modifier, prendre en charge, résoudre | ✔ | ✔ | ✔ | ✅ |
-| Déclarer / retirer le caractère **majeur** | ✘ | ✔ | ✔ | 🔜 INC-13 (aujourd'hui : tous) |
+| Déclarer / retirer le caractère **majeur** | ✘ | ✔ | ✔ | ✅ INC-13 |
 | Clore | ✘ | ✔ | ✔ | 🔜 INC-10 (aujourd'hui : tous) |
-| Rouvrir un incident résolu | ✔ | ✔ | ✔ | ✅ (contraintes 🔜 INC-11) |
+| Rouvrir un incident résolu | ✔ | ✔ | ✔ | ✅ (motif et délais INC-11) |
 | Supprimer | ✘ | ✘ | ✔ | ✅ |
 
 ## 3. Données
@@ -55,7 +55,8 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `ResolutionCode` | texte 30 | à la résolution | Correctif appliqué, Contournement, Résolu sans action, Non reproductible, Doublon | ✅ |
 | `FirstResponseAt` | date UTC | auto | Première prise en charge (passage à En cours) | ✅ |
 | `ResponseDueAt`, `ResolutionDueAt` | date UTC | calculé | Échéances tirées du SLA (§ 6) | 🔜 INC-21 |
-| `ReopenCount` | entier | auto | Nombre de réouvertures | 🔜 INC-11 |
+| `ReopenCount` | entier | auto | Nombre de réouvertures | ✅ INC-11 |
+| `ReopenReason` | texte | à la réouverture | Motif de la dernière réouverture ; effacé à la résolution suivante (l'historique le garde) | ✅ INC-11 |
 | `ParentId` | lien | | Incident parent (incidents liés à une même panne) | 🔜 INC-16 |
 | `IsSecurity` | booléen | | Incident de nature sécurité (cyber) | 🔜 INC-40 |
 | `NisSignificant`, `PersonalDataBreach` | booléen + motif | si cyber | Qualification réglementaire | 🔜 INC-41 |
@@ -89,9 +90,9 @@ stateDiagram-v2
 | En cours → En attente | Tous | `OnHoldReason` | Horloge SLA suspendue (INC-22) | 🔜 INC-07 |
 | En attente → En cours | Tous | | `OnHoldReason` effacé, horloge reprise | 🔜 INC-07 |
 | En cours → Résolu | Tous | Résolution et `ResolutionCode` | `ResolvedAt` | ✅ |
-| Résolu → En cours | Tous | Motif ; dans les 10 jours ouvrés suivant la résolution | `ResolvedAt` effacé, `ReopenCount` + 1 | ✅ (effacement) / 🔜 INC-11 |
+| Résolu → En cours | Tous | Motif ; dans les 10 jours ouvrés suivant la résolution | `ResolvedAt` effacé, `ReopenCount` + 1 | ✅ INC-11 |
 | Résolu → Clos | Manager, ou automatique après 5 jours ouvrés | | `ClosedAt` | ✅ (horodatage) / 🔜 INC-10 |
-| Clos → … | — | Aucune : un nouvel incident est créé et relié | | 🔜 INC-11 |
+| Clos → … | — | Aucune : un nouvel incident est créé et relié | | ✅ INC-11 |
 
 ## 5. Règles de gestion
 
@@ -107,9 +108,9 @@ stateDiagram-v2
 | INC-08 | La résolution exige un **code de résolution** fermé ; *Doublon* exige un lien vers l'incident conservé | ✅ | 1 |
 | INC-09 | **Transitions contraintes** selon le § 4 (SOC-05) | ✅ | 1 |
 | INC-10 | **Clôture** par un Manager, ou **automatique** 5 jours ouvrés après la résolution sans réouverture | 🔜 | 2 (manuelle) / 3 (auto) |
-| INC-11 | **Réouverture** d'un incident Résolu dans les 10 jours ouvrés, avec motif, `ReopenCount` + 1 ; au-delà, ou une fois Clos, un **nouvel** incident est créé et relié | 🔜 | 1 |
+| INC-11 | **Réouverture** d'un incident Résolu dans les 10 jours ouvrés, avec motif, `ReopenCount` + 1 ; au-delà, ou une fois Clos, un **nouvel** incident est créé et relié | ✅ | 1 |
 | INC-12 | **Incident majeur** : remonte dans la console des gestionnaires tant qu'il n'est ni Résolu ni Clos | ✅ | |
-| INC-13 | Seul un **Manager** déclare ou retire le caractère majeur ; un incident majeur a toujours priorité P1 et un Manager pour responsable | 🔜 | 1 |
+| INC-13 | Seul un **Manager** déclare ou retire le caractère majeur ; un incident majeur a toujours priorité P1 et un Manager pour responsable | ✅ (responsable nominatif, désigné par un Manager) / 🔜 (rôle du responsable vérifié, étape 5) | 1 |
 | INC-14 | **Ouvrir un problème lié** depuis l'incident : crée le problème avec les mêmes titre, description, impact, urgence, catégorie et service, puis relie les deux | ✅ | |
 | INC-15 | Un incident **majeur** ne passe à Résolu que relié à un **problème** (existant ou créé, INC-14) : la revue de l'incident majeur s'y conduit | 🔜 | 2 |
 | INC-16 | **Incidents enfants** : un incident peut être rattaché à un incident parent (même panne) ; résoudre le parent résout ses enfants avec la même résolution | 🔜 | 3 |
