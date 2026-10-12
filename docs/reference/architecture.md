@@ -42,7 +42,7 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)
 │   ├── Itil/                         # Priority (matrice impact × urgence → P1–P4)
 │   ├── Links/                        # ItemLink, registre ItemLinks, LinksController (liens inter-processus)
-│   ├── Pilotage/                     # ConsoleController, ReportsController (vues transverses)
+│   ├── Pilotage/                     # ConsoleController, ReportsController, DashboardController (vues transverses)
 │   └── Records/                      # Record (entité de base), RecordController<T,TDto>, Allowed, Dates
 └── Modules/
     ├── ProblemManagement/            # Gestion des problèmes : Problems, Analyses, Actions
@@ -78,7 +78,8 @@ Les processus autres que les problèmes héritent d'un même socle :
   (référentiels), `CanCreate` et `CanEdit` (droit de créer, de modifier un enregistrement
   d'après ses valeurs enregistrées : un projet se modifie par son chef de projet ; par défaut
   `ManagerOnly`), `OnCreatedAsync` (objets dépendants créés après l'enregistrement : phases
-  proposées d'un projet), `Filter`/`Search`/`WithDetails`, `ListItems` (colonnes du registre).
+  proposées d'un projet), `BeforeSaveAsync` (valeurs calculées qui interrogent la base, juste
+  avant l'enregistrement : échéance SLA d'un incident, INC-21), `Filter`/`Search`/`WithDetails`, `ListItems` (colonnes du registre).
   Les longueurs `[MaxLength]` sont contrôlées avant l'enregistrement (`Lengths`).
 - **`References.CreateAsync`** — référence annuelle `XXX-AAAA-NNNN` (plus grand numéro + 1,
   nouvelle tentative sur collision de l'index unique) ; utilisée aussi par les problèmes.
@@ -151,6 +152,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/audit?type=&id=` | User | Historique d'un enregistrement (journal d'audit, SOC-20) | Core/Audit |
 | PUT `…/{id}?force=true&reason=` | Admin | Transition forcée hors graphe, motif obligatoire et tracé (SOC-05) | Core/Audit, socle des pratiques et module Problèmes |
 | GET `/api/directory/search?q=` | User | Recherche utilisateurs/groupes AD (sélecteur RACI) | Core/Directory |
+| GET `/api/reports/dashboard/{overview,incidents,problems,changes-projects,compliance}?from=&to=&service=` | User | Tableau de bord par onglet ([reporting](reporting.md), REP-01 à REP-43) | Core/Pilotage |
 | GET `/api/reports/summary` | User | Indicateurs : problèmes (statuts, priorités, catégories, retards, MTTR, volumétrie), MTTR incidents, taux de changements réussis, incidents majeurs ouverts, volumétrie par processus | Core/Pilotage |
 | GET `/api/search?q=&types=&limit=`, `/api/search/similar?type=&id=` | User | Recherche hybride, cas similaires ([recherche](recherche.md)) | Core/Search |
 | GET `/api/search/status`, POST `/api/search/reindex` | Admin | État et reconstruction de l'index de recherche | Core/Search |

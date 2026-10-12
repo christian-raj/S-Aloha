@@ -116,5 +116,8 @@ export const api = {
   },
   console: { get: () => request('/console') },
   directory: { search: (q) => request('/directory/search?q=' + encodeURIComponent(q)) },
-  reports: { summary: () => request('/reports/summary') }
+  reports: {
+    summary: () => request('/reports/summary'),
+    dashboard: (tab, params = {}) => request(`/reports/dashboard/${tab}?` + new URLSearchParams(params))
+  }
 }

@@ -85,6 +85,11 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     protected virtual string? StatusAfterEdit(T e, TDto dto) => null;
     /// <summary>Effets d'un changement de statut (horodatages) ; <c>from</c> vide à la création.</summary>
     protected virtual void OnStatusChanged(T e, string from) { }
+    /// <summary>
+    /// Juste avant l'enregistrement (création et modification) : valeurs calculées
+    /// qui interrogent la base (échéance SLA d'un incident, INC-21).
+    /// </summary>
+    protected virtual Task BeforeSaveAsync(T e, bool creating) => Task.CompletedTask;
     /// <summary>Après la création (référence attribuée, enregistré) : éléments dépendants à créer.</summary>
     protected virtual Task OnCreatedAsync(T e) => Task.CompletedTask;
     protected virtual IQueryable<T> Filter(IQueryable<T> q) => q;
@@ -144,6 +149,8 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
             OnStatusChanged(x, "");
             return x;
         });
+        await BeforeSaveAsync(e, true);
+        await db.SaveChangesAsync();
         await OnCreatedAsync(e);
         return CreatedAtAction(nameof(Get), new { id = e.Id }, e);
     }
@@ -181,6 +188,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
             OnStatusChanged(e, from);
         }
         e.UpdatedAt = DateTime.UtcNow;
+        await BeforeSaveAsync(e, false);
         await db.SaveChangesAsync();
         return Ok(e);
     }

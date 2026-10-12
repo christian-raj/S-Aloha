@@ -15,6 +15,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 |---|---|
 | `Initial` | Schéma du module Problèmes : `Problems`, `Analyses`, `Actions`, `RaciAssignments` — identique à ce que créait `EnsureCreated` avant les modules ITIL 4 |
 | `Lot1Validations` | Colonnes des validations du lot 1 : `Incidents.ResolutionCode`, `Incidents.FirstResponseAt`, `ServiceRequests.RejectionReason`, `Changes.RejectionReason`, `Improvements.AbandonReason`, `Problems.ClosureCode`, `Problems.ResolvedAt` |
+| `IncidentSlaMetrics` | Colonnes des indicateurs d'incident : `Incidents.ResolutionDueAt` (INC-21), `Incidents.OccurredAt` (INC-27), `Incidents.FirstContactResolution`, `Incidents.OwnerChanged` (INC-23) |
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `AuditJournal` | Table `AuditEntries` du journal d'audit (SOC-20) : type et identifiant de l'enregistrement, référence recopiée, action, champ, ancienne et nouvelle valeur, motif, auteur, date ; index sur (type, identifiant) et sur la date |
@@ -130,7 +131,7 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 
 | Table (entité) | Préfixe | Colonnes propres |
 |---|---|---|
-| `Incidents` (`Incident`) | INC | `ResolutionCode`, `FirstResponseAt`, `ReopenCount`, `ReopenReason`, `Impact`, `Urgency`, `Priority` (dérivée), `Category`, `AffectedService`, `IsMajor`, `Resolution`, `ResolvedAt`, `ClosedAt` |
+| `Incidents` (`Incident`) | INC | `ResolutionCode`, `FirstResponseAt`, `ReopenCount`, `ReopenReason`, `ResolutionDueAt`, `OccurredAt`, `FirstContactResolution`, `OwnerChanged`, `Impact`, `Urgency`, `Priority` (dérivée), `Category`, `AffectedService`, `IsMajor`, `Resolution`, `ResolvedAt`, `ClosedAt` |
 | `ServiceRequests` (`ServiceRequest`) | REQ | `RejectionReason`, `RequestedItem`, `RequestedFor`, `RequestedForDisplayName`, `DueDate`, `ApprovedBy`, `ApprovedAt`, `FulfilledAt`, `ClosedAt`, `CancelledAt` |
 | `Changes` (`Change`) | CHG | `RejectionReason`, `ChangeType`, `Risk`, `PlannedStart`, `PlannedEnd`, `ImplementationPlan`, `BackoutPlan`, `Outcome`, `AuthorizedBy`, `AuthorizedAt`, `ClosedAt` |
 | `ConfigurationItems` (`ConfigurationItem`) | CI | `CiType`, `Environment`, `Location` |

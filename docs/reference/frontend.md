@@ -34,7 +34,8 @@ frontend/
     │   └── pages/
     │       ├── Login.jsx         # panneau de marque (fonctionnalités : FEATURES), formulaire AD
     │       ├── Console.jsx       # « Ma console », orientée action
-    │       └── Reporting.jsx     # indicateurs et volumétrie
+    │       ├── Reporting.jsx     # tableau de bord à onglets, filtres période et service, exports
+    │       └── reporting/        # un composant par onglet, charts.jsx (graphiques SVG), exportCsv.js
     └── modules/
         ├── registry.js           # registre des processus ITIL — source unique de la navigation
         ├── problem-management/
@@ -205,7 +206,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | Entrée | Visible par | Règle | Statut |
 |---|---|---|---|
 | Ma console | Tous | [socle § 2](regles-metier.md#2-consoles-par-rôle) | ✅ |
-| Reporting (période choisie, export) | Tous | [SOC-18, SOC-19](regles-metier.md#7-reporting) | ✅ (page) / 🔜 |
+| Reporting : tableau de bord à onglets (synthèse, incidents, problèmes, changements et projets, conformité), période, service, export CSV et PDF | Tous | [REP-01 à REP-43](reporting.md), [SOC-18, SOC-19](regles-metier.md#7-reporting) | ✅ |
 | Notifications : **cloche** dans l'en-tête avec compteur, pas une entrée de menu | Tous | [SOC-21](regles-metier.md#8-notifications) | 🔜 |
 
 ### Pratiques
