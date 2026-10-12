@@ -625,6 +625,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool?>("FirstContactResolution")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime?>("FirstResponseAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -634,6 +637,12 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("character varying(10)");
 
                     b.Property<bool>("IsMajor")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("OwnerChanged")
                         .HasColumnType("boolean");
 
                     b.Property<string>("OwnerDisplayName")
@@ -670,6 +679,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("ResolutionCode")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime?>("ResolutionDueAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("timestamp with time zone");

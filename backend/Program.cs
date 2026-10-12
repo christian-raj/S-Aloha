@@ -67,6 +67,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     DatabaseSchema.Migrate(db, app.Logger);
     SAloha.Api.Modules.ComplianceAssessment.ReferentialStore.EnsureStructure(db);
+    // INC-21 : échéances SLA des incidents enregistrés avant le calcul.
+    SAloha.Api.Modules.IncidentManagement.IncidentSla.BackfillAsync(db).GetAwaiter().GetResult();
 }
 
 app.UseSwagger();
