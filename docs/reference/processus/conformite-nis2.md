@@ -173,7 +173,9 @@ renouveler (Relances, NIS-16), texte du référentiel incomplet (Relances, Admin
 
 ### Interface
 
-- **Registre** des évaluations (Pratiques › Conformité NIS 2).
+- **Registre** des évaluations : menu **Conformité & réglementation › NIS 2** (hors des
+  pratiques ITIL, [frontend § Navigation cible](../frontend.md#navigation-cible)) ; la page
+  garde le titre « Conformité NIS 2 ».
 - **Fiche** : Informations · **Questionnaire** · **Synthèse** · Liens.
   - *Questionnaire* : exigences applicables regroupées par objectif (blocs repliables) ;
     score ou « non applicable » enregistrés à la saisie, justification enregistrée à la
