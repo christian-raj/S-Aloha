@@ -181,7 +181,7 @@ MVP ; le module Problèmes suit les mêmes règles par son propre code).
 | SOC-07 | **Longueurs** : un texte qui dépasse la taille de sa colonne ⇒ 400, champ et limite indiqués | ✅ | |
 | SOC-08 | **Dates de transition** (`ResolvedAt`, `ClosedAt`, `AuthorizedAt`…) posées à l'entrée du statut et **effacées à la sortie** (réouverture) | ✅ | |
 | SOC-09 | **Responsable** : un utilisateur ou groupe AD (assigné, propriétaire, porteur selon le processus) ; « Mes … » compare les identifiants sans tenir compte de la casse | ✅ | |
-| SOC-10 | **Responsable groupe** : un enregistrement dont le responsable est un **groupe AD** apparaît dans « Mon travail » de chaque membre du groupe (groupes de l'utilisateur portés par le jeton à la connexion) — résout M3 | 🔜 | 1 |
+| SOC-10 | **Responsable groupe** : un enregistrement dont le responsable est un **groupe AD** apparaît dans « Mon travail » de chaque membre du groupe (groupes de l'utilisateur portés par le jeton à la connexion) — résout M3. Groupes **directs** de l'utilisateur (`memberOf`), pas les groupes imbriqués ; un responsable de type Groupe ne désigne jamais un compte homonyme | ✅ | |
 | SOC-11 | **Recherche** (titre, référence) insensible à la casse ; filtres `status`, `q`, `owner` sur chaque registre | ✅ | |
 | SOC-12 | **Liens inter-processus** : tout enregistrement peut être relié à un autre par sa référence ; le lien se lit des deux côtés ; un doublon (dans un sens ou dans l'autre) ⇒ 409 ; supprimer un enregistrement supprime ses liens | ✅ | |
 | SOC-13 | Les **registres** du changement et des connaissances ne renvoient pas les champs longs (plans, contenu) : ils restent dans la fiche | ✅ | |

@@ -25,9 +25,10 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger)
     /// Authentifie l'utilisateur et retourne (sAMAccountName de l'annuaire,
     /// displayName, rôle applicatif) ou null. L'identifiant renvoyé est celui
     /// de l'AD, pas la saisie : l'AD ignore la casse, l'application compare
-    /// des chaînes (M2, revue du 2026-10-06).
+    /// des chaînes (M2, revue du 2026-10-06). Les groupes AD directs de
+    /// l'utilisateur (CN) sont renvoyés pour le jeton (SOC-10).
     /// </summary>
-    public (string Username, string DisplayName, string Role)? Authenticate(string username, string password)
+    public (string Username, string DisplayName, string Role, IReadOnlyCollection<string> Groups)? Authenticate(string username, string password)
     {
         try
         {
@@ -48,7 +49,7 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger)
 
             var account = GetAttr(entry, "sAMAccountName") ?? username;
             var role = ResolveRole(groups);
-            return role is null ? null : (account, display, role);
+            return role is null ? null : (account, display, role, groups);
         }
         catch (LdapException ex)
         {

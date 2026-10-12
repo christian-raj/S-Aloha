@@ -24,8 +24,8 @@ Aucun bloquant ouvert : B1 à B3 corrigés et couverts par des tests le 2026-10-
 ## 2. Défauts majeurs — correctifs locaux
 
 M1, M2, M4, M5 et M6 corrigés et couverts par des tests le 2026-10-06
-([journal](archives/journal-2026-10-06.md)). M3, M7 et M8 attendent une décision
-(section 4).
+([journal](archives/journal-2026-10-06.md)) ; M7 soldé le 2026-10-11 (PRB-24), M3 le
+2026-10-12 (groupes AD dans le jeton, SOC-10, PRB-26). M8 attend une décision (section 4).
 
 ## 3. Règles métier que l'API ne tient pas
 
@@ -41,7 +41,6 @@ code qui doit s'y conformer.
 
 | # | Chantier | Décision à prendre |
 |---|---|---|
-| M3 | Actions confiées à un groupe AD invisibles de ses membres | Groupes dans le jeton, ou résolution à la volée dans l'AD |
 | M8 | Aucune suppression dans l'interface | Qui supprime quoi, avec quelle confirmation |
 | A1 | **Console d'administration inexistante** (Admin = console Manager) | Décidé le 2026-10-07 : section de menu **Administration** (Admin : utilisateurs et rôles, santé, journal d'audit, nettoyage — [SOC-26](reference/regles-metier.md#9-traçabilité-commentaires-administration)) et section **Paramétrage** (Manager, Admin : référentiels — SOC-27 — et paramétrage des pratiques) ; voir [frontend § Navigation cible](reference/frontend.md#navigation-cible) |
 
@@ -86,10 +85,11 @@ sont spécifiés règle par règle dans [`reference/processus/`](reference/proce
 Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 ([plan d'implémentation du lot 1](reference/processus/readme.md#plan-dimplémentation-conseillé--lot-1)).
 
-**Itération suivante** (lot 1) : étape 5 (groupes AD dans le jeton), étape 6
-(**périmètres**, [PER-01 à PER-12](reference/perimetres.md)) — décisions D1 à D4 acceptées
+**Itération suivante** (lot 1) : étape 6 (**périmètres**,
+[PER-01 à PER-12](reference/perimetres.md)) — décisions D1 à D4 acceptées
 ([ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md)). Étape 4 terminée le
-2026-10-11 (INC-11, INC-13, REQ-09, CFG-12 à CFG-14, PRB-24).
+2026-10-11 (INC-11, INC-13, REQ-09, CFG-12 à CFG-14, PRB-24), étape 5 le 2026-10-12
+(groupes AD dans le jeton : SOC-10, PRB-26).
 
 ### Sortie du MVP
 

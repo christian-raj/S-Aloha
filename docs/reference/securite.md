@@ -15,6 +15,9 @@
 - Jeton **JWT HS256** signé avec `Jwt:Key`, vérifié sur l'issuer et la signature (pas
   d'audience), durée `Jwt:ExpiryHours` (8 h par défaut). Pas de révocation : un jeton
   reste valide jusqu'à expiration, même si l'utilisateur est retiré du groupe AD.
+- Le jeton porte les **groupes AD directs** de l'utilisateur (SOC-10), lus à la connexion :
+  un changement d'appartenance prend effet à la connexion suivante. Les noms de groupes
+  sont visibles de qui détient le jeton (son titulaire).
 
 ## Autorisation
 

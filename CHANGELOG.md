@@ -28,6 +28,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
   synthèse d'avancement et alertes de tolérance. Nouvelle section de menu **Projets**
   (repère vert) entre Pratiques et Conformité & réglementation.
 
+- **Groupes AD dans le jeton** (lot 1, étape 5) : un incident, une demande, un changement,
+  une amélioration ou une action confiés à un groupe AD apparaissent dans « Mon travail »,
+  « Assignés à moi » et « Mes actions » de chacun de ses membres ; un membre du groupe
+  désigné R ou A d'une action en a les droits (SOC-10, PRB-26 — résout M3).
+
 - **Navigation** : section **Conformité & réglementation** (repère violet, tous les rôles)
   entre Pratiques et Paramétrage ; « Conformité NIS 2 » y passe sous le libellé « NIS 2 »,
   la section Pratiques ne garde que les 8 pratiques ITIL. Sections repliables (sauf

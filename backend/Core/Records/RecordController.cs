@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Audit;
+using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Links;
 
@@ -108,8 +109,19 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         if (!string.IsNullOrWhiteSpace(q)) query = Search(query, q.Trim().ToLower());
         if (!string.IsNullOrEmpty(owner))
         {
-            var key = (owner == "me" ? Me : owner).ToLower();
-            query = query.Where(x => x.OwnerId != null && x.OwnerId.ToLower() == key);
+            if (owner == "me")
+            {
+                // SOC-10 : « les miens » comprend ce qui est confié à l'un de mes groupes AD.
+                var me = User.MeKey();
+                var groups = User.GroupKeys();
+                query = query.Where(x => x.OwnerId != null && (x.OwnerType == "Group"
+                    ? groups.Contains(x.OwnerId.ToLower()) : x.OwnerId.ToLower() == me));
+            }
+            else
+            {
+                var key = owner.ToLower();
+                query = query.Where(x => x.OwnerId != null && x.OwnerId.ToLower() == key);
+            }
         }
         return Ok(await ListItems(query.OrderByDescending(x => x.CreatedAt)));
     }

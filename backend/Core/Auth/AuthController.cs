@@ -16,7 +16,7 @@ public class AuthController(LdapService ldap, TokenService tokens) : ControllerB
         if (result is null)
             return Unauthorized(new { message = "Identifiants invalides ou compte hors des groupes autorisés." });
 
-        var (account, display, role) = result.Value;
-        return new LoginResponse(tokens.Create(account, display, role), account, display, role);
+        var (account, display, role, groups) = result.Value;
+        return new LoginResponse(tokens.Create(account, display, role, groups), account, display, role);
     }
 }

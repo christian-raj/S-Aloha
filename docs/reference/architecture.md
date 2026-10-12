@@ -26,7 +26,7 @@ Quatre containers orchestrés par `docker-compose.yml` : **web** (nginx sert le 
 | ORM | Entity Framework Core 8 (8.0.31) | Provider Npgsql ; schéma par migrations EF, appliquées au démarrage ([ADR-0008](../decisions/adr-0008-migrations-ef.md)) |
 | Base | PostgreSQL 16 (provider Npgsql EF 8.0.11) | Remplaçable par SQL Server (provider EF + image du compose) |
 | Annuaire | Novell.Directory.Ldap.NETStandard | Bind de service pour la recherche, bind utilisateur pour l'authentification |
-| Auth API | JWT Bearer (HS256, JwtBearer 8.0.31) | Claims : name, displayName, role ; expiration paramétrable |
+| Auth API | JWT Bearer (HS256, JwtBearer 8.0.31) | Claims : name, displayName, role, `adgroup` (un par groupe AD direct, SOC-10) ; expiration paramétrable |
 
 ## 3. Organisation du code : socle et modules
 
@@ -108,7 +108,7 @@ sequenceDiagram
 
 1. `POST /api/auth/login` : l'API se connecte à l'AD avec le **compte de service** (`Ldap:BindUser`), recherche l'utilisateur (`Ldap:UserFilter`), puis valide le mot de passe par un **bind avec le DN de l'utilisateur**.
 2. Les groupes `memberOf` sont comparés au mapping `Ldap:Groups` (Admin > Manager > User). Aucun groupe correspondant ⇒ connexion refusée.
-3. Un **JWT** est émis avec le rôle en claim ; il porte le `sAMAccountName` renvoyé par l'annuaire, non l'identifiant tel que tapé (de même que `LoginResponse.username`). Les comparaisons d'identifiants (console « Mes … », filtre `assignee` de `GET /api/actions`) ignorent la casse. Le frontend le stocke en `sessionStorage` et l'envoie en `Authorization: Bearer`.
+3. Un **JWT** est émis avec le rôle en claim ; il porte le `sAMAccountName` renvoyé par l'annuaire, non l'identifiant tel que tapé (de même que `LoginResponse.username`). Les comparaisons d'identifiants (console « Mes … », filtre `assignee` de `GET /api/actions`) ignorent la casse. Le jeton porte aussi les **groupes AD directs** de l'utilisateur (claims `adgroup`, nom court) : « les miens » (`owner=me`, console, actions dont je suis R, A, C ou I) comprend ce qui est confié à l'un de ses groupes (SOC-10, PRB-26 ; `Core/Auth/Principals.cs`). Le frontend le stocke en `sessionStorage` et l'envoie en `Authorization: Bearer`.
 4. Côté API, trois policies imbriquées : `User` (tous les rôles), `Manager` (Manager + Admin), `Admin`.
 5. La console (`GET /api/console`) compose sa réponse **côté serveur** selon le rôle du jeton ; le frontend n'y reçoit que les blocs autorisés, classés pour mettre l'actionnable en premier.
 
