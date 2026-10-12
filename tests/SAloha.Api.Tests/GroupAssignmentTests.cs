@@ -108,4 +108,20 @@ public class GroupAssignmentTests(ApiFixture api)
         Assert.Equal(HttpStatusCode.OK, (await member.PutAsJsonAsync($"/api/actions/{Id(a)}", dto with { title = "Étendre le volume à 2 To" })).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await outsider.PutAsJsonAsync($"/api/actions/{Id(a)}", dto with { title = "Autre" })).StatusCode);
     }
+
+    [Fact]
+    public async Task Une_echeance_d_action_sans_fuseau_est_lue_en_UTC()
+    {
+        var m = api.Client("Manager", "manager.dates");
+        var p = await Json(await m.PostAsJsonAsync("/api/problems", new
+        {
+            title = "Échéance sans fuseau", description = "d", impact = "Faible", urgency = "Faible",
+            category = "Essai", affectedService = "Essai"
+        }));
+        var res = await m.PostAsync($"/api/problems/{Id(p)}/actions", new StringContent(
+            """{"title":"Action","description":"d","dueDate":"2026-10-20","raci":[{"role":"R","assigneeType":"User","assigneeId":"manager.dates","assigneeDisplayName":"M"},{"role":"A","assigneeType":"User","assigneeId":"manager.dates","assigneeDisplayName":"M"}]}""",
+            System.Text.Encoding.UTF8, "application/json"));
+        var a = await Json(res);
+        Assert.StartsWith("2026-10-20T00:00:00", a.GetProperty("dueDate").GetString());
+    }
 }

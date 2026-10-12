@@ -45,7 +45,8 @@ public class ActionsController(AppDbContext db) : ControllerBase
         var action = new CorrectiveAction
         {
             ProblemId = problemId, Title = dto.Title, Description = dto.Description,
-            DueDate = dto.DueDate, CreatedBy = User.Identity?.Name ?? "",
+            // Une date reçue sans fuseau (« 2026-10-20 ») est lue en UTC : Npgsql la refuserait (500).
+            DueDate = Dates.Utc(dto.DueDate), CreatedBy = User.Identity?.Name ?? "",
             Raci = dto.Raci.Select(r => new RaciAssignment
             {
                 Role = r.Role, AssigneeType = r.AssigneeType,
@@ -76,7 +77,7 @@ public class ActionsController(AppDbContext db) : ControllerBase
         var invalid = Allowed.Check("Statut d'action", dto.Status, ProblemRules.ActionStatuses, optional: true)
                       ?? ProblemRules.CheckRaci(dto.Raci);
         if (invalid is not null) return BadRequest(new { message = invalid });
-        a.Title = dto.Title; a.Description = dto.Description; a.DueDate = dto.DueDate;
+        a.Title = dto.Title; a.Description = dto.Description; a.DueDate = Dates.Utc(dto.DueDate);
         if (dto.Status != null && dto.Status != a.Status)
         {
             // PRB-18 : CompletedAt posé au seul passage à Terminée, effacé à la sortie (#24) ;
