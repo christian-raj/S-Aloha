@@ -12,12 +12,7 @@ namespace SAloha.Api.Modules.ProblemManagement;
 [Authorize(Policy = "User")]
 public class ActionsController(AppDbContext db, PerimeterAccess access) : ControllerBase
 {
-    /// <summary>Périmètre du problème s'il est visible de l'utilisateur (PER-05), sinon null.</summary>
-    private async Task<int?> VisiblePerimeterAsync(int problemId)
-    {
-        var perimeter = await db.Problems.Where(p => p.Id == problemId).Select(p => (int?)p.PerimeterId).FirstOrDefaultAsync();
-        return perimeter is not null && (await access.GetAsync()).Sees(perimeter.Value) ? perimeter : null;
-    }
+    private Task<int?> VisiblePerimeterAsync(int problemId) => ProblemScope.VisiblePerimeterAsync(db, access, problemId);
 
     /// <summary>Toutes les actions (suivi transverse), filtrables par responsable ou statut.</summary>
     [HttpGet("api/actions")]

@@ -1,150 +1,61 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Itil;
 using SAloha.Api.Core.Links;
-using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ProblemManagement;
 
-[ApiController]
+/// <summary>
+/// Problèmes sur le socle commun des pratiques (<see cref="RecordController{T,TDto}"/>) :
+/// référence, transitions (SOC-05), transition forcée, périmètres (PER-03 à PER-07),
+/// responsable AD = gestionnaire du problème (PRB-21). Tout utilisateur déclare un
+/// problème ; le qualifier (statut, cause racine, contournement…) est une décision de
+/// gestionnaire du périmètre.
+/// </summary>
 [Route("api/problems")]
-[Authorize(Policy = "User")]
-public class ProblemsController(AppDbContext db, PerimeterAccess access) : ControllerBase
+public class ProblemsController(AppDbContext db) : RecordController<Problem, ProblemDto>(db)
 {
-    private string Me => User.Identity?.Name ?? "";
-    private string MyDisplay => User.FindFirst("displayName")?.Value ?? Me;
+    protected override string Code => "PRB";
+    protected override string LinkType => "problem";
+    protected override string[] Statuses => ProblemManagement.Problem.Statuses;
+    protected override IReadOnlyDictionary<string, string[]> Transitions => ProblemManagement.Problem.Transitions;
 
-    [HttpGet]
-    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? q, [FromQuery] int? perimeter)
+    // Qualifier un problème : gestionnaire du périmètre (tableau des droits, PER-06).
+    protected override bool CanEdit(Problem e) => IsManager;
+
+    protected override string? Apply(Problem e, ProblemDto dto, bool creating)
     {
-        var query = db.Problems.AsNoTracking().AsQueryable();
-        // PER-05 : les problèmes de ses périmètres.
-        var scope = await access.GetAsync();
-        if (!scope.Global) { var ids = scope.Ids.ToList(); query = query.Where(p => ids.Contains(p.PerimeterId)); }
-        if (perimeter is not null) query = query.Where(p => p.PerimeterId == perimeter);
-        if (!string.IsNullOrEmpty(status)) query = query.Where(p => p.Status == status);
-        if (!string.IsNullOrEmpty(q))
+        // Impact et urgence : valeurs fermées (PRB-02, #28) ; code de clôture fermé (PRB-13).
+        var error = Allowed.Check("Impact", dto.Impact, Priority.Impacts)
+                    ?? Allowed.Check("Urgence", dto.Urgency, Priority.Urgencies)
+                    ?? Allowed.Check("Code de clôture", dto.ClosureCode, ProblemRules.ClosureCodes, optional: true);
+        if (error is not null) return error;
+        e.Impact = dto.Impact; e.Urgency = dto.Urgency;
+        e.Priority = Priority.Compute(dto.Impact, dto.Urgency);
+        e.Category = dto.Category ?? ""; e.AffectedService = dto.AffectedService ?? "";
+        // La déclaration ne qualifie pas : contournement, cause et clôture viennent ensuite.
+        if (creating) return null;
+        // PRB-21 : sans gestionnaire désigné, le gestionnaire qui qualifie le devient.
+        if (string.IsNullOrWhiteSpace(e.OwnerId) && IsManager)
         {
-            // Insensible à la casse : Contains devient un LIKE, sensible à la
-            // casse sous PostgreSQL — « vpn » ne trouvait pas « VPN » (M5).
-            var key = q.Trim().ToLower();
-            query = query.Where(p => p.Title.ToLower().Contains(key) || p.Reference.ToLower().Contains(key));
+            e.OwnerType = "User"; e.OwnerId = Me; e.OwnerDisplayName = MyDisplay;
         }
-        var items = await query.OrderByDescending(p => p.CreatedAt)
-            .Select(p => new { p.Id, p.Reference, p.Title, p.Status, p.Priority, p.Category, p.PerimeterId,
-                               p.AffectedService, p.CreatedByDisplayName, p.CreatedAt,
-                               ActionsCount = p.Actions.Count }).ToListAsync();
-        return Ok(items);
+        e.KnownErrorWorkaround = dto.KnownErrorWorkaround;
+        e.RootCause = dto.RootCause;
+        e.ClosureCode = string.IsNullOrEmpty(dto.ClosureCode) ? null : dto.ClosureCode;
+        return null;
     }
-
-    /// <summary>Graphe des transitions permises (SOC-05).</summary>
-    [HttpGet("transitions")]
-    public IActionResult GetTransitions() => Ok(ProblemManagement.Problem.Transitions);
-
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> Get(int id)
-    {
-        var p = await db.Problems.AsNoTracking()
-            .Include(x => x.Analyses)
-            .Include(x => x.Actions).ThenInclude(a => a.Raci)
-            .FirstOrDefaultAsync(x => x.Id == id);
-        return p is null || !(await access.GetAsync()).Sees(p.PerimeterId) ? NotFound() : Ok(p);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Create(ProblemDto dto)
-    {
-        var invalid = ClosedValues(dto);
-        if (invalid is not null) return BadRequest(new { message = invalid });
-        // PER-04 : périmètre choisi, ou l'unique périmètre de l'utilisateur.
-        var (perimeterId, refused, forbidden) = await access.ChooseAsync(dto.PerimeterId);
-        if (forbidden) return Forbid();
-        if (refused is not null) return BadRequest(new { message = refused });
-        Problem Build() => new()
-        {
-            PerimeterId = perimeterId!.Value,
-            Title = dto.Title, Description = dto.Description,
-            Impact = dto.Impact, Urgency = dto.Urgency,
-            Priority = Priority.Compute(dto.Impact, dto.Urgency),
-            Category = dto.Category, AffectedService = dto.AffectedService,
-            CreatedBy = Me, CreatedByDisplayName = MyDisplay
-        };
-        var error = Lengths.Check(Build());
-        if (error is not null) return BadRequest(new { message = error });
-        var p = await References.CreateAsync(db, "PRB", Build);
-        return CreatedAtAction(nameof(Get), new { id = p.Id }, p);
-    }
-
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, ProblemDto dto)
-    {
-        var p = await db.Problems.FindAsync(id);
-        var scope = await access.GetAsync();
-        if (p is null || !scope.Sees(p.PerimeterId)) return NotFound();
-        // Qualifier un problème : gestionnaire de son périmètre (PER-06).
-        if (!scope.ManagerOn(p.PerimeterId)) return Forbid();
-        if (dto.PerimeterId is { } moveTo && moveTo != p.PerimeterId)
-        {
-            var (moveError, moveForbidden) = await access.CheckMoveAsync(p.PerimeterId, moveTo);
-            if (moveForbidden) return Forbid();
-            if (moveError is not null) return BadRequest(new { message = moveError });
-            p.PerimeterId = moveTo;
-        }
-        var invalid = ClosedValues(dto) ?? Allowed.Check("Code de clôture", dto.ClosureCode, ProblemRules.ClosureCodes, optional: true);
-        if (invalid is not null) return BadRequest(new { message = invalid });
-        p.Title = dto.Title; p.Description = dto.Description;
-        p.Impact = dto.Impact; p.Urgency = dto.Urgency;
-        p.Priority = Priority.Compute(dto.Impact, dto.Urgency);
-        p.Category = dto.Category; p.AffectedService = dto.AffectedService;
-        p.KnownErrorWorkaround = dto.KnownErrorWorkaround;
-        p.RootCause = dto.RootCause;
-        p.ClosureCode = string.IsNullOrEmpty(dto.ClosureCode) ? null : dto.ClosureCode;
-        var target = dto.Status ?? p.Status;
-        var changing = target != p.Status;
-        if (changing)
-        {
-            var (transition, forbidden) = ForcedTransition.Apply(HttpContext,
-                StatusGraph.Check(ProblemManagement.Problem.Transitions, p.Status, target));
-            if (forbidden) return Forbid();
-            if (transition is not null) return BadRequest(new { message = transition });
-        }
-        var condition = await CheckStatusAsync(p, target, changing);
-        if (condition is not null) return BadRequest(new { message = condition });
-        if (changing)
-        {
-            var from = p.Status;
-            p.Status = target;
-            // Rouvert, un problème n'est plus clos : garder ClosedAt le faisait
-            // compter dans le MTTR comme résolu (M4, revue du 2026-10-06).
-            p.ClosedAt = target == "Clos" ? DateTime.UtcNow : null;
-            // PRB-14 : ResolvedAt posé à l'entrée de Résolu, effacé au retour en analyse.
-            if (target == "Résolu") p.ResolvedAt = DateTime.UtcNow;
-            else if (target == "En analyse") p.ResolvedAt = null;
-            // Une réouverture efface le code de clôture.
-            if (from == "Clos") p.ClosureCode = null;
-        }
-        var error = Lengths.Check(p);
-        if (error is not null) return BadRequest(new { message = error });
-        p.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
-        return Ok(p);
-    }
-
-    /// <summary>Impact et urgence : valeurs fermées (PRB-02, #28).</summary>
-    private static string? ClosedValues(ProblemDto dto) =>
-        Allowed.Check("Impact", dto.Impact, Priority.Impacts) ?? Allowed.Check("Urgence", dto.Urgency, Priority.Urgencies);
 
     /// <summary>
     /// Conditions du statut visé (PRB-11 à PRB-13), vérifiées à chaque
     /// enregistrement (SOC-06). L'absence d'action ouverte (PRB-12) se vérifie
     /// au passage à Résolu : les actions vivent leur vie ensuite.
     /// </summary>
-    private async Task<string?> CheckStatusAsync(ProblemManagement.Problem p, string target, bool changing)
+    protected override async Task<string?> CheckStatusAsync(Problem p, string target)
     {
+        var changing = target != p.Status;
         switch (target)
         {
             case "Erreur connue" when string.IsNullOrWhiteSpace(p.KnownErrorWorkaround):
@@ -152,7 +63,7 @@ public class ProblemsController(AppDbContext db, PerimeterAccess access) : Contr
             case "Résolu":
                 if (string.IsNullOrWhiteSpace(p.RootCause)) return "Renseigner la cause racine validée pour résoudre le problème.";
                 if (!changing) return null;
-                var actions = await db.Actions.Where(a => a.ProblemId == p.Id).Select(a => a.Status).ToListAsync();
+                var actions = await Db.Actions.Where(a => a.ProblemId == p.Id).Select(a => a.Status).ToListAsync();
                 if (actions.Any(s => ProblemRules.OpenActionStatuses.Contains(s)))
                     return "Des actions correctives sont encore ouvertes : les terminer ou les annuler avant de résoudre.";
                 if (p.Status == "Erreur connue" && !actions.Contains("Terminée"))
@@ -162,7 +73,7 @@ public class ProblemsController(AppDbContext db, PerimeterAccess access) : Contr
                 var allowed = changing ? ProblemRules.ClosureCodesFrom(p.Status) : ProblemRules.ClosureCodes;
                 if (p.ClosureCode is null || !allowed.Contains(p.ClosureCode))
                     return $"Choisir un code de clôture : {string.Join(", ", allowed)}.";
-                if (p.ClosureCode == "Doublon" && !await ItemLinks.IsLinkedToAsync(db, "problem", p.Id, "problem"))
+                if (p.ClosureCode == "Doublon" && !await ItemLinks.IsLinkedToAsync(Db, "problem", p.Id, "problem"))
                     return "Un doublon doit être relié au problème conservé (onglet Liens).";
                 return null;
             default:
@@ -170,15 +81,27 @@ public class ProblemsController(AppDbContext db, PerimeterAccess access) : Contr
         }
     }
 
-    [HttpDelete("{id:int}")]
-    [Authorize(Policy = "Admin")]
-    public async Task<IActionResult> Delete(int id)
+    protected override void OnStatusChanged(Problem p, string from)
     {
-        var p = await db.Problems.FindAsync(id);
-        if (p is null) return NotFound();
-        db.Problems.Remove(p);
-        ItemLinks.RemoveFor(db, "problem", id);
-        await db.SaveChangesAsync();
-        return NoContent();
+        // Rouvert, un problème n'est plus clos : garder ClosedAt le faisait
+        // compter dans le MTTR comme résolu (M4, revue du 2026-10-06).
+        p.ClosedAt = p.Status == "Clos" ? DateTime.UtcNow : null;
+        // PRB-14 : ResolvedAt posé à l'entrée de Résolu, effacé au retour en analyse.
+        if (p.Status == "Résolu") p.ResolvedAt = DateTime.UtcNow;
+        else if (p.Status == "En analyse") p.ResolvedAt = null;
+        // Une réouverture efface le code de clôture.
+        if (from == "Clos") p.ClosureCode = null;
     }
+
+    protected override IQueryable<Problem> WithDetails(IQueryable<Problem> q) =>
+        q.Include(x => x.Analyses).Include(x => x.Actions).ThenInclude(a => a.Raci);
+
+    // Le registre affiche le nombre d'actions, pas leur contenu.
+    protected override async Task<IEnumerable<object>> ListItems(IQueryable<Problem> q) =>
+        await q.Select(p => new
+        {
+            p.Id, p.Reference, p.Title, p.Status, p.Priority, p.Category, p.PerimeterId,
+            p.AffectedService, p.OwnerId, p.OwnerDisplayName, p.CreatedByDisplayName, p.CreatedAt,
+            ActionsCount = p.Actions.Count
+        }).ToListAsync();
 }

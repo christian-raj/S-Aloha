@@ -1,11 +1,16 @@
 using System.ComponentModel.DataAnnotations;
-using SAloha.Api.Core.Data;
-using SAloha.Api.Core.Perimeters;
+using SAloha.Api.Core.Records;
 
 namespace SAloha.Api.Modules.ProblemManagement;
 
-public class Problem : IHasReference, IHasPerimeter
+/// <summary>
+/// Problème (ITIL 4, gestion des problèmes) : cause d'un ou plusieurs incidents.
+/// Enregistrement du socle commun (référence, statut, responsable = gestionnaire du
+/// problème, périmètre), avec ses analyses de cause racine et ses actions correctives.
+/// </summary>
+public class Problem : Record
 {
+    public static readonly string[] Statuses = ["Nouveau", "En analyse", "Erreur connue", "Résolu", "Clos"];
     /// <summary>
     /// Transitions permises (SOC-05, PRB-10) ; liste vide : statut final. Le
     /// passage Nouveau → En analyse est aussi automatique à la première analyse.
@@ -19,26 +24,15 @@ public class Problem : IHasReference, IHasPerimeter
         ["Clos"] = ["En analyse"],
     };
 
-    public int Id { get; set; }
-    /// <summary>Périmètre du problème (PER-04) ; « Organisation » par défaut (PER-10).</summary>
-    public int PerimeterId { get; set; } = Perimeter.DefaultId;
-    [MaxLength(20)] public string Reference { get; set; } = "";   // PRB-2026-0001
-    [MaxLength(200)] public string Title { get; set; } = "";
-    public string Description { get; set; } = "";
-    [MaxLength(30)] public string Status { get; set; } = "Nouveau"; // Nouveau, En analyse, Erreur connue, Résolu, Clos
     [MaxLength(10)] public string Impact { get; set; } = "Moyen";   // Faible, Moyen, Élevé
     [MaxLength(10)] public string Urgency { get; set; } = "Moyenne";// Faible, Moyenne, Élevée
     [MaxLength(10)] public string Priority { get; set; } = "P3";    // P1..P4 (dérivée impact x urgence)
     [MaxLength(100)] public string Category { get; set; } = "";     // Réseau, Serveur, Application...
     [MaxLength(150)] public string AffectedService { get; set; } = "";
-    [MaxLength(100)] public string CreatedBy { get; set; } = "";    // sAMAccountName
-    [MaxLength(200)] public string CreatedByDisplayName { get; set; } = "";
     public string? KnownErrorWorkaround { get; set; }               // contournement (Known Error)
     public string? RootCause { get; set; }                          // cause racine validée
     [MaxLength(30)] public string? ClosureCode { get; set; }        // code de clôture (PRB-13)
     public DateTime? ResolvedAt { get; set; }                       // entrée en Résolu (PRB-14)
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ClosedAt { get; set; }
     public List<RcaAnalysis> Analyses { get; set; } = new();
     public List<CorrectiveAction> Actions { get; set; } = new();

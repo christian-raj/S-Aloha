@@ -10,6 +10,8 @@ import SimilarCases from '../../../core/components/SimilarCases'
 import useTransitions from '../../../core/useTransitions'
 import StatusField, { forceOptions } from '../../../core/components/StatusField'
 import History from '../../../core/components/History'
+import RecordForm from '../../../core/components/RecordForm'
+import { ownerField } from '../../../core/fields'
 import usePerimeters, { perimeterName } from '../../../core/usePerimeters'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
@@ -20,8 +22,9 @@ const CLOSURE_FROM = { 'Résolu': ['Corrigé'], 'Erreur connue': ['Erreur connue
 const LABELS = {
   title: 'Titre', description: 'Description', impact: 'Impact', urgency: 'Urgence', priority: 'Priorité',
   category: 'Catégorie', affectedService: 'Service affecté', knownErrorWorkaround: 'Contournement',
-  rootCause: 'Cause racine', closureCode: 'Code de clôture'
+  rootCause: 'Cause racine', closureCode: 'Code de clôture', ownerDisplayName: 'Gestionnaire du problème'
 }
+const OWNER = ownerField('Gestionnaire du problème')
 const METHODS = { FIVE_WHYS: '5 Pourquoi', ISHIKAWA: 'Ishikawa (6M)', FTA: 'Arbre des défaillances (FTA)' }
 const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
 
@@ -93,6 +96,7 @@ export default function ProblemDetail() {
         Déclaré par {p.createdByDisplayName} le {new Date(p.createdAt).toLocaleDateString('fr-FR')}
         {p.resolvedAt && <> · Résolu le {new Date(p.resolvedAt).toLocaleDateString('fr-FR')}</>}
         {p.closureCode && <> · Clôture : {p.closureCode}</>}
+        {p.ownerDisplayName && <> · Gestionnaire : {p.ownerDisplayName}</>}
         {perimeters.length > 1 && <> · Périmètre : {perimeterName(perimeters, p.perimeterId)}</>}
       </p>
 
@@ -122,12 +126,16 @@ function Infos({ p, isManager, onSaved }) {
     title: p.title, description: p.description, status: p.status, impact: p.impact,
     urgency: p.urgency, category: p.category, affectedService: p.affectedService,
     knownErrorWorkaround: p.knownErrorWorkaround || '', rootCause: p.rootCause || '',
-    closureCode: p.closureCode || ''
+    closureCode: p.closureCode || '',
+    ownerType: p.ownerType || '', ownerId: p.ownerId || '', ownerDisplayName: p.ownerDisplayName || ''
   })
   const [msg, setMsg] = useState('')
   const set = k => e => setF({ ...f, [k]: e.target.value })
   const force = forceOptions(graph, p.status, f.status, reason)
-  const save = () => api.problems.update(p.id, f, force)
+  // PRB-21 : le gestionnaire du problème est le responsable du socle ; vide, l'API
+  // désigne le gestionnaire qui enregistre.
+  const save = () => api.problems.update(p.id, { ...f, ownerType: f.ownerType || null, ownerId: f.ownerId || null,
+    ownerDisplayName: f.ownerDisplayName || null }, force)
     .then(() => { setMsg('Modifications enregistrées.'); onSaved() })
     .catch(e => setMsg(e.message))
 
@@ -155,6 +163,7 @@ function Infos({ p, isManager, onSaved }) {
         <div className="field"><label>Service affecté</label>
           <input value={f.affectedService} onChange={set('affectedService')} disabled={!isManager} /></div>
       </div>
+      <RecordForm fields={[OWNER]} form={f} onChange={patch => setF(prev => ({ ...prev, ...patch }))} disabled={!isManager} />
       <div className="field"><label>Contournement (erreur connue)</label>
         <textarea rows={2} value={f.knownErrorWorkaround} onChange={set('knownErrorWorkaround')} disabled={!isManager}
           placeholder="Solution de contournement documentée si le problème devient une erreur connue." /></div>

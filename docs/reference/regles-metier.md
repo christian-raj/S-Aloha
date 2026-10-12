@@ -174,8 +174,8 @@ flowchart LR
 
 ## 5. Règles communes aux processus
 
-S'appliquent à toutes les pratiques (socle `Core/Records` de l'API pour les sept pratiques
-MVP ; le module Problèmes suit les mêmes règles par son propre code).
+S'appliquent à toutes les pratiques : toutes reposent sur le socle `Core/Records` de l'API
+(`Record`, `RecordController`), problèmes compris depuis le 2026-10-12.
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
