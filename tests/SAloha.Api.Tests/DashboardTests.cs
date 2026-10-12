@@ -104,8 +104,11 @@ public class DashboardTests(ApiFixture api)
         var overview = await Json(await m.GetAsync($"/api/reports/dashboard/overview?service={Uri.EscapeDataString(_svc)}"));
         Assert.Equal(1, overview.GetProperty("kpis").GetProperty("majorIncidentsOpen").GetInt32());
         Assert.Equal(100, overview.GetProperty("kpis").GetProperty("slaRate").GetDouble());
-        Assert.Equal(75, overview.GetProperty("health").GetProperty("score").GetInt32());
-        Assert.Equal("Dégradé", overview.GetProperty("health").GetProperty("level").GetString());
+        // Les projets, sans service, comptent quel que soit le filtre : on vérifie la pénalité et la somme.
+        var health = overview.GetProperty("health");
+        var factors = health.GetProperty("factors").EnumerateArray().ToList();
+        Assert.Equal(25, factors.Single(f => f.GetProperty("label").GetString() == "Incidents majeurs ouverts").GetProperty("penalty").GetInt32());
+        Assert.Equal(100 - factors.Sum(f => f.GetProperty("penalty").GetInt32()), health.GetProperty("score").GetInt32());
         Assert.Equal("bad", overview.GetProperty("badges").GetProperty("incidents").GetProperty("tone").GetString());
         Assert.Equal(30, overview.GetProperty("volume").GetArrayLength());
         var critical = overview.GetProperty("priorityMatrix")[0];
@@ -127,6 +130,26 @@ public class DashboardTests(ApiFixture api)
         Assert.Equal("Identifié", funnel[0].GetProperty("stage").GetString());
         Assert.Equal(1, funnel[0].GetProperty("count").GetInt32());
         Assert.Equal(_svc, tab.GetProperty("topServices")[0].GetProperty("label").GetString());
+    }
+
+    [Fact]
+    public async Task REP_32_tolerances_des_projets_serialisees()
+    {
+        var m = api.Client("Manager");
+        // Projet en retard au-delà de sa tolérance de délai.
+        object Dto(string? status) => new
+        {
+            title = $"Retard {_svc}", description = "", status, method = "Scrum", justification = "ROI",
+            ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto",
+            startDate = DateTime.UtcNow.Date.AddDays(-60), targetEndDate = DateTime.UtcNow.Date.AddDays(-10), toleranceDays = 2
+        };
+        var p = await Json(await m.PostAsJsonAsync("/api/projects", Dto(null)));
+        await Json(await m.PutAsJsonAsync($"/api/projects/{Id(p)}", Dto("En cours")));
+
+        var tab = await Json(await m.GetAsync("/api/reports/dashboard/changes-projects"));
+        var row = tab.GetProperty("projects").EnumerateArray().Single(x => Id(x) == Id(p));
+        Assert.Equal("Hors tolérance", row.GetProperty("tolerance").GetProperty("time").GetString());
+        Assert.Equal("Sans objet", row.GetProperty("tolerance").GetProperty("cost").GetString());
     }
 
     [Theory]

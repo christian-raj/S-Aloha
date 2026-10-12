@@ -11,13 +11,14 @@ const rateTone = (r) => r == null ? 't-closed' : r >= 95 ? 't-done' : r >= 80 ? 
  * prendront place avec leur module.
  */
 export default function ComplianceTab({ data }) {
-  const { nis2, sla, improvements, knowledge } = data
+  const { nis2, nis2Pending = [], sla, improvements, knowledge } = data
   return (
     <div className="report-body">
       <div className="card">
         <h3 className="card-title">NIS 2 — dernière évaluation validée</h3>
         {!nis2 ? (
-          <p className="muted small">Aucune évaluation validée. <Link to="/assessments">Évaluer la conformité NIS 2 →</Link></p>
+          <p className="muted small">Aucune évaluation validée : le score n'est retenu qu'une fois l'évaluation validée.{' '}
+            <Link to="/assessments">Évaluer la conformité NIS 2 →</Link></p>
         ) : (
           <>
             <p className="small"><Link to={`/assessments/${nis2.id}`}>{nis2.reference}</Link> {nis2.title} — validée le {date(nis2.validatedAt)}</p>
@@ -30,6 +31,10 @@ export default function ComplianceTab({ data }) {
             <HBars title="Score par pilier" unit=" %" max={100}
               data={nis2.pillars.map(p => ({ label: p.pillar, count: Math.round(p.percent ?? 0) }))} />
           </>
+        )}
+        {nis2Pending.length > 0 && (
+          <p className="small chart-note">En cours : {nis2Pending.map((a, i) => (
+            <span key={a.id}>{i > 0 && ', '}<Link to={`/assessments/${a.id}`}>{a.reference}</Link> ({a.status})</span>))}</p>
         )}
       </div>
 

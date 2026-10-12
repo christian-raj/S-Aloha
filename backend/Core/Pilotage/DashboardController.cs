@@ -287,7 +287,8 @@ public class DashboardController(AppDbContext db) : ControllerBase
             return dl.Count > 0 ? 100.0 * dl.Count(x => x.Status == "Validé") / dl.Count : null;
         }
         var progress = projects.Select(p => new { p.Id, p.Reference, p.Title, p.Method, p.Status, Progress = Progress(p) is { } v ? Math.Round(v) : (double?)null,
-            Tolerance = Tolerance(p) }).ToList();
+            // Objet nommé : un tuple se sérialise vide en JSON.
+            Tolerance = Tolerance(p) is var t ? new { t.Time, t.Cost } : null }).ToList();
 
         return Ok(new
         {
@@ -357,6 +358,9 @@ public class DashboardController(AppDbContext db) : ControllerBase
         return Ok(new
         {
             Nis2 = nis2,
+            // Évaluations non validées : signalées, sans score (seul un score validé engage).
+            Nis2Pending = await db.Assessments.AsNoTracking().Where(a => a.Status != "Validée")
+                .OrderByDescending(a => a.CreatedAt).Select(a => new { a.Id, a.Reference, a.Title, a.Status }).ToListAsync(),
             Sla = new { ByService = sla, ToReview = toReview },
             Improvements = new
             {
