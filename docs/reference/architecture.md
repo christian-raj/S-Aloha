@@ -52,7 +52,9 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
     ├── ServiceConfigurationManagement/ # Configuration des services : ConfigurationItems (+ relations)
     ├── ServiceLevelManagement/       # Niveaux de service : Services, Agreements
     ├── KnowledgeManagement/          # Connaissances : Knowledge
-    └── ContinualImprovement/         # Amélioration continue : Improvements
+    ├── ContinualImprovement/         # Amélioration continue : Improvements
+    ├── ComplianceAssessment/         # Conformité NIS 2 : Assessments, référentiel
+    └── ProjectManagement/            # Projets : Projects et ses composants (phases, sprints, éléments de travail…)
         # chaque module : Controllers/ et Models/ (Entities.cs : entités et DTO)
 ```
 
@@ -73,7 +75,10 @@ Les processus autres que les problèmes héritent d'un même socle :
   enregistrement), `OnStatusChanged` (horodatages), `ConflictAsync` (doublon interdit,
   refus 409 : nom de CI unique par environnement), `StatusAfterEdit` (statut auquel
   la modification d'un non-gestionnaire ramène l'enregistrement), `InitialStatus`, `ManagerOnly`
-  (référentiels), `Filter`/`Search`/`WithDetails`, `ListItems` (colonnes du registre).
+  (référentiels), `CanCreate` et `CanEdit` (droit de créer, de modifier un enregistrement
+  d'après ses valeurs enregistrées : un projet se modifie par son chef de projet ; par défaut
+  `ManagerOnly`), `OnCreatedAsync` (objets dépendants créés après l'enregistrement : phases
+  proposées d'un projet), `Filter`/`Search`/`WithDetails`, `ListItems` (colonnes du registre).
   Les longueurs `[MaxLength]` sont contrôlées avant l'enregistrement (`Lengths`).
 - **`References.CreateAsync`** — référence annuelle `XXX-AAAA-NNNN` (plus grand numéro + 1,
   nouvelle tentative sur collision de l'index unique) ; utilisée aussi par les problèmes.
@@ -140,6 +145,8 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/assessments[/{id}]`, `/{id}/questionnaire`, `/{id}/score` ; PUT `/{id}/responses/{requirementId}` | User | Évaluations NIS 2 : consultation, réponses, scores | Modules/ComplianceAssessment |
 | POST/PUT `/api/assessments[/{id}]`, POST `/{id}/improvements` | Manager | Création, validation, réouverture ; action d'amélioration depuis un écart (DELETE : Admin) | Modules/ComplianceAssessment |
 | GET `/api/compliance/referential` ; POST `/api/compliance/referential/import` : Admin | User | Référentiel NIS 2, import du texte des exigences | Modules/ComplianceAssessment |
+| GET/POST/PUT `/api/projects[/{id}]`, GET `/{id}/summary` | User ; modification : chef de projet ou Manager ; Cadrage → En cours : Manager | Projets, synthèse (avancement, tolérances, risques) (DELETE : Admin) | Modules/ProjectManagement |
+| GET/POST/PUT/DELETE `/api/projects/{id}/{phases,milestones,deliverables,sprints,workitems,risks,issues}[/{id}]`, POST `phases/{id}/approve`, GET `sprints/{id}/burndown` | User ; phases, jalons, sprints, suppressions, validations : chef de projet ou Manager | Composants du projet ; 400 si le composant n'est pas actif | Modules/ProjectManagement |
 | GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
 | GET `/api/audit?type=&id=` | User | Historique d'un enregistrement (journal d'audit, SOC-20) | Core/Audit |
 | PUT `…/{id}?force=true&reason=` | Admin | Transition forcée hors graphe, motif obligatoire et tracé (SOC-05) | Core/Audit, socle des pratiques et module Problèmes |

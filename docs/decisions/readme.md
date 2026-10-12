@@ -23,6 +23,7 @@ son état actuel, et pas seulement *quel* est cet état.
 | [0012](adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md) | Référentiel NIS 2 : structure versionnée dans le dépôt, texte importé par l'administrateur | 2026-10-08 | accepté |
 | [0013](adr-0013-recherche-hybride-service-embeddings-separe.md) | Recherche hybride : embeddings dans un service séparé, plein texte PostgreSQL, vecteurs sans pgvector | 2026-10-08 | accepté |
 | [0014](adr-0014-perimetres-droits-scopes.md) | Périmètres : droits scopés, affectations d'utilisateurs et de groupes AD | 2026-10-10 | accepté |
+| [0015](adr-0015-gestion-de-projet-methode-active-composants.md) | Gestion de projet : la méthode active des composants | 2026-10-12 | accepté |
 
 Les choix fondateurs antérieurs à cette base (authentification AD LDAP → JWT, analyses
 RCA stockées en JSON) sont décrits dans [`reference/architecture.md`](../reference/architecture.md)

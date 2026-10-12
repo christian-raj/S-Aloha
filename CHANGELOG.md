@@ -14,6 +14,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Projets** (gestion de projet, ADR-0015) : la méthode — Scrum, Kanban, Cycle en V,
+  PRINCE2 ou hybride — active les composants du projet (backlog, sprints et burndown,
+  tableau, phases ou étapes, jalons, livrables, risques, incidents projet, business case,
+  tolérances). Le chef de projet crée et conduit, un gestionnaire valide le lancement ;
+  synthèse d'avancement et alertes de tolérance. Nouvelle section de menu **Projets**
+  (repère vert) entre Pratiques et Conformité & réglementation.
+
 - **Navigation** : section **Conformité & réglementation** (repère violet, tous les rôles)
   entre Pratiques et Paramétrage ; « Conformité NIS 2 » y passe sous le libellé « NIS 2 »,
   la section Pratiques ne garde que les 8 pratiques ITIL. Sections repliables (sauf
