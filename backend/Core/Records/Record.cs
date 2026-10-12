@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Perimeters;
 
 namespace SAloha.Api.Core.Records;
 
@@ -9,9 +10,11 @@ namespace SAloha.Api.Core.Records;
 /// changement, CI…) : référence, titre, statut, responsable AD et traçabilité.
 /// Classe non mappée : chaque processus a sa propre table.
 /// </summary>
-public abstract class Record : IHasReference
+public abstract class Record : IHasReference, IHasPerimeter
 {
     public int Id { get; set; }
+    /// <summary>Périmètre de l'enregistrement (PER-04) ; « Organisation » par défaut (PER-10).</summary>
+    public int PerimeterId { get; set; } = Perimeter.DefaultId;
     [MaxLength(20)] public string Reference { get; set; } = "";
     [MaxLength(200)] public string Title { get; set; } = "";
     public string Description { get; set; } = "";

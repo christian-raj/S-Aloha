@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Perimeters;
 
 namespace SAloha.Api.Modules.ProblemManagement;
 
-public class Problem : IHasReference
+public class Problem : IHasReference, IHasPerimeter
 {
     /// <summary>
     /// Transitions permises (SOC-05, PRB-10) ; liste vide : statut final. Le
@@ -19,6 +20,8 @@ public class Problem : IHasReference
     };
 
     public int Id { get; set; }
+    /// <summary>Périmètre du problème (PER-04) ; « Organisation » par défaut (PER-10).</summary>
+    public int PerimeterId { get; set; } = Perimeter.DefaultId;
     [MaxLength(20)] public string Reference { get; set; } = "";   // PRB-2026-0001
     [MaxLength(200)] public string Title { get; set; } = "";
     public string Description { get; set; } = "";
