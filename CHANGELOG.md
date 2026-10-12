@@ -14,6 +14,14 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Connaissances au-delà du MVP** : contenu rendu en **Markdown** sans HTML brut (onglet
+  Lecture, KB-10) ; date de revue fixée à un an à la publication (KB-11) ; article
+  d'erreur connue créé depuis le problème, puis proposé à l'archivage quand le problème est
+  corrigé (PRB-30, KB-12) ; utilisation de l'article (incidents et demandes reliés, KB-14) ;
+  revue confirmée par le responsable ou archivage demandé (KB-17) ; archiver et réactiver
+  réservés aux gestionnaires (KB-18) ; brouillon soumis à publication, qui remonte dans les
+  décisions des gestionnaires (KB-21).
+
 - **Périmètres — modèle et administration** (lot 1, étape 6, première partie) : périmètres
   (direction, site, entité) avec suppression douce, restauration et suppression définitive
   contrôlée ; affectations d'utilisateurs ou de groupes AD avec le rôle Manager ou User ;

@@ -25,7 +25,20 @@ public class KnowledgeArticle : Record
     public DateTime? ReviewDate { get; set; }
     [MaxLength(200)] public string? PublishedBy { get; set; }
     public DateTime? PublishedAt { get; set; }
+    /// <summary>KB-21 : brouillon soumis à publication (« prêt »), effacé à la publication.</summary>
+    public DateTime? SubmittedAt { get; set; }
+    [MaxLength(200)] public string? SubmittedBy { get; set; }
+    /// <summary>KB-17 : dernière revue confirmée par le responsable ou un gestionnaire.</summary>
+    public DateTime? LastReviewedAt { get; set; }
+    [MaxLength(200)] public string? LastReviewedBy { get; set; }
+    /// <summary>KB-17 : archivage demandé à la revue, en attente d'un gestionnaire.</summary>
+    public DateTime? ArchiveRequestedAt { get; set; }
+    [MaxLength(200)] public string? ArchiveRequestedBy { get; set; }
+    [MaxLength(500)] public string? ArchiveRequestReason { get; set; }
 }
+
+public record ReviewDto(DateTime? NextReviewDate);
+public record ArchiveRequestDto(string? Reason);
 
 public record KnowledgeArticleDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,

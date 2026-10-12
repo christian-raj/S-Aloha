@@ -30,6 +30,7 @@ frontend/
     │   │   ├── RecordDetail.jsx  # fiche : en-tête, éditeur, contenu propre, éléments liés
     │   │   ├── RecordForm.jsx    # formulaire décrit par des champs ; conversions API ↔ formulaire
     │   │   ├── StatusBadge.jsx   # badge de statut selon la tonalité déclarée
+    │   │   ├── Markdown.jsx      # rendu Markdown sûr (éléments React, jamais de HTML brut), KB-10
     │   │   └── LinkedItems.jsx   # éléments liés (tous processus), ajout par référence
     │   └── pages/
     │       ├── Login.jsx         # panneau de marque (fonctionnalités : FEATURES), formulaire AD
@@ -46,7 +47,7 @@ frontend/
         ├── change-enablement/            # config.jsx + pages Changes, ChangeDetail, ChangeSchedule
         ├── service-configuration-management/ # config.jsx + pages ConfigurationItems, ConfigurationItemDetail
         ├── service-level-management/     # config.jsx + pages Services, ServiceDetail, Agreements, AgreementDetail
-        ├── knowledge-management/         # config.jsx + pages Articles, ArticleDetail
+        ├── knowledge-management/         # config.jsx + pages Articles, ArticleDetail (onglet Lecture, cycle de l'article)
         ├── continual-improvement/        # config.jsx + pages Improvements, ImprovementDetail
         └── project-management/           # config.jsx, rights.js, pages Projects, ProjectDetail ;
                                           # components : Overview, Agile, BurndownChart, Registers, PartTable
@@ -228,7 +229,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | | Accords (SLA) | Tous | SLM-02 | ✅ |
 | | Respect des SLA (tableau mensuel) | Tous | SLM-20, SLM-21 | 🔜 |
 | [Connaissances](processus/gestion-des-connaissances.md) | Base de connaissances, avec le bloc « Chercher d'abord » (recherche hybride) en tête du registre | Tous | KB-04, RAG-05 | ✅ |
-| | Brouillons à publier | Manager, Admin | KB-21 | 🔜 |
+| | Brouillons à publier : bloc « Décisions » de la console (KB-21) ; fiche : onglet **Lecture** (Markdown, KB-10) et bloc « Cycle de l'article » (soumission, revue, archivage demandé, utilisation) | Manager, Admin (soumission : tous) | KB-21, KB-10, KB-17 | ✅ (console, fiche) / 🔜 (sous-entrée de menu) |
 | [Amélioration](processus/amelioration-continue.md) | Registre d'amélioration | Tous | CSI-01 | ✅ |
 
 ### Projets

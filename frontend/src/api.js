@@ -75,7 +75,13 @@ export const api = {
   },
   services: records('/services'),
   agreements: records('/agreements'),
-  knowledge: records('/knowledge'),
+  knowledge: {
+    ...records('/knowledge'),
+    submit: (id) => request(`/knowledge/${id}/submit`, { method: 'POST' }),
+    review: (id, nextReviewDate) => request(`/knowledge/${id}/review`, { method: 'POST', body: JSON.stringify({ nextReviewDate }) }),
+    requestArchive: (id, reason) => request(`/knowledge/${id}/archive-request`, { method: 'POST', body: JSON.stringify({ reason }) }),
+    usage: (id) => request(`/knowledge/${id}/usage`)
+  },
   improvements: records('/improvements'),
   assessments: {
     ...records('/assessments'),
