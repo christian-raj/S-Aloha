@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Navigation** : section **Conformité & réglementation** (repère violet, tous les rôles)
+  entre Pratiques et Paramétrage ; « Conformité NIS 2 » y passe sous le libellé « NIS 2 »,
+  la section Pratiques ne garde que les 8 pratiques ITIL. Sections repliables (sauf
+  Pilotage), choix mémorisé dans le navigateur ; la section de la page ouverte reste dépliée.
+
 - **Conformité NIS 2** : évaluation au Référentiel Cyber France de l'ANSSI (catégorie
   d'entité, questionnaire noté 0 à 3, scores par thématique, objectif et pilier, maturité,
   écarts, actions d'amélioration) ; structure du référentiel embarquée, texte des exigences

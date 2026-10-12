@@ -132,6 +132,10 @@ pas en heures de service (contrairement aux SLA, SLM-14).
 
 ## 8. Console et indicateurs
 
+Menu (🔜) : le registre des déclarations sera une entrée de la section **Conformité &
+réglementation**, à côté de NIS 2 (module `group: 'compliance'`,
+[frontend § Navigation cible](../frontend.md#navigation-cible)).
+
 Console (🔜) : incidents cyber à qualifier et déclarations à échéance proche ou dépassée
 (Urgent, gestionnaires) ; déclarations en cours (Mon travail du responsable).
 

@@ -97,7 +97,7 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/services`, `/services/:id`, `/agreements`, `/agreements/:id` | `modules/service-level-management/pages/*` | Pratiques › Niveaux de service |
 | `/knowledge`, `/knowledge/:id` | `modules/knowledge-management/pages/*` | Pratiques › Connaissances |
 | `/improvements`, `/improvements/:id` | `modules/continual-improvement/pages/*` | Pratiques › Amélioration (CSI) |
-| `/assessments`, `/assessments/:id` | `modules/compliance-assessment/pages/Assessments`, `AssessmentDetail` | Pratiques › Conformité NIS 2 |
+| `/assessments`, `/assessments/:id` | `modules/compliance-assessment/pages/Assessments`, `AssessmentDetail` | Conformité & réglementation › NIS 2 |
 | `/settings/nis2` | `modules/compliance-assessment/pages/ReferentialSettings` | Paramétrage › Référentiel NIS 2 (Admin) |
 
 Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont rendues dans
@@ -107,12 +107,17 @@ Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont r
 
 `frontend/src/modules/registry.js` exporte :
 
-- `MODULES` — les processus ITIL, dans l'ordre du cycle de vie : `id`, `label`,
-  `description`, `status` (`active` | `soon`) et, pour un module actif, `href`
+- `GROUPS` — les groupes de modules, dans l'ordre de la barre latérale : **Pratiques**
+  (`id: 'practices'`, les pratiques ITIL) et **Conformité & réglementation**
+  (`id: 'compliance'`, `tone: 'compliance'`, obligations hors ITIL : NIS 2, et demain les
+  déclarations réglementaires). Un groupe sans module visible n'est pas affiché ;
+- `MODULES` — les modules, dans l'ordre du cycle de vie pour les pratiques : `id`, `label`,
+  `description`, `status` (`active` | `soon`), `group` (clé de `GROUPS` ; absent,
+  `'practices'`, lu par `groupOf(module)`) et, pour un module actif, `href`
   (point d'entrée), `routes` (préfixes d'URL qui l'activent dans la navigation), `pages`
   (sous-entrées affichées quand le module est ouvert, facultatives ; quand une sous-page en
   prolonge une autre — `/changes/schedule` sous `/changes` — la correspondance exacte l'emporte) ;
-- `SECTIONS` — les sections de menu après Pilotage et Pratiques : **Paramétrage**
+- `SECTIONS` — les sections de menu après les groupes de modules : **Paramétrage**
   (`id: 'settings'`, `roles: ['Manager','Admin']`) et **Administration**
   (`id: 'administration'`, `roles: ['Admin']`), chacune avec ses `entries`. Une entrée :
   `{ href, label, description, icon, roles? }`, où `icon` est une clé de `SECTION_ICONS`
@@ -161,8 +166,21 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
   amélioration), comme aujourd'hui.
 - Chaque pratique ouvre sur son **registre** ; les sous-entrées sont les autres **objets**
   de la pratique (§ 3 de son document) et ses **vues** (calendrier, impact).
-- **Quatre sections**, dans cet ordre : **Pilotage** (tous), **Pratiques** (tous),
-  **Paramétrage** (Manager, Admin) et **Administration** (Admin seul).
+- **Cinq sections**, dans cet ordre : **Pilotage** (tous), **Pratiques** (tous, les
+  8 pratiques ITIL seulement), **Conformité & réglementation** (tous), **Paramétrage**
+  (Manager, Admin) et **Administration** (Admin seul).
+- **Conformité & réglementation** = les **obligations réglementaires** qui ne relèvent
+  pas d'une pratique ITIL (NIS 2, déclarations réglementaires…). Les mêler aux pratiques
+  surchargerait la liste et brouillerait l'ordre du cycle de vie. Un futur module
+  réglementaire y déclare `group: 'compliance'` dans le registre.
+- **Sections repliables** : Pratiques, Conformité & réglementation, Paramétrage et
+  Administration ont un titre-bouton (`aria-expanded`, chevron) ; Pilotage ne se replie
+  pas. Le choix est mémorisé dans le navigateur (`localStorage`, clé
+  `s-aloha-nav-collapsed` ; confort seulement, sans échec si le stockage est bloqué) et
+  partagé par la barre latérale et le tiroir mobile. La section qui contient la **page
+  ouverte reste toujours dépliée** : on ne cache jamais où l'on se trouve.
+- Un **titre de section long** passe à la ligne au lieu d'être tronqué, dans la barre
+  latérale comme dans le tiroir mobile.
 - **Paramétrage** = le **fonctionnement des pratiques** : catalogues, modèles, périodes,
   référentiels qui règlent la façon dont une pratique s'exerce. Délégable aux
   gestionnaires. **Administration** = la **plateforme** elle-même : accès et rôles,
@@ -204,8 +222,19 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | [Connaissances](processus/gestion-des-connaissances.md) | Base de connaissances, avec le bloc « Chercher d'abord » (recherche hybride) en tête du registre | Tous | KB-04, RAG-05 | ✅ |
 | | Brouillons à publier | Manager, Admin | KB-21 | 🔜 |
 | [Amélioration](processus/amelioration-continue.md) | Registre d'amélioration | Tous | CSI-01 | ✅ |
-| [Conformité NIS 2](processus/conformite-nis2.md) | Registre des évaluations (« Évaluations ReCyF (ANSSI) ») ; fiche : Informations · Questionnaire · Synthèse · Liens | Tous | NIS-02, NIS-04, NIS-10 | ✅ |
-| | Déclarations réglementaires : registre, échéances ; encadré « Déclarations réglementaires » et qualification sur la fiche d'un incident cyber | Tous (décisions : Manager) | [DRG-01, DRG-10](processus/declarations-reglementaires.md), INC-41 | 🔜 |
+
+### Conformité & réglementation
+
+Section ouverte à **tous les rôles**, repère **violet** ; elle ne contient que les modules
+déclarés `group: 'compliance'` dans le registre.
+
+| Module | Sous-entrée | Visible par | Règle | Statut |
+|---|---|---|---|---|
+| [NIS 2](processus/conformite-nis2.md) (page « Conformité NIS 2 ») | Registre des évaluations (« Évaluations ReCyF (ANSSI) ») ; fiche : Informations · Questionnaire · Synthèse · Liens | Tous | NIS-02, NIS-04, NIS-10 | ✅ |
+| [Déclarations réglementaires](processus/declarations-reglementaires.md) | Registre, échéances | Tous (décisions : Manager) | DRG-01, DRG-10 | 🔜 |
+
+L'encadré « Déclarations réglementaires » et la qualification restent sur la **fiche d'un
+incident cyber** (INC-41) : ce sont des éléments de l'incident, pas des entrées de menu.
 
 ### Paramétrage
 
@@ -244,8 +273,9 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 | Index de recherche | État du service d'embeddings et de l'index par source, reconstruction ; avis ambre si le service est injoignable | [RAG-08](recherche.md) | ✅ |
 
 « Index de recherche » est la **première entrée réelle** de la section : un Admin voit
-désormais les quatre sections (Pilotage, Pratiques, Paramétrage, Administration), un
-Manager deux (Pilotage, Pratiques), tant qu'aucune entrée de Paramétrage ne lui est ouverte.
+désormais les cinq sections (Pilotage, Pratiques, Conformité & réglementation,
+Paramétrage, Administration), un Manager trois (Pilotage, Pratiques, Conformité &
+réglementation), tant qu'aucune entrée de Paramétrage ne lui est ouverte.
 
 ### Onglets communs des fiches
 
@@ -312,8 +342,12 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 - **Angles droits** : aucun `border-radius`.
 - **Police Jost** (Google Fonts), repli `system-ui`.
 - **Sidebar marine** de 272 px en dégradé, toujours sombre, en sections : *Pilotage*
-  (Console, Reporting), *Pratiques* (le registre), puis *Paramétrage* et *Administration*
-  selon le rôle (§ Navigation cible).
+  (Console, Reporting), *Pratiques* (les pratiques ITIL), *Conformité & réglementation*,
+  puis *Paramétrage* et *Administration* selon le rôle (§ Navigation cible).
+- **Repères de section** : un point de couleur devant le titre distingue les sections qui
+  ne sont pas des pratiques — **violet** pour Conformité & réglementation
+  (`.nav-section.compliance`, `--accent-violet`), **ambre** pour Administration
+  (`.nav-section.admin`, `--accent-amber`).
 - **Canevas à points** (`.bg-canvas`) : grille de points fine et lueurs de marque en coin,
   pour éviter un fond plat sur les pages peu denses.
 - **Badges** de statut, de priorité et de rôle RACI ; tableaux cliquables.
