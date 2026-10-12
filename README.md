@@ -30,7 +30,8 @@ et montre à chacun **ce qui requiert son intervention, maintenant**.
 
 **🔐 Branché sur votre annuaire, dès le premier jour**
 Vos utilisateurs se connectent avec leur compte Windows. Les droits suivent vos groupes
-Active Directory : aucun compte à créer, aucun mot de passe stocké.
+Active Directory : aucun compte à créer, aucun mot de passe stocké. Les décisions et la
+visibilité peuvent se limiter au **périmètre** de chacun : direction, site ou entité.
 
 **🎯 Une console qui dit quoi faire**
 Chaque utilisateur arrive sur ce qui l'attend, classé par criticité : actions en retard,
@@ -61,8 +62,9 @@ incident et problème. Le modèle tourne chez vous ; sans lui, la recherche rest
 thématique, maturité, écarts et actions d'amélioration reliées au registre.
 
 **📊 Le pilotage sans export Excel**
-MTTR des problèmes et des incidents, taux de changements réussis, répartitions, actions
-en retard avec leurs responsables, volumétrie de chaque processus : tout est dans le Reporting.
+Un tableau de bord à onglets : **score de santé** des services, incidents (MTTR, MTTD,
+résolution au premier contact, respect des SLA), problèmes, changements et projets,
+conformité. Filtres par période et par service, exports CSV et PDF.
 
 **🏠 Chez vous, en une commande, et libre**
 On-prem, quatre containers (dont le service de recherche sémantique, facultatif), vos
@@ -73,17 +75,17 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 
 | Processus | |
 |---|---|
-| **Gestion des problèmes** — cause racine, erreurs connues, actions correctives | ✅ Disponible |
+| **Gestion des problèmes** — cause racine, erreurs connues, actions correctives, gestionnaire du problème | ✅ Disponible |
 | **Incidents** — priorité P1–P4, incidents majeurs, ouverture d'un problème lié | ✅ Disponible (MVP) |
 | **Demandes** — objet demandé, bénéficiaire, approbation avant traitement | ✅ Disponible (MVP) |
 | **Changements** — standard pré-autorisé, autorisation, retour arrière, calendrier | ✅ Disponible (MVP) |
 | **Configuration (CMDB)** — éléments de configuration et leurs relations | ✅ Disponible (MVP) |
 | **Niveaux de service** — catalogue des services, SLA et dates de revue | ✅ Disponible (MVP) |
-| **Connaissances** — solutions, procédures, erreurs connues, publication validée | ✅ Disponible (MVP) |
+| **Connaissances** — articles en Markdown, soumission et publication validée, revue périodique, articles d'erreur connue issus des problèmes | ✅ Disponible (MVP) |
 | **Amélioration continue** — registre et modèle ITIL 4 en 7 étapes | ✅ Disponible (MVP) |
 | **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions | ✅ Disponible (MVP) |
 | **Projets** — Scrum, Kanban, Cycle en V, PRINCE2 ou hybride : la méthode active backlog, sprints, phases, jalons, risques… | ✅ Disponible (MVP) |
-| **Périmètres** — droits par direction, site ou entité, affectations d'utilisateurs et de groupes AD | 🔜 [Spécifié](docs/reference/perimetres.md) |
+| **Périmètres** — droits par direction, site ou entité, affectations d'utilisateurs et de groupes AD | 🟡 [En cours](docs/reference/perimetres.md) (droits et visibilité livrés ; écran d'administration à venir) |
 | **Déclarations réglementaires** — NIS 2 et RGPD, échéances 24 h / 72 h depuis l'incident | 🔜 [Spécifié](docs/reference/processus/declarations-reglementaires.md) |
 
 **(MVP)** : le processus tient son cycle de vie et ses garde-fous, mais pas encore tous ses
@@ -108,7 +110,7 @@ un changement, un changement touche des CI.
   </tr>
   <tr>
     <td><img src="docs/screenshots/06-actions-raci.png" alt="Actions RACI" /><br/><b>Actions correctives</b> — échéance et matrice RACI</td>
-    <td><img src="docs/screenshots/08-reporting.png" alt="Reporting" /><br/><b>Reporting</b> — MTTR, taux de changements réussis, volumétrie</td>
+    <td><img src="docs/screenshots/08-reporting.png" alt="Reporting" /><br/><b>Reporting</b> — tableau de bord à onglets : santé, incidents, problèmes, changements et projets, conformité</td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/10-incident-majeur.png" alt="Incident majeur" /><br/><b>Incidents</b> — priorité P1–P4, incident majeur, problème lié</td>
@@ -200,7 +202,8 @@ documentation en passant par les retours d'usage.
 | ⚙️ [Exploitation](docs/reference/exploitation.md) | Installation, Active Directory, mise à jour |
 | 🛡️ [Sécurité](docs/reference/securite.md) | Modèle d'autorisation, durcissement |
 | 🔎 [Recherche](docs/reference/recherche.md) | Recherche hybride, cas similaires, service d'embeddings |
-| 🧭 [Périmètres](docs/reference/perimetres.md) | Droits scopés par direction, site ou entité (à venir) |
+| 📊 [Reporting](docs/reference/reporting.md) | Tableau de bord : score de santé, indicateurs par onglet, filtres, exports |
+| 🧭 [Périmètres](docs/reference/perimetres.md) | Droits scopés par direction, site ou entité (en cours : droits et visibilité livrés) |
 | 📦 [Journal des versions](CHANGELOG.md) | Nouveautés et consignes de mise à jour de chaque version |
 | 🤝 [Contribuer](CONTRIBUTING.md) | Issues, pull requests, contrôles avant envoi |
 | 🚨 [Signaler une faille](SECURITY.md) | En privé, jamais dans une issue publique |
@@ -223,8 +226,12 @@ their attention, ranked by severity.
   (history tab) on every record.
 - **Hybrid search** (keywords + semantic, local `bge-m3` model) to find similar incidents,
   problems and knowledge articles.
-- **Coming next**: perimeter-scoped permissions (by department, site or entity) and
-  regulatory incident notifications (NIS 2, GDPR).
+- **Project management** (Scrum, Kanban, V-model, PRINCE2 or hybrid) and a tabbed
+  **reporting dashboard** (service health score, incident/problem/change/project KPIs,
+  CSV and PDF exports).
+- **Perimeter-scoped permissions** (by department, site or entity): rights and visibility
+  are in place; the administration screen is coming.
+- **Coming next**: regulatory incident notifications (NIS 2, GDPR).
 - **Stack**: ASP.NET Core 8, EF Core, PostgreSQL 16, React 18 + Vite, Docker Compose.
 - **Try it**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`,
   then sign in at http://localhost as `demo.admin` / `Demo-Admin-2026` (a demo directory
