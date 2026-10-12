@@ -60,8 +60,9 @@ Indépendants des processus, accessibles à tous les rôles :
   (règles : [`regles-metier.md`](regles-metier.md#2-consoles-par-rôle)) ;
 - **Recherche** — recherche hybride (mots et sens) sur les contenus validés, cas
   similaires sur les fiches ([recherche](recherche.md)) ;
-- **Reporting** — indicateurs (problèmes, MTTR incidents, taux de changements réussis)
-  et volumétrie par processus.
+- **Reporting** — tableau de bord à onglets : score de santé des services, incidents
+  (MTTR, MTTD, résolution au premier contact, SLA), problèmes, changements et projets,
+  conformité ; filtres période et service, exports CSV et PDF ([reporting](reporting.md)).
 
 ## Les processus
 

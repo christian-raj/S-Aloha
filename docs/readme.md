@@ -16,6 +16,7 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 | 🗄️ | [Base de données](reference/base-de-donnees.md) | Lire le modèle de données et les formats d'analyse |
 | 🖥️ | [Frontend](reference/frontend.md) | Ajouter un écran ou un module, respecter le design |
 | ⚙️ | [Exploitation](reference/exploitation.md) | Installer, brancher l'Active Directory, mettre à jour |
+| 📊 | [Reporting](reference/reporting.md) | Lire le tableau de bord : score de santé, indicateurs par onglet, filtres, exports |
 | 🔎 | [Recherche](reference/recherche.md) | Comprendre la recherche hybride : contenu indexé, cas similaires, service d'embeddings |
 | 🧭 | [Périmètres](reference/perimetres.md) | Droits scopés par direction, site ou entité (spécifié, à implémenter) |
 | 🛡️ | [Sécurité](reference/securite.md) | Préparer une mise en production |
