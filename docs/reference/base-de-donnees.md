@@ -18,6 +18,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `IncidentSlaMetrics` | Colonnes des indicateurs d'incident : `Incidents.ResolutionDueAt` (INC-21), `Incidents.OccurredAt` (INC-27), `Incidents.FirstContactResolution`, `Incidents.OwnerChanged` (INC-23) |
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
+| `Perimeters` | Tables `Perimeters` (nom unique, description, suppression douce) et `PerimeterAssignments` (principal AD utilisateur ou groupe, rôle Manager ou User ; unique par périmètre, principal et rôle) ; périmètre « Organisation » (Id 1) créé ; colonne `PerimeterId` (FK, index, défaut 1) sur `Problems` et chaque table de pratique : l'existant est rattaché à « Organisation » ([périmètres](perimetres.md), PER-10) |
 | `AuditJournal` | Table `AuditEntries` du journal d'audit (SOC-20) : type et identifiant de l'enregistrement, référence recopiée, action, champ, ancienne et nouvelle valeur, motif, auteur, date ; index sur (type, identifiant) et sur la date |
 | `ItilModules` | Les dix tables des autres processus et des liens (`ItemLinks`, `Incidents`, `ServiceRequests`, `Changes`, `ConfigurationItems`, `CiRelationships`, `Services`, `Agreements`, `KnowledgeArticles`, `Improvements`) ; aucune modification des tables existantes |
 
@@ -126,6 +127,7 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 | `OwnerType`, `OwnerId`, `OwnerDisplayName` | texte (10 / 200 / 250), nullable | responsable AD : `User` ou `Group` |
 | `CreatedBy`, `CreatedByDisplayName` | texte (100 / 200) | |
 | `CreatedAt`, `UpdatedAt` | horodatage UTC | |
+| `PerimeterId` | entier, FK → `Perimeters` (suppression refusée), index | périmètre de l'enregistrement, « Organisation » (1) par défaut ([PER-04, PER-10](perimetres.md)) ; aussi sur `Problems` |
 
 ### Tables des processus
 

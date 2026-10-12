@@ -14,6 +14,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Périmètres — modèle et administration** (lot 1, étape 6, première partie) : périmètres
+  (direction, site, entité) avec suppression douce, restauration et suppression définitive
+  contrôlée ; affectations d'utilisateurs ou de groupes AD avec le rôle Manager ou User ;
+  compteurs par pratique ; tout tracé au journal d'audit. À la mise à niveau, chaque
+  enregistrement est rattaché au périmètre « Organisation » : les droits sont inchangés
+  (PER-01, PER-02, PER-10 à PER-12).
+
 - **Reporting** : tableau de bord à onglets — synthèse globale avec score de santé expliqué,
   incidents, problèmes, changements et projets, conformité et métriques ; filtres période
   (7, 30, 90 jours, 12 mois, personnalisée) et service ; badges d'alerte sur les onglets ;

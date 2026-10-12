@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Links;
+using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Search;
 using SAloha.Api.Modules.ChangeEnablement;
 using SAloha.Api.Modules.ComplianceAssessment;
@@ -21,6 +22,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ItemLink> ItemLinks => Set<ItemLink>();
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
     public DbSet<SearchPassage> SearchPassages => Set<SearchPassage>();
+    public DbSet<Perimeter> Perimeters => Set<Perimeter>();
+    public DbSet<PerimeterAssignment> PerimeterAssignments => Set<PerimeterAssignment>();
     // Gestion des problèmes
     public DbSet<Problem> Problems => Set<Problem>();
     public DbSet<RcaAnalysis> Analyses => Set<RcaAnalysis>();
@@ -109,6 +112,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasGeneratedTsVectorColumn(p => p.SearchVector, "french", p => new { p.Title, p.Text })
             .HasIndex(p => p.SearchVector).HasMethod("GIN");
         b.Entity<SearchPassage>().HasIndex(p => new { p.SourceType, p.SourceId });
+
+        // Périmètres (PER-01, PER-02, PER-10) : « Organisation » existe toujours et reçoit
+        // les enregistrements antérieurs ; chaque enregistrement le référence (suppression
+        // d'un périmètre rattaché refusée).
+        b.Entity<Perimeter>().HasIndex(p => p.Name).IsUnique();
+        b.Entity<Perimeter>().HasData(new Perimeter
+        {
+            Id = Perimeter.DefaultId, Name = Perimeter.DefaultName,
+            Description = "Périmètre par défaut : toute l'organisation.",
+            CreatedAt = new DateTime(2026, 10, 12, 0, 0, 0, DateTimeKind.Utc), CreatedBy = "système"
+        });
+        b.Entity<PerimeterAssignment>().HasOne(a => a.Perimeter).WithMany()
+            .HasForeignKey(a => a.PerimeterId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<PerimeterAssignment>().HasIndex(a => new { a.PerimeterId, a.PrincipalType, a.PrincipalId, a.Role }).IsUnique();
+        foreach (var type in b.Model.GetEntityTypes().Select(t => t.ClrType)
+                     .Where(t => typeof(IHasPerimeter).IsAssignableFrom(t)).ToList())
+        {
+            b.Entity(type).HasOne(typeof(Perimeter)).WithMany().HasForeignKey(nameof(IHasPerimeter.PerimeterId))
+                .OnDelete(DeleteBehavior.Restrict);
+            b.Entity(type).HasIndex(nameof(IHasPerimeter.PerimeterId));
+        }
 
         b.Entity<ItemLink>().HasIndex(l => new { l.FromType, l.FromId });
         b.Entity<ItemLink>().HasIndex(l => new { l.ToType, l.ToId });

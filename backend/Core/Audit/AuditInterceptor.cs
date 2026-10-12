@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Links;
+using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Modules.ChangeEnablement;
 using SAloha.Api.Modules.ComplianceAssessment;
 using SAloha.Api.Modules.ContinualImprovement;
@@ -104,6 +105,13 @@ public class AuditInterceptor(IHttpContextAccessor http, ILogger<AuditIntercepto
                 case RcaAnalysis an:
                     drafts.AddRange(Child(entry, "problem", an.ProblemId, $"analyse {an.Method}"));
                     break;
+                case Perimeter p:
+                    drafts.AddRange(OwnPerimeter(entry, p));
+                    break;
+                case PerimeterAssignment pa:
+                    drafts.AddRange(Child(entry, "perimeter", pa.PerimeterId,
+                        Cut($"affectation {pa.Role} de {pa.PrincipalDisplayName} ({(pa.PrincipalType == "Group" ? "groupe" : "utilisateur")})", 100)));
+                    break;
                 default:
                     var type = TypeOf(entry.Entity);
                     if (type is not null) drafts.AddRange(Own(entry, type, reason));
@@ -135,6 +143,31 @@ public class AuditInterceptor(IHttpContextAccessor http, ILogger<AuditIntercepto
                 ? new Draft(type, null, id, reference, forcedReason is null ? AuditEntry.Transition : AuditEntry.ForcedTransition,
                     name, old, now, forcedReason)
                 : new Draft(type, null, id, reference, AuditEntry.Modification, name, old, now, null);
+    }
+
+    /// <summary>
+    /// Périmètre (PER-11) : création, renommage, description, suppression douce et
+    /// restauration, suppression définitive ; la « référence » est son nom.
+    /// </summary>
+    private static IEnumerable<Draft> OwnPerimeter(EntityEntry entry, Perimeter p)
+    {
+        if (entry.State == EntityState.Added)
+        {
+            yield return new Draft("perimeter", p, null, p.Name, AuditEntry.Creation, null, null, null, null);
+            yield break;
+        }
+        if (entry.State == EntityState.Deleted)
+        {
+            yield return new Draft("perimeter", null, p.Id, p.Name, AuditEntry.Deletion, "définitive", null, null, null);
+            yield break;
+        }
+        var deleted = entry.Property(nameof(Perimeter.DeletedAt));
+        if (deleted.IsModified && (deleted.OriginalValue is null) != (deleted.CurrentValue is null))
+            yield return deleted.CurrentValue is null
+                ? new Draft("perimeter", null, p.Id, p.Name, AuditEntry.Modification, "restauration", null, null, null)
+                : new Draft("perimeter", null, p.Id, p.Name, AuditEntry.Deletion, "douce", null, null, null);
+        foreach (var (name, old, now) in Changes(entry))
+            yield return new Draft("perimeter", null, p.Id, p.Name, AuditEntry.Modification, name, old, now, null);
     }
 
     /// <summary>Élément rattaché à un enregistrement (action, analyse) : tracé sur l'enregistrement parent.</summary>

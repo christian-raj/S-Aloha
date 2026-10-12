@@ -65,6 +65,10 @@ public class MigrationTests
             await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
                 .UseNpgsql(container.GetConnectionString()).Options);
             Assert.Empty(await db.Database.GetPendingMigrationsAsync());
+            // PER-10 : l'existant est rattaché à « Organisation », la séquence repart après lui.
+            Assert.Equal(1, (await db.Problems.SingleAsync(x => x.Reference == "PRB-2025-0001")).PerimeterId);
+            Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync("/api/admin/perimeters",
+                new { name = "Après reprise" })).StatusCode);
         }
         finally
         {

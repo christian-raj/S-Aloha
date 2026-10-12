@@ -42,6 +42,7 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)
 │   ├── Itil/                         # Priority (matrice impact × urgence → P1–P4)
 │   ├── Links/                        # ItemLink, registre ItemLinks, LinksController (liens inter-processus)
+│   ├── Perimeters/                   # Perimeter, PerimeterAssignment, PerimetersController (périmètres, ADR-0014)
 │   ├── Pilotage/                     # ConsoleController, ReportsController, DashboardController (vues transverses)
 │   └── Records/                      # Record (entité de base), RecordController<T,TDto>, Allowed, Dates
 └── Modules/
@@ -148,6 +149,8 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/compliance/referential` ; POST `/api/compliance/referential/import` : Admin | User | Référentiel NIS 2, import du texte des exigences | Modules/ComplianceAssessment |
 | GET/POST/PUT `/api/projects[/{id}]`, GET `/{id}/summary` | User ; modification : chef de projet ou Manager ; Cadrage → En cours : Manager | Projets, synthèse (avancement, tolérances, risques) (DELETE : Admin) | Modules/ProjectManagement |
 | GET/POST/PUT/DELETE `/api/projects/{id}/{phases,milestones,deliverables,sprints,workitems,risks,issues}[/{id}]`, POST `phases/{id}/approve`, GET `sprints/{id}/burndown` | User ; phases, jalons, sprints, suppressions, validations : chef de projet ou Manager | Composants du projet ; 400 si le composant n'est pas actif | Modules/ProjectManagement |
+| GET `/api/perimeters` | User | Périmètres en service (sélecteurs) | Core/Perimeters |
+| GET/POST/PUT `/api/admin/perimeters[/{id}]`, DELETE `/{id}` (douce), POST `/{id}/restore`, DELETE `/{id}/purge` ; GET/POST `/{id}/assignments`, DELETE `/api/admin/assignments/{id}` | Admin | Périmètres et affectations, compteurs par pratique ([PER-01, PER-02, PER-12](perimetres.md)) | Core/Perimeters |
 | GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
 | GET `/api/audit?type=&id=` | User | Historique d'un enregistrement (journal d'audit, SOC-20) | Core/Audit |
 | PUT `…/{id}?force=true&reason=` | Admin | Transition forcée hors graphe, motif obligatoire et tracé (SOC-05) | Core/Audit, socle des pratiques et module Problèmes |

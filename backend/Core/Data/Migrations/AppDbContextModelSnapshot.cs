@@ -125,6 +125,104 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.ToTable("ItemLinks");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Core.Perimeters.Perimeter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Perimeters");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 10, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "système",
+                            Description = "Périmètre par défaut : toute l'organisation.",
+                            Name = "Organisation"
+                        });
+                });
+
+            modelBuilder.Entity("SAloha.Api.Core.Perimeters.PerimeterAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PrincipalDisplayName")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("PrincipalId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PrincipalType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId", "PrincipalType", "PrincipalId", "Role")
+                        .IsUnique();
+
+                    b.ToTable("PerimeterAssignments");
+                });
+
             modelBuilder.Entity("SAloha.Api.Core.Search.SearchPassage", b =>
                 {
                     b.Property<int>("Id")
@@ -255,6 +353,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("PlannedEnd")
                         .HasColumnType("timestamp with time zone");
 
@@ -288,6 +389,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -337,6 +440,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -363,6 +469,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -541,6 +649,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Priority")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -580,6 +691,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -657,6 +770,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Priority")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -705,6 +821,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("character varying(10)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -763,6 +881,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("PublishedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -792,6 +913,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -895,6 +1018,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("KnownErrorWorkaround")
                         .HasColumnType("text");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Priority")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -930,6 +1056,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("character varying(10)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -1182,6 +1310,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1229,6 +1360,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -1602,6 +1735,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1621,6 +1757,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -1670,6 +1808,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1694,6 +1835,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -1747,6 +1890,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1790,6 +1936,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
 
                     b.HasIndex("Reference")
                         .IsUnique();
@@ -1855,6 +2003,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1891,10 +2042,41 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PerimeterId");
+
                     b.HasIndex("Reference")
                         .IsUnique();
 
                     b.ToTable("ServiceRequests");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Core.Perimeters.PerimeterAssignment", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", "Perimeter")
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Perimeter");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ChangeEnablement.Change", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ComplianceAssessment.Assessment", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ComplianceAssessment.AssessmentResponse", b =>
@@ -1927,6 +2109,33 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Navigation("Objective");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ContinualImprovement.Improvement", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.IncidentManagement.Incident", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.KnowledgeManagement.KnowledgeArticle", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ProblemManagement.CorrectiveAction", b =>
                 {
                     b.HasOne("SAloha.Api.Modules.ProblemManagement.Problem", "Problem")
@@ -1936,6 +2145,15 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Problem");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ProblemManagement.Problem", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ProblemManagement.RaciAssignment", b =>
@@ -1980,6 +2198,15 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ProjectManagement.Project", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ProjectManagement.ProjectIssue", b =>
@@ -2056,8 +2283,32 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Navigation("Target");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.ConfigurationItem", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.ItService", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.ServiceLevelAgreement", b =>
                 {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SAloha.Api.Modules.ServiceLevelManagement.ItService", "Service")
                         .WithMany("Agreements")
                         .HasForeignKey("ServiceId")
@@ -2065,6 +2316,15 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.ServiceRequest", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ComplianceAssessment.Assessment", b =>
