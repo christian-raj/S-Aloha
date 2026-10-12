@@ -19,9 +19,6 @@ it.each([
   ['Admin', ['Pilotage', 'Pratiques', 'Projets', 'Conformité & réglementation', 'Paramétrage', 'Administration']],
   ['Manager', ['Pilotage', 'Pratiques', 'Projets', 'Conformité & réglementation']],
   ['User', ['Pilotage', 'Pratiques', 'Projets', 'Conformité & réglementation']],
-  ['Admin', ['Pilotage', 'Pratiques', 'Conformité & réglementation', 'Paramétrage', 'Administration']],
-  ['Manager', ['Pilotage', 'Pratiques', 'Conformité & réglementation']],
-  ['User', ['Pilotage', 'Pratiques', 'Conformité & réglementation']],
 ])('registre réel : un %s voit les sections %j, jamais une section vide', (r, expected) => {
   role = r
   render(<MemoryRouter><Routes><Route path="*" element={<Layout />} /></Routes></MemoryRouter>)
