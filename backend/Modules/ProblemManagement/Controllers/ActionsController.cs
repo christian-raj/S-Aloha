@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
 
@@ -20,7 +21,10 @@ public class ActionsController(AppDbContext db) : ControllerBase
         if (!string.IsNullOrEmpty(assignee))
         {
             var key = assignee.ToLowerInvariant(); // l'AD ignore la casse (M2)
-            q = q.Where(a => a.Raci.Any(r => r.AssigneeId.ToLower() == key));
+            // PRB-26 : mes actions comprennent celles confiées à l'un de mes groupes AD.
+            var groups = key == User.MeKey() ? User.GroupKeys() : [];
+            q = q.Where(a => a.Raci.Any(r => r.AssigneeType == "Group"
+                ? groups.Contains(r.AssigneeId.ToLower()) : r.AssigneeId.ToLower() == key));
         }
         var items = await q.OrderBy(a => a.DueDate).Select(a => new
         {
@@ -63,9 +67,9 @@ public class ActionsController(AppDbContext db) : ControllerBase
 
         // PRB-24 : modifier une action (titre, description, échéance, RACI) est réservé
         // à son R, son A ou un gestionnaire (M7) ; mettre à jour son statut reste ouvert à tous.
-        var me = User.Identity?.Name?.ToLowerInvariant();
+        // Un membre du groupe AD désigné R ou A en a les droits (PRB-26).
         var isManager = User.IsInRole("Manager") || User.IsInRole("Admin");
-        var isRorA = me is not null && a.Raci.Any(r => r.Role is "R" or "A" && r.AssigneeId.ToLowerInvariant() == me);
+        var isRorA = a.Raci.Any(r => r.Role is "R" or "A" && User.Designates(r.AssigneeType, r.AssigneeId));
         if (!isManager && !isRorA && !StatusOnly(a, dto)) return Forbid();
 
         // PRB-02 : statut fermé ; PRB-17 : les règles RACI valent aussi à la modification (#23).

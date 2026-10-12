@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
 using SAloha.Api.Modules.ChangeEnablement;
@@ -28,6 +29,8 @@ public class ConsoleController(AppDbContext db) : ControllerBase
         // revue du 2026-10-06). Couvre les données enregistrées avant que le
         // jeton ne porte le sAMAccountName de l'annuaire.
         var meKey = me.ToLowerInvariant();
+        // SOC-10 : ce qui est confié à l'un de mes groupes AD est aussi à moi.
+        var groups = User.GroupKeys();
         var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "User";
         // L'échéance est une date (stockée à minuit UTC) : une action n'est en
         // retard qu'à partir du LENDEMAIN de son échéance, pas dès le matin
@@ -44,22 +47,24 @@ public class ConsoleController(AppDbContext db) : ControllerBase
         var myActions = await db.Actions.AsNoTracking()
             .Include(a => a.Raci).Include(a => a.Problem)
             .Where(a => a.Status != "Terminée" && a.Status != "Annulée"
-                        && a.Raci.Any(r => r.AssigneeId.ToLower() == meKey))
+                        && a.Raci.Any(r => r.AssigneeType == "Group"
+                            ? groups.Contains(r.AssigneeId.ToLower()) : r.AssigneeId.ToLower() == meKey))
             .OrderBy(a => a.DueDate)
             .Select(a => new
             {
                 a.Id, a.Title, a.Status, a.DueDate,
-                MyRoles = a.Raci.Where(r => r.AssigneeId.ToLower() == meKey).Select(r => r.Role),
+                MyRoles = a.Raci.Where(r => r.AssigneeType == "Group"
+                    ? groups.Contains(r.AssigneeId.ToLower()) : r.AssigneeId.ToLower() == meKey).Select(r => r.Role).Distinct(),
                 Problem = new { a.Problem!.Id, a.Problem.Reference, a.Problem.Title },
                 Overdue = a.DueDate != null && a.DueDate < today
             }).ToListAsync();
 
         // Enregistrements des autres processus dont je suis responsable (assigné, propriétaire).
         var myAssignments = new List<Item>();
-        myAssignments.AddRange(await Mine(db.Incidents, "incident", meKey, Incident.Done));
-        myAssignments.AddRange(await Mine(db.ServiceRequests, "request", meKey, ServiceRequest.Done));
-        myAssignments.AddRange(await Mine(db.Changes, "change", meKey, Change.Done));
-        myAssignments.AddRange(await Mine(db.Improvements, "improvement", meKey, Improvement.Done));
+        myAssignments.AddRange(await Mine(db.Incidents, "incident", meKey, groups, Incident.Done));
+        myAssignments.AddRange(await Mine(db.ServiceRequests, "request", meKey, groups, ServiceRequest.Done));
+        myAssignments.AddRange(await Mine(db.Changes, "change", meKey, groups, Change.Done));
+        myAssignments.AddRange(await Mine(db.Improvements, "improvement", meKey, groups, Improvement.Done));
 
         object? management = null;
         if (role is "Manager" or "Admin")
@@ -122,9 +127,10 @@ public class ConsoleController(AppDbContext db) : ControllerBase
     /// <summary>Ligne de console désignant un enregistrement d'un processus.</summary>
     public record Item(string Type, int Id, string Reference, string Title, string Status);
 
-    private static Task<List<Item>> Mine<T>(DbSet<T> set, string type, string meKey, string[] done) where T : Record =>
+    private static Task<List<Item>> Mine<T>(DbSet<T> set, string type, string meKey, List<string> groups, string[] done) where T : Record =>
         set.AsNoTracking()
-            .Where(x => x.OwnerId != null && x.OwnerId.ToLower() == meKey && !done.Contains(x.Status))
+            .Where(x => x.OwnerId != null && !done.Contains(x.Status)
+                        && (x.OwnerType == "Group" ? groups.Contains(x.OwnerId.ToLower()) : x.OwnerId.ToLower() == meKey))
             .OrderBy(x => x.CreatedAt)
             .Select(x => new Item(type, x.Id, x.Reference, x.Title, x.Status)).ToListAsync();
 

@@ -43,19 +43,20 @@ public sealed class ApiFixture : IAsyncLifetime
             }));
     }
 
-    public HttpClient Client(string role = "Admin", string username = "hery.rakoto")
+    public HttpClient Client(string role = "Admin", string username = "hery.rakoto", params string[] groups)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token(username, role));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token(username, role, groups));
         return client;
     }
 
-    internal static string Token(string username, string role)
+    internal static string Token(string username, string role, params string[] groups)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
         var token = new JwtSecurityToken(
             issuer: "S-Aloha",
-            claims: [new Claim(ClaimTypes.Name, username), new Claim("displayName", username), new Claim(ClaimTypes.Role, role)],
+            claims: [new Claim(ClaimTypes.Name, username), new Claim("displayName", username), new Claim(ClaimTypes.Role, role),
+                     .. groups.Select(g => new Claim(SAloha.Api.Core.Auth.Principals.GroupClaim, g))],
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
         return new JwtSecurityTokenHandler().WriteToken(token);

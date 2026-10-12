@@ -105,6 +105,8 @@ Prérequis des motifs (réouverture, rejet, abandon) et des transitions forcées
 
 ### Étape 5 — Groupes AD
 
+**Fait le 2026-10-12.**
+
 | Règle | Objet |
 |---|---|
 | [SOC-10](../regles-metier.md#5-règles-communes-aux-processus), [PRB-26](gestion-des-problemes.md) | Groupes de l'utilisateur dans le jeton ; « Mon travail » et actions des groupes |
@@ -123,9 +125,9 @@ Décisions D1 à D4 acceptées le 2026-10-10 : [ADR-0014](../../decisions/adr-00
 
 ### Itération suivante
 
-Étapes 5 et 6 (étape 4 terminée le 2026-10-11) : l'étape 5 fournit les groupes AD dont
-l'étape 6 a besoin pour les affectations de groupes. Suivi : issues « Étape 5 » et
-« Périmètres » du [plan d'action](../../plan-action.md#7-feuille-de-route-fonctionnelle).
+Étape 6 (étape 4 terminée le 2026-10-11, étape 5 le 2026-10-12) : les groupes AD du jeton
+servent aux affectations de groupes des périmètres. Suivi : issue « Périmètres » du
+[plan d'action](../../plan-action.md#7-feuille-de-route-fonctionnelle).
 
 ### Hors étapes
 
