@@ -161,6 +161,7 @@ flowchart LR
     SLA -- "écart" --> CSI[Amélioration]
     PRB -- "tendance" --> CSI
     EVA[Évaluation NIS 2] -- "écart" --> CSI
+    PRJ[Projet] -- "mise en production" --> CHG
     INC -- "cyber, à déclarer" --> DRG[Déclaration réglementaire]
 ```
 

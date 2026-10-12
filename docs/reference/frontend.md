@@ -46,7 +46,9 @@ frontend/
         ├── service-configuration-management/ # config.jsx + pages ConfigurationItems, ConfigurationItemDetail
         ├── service-level-management/     # config.jsx + pages Services, ServiceDetail, Agreements, AgreementDetail
         ├── knowledge-management/         # config.jsx + pages Articles, ArticleDetail
-        └── continual-improvement/        # config.jsx + pages Improvements, ImprovementDetail
+        ├── continual-improvement/        # config.jsx + pages Improvements, ImprovementDetail
+        └── project-management/           # config.jsx, rights.js, pages Projects, ProjectDetail ;
+                                          # components : Overview, Agile, BurndownChart, Registers, PartTable
 ```
 
 ### Modules décrits par configuration
@@ -98,6 +100,7 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/knowledge`, `/knowledge/:id` | `modules/knowledge-management/pages/*` | Pratiques › Connaissances |
 | `/improvements`, `/improvements/:id` | `modules/continual-improvement/pages/*` | Pratiques › Amélioration (CSI) |
 | `/assessments`, `/assessments/:id` | `modules/compliance-assessment/pages/Assessments`, `AssessmentDetail` | Conformité & réglementation › NIS 2 |
+| `/projects`, `/projects/:id` | `modules/project-management/pages/Projects`, `ProjectDetail` | Projets › Projets |
 | `/settings/nis2` | `modules/compliance-assessment/pages/ReferentialSettings` | Paramétrage › Référentiel NIS 2 (Admin) |
 
 Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont rendues dans
@@ -108,7 +111,8 @@ Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont r
 `frontend/src/modules/registry.js` exporte :
 
 - `GROUPS` — les groupes de modules, dans l'ordre de la barre latérale : **Pratiques**
-  (`id: 'practices'`, les pratiques ITIL) et **Conformité & réglementation**
+  (`id: 'practices'`, les pratiques ITIL), **Projets** (`id: 'projects'`, `tone: 'projects'`)
+  et **Conformité & réglementation**
   (`id: 'compliance'`, `tone: 'compliance'`, obligations hors ITIL : NIS 2, et demain les
   déclarations réglementaires). Un groupe sans module visible n'est pas affiché ;
 - `MODULES` — les modules, dans l'ordre du cycle de vie pour les pratiques : `id`, `label`,
@@ -166,14 +170,17 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
   amélioration), comme aujourd'hui.
 - Chaque pratique ouvre sur son **registre** ; les sous-entrées sont les autres **objets**
   de la pratique (§ 3 de son document) et ses **vues** (calendrier, impact).
-- **Cinq sections**, dans cet ordre : **Pilotage** (tous), **Pratiques** (tous, les
-  8 pratiques ITIL seulement), **Conformité & réglementation** (tous), **Paramétrage**
-  (Manager, Admin) et **Administration** (Admin seul).
+- **Six sections**, dans cet ordre : **Pilotage** (tous), **Pratiques** (tous, les
+  8 pratiques ITIL seulement), **Projets** (tous), **Conformité & réglementation** (tous),
+  **Paramétrage** (Manager, Admin) et **Administration** (Admin seul).
+- **Projets** = la conduite des projets de la DSI ([gestion de projet](processus/gestion-de-projet.md)) :
+  une démarche bornée dans le temps, pas une pratique de service ; la mettre à part garde
+  aux Pratiques l'ordre du cycle de vie du service.
 - **Conformité & réglementation** = les **obligations réglementaires** qui ne relèvent
   pas d'une pratique ITIL (NIS 2, déclarations réglementaires…). Les mêler aux pratiques
   surchargerait la liste et brouillerait l'ordre du cycle de vie. Un futur module
   réglementaire y déclare `group: 'compliance'` dans le registre.
-- **Sections repliables** : Pratiques, Conformité & réglementation, Paramétrage et
+- **Sections repliables** : Pratiques, Projets, Conformité & réglementation, Paramétrage et
   Administration ont un titre-bouton (`aria-expanded`, chevron) ; Pilotage ne se replie
   pas. Le choix est mémorisé dans le navigateur (`localStorage`, clé
   `s-aloha-nav-collapsed` ; confort seulement, sans échec si le stockage est bloqué) et
@@ -222,6 +229,21 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | [Connaissances](processus/gestion-des-connaissances.md) | Base de connaissances, avec le bloc « Chercher d'abord » (recherche hybride) en tête du registre | Tous | KB-04, RAG-05 | ✅ |
 | | Brouillons à publier | Manager, Admin | KB-21 | 🔜 |
 | [Amélioration](processus/amelioration-continue.md) | Registre d'amélioration | Tous | CSI-01 | ✅ |
+
+### Projets
+
+Section ouverte à **tous les rôles**, repère **vert** ; modules déclarés `group: 'projects'`.
+
+| Module | Sous-entrée | Visible par | Règle | Statut |
+|---|---|---|---|---|
+| [Projets](processus/gestion-de-projet.md) (« Agile, cycle en V, PRINCE2 ») | Registre des projets | Tous | PRJ-01 | ✅ |
+
+Fiche d'un projet : **Informations** (avec la synthèse PRJ-30 à PRJ-33, et le choix des
+composants pour un projet hybride), puis un onglet par **composant actif** — Étapes, Phases,
+Jalons, Livrables, Backlog, Sprints (et burndown), Tableau, Business case et tolérances,
+Risques, Incidents projet — puis **Liens** et **Historique**. Un composant inactif n'a pas
+d'onglet (PRJ-03). Le bouton de validation de fin d'étape n'apparaît que sur l'étape
+courante (PRJ-21).
 
 ### Conformité & réglementation
 
@@ -273,9 +295,9 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 | Index de recherche | État du service d'embeddings et de l'index par source, reconstruction ; avis ambre si le service est injoignable | [RAG-08](recherche.md) | ✅ |
 
 « Index de recherche » est la **première entrée réelle** de la section : un Admin voit
-désormais les cinq sections (Pilotage, Pratiques, Conformité & réglementation,
-Paramétrage, Administration), un Manager trois (Pilotage, Pratiques, Conformité &
-réglementation), tant qu'aucune entrée de Paramétrage ne lui est ouverte.
+désormais les six sections (Pilotage, Pratiques, Projets, Conformité & réglementation,
+Paramétrage, Administration), un Manager quatre (Pilotage, Pratiques, Projets,
+Conformité & réglementation), tant qu'aucune entrée de Paramétrage ne lui est ouverte.
 
 ### Onglets communs des fiches
 
@@ -342,10 +364,12 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 - **Angles droits** : aucun `border-radius`.
 - **Police Jost** (Google Fonts), repli `system-ui`.
 - **Sidebar marine** de 272 px en dégradé, toujours sombre, en sections : *Pilotage*
-  (Console, Reporting), *Pratiques* (les pratiques ITIL), *Conformité & réglementation*,
+  (Console, Reporting), *Pratiques* (les pratiques ITIL), *Projets*, *Conformité &
+  réglementation*,
   puis *Paramétrage* et *Administration* selon le rôle (§ Navigation cible).
 - **Repères de section** : un point de couleur devant le titre distingue les sections qui
-  ne sont pas des pratiques — **violet** pour Conformité & réglementation
+  ne sont pas des pratiques — **vert** pour Projets (`.nav-section.projects`,
+  `--accent-emerald`), **violet** pour Conformité & réglementation
   (`.nav-section.compliance`, `--accent-violet`), **ambre** pour Administration
   (`.nav-section.admin`, `--accent-amber`).
 - **Canevas à points** (`.bg-canvas`) : grille de points fine et lueurs de marque en coin,

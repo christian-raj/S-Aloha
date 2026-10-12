@@ -27,6 +27,9 @@
   --accent-red: #c5350a;        --accent-red-soft: #fbe9e3;
   --accent-amber: #b1650a;      --accent-amber-soft: #fbf0df;
   --accent-violet: #94406b;     --accent-violet-soft: #f6ebf0;
+  /* Graphiques (burndown) : couleurs validées par le guide de visualisation, en clair et en sombre. */
+  --chart-series: #2461ac;
+  --chart-reference: #8994ac;
 
   --shadow-sm: 0 1px 2px rgb(11 21 48 / 0.06);
   --shadow-md: 0 4px 12px rgb(11 21 48 / 0.08);
@@ -92,6 +95,8 @@
   --accent-red: #ff8a65;        --accent-red-soft: #2b1610;
   --accent-amber: #f5b04d;      --accent-amber-soft: #2a1f0d;
   --accent-violet: #d896b8;     --accent-violet-soft: #241521;
+  --chart-series: #5596dc;        /* bleu ramené dans la bande de luminosité d'un tracé sombre */
+  --chart-reference: #5c6884;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 16px rgb(0 0 0 / 0.4);
@@ -183,6 +188,9 @@ h3 { font-size: var(--fs-md); font-weight: 600; letter-spacing: -0.01em; }
    confondre avec une pratique au premier coup d'œil. */
 .nav-section.admin { color: rgb(253 230 138 / .5); }
 .nav-section.admin .dot { background: color-mix(in srgb, var(--accent-amber) 70%, transparent); }
+/* Projets : repère émeraude, distinct des pratiques et de la conformité. */
+.nav-section.projects { color: rgb(167 243 208 / .5); }
+.nav-section.projects .dot { background: color-mix(in srgb, var(--accent-emerald) 70%, transparent); }
 /* Conformité & réglementation : obligations hors ITIL (NIS 2, RGPD…) — repère violet. */
 .nav-section.compliance { color: rgb(233 213 255 / .5); }
 .nav-section.compliance .dot { background: color-mix(in srgb, var(--accent-violet) 75%, transparent); }
@@ -536,6 +544,43 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--accent-blue
 .search-hits { list-style: none; display: grid; gap: 12px; }
 .search-hits li { padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); }
 .search-hits li:last-child { border-bottom: none; padding-bottom: 0; }
+
+/* ---- Graphique burndown (guide de visualisation : traits 2 px, grille fine, réticule) ---- */
+.burndown { margin: 0; max-width: 760px; }   /* au-delà, le texte du graphique grossirait avec lui */
+.chart-legend { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key { display: inline-block; width: 16px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 6px; }
+.key.series { border-color: var(--chart-series); }
+.key.reference { border-color: var(--chart-reference); border-top-style: dashed; }
+.chart-wrap { position: relative; }
+.chart-wrap svg { width: 100%; height: auto; display: block; }
+.burndown .grid { stroke: var(--border-subtle); stroke-width: 1; }
+.burndown .tick { fill: var(--text-tertiary); font-size: 11px; }
+.burndown .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.burndown .line.series { stroke: var(--chart-series); }
+.burndown .line.reference { stroke: var(--chart-reference); stroke-dasharray: 5 4; }
+.burndown .end-dot { fill: var(--chart-series); stroke: var(--bg-surface); stroke-width: 2; }
+.burndown .end-label { fill: var(--text-primary); font-size: 12px; font-weight: 600; }
+.burndown .crosshair { stroke: var(--border-strong); stroke-width: 1; }
+.chart-tip {
+  position: absolute; top: 4px; transform: translateX(-50%); pointer-events: none; white-space: nowrap;
+  background: var(--bg-surface-raised); border: 1px solid var(--border-default); box-shadow: var(--shadow-md);
+  padding: 6px 10px; font-size: 12px; color: var(--text-primary);
+}
+
+/* ---- Tableau Kanban d'un projet ---- */
+.board { display: grid; grid-template-columns: repeat(4, minmax(200px, 1fr)); gap: 12px; overflow-x: auto; }
+.board-col { background: var(--bg-surface-hover); border: 1px solid var(--border-default); padding: 10px; min-height: 160px; }
+.board-col.over { outline: 2px dashed var(--accent-blue); outline-offset: -4px; }
+.board-col h4 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-tertiary); margin-bottom: 8px; }
+.board-card { background: var(--bg-surface); border: 1px solid var(--border-default); padding: 8px 10px; margin-bottom: 8px; cursor: grab; }
+.board-card:focus-within { outline: 2px solid var(--accent-blue); }
+.board-card select { margin-top: 6px; padding: 4px 6px; font-size: 12.5px; }
+.component-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.component-choice { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; color: var(--text-primary); }
+.component-choice input { width: auto; margin-top: 3px; }
+.component-choice small { display: block; font-size: 12px; }
+.part-form { border: 1px solid var(--border-default); padding: 12px; margin-bottom: 12px; background: var(--bg-surface-hover); }
 
 /* ---- Sélecteur RACI ---- */
 .raci-pick { position: relative; }

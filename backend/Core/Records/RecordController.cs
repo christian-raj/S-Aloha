@@ -32,6 +32,14 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     protected abstract string[] Statuses { get; }
     /// <summary>Référentiel : création et modification réservées aux gestionnaires.</summary>
     protected virtual bool ManagerOnly => false;
+    /// <summary>Droit de créer : par défaut, tous les rôles, ou les gestionnaires si <see cref="ManagerOnly"/>.</summary>
+    protected virtual bool CanCreate() => !ManagerOnly || IsManager;
+    /// <summary>
+    /// Droit de modifier cet enregistrement, évalué sur les valeurs enregistrées
+    /// (avant la recopie du DTO) : un projet se modifie par son chef de projet,
+    /// qui n'est pas forcément gestionnaire.
+    /// </summary>
+    protected virtual bool CanEdit(T e) => !ManagerOnly || IsManager;
 
     /// <summary>Recopie les champs propres au processus : message d'erreur (400) ou null.</summary>
     protected abstract string? Apply(T e, TDto dto, bool creating);
@@ -77,6 +85,8 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     protected virtual string? StatusAfterEdit(T e, TDto dto) => null;
     /// <summary>Effets d'un changement de statut (horodatages) ; <c>from</c> vide à la création.</summary>
     protected virtual void OnStatusChanged(T e, string from) { }
+    /// <summary>Après la création (référence attribuée, enregistré) : éléments dépendants à créer.</summary>
+    protected virtual Task OnCreatedAsync(T e) => Task.CompletedTask;
     protected virtual IQueryable<T> Filter(IQueryable<T> q) => q;
     protected virtual IQueryable<T> Search(IQueryable<T> q, string key) =>
         q.Where(x => x.Title.ToLower().Contains(key) || x.Reference.ToLower().Contains(key));
@@ -113,7 +123,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     [HttpPost]
     public async Task<IActionResult> Create(TDto dto)
     {
-        if (ManagerOnly && !IsManager) return Forbid();
+        if (!CanCreate()) return Forbid();
         var probe = new T();
         var error = Fill(probe, dto, true) ?? await ValidateAsync(probe)
             ?? (StatusChosenAtCreation ? Allowed.Check("Statut", dto.Status, Statuses, optional: true) : null);
@@ -134,6 +144,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
             OnStatusChanged(x, "");
             return x;
         });
+        await OnCreatedAsync(e);
         return CreatedAtAction(nameof(Get), new { id = e.Id }, e);
     }
 
@@ -142,7 +153,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     {
         var e = await db.Set<T>().FindAsync(id);
         if (e is null) return NotFound();
-        if (ManagerOnly && !IsManager) return Forbid();
+        if (!CanEdit(e)) return Forbid();
         var demoted = IsManager ? null : StatusAfterEdit(e, dto);
         var error = Fill(e, dto, false) ?? await ValidateAsync(e);
         if (error is not null) return BadRequest(new { message = error });

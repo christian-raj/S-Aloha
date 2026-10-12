@@ -26,6 +26,8 @@ import Articles from './modules/knowledge-management/pages/Articles'
 import ArticleDetail from './modules/knowledge-management/pages/ArticleDetail'
 import Improvements from './modules/continual-improvement/pages/Improvements'
 import ImprovementDetail from './modules/continual-improvement/pages/ImprovementDetail'
+import Projects from './modules/project-management/pages/Projects'
+import ProjectDetail from './modules/project-management/pages/ProjectDetail'
 import Assessments from './modules/compliance-assessment/pages/Assessments'
 import AssessmentDetail from './modules/compliance-assessment/pages/AssessmentDetail'
 import ReferentialSettings from './modules/compliance-assessment/pages/ReferentialSettings'
@@ -72,6 +74,9 @@ export default function App() {
         {/* Pratique — Amélioration continue */}
         <Route path="improvements" element={<Improvements />} />
         <Route path="improvements/:id" element={<ImprovementDetail />} />
+        {/* Projets — la méthode active les composants (Scrum, Kanban, cycle en V, PRINCE2, hybride) */}
+        <Route path="projects" element={<Projects />} />
+        <Route path="projects/:id" element={<ProjectDetail />} />
         {/* Conformité & réglementation — NIS 2 (évaluation au ReCyF) */}
         <Route path="assessments" element={<Assessments />} />
         <Route path="assessments/:id" element={<AssessmentDetail />} />
