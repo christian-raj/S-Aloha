@@ -11,20 +11,20 @@
 
 | Pratique | Préfixe | ✅ | 🔜 lot 1 | 🔜 lot 2 | 🔜 lot 3 |
 |---|---|---|---|---|---|
-| [Socle commun](../regles-metier.md) | SOC | 11 | 4 | 9 | 3 |
-| [Gestion des problèmes](gestion-des-problemes.md) | PRB | 10 | 10 | 9 | 1 |
-| [Gestion des incidents](gestion-des-incidents.md) | INC | 6 | 5 | 18 | 2 |
-| [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 5 | 3 | 9 | 4 |
-| [Habilitation des changements](habilitation-des-changements.md) | CHG | 10 | 4 | 12 | 1 |
-| [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 7 | 6 | 5 | 2 |
-| [Gestion des niveaux de service](gestion-des-niveaux-de-service.md) | SLM | 3 | 3 | 9 | 1 |
-| [Gestion des connaissances](gestion-des-connaissances.md) | KB | 5 | 2 | 6 | 3 |
-| [Amélioration continue](amelioration-continue.md) | CSI | 5 | 4 | 6 | 1 |
-| [Conformité NIS 2](conformite-nis2.md) | NIS | 14 | 1 | 6 | 1 |
+| [Socle commun](../regles-metier.md) | SOC | 18 | 0 | 7 | 2 |
+| [Gestion des problèmes](gestion-des-problemes.md) | PRB | 20 | 0 | 9 | 1 |
+| [Gestion des incidents](gestion-des-incidents.md) | INC | 14 | 0 | 16 | 2 |
+| [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 8 | 0 | 9 | 4 |
+| [Habilitation des changements](habilitation-des-changements.md) | CHG | 14 | 0 | 12 | 1 |
+| [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 13 | 0 | 5 | 2 |
+| [Gestion des niveaux de service](gestion-des-niveaux-de-service.md) | SLM | 6 | 0 | 9 | 1 |
+| [Gestion des connaissances](gestion-des-connaissances.md) | KB | 6 | 1 | 6 | 3 |
+| [Amélioration continue](amelioration-continue.md) | CSI | 9 | 0 | 6 | 1 |
+| [Conformité NIS 2](conformite-nis2.md) | NIS | 15 | 1 | 6 | 1 |
 | [Déclarations réglementaires](declarations-reglementaires.md) | DRG | 0 | 0 | 11 | 1 |
 | [Gestion de projet](gestion-de-projet.md) | PRJ | 21 | 0 | 2 | 0 |
 
-*Comptes au 2026-10-07, sur les tableaux de règles (hors indicateurs).*
+*Comptes au 2026-10-12, sur les tableaux de règles (hors indicateurs), après l'étape 5 du lot 1. Restent en lot 1 : KB-10 et NIS-18.*
 
 ## Interface et navigation
 
