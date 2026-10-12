@@ -87,6 +87,8 @@ export const MODULES = [
   },
   // --- Conformité & réglementation ---
   {
+  // --- Conformité & réglementation ---
+  {
     // Évaluation de conformité NIS 2 au Référentiel Cyber France de l'ANSSI.
     // Les déclarations réglementaires (DRG) rejoindront ce groupe avec leur interface.
     id: 'compliance', group: 'compliance', label: 'NIS 2', description: 'Évaluations ReCyF (ANSSI)', status: 'active',

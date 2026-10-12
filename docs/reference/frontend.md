@@ -113,6 +113,7 @@ Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont r
 - `GROUPS` — les groupes de modules, dans l'ordre de la barre latérale : **Pratiques**
   (`id: 'practices'`, les pratiques ITIL), **Projets** (`id: 'projects'`, `tone: 'projects'`)
   et **Conformité & réglementation**
+  (`id: 'practices'`, les pratiques ITIL) et **Conformité & réglementation**
   (`id: 'compliance'`, `tone: 'compliance'`, obligations hors ITIL : NIS 2, et demain les
   déclarations réglementaires). Un groupe sans module visible n'est pas affiché ;
 - `MODULES` — les modules, dans l'ordre du cycle de vie pour les pratiques : `id`, `label`,
@@ -176,11 +177,15 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 - **Projets** = la conduite des projets de la DSI ([gestion de projet](processus/gestion-de-projet.md)) :
   une démarche bornée dans le temps, pas une pratique de service ; la mettre à part garde
   aux Pratiques l'ordre du cycle de vie du service.
+- **Cinq sections**, dans cet ordre : **Pilotage** (tous), **Pratiques** (tous, les
+  8 pratiques ITIL seulement), **Conformité & réglementation** (tous), **Paramétrage**
+  (Manager, Admin) et **Administration** (Admin seul).
 - **Conformité & réglementation** = les **obligations réglementaires** qui ne relèvent
   pas d'une pratique ITIL (NIS 2, déclarations réglementaires…). Les mêler aux pratiques
   surchargerait la liste et brouillerait l'ordre du cycle de vie. Un futur module
   réglementaire y déclare `group: 'compliance'` dans le registre.
 - **Sections repliables** : Pratiques, Projets, Conformité & réglementation, Paramétrage et
+- **Sections repliables** : Pratiques, Conformité & réglementation, Paramétrage et
   Administration ont un titre-bouton (`aria-expanded`, chevron) ; Pilotage ne se replie
   pas. Le choix est mémorisé dans le navigateur (`localStorage`, clé
   `s-aloha-nav-collapsed` ; confort seulement, sans échec si le stockage est bloqué) et
@@ -298,6 +303,9 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 désormais les six sections (Pilotage, Pratiques, Projets, Conformité & réglementation,
 Paramétrage, Administration), un Manager quatre (Pilotage, Pratiques, Projets,
 Conformité & réglementation), tant qu'aucune entrée de Paramétrage ne lui est ouverte.
+désormais les cinq sections (Pilotage, Pratiques, Conformité & réglementation,
+Paramétrage, Administration), un Manager trois (Pilotage, Pratiques, Conformité &
+réglementation), tant qu'aucune entrée de Paramétrage ne lui est ouverte.
 
 ### Onglets communs des fiches
 
@@ -370,6 +378,10 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 - **Repères de section** : un point de couleur devant le titre distingue les sections qui
   ne sont pas des pratiques — **vert** pour Projets (`.nav-section.projects`,
   `--accent-emerald`), **violet** pour Conformité & réglementation
+  (Console, Reporting), *Pratiques* (les pratiques ITIL), *Conformité & réglementation*,
+  puis *Paramétrage* et *Administration* selon le rôle (§ Navigation cible).
+- **Repères de section** : un point de couleur devant le titre distingue les sections qui
+  ne sont pas des pratiques — **violet** pour Conformité & réglementation
   (`.nav-section.compliance`, `--accent-violet`), **ambre** pour Administration
   (`.nav-section.admin`, `--accent-amber`).
 - **Canevas à points** (`.bg-canvas`) : grille de points fine et lueurs de marque en coin,

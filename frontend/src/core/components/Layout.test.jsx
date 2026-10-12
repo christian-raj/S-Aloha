@@ -72,6 +72,9 @@ describe('Sections Pilotage, Pratiques, Paramétrage, Administration', () => {
     ['User', ['Pilotage', 'Pratiques', 'Projets', 'Conformité & réglementation']],
     ['Manager', ['Pilotage', 'Pratiques', 'Projets', 'Conformité & réglementation', 'Paramétrage']],
     ['Admin', ['Pilotage', 'Pratiques', 'Projets', 'Conformité & réglementation', 'Paramétrage', 'Administration']],
+    ['User', ['Pilotage', 'Pratiques', 'Conformité & réglementation']],
+    ['Manager', ['Pilotage', 'Pratiques', 'Conformité & réglementation', 'Paramétrage']],
+    ['Admin', ['Pilotage', 'Pratiques', 'Conformité & réglementation', 'Paramétrage', 'Administration']],
   ])('un %s voit les sections %j', (r, expected) => {
     role = r
     renderAt('/')
