@@ -11,7 +11,7 @@ export const changeStatuses = [
 
 export const changeConfig = {
   title: 'Changements',
-  sub: 'Évaluer les risques, autoriser et planifier les changements pour qu\'ils réussissent (ITIL 4).',
+  sub: 'Évaluer les risques, autoriser et planifier les changements pour qu\'ils réussissent (ITIL).',
   api: api.changes, basePath: '/changes', linkType: 'change',
   createLabel: '+ Demander un changement', createTitle: 'Demande de changement',
   empty: 'Aucun changement enregistré.', ownerLabel: 'Sous ma responsabilité',

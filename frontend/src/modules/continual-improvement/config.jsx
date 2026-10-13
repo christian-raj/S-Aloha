@@ -11,7 +11,7 @@ export const STEPS = [
 // besoins par l'amélioration continue des produits, services et pratiques.
 export const improvementConfig = {
   title: 'Amélioration continue',
-  sub: 'Registre d\'amélioration continue : opportunités, valeur attendue, mesures et avancement selon le modèle ITIL 4 en 7 étapes.',
+  sub: 'Registre d\'amélioration continue : opportunités, valeur attendue, mesures et avancement selon le modèle ITIL en 7 étapes.',
   api: api.improvements, basePath: '/improvements', linkType: 'improvement',
   createLabel: '+ Proposer une amélioration', createTitle: 'Proposer une amélioration',
   empty: 'Aucune amélioration au registre.', ownerLabel: 'Que je porte',
