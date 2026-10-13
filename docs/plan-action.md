@@ -89,7 +89,7 @@ Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 [PER-01 à PER-12](reference/perimetres.md), [ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md),
 2026-10-13) terminées, NIS-18 aussi. RAG-10 (calibrage de la recherche) est **en attente**
 (décision du 2026-10-13) jusqu'à ce qu'un jeu de requêtes réelles soit disponible. **Itération en cours** : prérequis communs de la sortie du MVP — commentaires
-(SOC-24, fait le 2026-10-13) et notifications (SOC-21).
+(SOC-24, fait le 2026-10-13) et notifications (SOC-21 : événements déclenchés faits le 2026-10-13 ; restent les événements datés, par une tâche périodique).
 
 ### Sortie du MVP
 
@@ -101,7 +101,7 @@ règle à ✅ (README, produit, CHANGELOG dans la même PR).
 **Prérequis communs** : lot 1 terminé (étapes 4 à 6, périmètres compris) ✅ 2026-10-13, RAG-10
 en attente ;
 [SOC-24](reference/regles-metier.md#9-traçabilité-commentaires-administration) commentaires ✅ 2026-10-13 ;
-[SOC-21](reference/regles-metier.md#8-notifications) notifications.
+[SOC-21](reference/regles-metier.md#8-notifications) notifications — événements déclenchés par une action ✅ 2026-10-13 ; événements datés (échéances, retards, revues) à venir.
 
 | Pratique | Règles à ✅ (lot 1 restant, puis cœur de métier du lot 2) |
 |---|---|

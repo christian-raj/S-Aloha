@@ -14,6 +14,14 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Notifications dans l'application** (SOC-21, SOC-23) : cloche avec compteur des non lues ;
+  toute affectation notifie le nouveau responsable (ou son groupe) ; décisions attendues →
+  gestionnaires du périmètre (demande soumise, changement évalué, amélioration proposée,
+  article soumis, incident majeur) ; décisions rendues → demandeur (approbation, rejet,
+  autorisation, publication, validation, problème qualifié ou clos, incident résolu) ;
+  action corrective affectée → son R et son A. Jamais pour un enregistrement que le
+  destinataire ne voit pas, jamais à l'auteur de l'événement.
+
 - **Commentaires** (SOC-24) : onglet « Commentaires » sur chaque fiche ; un commentaire est
   public (lu par le demandeur) ou note de travail (lue et écrite par ceux qui traitent
   l'enregistrement, jamais par le demandeur qui n'est pas intervenant) ; retrait par l'auteur

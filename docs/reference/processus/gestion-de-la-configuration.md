@@ -112,7 +112,7 @@ CFG-10, lot 1)** : seules les transitions ci-dessous (SOC-05).
 |---|---|---|---|
 | CFG-20 | **Analyse d'impact d'un changement** : la fiche d'un changement montre, pour ses CI, la vue d'impact aval et les services touchés (CFG-21) | 🔜 | 2 |
 | CFG-21 | **Rattachement CI ↔ service** (F5) : un CI supporte un ou plusieurs services du catalogue ; la vue d'impact aval d'un CI liste les services touchés | 🔜 | 2 |
-| CFG-22 | Notifications (SOC-21) : CI passé Hors service → propriétaire et responsables des services touchés | 🔜 | 2 |
+| CFG-22 | Notifications (SOC-21) : CI passé Hors service → propriétaire et responsables des services touchés | ✅ (propriétaire) / 🔜 (responsables des services touchés, avec CFG-21) | |
 
 ## 7. Liens avec les autres pratiques
 

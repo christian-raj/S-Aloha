@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Links;
 using SAloha.Api.Core.Records;
+using SAloha.Api.Core.Notifications;
 
 namespace SAloha.Api.Modules.ChangeEnablement;
 
@@ -72,6 +73,17 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         if (status == "Clos" && e.Outcome is null)
             return "Renseigner le résultat (Réussi ou Échoué) avant de clore le changement.";
         return null;
+    }
+
+    // CHG-24 : changement évalué → autorité (gestionnaires) ; autorisation ou rejet → demandeur et responsable.
+    protected override void OnNotify(Change e, string? from, Notifier n)
+    {
+        if (from is null) return;
+        if (e.Status == "Évalué") n.ToManagers(e, LinkType, "Changement à autoriser");
+        var ev = e.Status switch { "Autorisé" => "Changement autorisé", "Rejeté" => "Changement rejeté", _ => null };
+        if (ev is null) return;
+        n.ToCreator(e, LinkType, ev);
+        n.ToOwner(e, LinkType, ev);
     }
 
     protected override void OnStatusChanged(Change e, string from)

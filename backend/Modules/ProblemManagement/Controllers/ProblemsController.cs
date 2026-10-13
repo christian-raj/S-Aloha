@@ -4,6 +4,7 @@ using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Itil;
 using SAloha.Api.Core.Links;
 using SAloha.Api.Core.Records;
+using SAloha.Api.Core.Notifications;
 
 namespace SAloha.Api.Modules.ProblemManagement;
 
@@ -79,6 +80,13 @@ public class ProblemsController(AppDbContext db) : RecordController<Problem, Pro
             default:
                 return null;
         }
+    }
+
+    // PRB-31 : problème qualifié ou clos → déclarant.
+    protected override void OnNotify(Problem p, string? from, Notifier n)
+    {
+        if (from == "Nouveau" && p.Status != "Clos") n.ToCreator(p, LinkType, "Problème qualifié");
+        if (from is not null && from != "" && p.Status == "Clos") n.ToCreator(p, LinkType, "Problème clos");
     }
 
     protected override void OnStatusChanged(Problem p, string from)

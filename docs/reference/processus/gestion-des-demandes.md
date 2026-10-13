@@ -131,7 +131,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | REQ-30 | Une demande est **en retard** si son échéance est passée et qu'elle n'est ni Satisfaite, ni Close, ni Rejetée, ni Annulée ; même règle de date que PRB-19 (en retard le lendemain) | 🔜 | 2 |
-| REQ-31 | Notifications (SOC-21) : soumission → approbateurs ; approbation ou rejet → demandeur ; affectation → responsable ; satisfaction → demandeur et bénéficiaire | 🔜 | 2 |
+| REQ-31 | Notifications (SOC-21) : soumission → approbateurs ; approbation ou rejet → demandeur ; affectation → responsable ; satisfaction → demandeur et bénéficiaire | ✅ | |
 | REQ-32 | **Enquête de satisfaction** à la clôture (note 1 à 5, commentaire), facultative | 🔜 | 3 |
 
 ## 7. Liens avec les autres pratiques

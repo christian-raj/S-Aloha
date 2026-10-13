@@ -122,6 +122,11 @@ export const api = {
     assign: (id, dto) => request(`/admin/perimeters/${id}/assignments`, { method: 'POST', body: JSON.stringify(dto) }),
     unassign: (assignmentId) => request('/admin/assignments/' + assignmentId, { method: 'DELETE' })
   },
+  notifications: {
+    list: () => request('/notifications'),
+    read: (id) => request(`/notifications/${id}/read`, { method: 'POST' }),
+    readAll: () => request('/notifications/read-all', { method: 'POST' })
+  },
   comments: {
     list: (type, id) => request(`/comments?type=${type}&id=${id}`),
     create: (dto) => request('/comments', { method: 'POST', body: JSON.stringify(dto) }),

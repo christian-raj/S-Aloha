@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
+using SAloha.Api.Core.Notifications;
 
 namespace SAloha.Api.Modules.ServiceConfigurationManagement;
 
@@ -23,6 +24,12 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
         e.CiType = dto.CiType!; e.Environment = dto.Environment!;
         e.Location = dto.Location ?? "";
         return null;
+    }
+
+    // CFG-22 : CI passé Hors service → propriétaire.
+    protected override void OnNotify(ConfigurationItem e, string? from, Notifier n)
+    {
+        if (from is not null && from != "" && e.Status == "Hors service") n.ToOwner(e, LinkType, "CI passé hors service");
     }
 
     // CFG-12 : retirer un CI est réservé aux gestionnaires.

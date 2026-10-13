@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
+using SAloha.Api.Core.Notifications;
 
 namespace SAloha.Api.Modules.ServiceRequestManagement;
 
@@ -38,6 +39,17 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         if (status == "Annulée" && !IsManager && !string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase))
             return "Seul le demandeur ou un gestionnaire peut annuler la demande.";
         return null;
+    }
+
+    // REQ-31 : soumission → approbateurs ; approbation, rejet, satisfaction → demandeur et bénéficiaire.
+    protected override void OnNotify(ServiceRequest e, string? from, Notifier n)
+    {
+        if (from == "") { n.ToManagers(e, LinkType, "Demande à approuver"); return; }
+        if (from is null) return;
+        var ev = e.Status switch { "Approuvée" => "Demande approuvée", "Rejetée" => "Demande rejetée", "Satisfaite" => "Demande satisfaite", _ => null };
+        if (ev is null) return;
+        n.ToCreator(e, LinkType, ev);
+        n.ToUser(e, LinkType, e.RequestedFor, ev);
     }
 
     protected override void OnStatusChanged(ServiceRequest e, string from)

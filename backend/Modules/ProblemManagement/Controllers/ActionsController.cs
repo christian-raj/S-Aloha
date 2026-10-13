@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Notifications;
 using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Records;
 
@@ -10,8 +11,20 @@ namespace SAloha.Api.Modules.ProblemManagement;
 
 [ApiController]
 [Authorize(Policy = "User")]
-public class ActionsController(AppDbContext db, PerimeterAccess access) : ControllerBase
+public class ActionsController(AppDbContext db, PerimeterAccess access, Notifier notify) : ControllerBase
 {
+    /// <summary>PRB-31 : action affectée → son R et son A (nouvelles affectations seulement).</summary>
+    private async Task NotifyAssigneesAsync(CorrectiveAction a, IEnumerable<RaciAssignment> before)
+    {
+        var problem = await db.Problems.AsNoTracking().FirstAsync(p => p.Id == a.ProblemId);
+        var ev = $"Action corrective affectée : {a.Title}";
+        foreach (var r in a.Raci.Where(r => r.Role is "R" or "A"
+                     && !before.Any(b => b.Role == r.Role && b.AssigneeType == r.AssigneeType
+                                         && string.Equals(b.AssigneeId, r.AssigneeId, StringComparison.OrdinalIgnoreCase))))
+            notify.ToPrincipal(problem, "problem", r.AssigneeType, r.AssigneeId, ev.Length > 200 ? ev[..200] : ev);
+        await notify.SaveAsync();
+    }
+
     private Task<int?> VisiblePerimeterAsync(int problemId) => ProblemScope.VisiblePerimeterAsync(db, access, problemId);
 
     /// <summary>Toutes les actions (suivi transverse), filtrables par responsable ou statut.</summary>
@@ -63,6 +76,7 @@ public class ActionsController(AppDbContext db, PerimeterAccess access) : Contro
         if (error is not null) return BadRequest(new { message = error });
         db.Actions.Add(action);
         await db.SaveChangesAsync();
+        await NotifyAssigneesAsync(action, []);
         return Ok(action);
     }
 
@@ -92,6 +106,7 @@ public class ActionsController(AppDbContext db, PerimeterAccess access) : Contro
             a.CompletedAt = dto.Status == "Terminée" ? DateTime.UtcNow : null;
             a.Status = dto.Status;
         }
+        var raciBefore = a.Raci.Select(r => new RaciAssignment { Role = r.Role, AssigneeType = r.AssigneeType, AssigneeId = r.AssigneeId }).ToList();
         db.RaciAssignments.RemoveRange(a.Raci);
         a.Raci = dto.Raci.Select(r => new RaciAssignment
         {
@@ -101,6 +116,7 @@ public class ActionsController(AppDbContext db, PerimeterAccess access) : Contro
         var error = LengthError(a);
         if (error is not null) return BadRequest(new { message = error });
         await db.SaveChangesAsync();
+        await NotifyAssigneesAsync(a, raciBefore);
         return Ok(a);
     }
 

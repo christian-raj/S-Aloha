@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
+using SAloha.Api.Core.Notifications;
 
 namespace SAloha.Api.Modules.KnowledgeManagement;
 
@@ -41,6 +42,12 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
                                  || (dto.Content ?? "") != e.Content || dto.ArticleType != e.ArticleType)
             ? "Brouillon" : null;
 
+    // KB-20 : publication → rédacteur (la soumission est notifiée par Submit).
+    protected override void OnNotify(KnowledgeArticle e, string? from, Notifier n)
+    {
+        if (from is not null && e.Status == "Publié") n.ToCreator(e, LinkType, "Article publié");
+    }
+
     protected override void OnStatusChanged(KnowledgeArticle e, string from)
     {
         if (e.Status == "Publié")
@@ -71,6 +78,9 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
         if (string.IsNullOrWhiteSpace(e.Content)) return BadRequest(new { message = "Rédiger le contenu avant de soumettre l'article." });
         e.SubmittedAt = DateTime.UtcNow; e.SubmittedBy = MyDisplay;
         await Db.SaveChangesAsync();
+        // KB-20 : brouillon soumis → gestionnaires.
+        Notify.ToManagers(e, LinkType, "Article soumis à publication");
+        await Notify.SaveAsync();
         return Ok(e);
     }
 
