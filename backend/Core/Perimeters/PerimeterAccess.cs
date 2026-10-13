@@ -21,6 +21,10 @@ public sealed class PerimeterScope(bool global, IReadOnlyDictionary<int, string>
     public IReadOnlyDictionary<int, string> Roles => roles;
     public bool Sees(int perimeterId) => global || roles.ContainsKey(perimeterId);
     public bool ManagerOn(int perimeterId) => global || roles.GetValueOrDefault(perimeterId) == "Manager";
+    /// <summary>Périmètres où l'utilisateur est gestionnaire (blocs de décision de la console, PER-09).</summary>
+    public IReadOnlyCollection<int> ManagedIds => roles.Where(r => r.Value == "Manager").Select(r => r.Key).ToList();
+    /// <summary>Extrémité de lien ou résultat de recherche visible : dans ses périmètres, ou partagé (PER-05, PER-08).</summary>
+    public bool Sees(Links.LinkTarget t) => t.Shared || Sees(t.PerimeterId);
 }
 
 public class PerimeterAccess(AppDbContext db, IHttpContextAccessor http)

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import usePerimeters from '../usePerimeters'
 import { api, getUser } from '../../api'
 import { ITEM_TYPES, hrefOf } from '../itemTypes'
 
@@ -72,8 +73,11 @@ function Group({ id, title, total, children }) {
 export default function Console() {
   const [c, setC] = useState(null)
   const [error, setError] = useState('')
+  const [perimeter, setPerimeter] = useState('')
+  const perimeters = usePerimeters()
   const nav = useNavigate()
-  useEffect(() => { api.console.get().then(setC).catch(e => setError(e.message)) }, [])
+  // PER-09 : la console couvre mes périmètres ; avec plusieurs, on peut n'en regarder qu'un.
+  useEffect(() => { api.console.get(perimeter).then(setC).catch(e => setError(e.message)) }, [perimeter])
   if (error) return <div className="error">{error}</div>
   if (!c) return <p className="muted">Chargement…</p>
 
@@ -111,6 +115,13 @@ export default function Console() {
         <p className="c-eyebrow">{today} · Console {role.label.toLowerCase()}</p>
         <h1 className="page-title">{firstName ? `Bonjour, ${firstName}` : 'Ma console'}</h1>
         <p className="page-sub">{role.intro}</p>
+        {perimeters.length > 1 && (
+          <label className="c-perimeter">Périmètre{' '}
+            <select value={perimeter} onChange={e => setPerimeter(e.target.value)}>
+              <option value="">Tous mes périmètres</option>
+              {perimeters.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </label>)}
       </header>
 
       <nav className="c-tiles" aria-label="Synthèse">

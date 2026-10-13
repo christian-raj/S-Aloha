@@ -33,11 +33,12 @@ export default function LinkedItems({ type, id, hint, refreshKey }) {
           <tbody>{items.map(l => (
             <tr key={l.linkId}>
               <td>{ITEM_TYPES[l.type]?.label ?? l.type}</td>
-              <td><Link to={hrefOf(l.type, l.id)}><b>{l.reference}</b></Link></td>
-              <td>{l.title}</td>
+              {/* PER-08 : un enregistrement d'un autre périmètre est signalé, ni ouvert ni délié. */}
+              <td>{l.hidden ? '—' : <Link to={hrefOf(l.type, l.id)}><b>{l.reference}</b></Link>}</td>
+              <td style={l.hidden ? { color: 'var(--muted)', fontStyle: 'italic' } : undefined}>{l.title}</td>
               <td>{l.status}</td>
               <td style={{ textAlign: 'right' }}>
-                <button className="btn ghost small" onClick={() => remove(l.linkId)} title="Retirer le lien">×</button>
+                {!l.hidden && <button className="btn ghost small" onClick={() => remove(l.linkId)} title="Retirer le lien">×</button>}
               </td>
             </tr>))}
           </tbody>

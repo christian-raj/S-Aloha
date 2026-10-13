@@ -121,7 +121,7 @@ export const api = {
     status: () => request('/search/status'),
     reindex: () => request('/search/reindex', { method: 'POST' })
   },
-  console: { get: () => request('/console') },
+  console: { get: (perimeter) => request('/console' + (perimeter ? '?perimeter=' + perimeter : '')) },
   directory: { search: (q) => request('/directory/search?q=' + encodeURIComponent(q)) },
   reports: {
     summary: () => request('/reports/summary'),

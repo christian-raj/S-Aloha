@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Modules.ChangeEnablement;
 using SAloha.Api.Modules.ComplianceAssessment;
 using SAloha.Api.Modules.IncidentManagement;
@@ -19,8 +20,11 @@ namespace SAloha.Api.Core.Pilotage;
 [ApiController]
 [Route("api/reports/dashboard")]
 [Authorize(Policy = "User")]
-public class DashboardController(AppDbContext db) : ControllerBase
+public class DashboardController(AppDbContext db, PerimeterAccess access) : ControllerBase
 {
+    private ReportScope _scope = null!;
+    private IQueryable<T> In<T>(IQueryable<T> q) where T : Records.Record => _scope.In(q);
+
     public record Filters(DateTime From, DateTime To, string? Service);
 
     private static Filters Read(DateTime? from, DateTime? to, string? service)
@@ -37,7 +41,7 @@ public class DashboardController(AppDbContext db) : ControllerBase
     private static readonly string[] OpenProjects = ["En cours", "Suspendu"];
 
     private async Task<List<Incident>> Incidents(Filters f) =>
-        (await db.Incidents.AsNoTracking().ToListAsync()).Where(i => InService(i.AffectedService, f)).ToList();
+        (await In(db.Incidents.AsNoTracking()).ToListAsync()).Where(i => InService(i.AffectedService, f)).ToList();
 
     /// <summary>REP-05 : état des tolérances d'un projet (même calcul que sa synthèse, PRJ-31/32).</summary>
     private static (string Time, string Cost) Tolerance(Project p)
@@ -54,16 +58,18 @@ public class DashboardController(AppDbContext db) : ControllerBase
 
     /// <summary>Onglet Synthèse globale (REP-01 à REP-06) et badges des onglets (REP-07).</summary>
     [HttpGet("overview")]
-    public async Task<IActionResult> Overview([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service)
+    public async Task<IActionResult> Overview([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service,
+        [FromQuery] int? perimeter)
     {
+        _scope = await ReportScope.ForAsync(access, perimeter);
         var f = Read(from, to, service);
         var now = DateTime.UtcNow;
         var incidents = await Incidents(f);
         var open = incidents.Where(i => !Incident.Done.Contains(i.Status)).ToList();
-        var problems = (await db.Problems.AsNoTracking().ToListAsync()).Where(p => InService(p.AffectedService, f)).ToList();
-        var changes = await db.Changes.AsNoTracking().ToListAsync();
-        var requests = await db.ServiceRequests.AsNoTracking().Where(r => r.CreatedAt >= f.From && r.CreatedAt < f.To).ToListAsync();
-        var projects = await db.Projects.AsNoTracking().Where(p => OpenProjects.Contains(p.Status)).ToListAsync();
+        var problems = (await In(db.Problems.AsNoTracking()).ToListAsync()).Where(p => InService(p.AffectedService, f)).ToList();
+        var changes = await In(db.Changes.AsNoTracking()).ToListAsync();
+        var requests = await In(db.ServiceRequests.AsNoTracking()).Where(r => r.CreatedAt >= f.From && r.CreatedAt < f.To).ToListAsync();
+        var projects = await In(db.Projects.AsNoTracking()).Where(p => OpenProjects.Contains(p.Status)).ToListAsync();
 
         // REP-01 : score de santé composé, formule affichée.
         var majorOpen = open.Count(i => i.IsMajor);
@@ -112,7 +118,7 @@ public class DashboardController(AppDbContext db) : ControllerBase
         });
 
         var rcaPending = await RcaPendingCount(problems);
-        var slaToReview = await db.Agreements.CountAsync(a => a.Status == "En vigueur" && a.ReviewDate < now.Date);
+        var slaToReview = await In(db.Agreements).CountAsync(a => a.Status == "En vigueur" && a.ReviewDate < now.Date);
         return Ok(new
         {
             Period = new { f.From, To = f.To.AddDays(-1) },
@@ -149,8 +155,10 @@ public class DashboardController(AppDbContext db) : ControllerBase
 
     /// <summary>Onglet Incidents (REP-10 à REP-15).</summary>
     [HttpGet("incidents")]
-    public async Task<IActionResult> IncidentsTab([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service)
+    public async Task<IActionResult> IncidentsTab([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service,
+        [FromQuery] int? perimeter)
     {
+        _scope = await ReportScope.ForAsync(access, perimeter);
         var f = Read(from, to, service);
         var now = DateTime.UtcNow;
         var all = await Incidents(f);
@@ -204,11 +212,13 @@ public class DashboardController(AppDbContext db) : ControllerBase
 
     /// <summary>Onglet Problèmes (REP-20 à REP-25).</summary>
     [HttpGet("problems")]
-    public async Task<IActionResult> ProblemsTab([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service)
+    public async Task<IActionResult> ProblemsTab([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service,
+        [FromQuery] int? perimeter)
     {
+        _scope = await ReportScope.ForAsync(access, perimeter);
         var f = Read(from, to, service);
         var today = DateTime.UtcNow.Date;
-        var problems = (await db.Problems.AsNoTracking().ToListAsync()).Where(p => InService(p.AffectedService, f)).ToList();
+        var problems = (await In(db.Problems.AsNoTracking()).ToListAsync()).Where(p => InService(p.AffectedService, f)).ToList();
         var ids = problems.Select(p => p.Id).ToHashSet();
         var links = await db.ItemLinks.AsNoTracking()
             .Where(l => (l.FromType == "problem" && l.ToType == "incident") || (l.FromType == "incident" && l.ToType == "problem")).ToListAsync();
@@ -261,14 +271,15 @@ public class DashboardController(AppDbContext db) : ControllerBase
 
     /// <summary>Onglet Changements & projets (REP-30 à REP-34).</summary>
     [HttpGet("changes-projects")]
-    public async Task<IActionResult> ChangesProjects([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    public async Task<IActionResult> ChangesProjects([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] int? perimeter)
     {
+        _scope = await ReportScope.ForAsync(access, perimeter);
         var f = Read(from, to, null);
         var today = DateTime.UtcNow.Date;
-        var changes = await db.Changes.AsNoTracking().ToListAsync();
+        var changes = await In(db.Changes.AsNoTracking()).ToListAsync();
         var period = changes.Where(c => c.CreatedAt >= f.From && c.CreatedAt < f.To).ToList();
         var outcomes = changes.Where(c => c.Outcome != null && c.ClosedAt >= f.From && c.ClosedAt < f.To).ToList();
-        var projects = await db.Projects.AsNoTracking().Where(p => OpenProjects.Contains(p.Status)).ToListAsync();
+        var projects = await In(db.Projects.AsNoTracking()).Where(p => OpenProjects.Contains(p.Status)).ToListAsync();
         var pids = projects.Select(p => p.Id).ToList();
         var items = await db.WorkItems.AsNoTracking().Where(w => pids.Contains(w.ProjectId)).ToListAsync();
         var phases = await db.ProjectPhases.AsNoTracking().Where(w => pids.Contains(w.ProjectId)).ToListAsync();
@@ -315,13 +326,15 @@ public class DashboardController(AppDbContext db) : ControllerBase
 
     /// <summary>Onglet Conformité & métriques (REP-40 à REP-43).</summary>
     [HttpGet("compliance")]
-    public async Task<IActionResult> Compliance([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service)
+    public async Task<IActionResult> Compliance([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service,
+        [FromQuery] int? perimeter)
     {
+        _scope = await ReportScope.ForAsync(access, perimeter);
         var f = Read(from, to, service);
         var today = DateTime.UtcNow.Date;
 
         // REP-40 : dernière évaluation NIS 2 validée — score, maturité, piliers (NIS-10 à NIS-12).
-        var last = await db.Assessments.AsNoTracking().Where(a => a.Status == "Validée")
+        var last = await In(db.Assessments.AsNoTracking()).Where(a => a.Status == "Validée")
             .OrderByDescending(a => a.ValidatedAt).FirstOrDefaultAsync();
         object? nis2 = null;
         if (last is not null)
@@ -348,18 +361,18 @@ public class DashboardController(AppDbContext db) : ControllerBase
             Service = g.Key, Resolved = g.Count(), WithinSla = g.Count(i => i.ResolvedAt <= i.ResolutionDueAt),
             Rate = Pct(g.Count(i => i.ResolvedAt <= i.ResolutionDueAt), g.Count())
         }).OrderBy(x => x.Rate);
-        var toReview = await db.Agreements.AsNoTracking().Include(a => a.Service)
+        var toReview = await In(db.Agreements.AsNoTracking()).Include(a => a.Service)
             .Where(a => a.Status == "En vigueur" && a.ReviewDate < today)
             .Select(a => new { a.Id, a.Reference, a.Title, Service = a.Service!.Title, a.ReviewDate }).ToListAsync();
 
         // REP-42 : amélioration continue ; REP-43 : connaissances.
-        var improvementsAll = await db.Improvements.AsNoTracking().ToListAsync();
-        var articles = await db.KnowledgeArticles.AsNoTracking().ToListAsync();
+        var improvementsAll = await In(db.Improvements.AsNoTracking()).ToListAsync();
+        var articles = await In(db.KnowledgeArticles.AsNoTracking()).ToListAsync();
         return Ok(new
         {
             Nis2 = nis2,
             // Évaluations non validées : signalées, sans score (seul un score validé engage).
-            Nis2Pending = await db.Assessments.AsNoTracking().Where(a => a.Status != "Validée")
+            Nis2Pending = await In(db.Assessments.AsNoTracking()).Where(a => a.Status != "Validée")
                 .OrderByDescending(a => a.CreatedAt).Select(a => new { a.Id, a.Reference, a.Title, a.Status }).ToListAsync(),
             Sla = new { ByService = sla, ToReview = toReview },
             Improvements = new

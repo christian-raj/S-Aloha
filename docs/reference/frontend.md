@@ -207,7 +207,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 
 | Entrée | Visible par | Règle | Statut |
 |---|---|---|---|
-| Ma console | Tous | [socle § 2](regles-metier.md#2-consoles-par-rôle) | ✅ |
+| Ma console (filtre « Périmètre » dès que l'on en a plusieurs, PER-09) | Tous | [socle § 2](regles-metier.md#2-consoles-par-rôle) | ✅ |
 | Reporting : tableau de bord à onglets (synthèse, incidents, problèmes, changements et projets, conformité), période, service, export CSV et PDF | Tous | [REP-01 à REP-43](reporting.md), [SOC-18, SOC-19](regles-metier.md#7-reporting) | ✅ |
 | Notifications : **cloche** dans l'en-tête avec compteur, pas une entrée de menu | Tous | [SOC-21](regles-metier.md#8-notifications) | 🔜 |
 
@@ -311,7 +311,7 @@ un onglet sans contenu reste visible avec un état vide explicite.
 |---|---|---|---|
 | Informations | Champs du § 3, actions de transition (§ 4) en boutons nommés par l'étape (« Prendre en charge », « Autoriser »…) | § 3 et § 4 de chaque pratique | ✅ (champs) / 🔜 (boutons de transition) |
 | Propre à la pratique | Analyse de cause racine et Actions correctives (problème), Relations et impact (CI), Accords (SLA) (service), Conflits (changement) | PRB-05, CFG-04, SLM-02, CHG-09 | ✅ |
-| Liens | Enregistrements reliés, toutes pratiques ; onglet dédié | SOC-12 | ✅ |
+| Liens | Enregistrements reliés, toutes pratiques ; onglet dédié ; un enregistrement d'un autre périmètre est listé masqué, sans lien ni retrait (PER-08) | SOC-12, PER-08 | ✅ |
 | Commentaires | Fil public / notes de travail | SOC-24 | 🔜 |
 | Pièces jointes | | SOC-25 | 🔜 |
 | Historique | Journal d'audit de l'enregistrement (`core/components/History.jsx`) ; un Admin voit aussi, dans la liste des statuts, les transitions hors graphe, marquées « transition forcée », avec motif obligatoire (`StatusField.jsx`) | SOC-20, SOC-05 | ✅ |

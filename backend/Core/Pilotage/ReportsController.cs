@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Records;
 using SAloha.Api.Modules.IncidentManagement;
 
@@ -10,26 +11,28 @@ namespace SAloha.Api.Core.Pilotage;
 [ApiController]
 [Route("api/reports")]
 [Authorize(Policy = "User")]
-public class ReportsController(AppDbContext db) : ControllerBase
+public class ReportsController(AppDbContext db, PerimeterAccess access) : ControllerBase
 {
     [HttpGet("summary")]
-    public async Task<IActionResult> Summary()
+    public async Task<IActionResult> Summary([FromQuery] int? perimeter)
     {
+        var scope = await ReportScope.ForAsync(access, perimeter);   // PER-09
         var today = DateTime.UtcNow.Date; // en retard à partir du lendemain de l'échéance (M6)
-        var problems = await db.Problems.AsNoTracking().ToListAsync();
-        var actions = await db.Actions.AsNoTracking().Include(a => a.Raci).ToListAsync();
+        var problems = await scope.In(db.Problems.AsNoTracking()).ToListAsync();
+        var problemIds = problems.Select(p => p.Id).ToList();
+        var actions = await db.Actions.AsNoTracking().Include(a => a.Raci).Where(a => problemIds.Contains(a.ProblemId)).ToListAsync();
 
         var closed = problems.Where(p => p.ClosedAt != null).ToList();
         double? mttrDays = closed.Count > 0
             ? Math.Round(closed.Average(p => (p.ClosedAt!.Value - p.CreatedAt).TotalDays), 1)
             : null;
 
-        var resolved = await db.Incidents.AsNoTracking().Where(i => i.ResolvedAt != null)
+        var resolved = await scope.In(db.Incidents.AsNoTracking()).Where(i => i.ResolvedAt != null)
             .Select(i => new { i.CreatedAt, i.ResolvedAt }).ToListAsync();
         double? incidentMttrHours = resolved.Count > 0
             ? Math.Round(resolved.Average(i => (i.ResolvedAt!.Value - i.CreatedAt).TotalHours), 1)
             : null;
-        var outcomes = await db.Changes.AsNoTracking().Where(c => c.Outcome != null)
+        var outcomes = await scope.In(db.Changes.AsNoTracking()).Where(c => c.Outcome != null)
             .Select(c => c.Outcome).ToListAsync();
         double? changeSuccessRate = outcomes.Count > 0
             ? Math.Round(100.0 * outcomes.Count(o => o == "Réussi") / outcomes.Count)
@@ -38,20 +41,20 @@ public class ReportsController(AppDbContext db) : ControllerBase
         // Volumétrie par processus, dans l'ordre du cycle de vie du service.
         var processes = new[]
         {
-            await Breakdown(db.Incidents, "Incidents"),
-            await Breakdown(db.ServiceRequests, "Demandes"),
-            await Breakdown(db.Changes, "Changements"),
-            await Breakdown(db.ConfigurationItems, "Configuration"),
-            await Breakdown(db.Agreements, "Niveaux de service (SLA)"),
-            await Breakdown(db.KnowledgeArticles, "Connaissances"),
-            await Breakdown(db.Improvements, "Amélioration continue"),
+            await Breakdown(scope.In(db.Incidents.AsNoTracking()), "Incidents"),
+            await Breakdown(scope.In(db.ServiceRequests.AsNoTracking()), "Demandes"),
+            await Breakdown(scope.In(db.Changes.AsNoTracking()), "Changements"),
+            await Breakdown(scope.In(db.ConfigurationItems.AsNoTracking()), "Configuration"),
+            await Breakdown(scope.In(db.Agreements.AsNoTracking()), "Niveaux de service (SLA)"),
+            await Breakdown(scope.In(db.KnowledgeArticles.AsNoTracking()), "Connaissances"),
+            await Breakdown(scope.In(db.Improvements.AsNoTracking()), "Amélioration continue"),
         };
 
         return Ok(new
         {
             IncidentMttrHours = incidentMttrHours,
             ChangeSuccessRate = changeSuccessRate,
-            MajorIncidentsOpen = await db.Incidents.CountAsync(i => i.IsMajor && !Incident.Done.Contains(i.Status)),
+            MajorIncidentsOpen = await scope.In(db.Incidents.AsNoTracking()).CountAsync(i => i.IsMajor && !Incident.Done.Contains(i.Status)),
             Processes = processes,
             ProblemsByStatus = problems.GroupBy(p => p.Status)
                 .Select(g => new { Status = g.Key, Count = g.Count() }),
@@ -71,15 +74,15 @@ public class ReportsController(AppDbContext db) : ControllerBase
             KnownErrors = problems.Count(p => p.Status == "Erreur connue"),
             TotalProblems = problems.Count,
             TotalActions = actions.Count,
-            TotalAnalyses = await db.Analyses.CountAsync(),
+            TotalAnalyses = await db.Analyses.CountAsync(a => problemIds.Contains(a.ProblemId)),
             Contributors = problems.Select(p => p.CreatedBy).Distinct().Count(),
             LastActivity = problems.Count > 0 ? problems.Max(p => p.UpdatedAt) : (DateTime?)null
         });
     }
 
-    private static async Task<object> Breakdown<T>(DbSet<T> set, string label) where T : Record
+    private static async Task<object> Breakdown<T>(IQueryable<T> set, string label) where T : Record
     {
-        var byStatus = await set.AsNoTracking().GroupBy(x => x.Status)
+        var byStatus = await set.GroupBy(x => x.Status)
             .Select(g => new { Status = g.Key, Count = g.Count() }).ToListAsync();
         return new { Process = label, Total = byStatus.Sum(s => s.Count), ByStatus = byStatus };
     }

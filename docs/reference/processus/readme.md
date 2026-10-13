@@ -125,8 +125,8 @@ périmètre, entrée Administration › Périmètres. Suppose l'étape 5 (groupe
 Décisions D1 à D4 acceptées le 2026-10-10 : [ADR-0014](../../decisions/adr-0014-perimetres-droits-scopes.md).
 Livraison en plusieurs PR : **modèle, reprise et API d'administration** (fait le 2026-10-12 :
 PER-01, PER-02, PER-10 à PER-12), **droits et visibilité des enregistrements** (PER-03 à
-PER-07, 2026-10-12), puis **liens, console, reporting et recherche** (PER-08, PER-09) et
-**écran d'administration**.
+PER-07, 2026-10-12), **liens, console, reporting et recherche** (PER-08, PER-09,
+2026-10-13), puis **écran d'administration**.
 
 ### Itération suivante
 

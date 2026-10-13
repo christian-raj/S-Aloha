@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../../api'
+import usePerimeters, { perimeterName } from '../usePerimeters'
 import Overview, { overviewCsv } from './reporting/Overview'
 import IncidentsTab, { incidentsCsv } from './reporting/IncidentsTab'
 import ProblemsTab, { problemsCsv } from './reporting/ProblemsTab'
@@ -43,8 +44,12 @@ export default function Reporting() {
   const tab = TABS.find(t => t.id === params.get('tab')) ?? TABS[0]
   const period = params.get('period') ?? '30'
   const service = params.get('service') ?? ''
+  const perimeter = params.get('perimeter') ?? ''
+  const perimeters = usePerimeters()
   const bounds = periodBounds(period, params.get('from'), params.get('to'))
-  const query = useMemo(() => ({ ...bounds, ...(service ? { service } : {}) }), [bounds.from, bounds.to, service])
+  // PER-09 : les indicateurs portent sur mes périmètres ; on peut n'en retenir qu'un.
+  const query = useMemo(() => ({ ...bounds, ...(service ? { service } : {}), ...(perimeter ? { perimeter } : {}) }),
+    [bounds.from, bounds.to, service, perimeter])
 
   const [services, setServices] = useState([])
   const [overview, setOverview] = useState(null)
@@ -86,7 +91,8 @@ export default function Reporting() {
   // la vue ne reçoit jamais celles de l'onglet précédent.
   const current = tab.id === 'overview' ? overview : data?.tab === tab.id ? data.value : null
   const exportCsv = () => downloadCsv(`s-aloha-${tab.id}-${bounds.from}-${bounds.to}.csv`, [
-    { title: `S-Aloha — ${tab.label}`, header: ['Période', 'Service'], rows: [[`${date(bounds.from)} – ${date(bounds.to)}`, tab.service ? service || 'Tous' : 'Sans objet']] },
+    { title: `S-Aloha — ${tab.label}`, header: ['Période', 'Service', 'Périmètre'], rows: [[`${date(bounds.from)} – ${date(bounds.to)}`, tab.service ? service || 'Tous' : 'Sans objet',
+      perimeter ? perimeterName(perimeters, Number(perimeter)) : 'Tous mes périmètres']] },
     ...tab.csv(current)])
   const badges = overview?.badges ?? {}
 
@@ -112,6 +118,12 @@ export default function Reporting() {
             {services.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </label>
+        {perimeters.length > 1 && <label>Périmètre
+          <select value={perimeter} onChange={e => set({ perimeter: e.target.value })}>
+            <option value="">Tous mes périmètres</option>
+            {perimeters.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </label>}
         <div className="report-export">
           <button className="btn ghost small" onClick={exportCsv} disabled={!current}>Exporter l'onglet (CSV / Excel)</button>
           <button className="btn small" onClick={exportPdf} disabled={!overview}>Rapport complet (PDF)</button>

@@ -768,3 +768,7 @@ table.compact td { padding: 9px 12px; font-size: var(--fs-sm); }
 .markdown pre code { background: none; border: 0; padding: 0; }
 .markdown blockquote { border-left: 3px solid var(--accent-blue); padding: 4px 12px; color: var(--text-secondary); }
 .markdown a { color: var(--accent-blue); }
+
+/* Console : filtre par périmètre (PER-09), sous la phrase d'accueil. */
+.c-perimeter { display: inline-flex; gap: 8px; align-items: center; font-size: var(--fs-sm); color: var(--text-secondary); margin-top: 8px; }
+.c-perimeter select { width: auto; }

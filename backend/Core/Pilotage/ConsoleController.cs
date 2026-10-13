@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Records;
 using SAloha.Api.Modules.ChangeEnablement;
 using SAloha.Api.Modules.ContinualImprovement;
@@ -18,12 +19,20 @@ namespace SAloha.Api.Core.Pilotage;
 [ApiController]
 [Route("api/console")]
 [Authorize(Policy = "User")]
-public class ConsoleController(AppDbContext db) : ControllerBase
+public class ConsoleController(AppDbContext db, PerimeterAccess access) : ControllerBase
 {
-    /// <summary>Console adaptée au rôle : User = mon activité, Manager/Admin = pilotage du processus.</summary>
+    /// <summary>
+    /// Console adaptée au rôle : User = mon activité, Manager/Admin = pilotage du processus.
+    /// PER-09 : mon activité se limite à mes périmètres, le pilotage aux périmètres dont je
+    /// suis gestionnaire ; l'Admin voit tout et peut filtrer par périmètre (<c>perimeter</c>).
+    /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get([FromQuery] int? perimeter)
     {
+        var scope = await access.GetAsync();
+        var all = scope.Global && perimeter is null;
+        var seen = (perimeter is { } only ? (scope.Sees(only) ? [only] : []) : scope.Ids).ToList();
+        var managed = (perimeter is { } one ? (scope.ManagerOn(one) ? [one] : []) : scope.ManagedIds).ToList();
         var me = User.Identity?.Name ?? "";
         // L'AD ignore la casse des identifiants : la comparaison aussi (M2,
         // revue du 2026-10-06). Couvre les données enregistrées avant que le
@@ -39,14 +48,14 @@ public class ConsoleController(AppDbContext db) : ControllerBase
 
         // --- Bloc personnel (tous les rôles) ---
         var myProblems = await db.Problems.AsNoTracking()
-            .Where(p => p.CreatedBy.ToLower() == meKey && p.Status != "Clos")
+            .Where(p => p.CreatedBy.ToLower() == meKey && p.Status != "Clos" && (all || seen.Contains(p.PerimeterId)))
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new { p.Id, p.Reference, p.Title, p.Status, p.Priority, p.CreatedAt })
             .Take(10).ToListAsync();
 
         var myActions = await db.Actions.AsNoTracking()
             .Include(a => a.Raci).Include(a => a.Problem)
-            .Where(a => a.Status != "Terminée" && a.Status != "Annulée"
+            .Where(a => a.Status != "Terminée" && a.Status != "Annulée" && (all || seen.Contains(a.Problem!.PerimeterId))
                         && a.Raci.Any(r => r.AssigneeType == "Group"
                             ? groups.Contains(r.AssigneeId.ToLower()) : r.AssigneeId.ToLower() == meKey))
             .OrderBy(a => a.DueDate)
@@ -62,35 +71,36 @@ public class ConsoleController(AppDbContext db) : ControllerBase
         // Enregistrements des autres processus dont je suis responsable (assigné, propriétaire).
         var myAssignments = new List<Item>();
         // PRB-21 : les problèmes dont je suis le gestionnaire.
-        myAssignments.AddRange(await Mine(db.Problems, "problem", meKey, groups, ["Résolu", "Clos"]));
-        myAssignments.AddRange(await Mine(db.Incidents, "incident", meKey, groups, Incident.Done));
-        myAssignments.AddRange(await Mine(db.ServiceRequests, "request", meKey, groups, ServiceRequest.Done));
-        myAssignments.AddRange(await Mine(db.Changes, "change", meKey, groups, Change.Done));
-        myAssignments.AddRange(await Mine(db.Improvements, "improvement", meKey, groups, Improvement.Done));
+        myAssignments.AddRange(await Mine(db.Problems, "problem", meKey, groups, ["Résolu", "Clos"], all, seen));
+        myAssignments.AddRange(await Mine(db.Incidents, "incident", meKey, groups, Incident.Done, all, seen));
+        myAssignments.AddRange(await Mine(db.ServiceRequests, "request", meKey, groups, ServiceRequest.Done, all, seen));
+        myAssignments.AddRange(await Mine(db.Changes, "change", meKey, groups, Change.Done, all, seen));
+        myAssignments.AddRange(await Mine(db.Improvements, "improvement", meKey, groups, Improvement.Done, all, seen));
 
         object? management = null;
-        if (role is "Manager" or "Admin")
+        // ADR-0014 D4 : le pilotage revient à qui est gestionnaire d'au moins un périmètre.
+        if (all || managed.Count > 0)
         {
             // --- Bloc pilotage (Manager / Admin) ---
             var toQualify = await db.Problems.AsNoTracking()
-                .Where(p => p.Status == "Nouveau").OrderBy(p => p.CreatedAt)
+                .Where(p => p.Status == "Nouveau" && (all || managed.Contains(p.PerimeterId))).OrderBy(p => p.CreatedAt)
                 .Select(p => new { p.Id, p.Reference, p.Title, p.Priority, p.CreatedAt, p.CreatedByDisplayName })
                 .ToListAsync();
 
             var inAnalysisNoRootCause = await db.Problems.AsNoTracking()
-                .Where(p => p.Status == "En analyse" && (p.RootCause == null || p.RootCause == ""))
+                .Where(p => p.Status == "En analyse" && (p.RootCause == null || p.RootCause == "") && (all || managed.Contains(p.PerimeterId)))
                 .Select(p => new { p.Id, p.Reference, p.Title, p.Priority, AnalysesCount = p.Analyses.Count })
                 .ToListAsync();
 
             var knownErrorsNoAction = await db.Problems.AsNoTracking()
-                .Where(p => p.Status == "Erreur connue" && !p.Actions.Any(a => a.Status != "Annulée"))
+                .Where(p => p.Status == "Erreur connue" && !p.Actions.Any(a => a.Status != "Annulée") && (all || managed.Contains(p.PerimeterId)))
                 .Select(p => new { p.Id, p.Reference, p.Title, p.Priority })
                 .ToListAsync();
 
             var overdue = await db.Actions.AsNoTracking()
                 .Include(a => a.Raci).Include(a => a.Problem)
                 .Where(a => a.Status != "Terminée" && a.Status != "Annulée"
-                            && a.DueDate != null && a.DueDate < today)
+                            && a.DueDate != null && a.DueDate < today && (all || managed.Contains(a.Problem!.PerimeterId)))
                 .Select(a => new
                 {
                     a.Id, a.Title, a.DueDate,
@@ -99,36 +109,36 @@ public class ConsoleController(AppDbContext db) : ControllerBase
                 }).ToListAsync();
 
             var majorIncidents = await db.Incidents.AsNoTracking()
-                .Where(i => i.IsMajor && !Incident.Done.Contains(i.Status))
+                .Where(i => i.IsMajor && !Incident.Done.Contains(i.Status) && (all || managed.Contains(i.PerimeterId)))
                 .Select(i => new Item("incident", i.Id, i.Reference, i.Title, i.Status)).ToListAsync();
 
             // Décisions de gestionnaire en attente : autoriser, approuver, valider.
             var decisions = new List<Item>();
-            decisions.AddRange(await InStatus(db.Changes, "change", "Demandé", "Évalué"));
-            decisions.AddRange(await InStatus(db.ServiceRequests, "request", "Soumise"));
-            decisions.AddRange(await InStatus(db.Improvements, "improvement", "Proposée"));
+            decisions.AddRange(await InStatus(db.Changes, "change", all, managed, "Demandé", "Évalué"));
+            decisions.AddRange(await InStatus(db.ServiceRequests, "request", all, managed, "Soumise"));
+            decisions.AddRange(await InStatus(db.Improvements, "improvement", all, managed, "Proposée"));
             // Connaissances : brouillons soumis à publication (KB-21), archivages demandés à la revue (KB-17).
             decisions.AddRange(await db.KnowledgeArticles.AsNoTracking()
-                .Where(a => a.Status == "Brouillon" && a.SubmittedAt != null).OrderBy(a => a.SubmittedAt)
+                .Where(a => a.Status == "Brouillon" && a.SubmittedAt != null && (all || managed.Contains(a.PerimeterId))).OrderBy(a => a.SubmittedAt)
                 .Select(a => new Item("article", a.Id, a.Reference, a.Title, "À publier")).ToListAsync());
             decisions.AddRange(await db.KnowledgeArticles.AsNoTracking()
-                .Where(a => a.Status == "Publié" && a.ArchiveRequestedAt != null).OrderBy(a => a.ArchiveRequestedAt)
+                .Where(a => a.Status == "Publié" && a.ArchiveRequestedAt != null && (all || managed.Contains(a.PerimeterId))).OrderBy(a => a.ArchiveRequestedAt)
                 .Select(a => new Item("article", a.Id, a.Reference, a.Title, "Archivage demandé")).ToListAsync());
 
             // Revues échues : articles publiés et SLA en vigueur dont la date de revue est passée.
             var reviewsDue = new List<Item>();
             reviewsDue.AddRange(await db.KnowledgeArticles.AsNoTracking()
-                .Where(a => a.Status == "Publié" && a.ReviewDate != null && a.ReviewDate < today)
+                .Where(a => a.Status == "Publié" && a.ReviewDate != null && a.ReviewDate < today && (all || managed.Contains(a.PerimeterId)))
                 .Select(a => new Item("article", a.Id, a.Reference, a.Title, a.Status)).ToListAsync());
             // KB-12 : article d'erreur connue dont le problème est clos « Corrigé » : à archiver.
             var fixedProblems = db.Problems.Where(p => p.Status == "Clos" && p.ClosureCode == "Corrigé").Select(p => p.Id);
             reviewsDue.AddRange(await db.KnowledgeArticles.AsNoTracking()
-                .Where(a => a.Status == "Publié" && a.ArticleType == "Erreur connue"
+                .Where(a => a.Status == "Publié" && a.ArticleType == "Erreur connue" && (all || managed.Contains(a.PerimeterId))
                             && db.ItemLinks.Any(l => (l.FromType == "article" && l.FromId == a.Id && l.ToType == "problem" && fixedProblems.Contains(l.ToId))
                                                   || (l.ToType == "article" && l.ToId == a.Id && l.FromType == "problem" && fixedProblems.Contains(l.FromId))))
                 .Select(a => new Item("article", a.Id, a.Reference, a.Title, "À archiver : problème corrigé")).ToListAsync());
             reviewsDue.AddRange(await db.Agreements.AsNoTracking()
-                .Where(a => a.Status == "En vigueur" && a.ReviewDate != null && a.ReviewDate < today)
+                .Where(a => a.Status == "En vigueur" && a.ReviewDate != null && a.ReviewDate < today && (all || managed.Contains(a.PerimeterId)))
                 .Select(a => new Item("agreement", a.Id, a.Reference, a.Title, a.Status)).ToListAsync());
 
             management = new { ToQualify = toQualify, InAnalysisNoRootCause = inAnalysisNoRootCause,
@@ -143,14 +153,15 @@ public class ConsoleController(AppDbContext db) : ControllerBase
     /// <summary>Ligne de console désignant un enregistrement d'un processus.</summary>
     public record Item(string Type, int Id, string Reference, string Title, string Status);
 
-    private static Task<List<Item>> Mine<T>(DbSet<T> set, string type, string meKey, List<string> groups, string[] done) where T : Record =>
+    private static Task<List<Item>> Mine<T>(DbSet<T> set, string type, string meKey, List<string> groups, string[] done,
+        bool all, List<int> seen) where T : Record =>
         set.AsNoTracking()
-            .Where(x => x.OwnerId != null && !done.Contains(x.Status)
+            .Where(x => x.OwnerId != null && !done.Contains(x.Status) && (all || seen.Contains(x.PerimeterId))
                         && (x.OwnerType == "Group" ? groups.Contains(x.OwnerId.ToLower()) : x.OwnerId.ToLower() == meKey))
             .OrderBy(x => x.CreatedAt)
             .Select(x => new Item(type, x.Id, x.Reference, x.Title, x.Status)).ToListAsync();
 
-    private static Task<List<Item>> InStatus<T>(DbSet<T> set, string type, params string[] statuses) where T : Record =>
-        set.AsNoTracking().Where(x => statuses.Contains(x.Status)).OrderBy(x => x.CreatedAt)
+    private static Task<List<Item>> InStatus<T>(DbSet<T> set, string type, bool all, List<int> managed, params string[] statuses) where T : Record =>
+        set.AsNoTracking().Where(x => statuses.Contains(x.Status) && (all || managed.Contains(x.PerimeterId))).OrderBy(x => x.CreatedAt)
             .Select(x => new Item(type, x.Id, x.Reference, x.Title, x.Status)).ToListAsync();
 }
