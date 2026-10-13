@@ -46,6 +46,7 @@ public class ProblemsController(AppDbContext db) : RecordController<Problem, Pro
         e.KnownErrorWorkaround = dto.KnownErrorWorkaround;
         e.RootCause = dto.RootCause;
         e.ClosureCode = string.IsNullOrEmpty(dto.ClosureCode) ? null : dto.ClosureCode;
+        e.ReopenReason = string.IsNullOrWhiteSpace(dto.ReopenReason) ? null : dto.ReopenReason.Trim();
         return null;
     }
 
@@ -57,6 +58,9 @@ public class ProblemsController(AppDbContext db) : RecordController<Problem, Pro
     protected override async Task<string?> CheckStatusAsync(Problem p, string target)
     {
         var changing = target != p.Status;
+        // PRB-10 : rouvrir un problème résolu ou clos exige un motif.
+        if (changing && target == "En analyse" && p.Status is "Résolu" or "Clos" && string.IsNullOrWhiteSpace(p.ReopenReason))
+            return "Motiver la réouverture du problème.";
         switch (target)
         {
             case "Erreur connue" when string.IsNullOrWhiteSpace(p.KnownErrorWorkaround):
@@ -99,6 +103,9 @@ public class ProblemsController(AppDbContext db) : RecordController<Problem, Pro
         else if (p.Status == "En analyse") p.ResolvedAt = null;
         // Une réouverture efface le code de clôture.
         if (from == "Clos") p.ClosureCode = null;
+        // PRB-10 : le motif vaut pour la réouverture en cours ; effacé à la résolution ou
+        // à la clôture suivante (l'historique le garde), une nouvelle réouverture en exige un.
+        if (p.Status is "Résolu" or "Clos") p.ReopenReason = null;
     }
 
     protected override IQueryable<Problem> WithDetails(IQueryable<Problem> q) =>

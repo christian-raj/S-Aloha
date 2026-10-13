@@ -148,7 +148,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | PUT `/api/problems/{id}` | Manager du périmètre | Qualification, statuts, cause racine, contournement, gestionnaire du problème ; transition forcée (Admin) | Modules/ProblemManagement (socle) |
 | DELETE `/api/problems/{id}` | Admin | Suppression | Modules/ProblemManagement |
 | GET/POST/PUT `/api/problems/{id}/analyses[...]` | User | Analyses RCA (DELETE : Manager) | Modules/ProblemManagement |
-| GET `/api/actions`, POST `/api/problems/{id}/actions`, PUT `/api/actions/{id}` | User | Actions + RACI (DELETE : Manager) | Modules/ProblemManagement |
+| GET `/api/actions`, POST `/api/problems/{id}/actions`, PUT `/api/actions/{id}`, POST `/{id}/request-approval`, PUT `/{id}/change` | User | Actions + RACI, approbation par l'A (PRB-25), changement du correctif (PRB-27) (DELETE : Manager) | Modules/ProblemManagement |
 | GET/POST/PUT `/api/incidents[/{id}]` | User | Incidents (DELETE : Admin) | Modules/IncidentManagement |
 | GET/POST/PUT `/api/requests[/{id}]` | User | Demandes ; Approuvée/Rejetée : Manager (DELETE : Admin) | Modules/ServiceRequestManagement |
 | GET/POST/PUT `/api/changes[/{id}]`, GET `/api/changes/schedule`, GET `/api/changes/{id}/conflicts` | User | Changements, calendrier et conflits ; Autorisé/Rejeté : Manager (DELETE : Admin) | Modules/ChangeEnablement |

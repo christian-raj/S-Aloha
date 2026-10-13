@@ -33,6 +33,7 @@ public class Problem : Record
     public string? RootCause { get; set; }                          // cause racine validée
     [MaxLength(30)] public string? ClosureCode { get; set; }        // code de clôture (PRB-13)
     public DateTime? ResolvedAt { get; set; }                       // entrée en Résolu (PRB-14)
+    public string? ReopenReason { get; set; }                       // motif de la dernière réouverture (PRB-10)
     public DateTime? ClosedAt { get; set; }
     public List<RcaAnalysis> Analyses { get; set; } = new();
     public List<CorrectiveAction> Actions { get; set; } = new();
@@ -61,6 +62,10 @@ public class CorrectiveAction
     [MaxLength(20)] public string Status { get; set; } = "À faire";  // À faire, En cours, Terminée, Annulée
     public DateTime? DueDate { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public DateTime? ApprovalRequestedAt { get; set; }              // approbation demandée à l'A (PRB-25)
+    [MaxLength(200)] public string? ApprovalRequestedBy { get; set; }
+    public int? ChangeId { get; set; }                              // changement qui met en œuvre le correctif (PRB-27)
+    [MaxLength(30)] public string? ChangeReference { get; set; }
     [MaxLength(100)] public string CreatedBy { get; set; } = "";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public List<RaciAssignment> Raci { get; set; } = new();

@@ -23,7 +23,8 @@ const CLOSURE_FROM = { 'Résolu': ['Corrigé'], 'Erreur connue': ['Erreur connue
 const LABELS = {
   title: 'Titre', description: 'Description', impact: 'Impact', urgency: 'Urgence', priority: 'Priorité',
   category: 'Catégorie', affectedService: 'Service affecté', knownErrorWorkaround: 'Contournement',
-  rootCause: 'Cause racine', closureCode: 'Code de clôture', ownerDisplayName: 'Gestionnaire du problème'
+  rootCause: 'Cause racine', closureCode: 'Code de clôture', ownerDisplayName: 'Gestionnaire du problème',
+  reopenReason: 'Motif de réouverture'
 }
 const OWNER = ownerField('Gestionnaire du problème')
 const METHODS = { FIVE_WHYS: '5 Pourquoi', ISHIKAWA: 'Ishikawa (6M)', FTA: 'Arbre des défaillances (FTA)' }
@@ -128,7 +129,7 @@ function Infos({ p, isManager, onSaved }) {
     title: p.title, description: p.description, status: p.status, impact: p.impact,
     urgency: p.urgency, category: p.category, affectedService: p.affectedService,
     knownErrorWorkaround: p.knownErrorWorkaround || '', rootCause: p.rootCause || '',
-    closureCode: p.closureCode || '',
+    closureCode: p.closureCode || '', reopenReason: p.reopenReason || '',
     ownerType: p.ownerType || '', ownerId: p.ownerId || '', ownerDisplayName: p.ownerDisplayName || ''
   })
   const [msg, setMsg] = useState('')
@@ -172,6 +173,12 @@ function Infos({ p, isManager, onSaved }) {
       <div className="field"><label>Cause racine validée</label>
         <textarea rows={2} value={f.rootCause} onChange={set('rootCause')} disabled={!isManager}
           placeholder="Renseignée à l'issue de l'analyse. Obligatoire pour résoudre." /></div>
+      {/* PRB-10 : rouvrir un problème résolu ou clos exige un motif ; il reste affiché jusqu'à la résolution suivante. */}
+      {((['Résolu', 'Clos'].includes(p.status) && f.status === 'En analyse') || p.reopenReason) && (
+        <div className="field"><label>Motif de réouverture{p.reopenReason ? '' : ' *'}</label>
+          <textarea rows={2} value={f.reopenReason} onChange={set('reopenReason')} disabled={!isManager}
+            placeholder="Récidive constatée, correctif inefficace…" /></div>
+      )}
       {f.status === 'Clos' && (
         <div className="field" style={{ maxWidth: 300 }}><label>Code de clôture *</label>
           <select value={f.closureCode} onChange={set('closureCode')} disabled={!isManager}>
@@ -240,6 +247,7 @@ function Rca({ p, onSaved }) {
 }
 
 function ActionsTab({ p, onSaved }) {
+  const nav = useNavigate()
   const [showForm, setShowForm] = useState(false)
   const [f, setF] = useState({ title: '', description: '', dueDate: '', raci: [] })
   const [msg, setMsg] = useState('')
@@ -252,6 +260,19 @@ function ActionsTab({ p, onSaved }) {
   const setStatus = (a, status) =>
     api.actions.update(a.id, { title: a.title, description: a.description, status, dueDate: a.dueDate, raci: a.raci })
       .then(onSaved).catch(e => setMsg(e.message))
+  // PRB-25 : le R demande à l'A d'approuver l'action ; seul l'A (ou un gestionnaire) la termine.
+  const askApproval = a => api.actions.requestApproval(a.id).then(onSaved).catch(e => setMsg(e.message))
+  // PRB-27 : le changement reprend le titre et la description de l'action, puis lui est rattaché (et relié au problème).
+  const createChange = async a => {
+    try {
+      const c = await api.changes.create({
+        title: a.title, changeType: 'Normal', risk: 'Moyen',
+        description: `${a.description ? a.description + '\n\n' : ''}Correctif de l'action « ${a.title} » du problème ${p.reference}.`
+      })
+      await api.actions.setChange(a.id, c.reference)
+      nav('/changes/' + c.id)
+    } catch (e) { setMsg(e.message) }
+  }
 
   return (
     <>
@@ -285,6 +306,8 @@ function ActionsTab({ p, onSaved }) {
           <p style={{ fontSize: 13, color: 'var(--muted)', margin: '6px 0' }}>
             {a.description} {a.dueDate && <> — Échéance : {new Date(a.dueDate).toLocaleDateString('fr-FR')}</>}
           </p>
+          {a.approvalRequestedAt && a.status === 'En cours' &&
+            <p style={{ fontSize: 13, margin: '0 0 6px' }}>⏳ Approbation demandée le {new Date(a.approvalRequestedAt).toLocaleDateString('fr-FR')} : l'approbateur (A) la déclare terminée.</p>}
           <div>
             {a.raci.map(r => (
               <span className="chip" key={r.id}>
@@ -292,6 +315,14 @@ function ActionsTab({ p, onSaved }) {
                 {r.assigneeType === 'Group' ? '👥' : '👤'} {r.assigneeDisplayName}
               </span>
             ))}
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            {a.status === 'En cours' && !a.approvalRequestedAt &&
+              <button className="btn ghost small" onClick={() => askApproval(a)}>Demander l'approbation</button>}
+            {a.changeReference
+              ? <span style={{ fontSize: 13 }}>Correctif : <Link to={'/changes/' + a.changeId}><b>{a.changeReference}</b></Link></span>
+              : !['Terminée', 'Annulée'].includes(a.status) &&
+                <button className="btn ghost small" onClick={() => createChange(a)}>Créer un changement</button>}
           </div>
         </div>
       ))}

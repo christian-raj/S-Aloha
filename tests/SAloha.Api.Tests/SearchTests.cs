@@ -124,7 +124,7 @@ public class SearchTests(ApiFixture api)
         object Problem(string status) => new
         {
             title = "Problème QW-ROUVERT", description = "d", status, impact = "Moyen", urgency = "Moyenne", category = "Test",
-            affectedService = "Test", knownErrorWorkaround = "Relancer le service", rootCause = "Fuite mémoire du service"
+            affectedService = "Test", knownErrorWorkaround = "Relancer le service", rootCause = "Fuite mémoire du service", reopenReason = "Réouverture motivée (PRB-10)"
         };
         await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("En analyse")));
         await Json(await manager.PutAsJsonAsync($"/api/problems/{pid}", Problem("Erreur connue")));

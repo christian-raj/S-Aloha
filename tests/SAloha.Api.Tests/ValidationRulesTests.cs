@@ -206,7 +206,7 @@ public class ValidationRulesTests(ApiFixture api)
         string? rootCause = null, string? closure = null) => new
     {
         title = "PRB", description = "d", status, impact, urgency = "Moyenne", category = "c", affectedService = "s",
-        knownErrorWorkaround = workaround, rootCause, closureCode = closure
+        knownErrorWorkaround = workaround, rootCause, closureCode = closure, reopenReason = "Réouverture motivée (PRB-10)"
     };
 
     private static object Action(string? status = null, string a = "lova.rabe", int approvers = 1) => new
