@@ -56,6 +56,15 @@ public class ImprovementLifecycleTests(ApiFixture api)
         Assert.Equal("Faible", low.GetProperty("priority").GetString());
         var mid = await Json(await m.PutAsJsonAsync(url, Ami("Automatiser les comptes", "Validée", value: 2, effort: 2)));
         Assert.Equal("Moyenne", mid.GetProperty("priority").GetString());
+
+        // Validée avant la règle (sans note) : elle reste modifiable.
+        await using (var db = api.Database())
+        {
+            var e = await db.Improvements.FirstAsync(x => x.Id == Id(a));
+            e.Value = null; e.Effort = null;
+            await db.SaveChangesAsync();
+        }
+        await Json(await m.PutAsJsonAsync(url, Ami("Automatiser les comptes (retitrée)", "Validée")));
     }
 
     [Fact]

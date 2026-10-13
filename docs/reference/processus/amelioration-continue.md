@@ -47,7 +47,7 @@ porteur AD, créateur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 | `DueDate` | date | | Échéance | ✅ |
 | `ValidatedBy`, `ValidatedAt`, `CompletedAt` | texte, date | auto | SOC-08 | ✅ |
 | `Source` | texte 20 | ✔ | Suggestion (défaut), Incident, Problème, SLA, Audit, Retour client ; l'enregistrement d'origine, s'il est donné à la proposition, est relié | ✅ CSI-10 |
-| `Value`, `Effort` | entier 1–3 | à la validation | Valeur métier, effort estimé ; la priorité en découle | ✅ CSI-12 |
+| `Value`, `Effort` | entier 1–3 | à la validation | Valeur métier, effort estimé ; la priorité en découle. Exigés à l'entrée dans Validée (une amélioration validée avant la règle reste modifiable) | ✅ CSI-12 |
 | `AbandonReason` | texte | à l'abandon | Motif | ✅ |
 | `FollowUpDate` | date | | Date de contrôle de la durabilité (étape 7) | 🔜 CSI-15 |
 

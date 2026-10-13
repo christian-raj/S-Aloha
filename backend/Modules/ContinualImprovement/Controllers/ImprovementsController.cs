@@ -66,8 +66,9 @@ public class ImprovementsController(AppDbContext db) : RecordController<Improvem
     {
         if (status is "En cours" or "Réalisée" && e.ValidatedAt is null)
             return "L'amélioration doit d'abord être validée par un gestionnaire.";
-        // CSI-12 : valider, c'est arbitrer — valeur et effort notés.
-        if (status == "Validée" && (e.Value is null || e.Effort is null))
+        // CSI-12 : valider, c'est arbitrer — valeur et effort notés. Contrôlé à l'entrée dans
+        // Validée seulement : une amélioration validée avant la règle reste modifiable.
+        if (status == "Validée" && e.Status != "Validée" && (e.Value is null || e.Effort is null))
             return "Noter la valeur et l'effort (1 à 3) pour valider : la priorité en découle.";
         // CSI-14 : une amélioration se mesure — valeur, point de départ et cible avant de l'engager.
         if (status is "Validée" or "En cours" or "Réalisée"
