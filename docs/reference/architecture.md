@@ -39,6 +39,7 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
 │   ├── Audit/                        # AuditEntry, AuditInterceptor (journal SOC-20), AuditController, ForcedTransition
 │   ├── Auth/                         # AuthController, LdapService, TokenService, AuthDtos
 │   ├── Data/                         # AppDbContext, References (XXX-AAAA-NNNN), DatabaseSchema + Migrations/
+│   ├── Comments/                     # Comment, CommentsController (fil de commentaires, SOC-24)
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)
 │   ├── Itil/                         # Priority (matrice impact × urgence → P1–P4)
 │   ├── Links/                        # ItemLink, registre ItemLinks, LinksController (liens inter-processus)
@@ -162,6 +163,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET/POST/PUT/DELETE `/api/projects/{id}/{phases,milestones,deliverables,sprints,workitems,risks,issues}[/{id}]`, POST `phases/{id}/approve`, GET `sprints/{id}/burndown` | User ; phases, jalons, sprints, suppressions, validations : chef de projet ou Manager | Composants du projet ; 400 si le composant n'est pas actif | Modules/ProjectManagement |
 | GET `/api/perimeters` | User | Périmètres en service (sélecteurs) | Core/Perimeters |
 | GET/POST/PUT `/api/admin/perimeters[/{id}]`, DELETE `/{id}` (douce), POST `/{id}/restore`, DELETE `/{id}/purge` ; GET/POST `/{id}/assignments`, DELETE `/api/admin/assignments/{id}` | Admin | Périmètres et affectations, compteurs par pratique ([PER-01, PER-02, PER-12](perimetres.md)) | Core/Perimeters |
+| GET `/api/comments?type=&id=`, POST `/api/comments`, DELETE `/api/comments/{id}` | User | Commentaires publics et notes de travail ([SOC-24](regles-metier.md#9-traçabilité-commentaires-administration)) ; retrait : auteur ou Admin | Core/Comments |
 | GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
 | GET `/api/audit?type=&id=` | User | Historique d'un enregistrement (journal d'audit, SOC-20) | Core/Audit |
 | PUT `…/{id}?force=true&reason=` | Admin | Transition forcée hors graphe, motif obligatoire et tracé (SOC-05) | Core/Audit, socle des pratiques et module Problèmes |

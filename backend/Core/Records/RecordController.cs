@@ -285,6 +285,8 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         if (e is null) return NotFound();
         db.Set<T>().Remove(e);
         ItemLinks.RemoveFor(db, LinkType, id);
+        // SOC-24 : ses commentaires partent avec lui.
+        db.Comments.RemoveRange(db.Comments.Where(c => c.TargetType == LinkType && c.TargetId == id));
         await db.SaveChangesAsync();
         return NoContent();
     }

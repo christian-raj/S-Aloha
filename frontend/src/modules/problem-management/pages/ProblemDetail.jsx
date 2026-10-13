@@ -10,6 +10,7 @@ import SimilarCases from '../../../core/components/SimilarCases'
 import useTransitions from '../../../core/useTransitions'
 import StatusField, { forceOptions } from '../../../core/components/StatusField'
 import History from '../../../core/components/History'
+import Comments from '../../../core/components/Comments'
 import RecordForm from '../../../core/components/RecordForm'
 import { ownerField } from '../../../core/fields'
 import usePerimeters, { perimeterName } from '../../../core/usePerimeters'
@@ -104,7 +105,7 @@ export default function ProblemDetail() {
           cible) : Informations → propres à la pratique → Liens. */}
       <div className="tabs" role="tablist">
         {[['infos', 'Informations'], ['rca', 'Analyse de cause racine'],
-          ['actions', `Actions correctives (${p.actions.length})`], ['links', 'Liens'], ['history', 'Historique']]
+          ['actions', `Actions correctives (${p.actions.length})`], ['links', 'Liens'], ['comments', 'Commentaires'], ['history', 'Historique']]
           .map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k}
             className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}
       </div>
@@ -112,6 +113,7 @@ export default function ProblemDetail() {
       {tab === 'infos' && <><Infos p={p} isManager={isManager} onSaved={load} /><KnownErrorArticle p={p} /><SimilarCases type="problem" id={p.id} /></>}
       {tab === 'rca' && <Rca p={p} onSaved={load} />}
       {tab === 'actions' && <ActionsTab p={p} onSaved={load} />}
+      {tab === 'comments' && <Comments type="problem" id={p.id} />}
       {tab === 'history' && <History type="problem" id={p.id} labels={LABELS} refreshKey={p.updatedAt} />}
       {tab === 'links' && <LinkedItems type="problem" id={p.id}
         hint="Incidents à l'origine, changement qui corrige, article d'erreur connue…" />}

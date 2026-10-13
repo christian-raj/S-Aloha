@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Audit;
+using SAloha.Api.Core.Comments;
 using SAloha.Api.Core.Links;
 using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Search;
@@ -21,6 +22,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     // Socle
     public DbSet<ItemLink> ItemLinks => Set<ItemLink>();
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
+    public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<SearchPassage> SearchPassages => Set<SearchPassage>();
     public DbSet<Perimeter> Perimeters => Set<Perimeter>();
     public DbSet<PerimeterAssignment> PerimeterAssignments => Set<PerimeterAssignment>();
@@ -137,6 +139,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<ItemLink>().HasIndex(l => new { l.FromType, l.FromId });
         b.Entity<ItemLink>().HasIndex(l => new { l.ToType, l.ToId });
         b.Entity<AuditEntry>().HasIndex(a => new { a.EntityType, a.EntityId });
+        b.Entity<Comment>().HasIndex(c => new { c.TargetType, c.TargetId });
         b.Entity<AuditEntry>().HasIndex(a => a.At);
     }
 
