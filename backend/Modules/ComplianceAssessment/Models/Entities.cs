@@ -52,6 +52,10 @@ public class Assessment : Record
     [MaxLength(30)] public string EntityCategory { get; set; } = Important;
     [MaxLength(200)] public string? ValidatedBy { get; set; }
     public DateTime? ValidatedAt { get; set; }
+    /// <summary>NIS-18 : version du référentiel évaluée.</summary>
+    [MaxLength(100)] public string ReferentialVersion { get; set; } = ReferentialStore.Version;
+    /// <summary>NIS-18 : exigences applicables figées à la validation (JSON) ; null tant que non validée.</summary>
+    [System.Text.Json.Serialization.JsonIgnore] public string? FrozenRequirementsJson { get; set; }
     public List<AssessmentResponse> Responses { get; set; } = new();
 
     public bool Applies(SecurityRequirement r) => EntityCategory == Essential ? r.ForEssential : r.ForImportant;

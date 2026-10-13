@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SAloha.Api.Core.Search;
@@ -42,6 +43,11 @@ public sealed class ApiFixture : IAsyncLifetime
                 s.AddSingleton<IEmbeddingClient, FakeEmbeddingClient>();
             }));
     }
+
+    /// <summary>Accès direct à la base, pour simuler ce que l'API ne fait pas (nouvelle version embarquée…).</summary>
+    public SAloha.Api.Core.Data.AppDbContext Database() =>
+        new(new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<SAloha.Api.Core.Data.AppDbContext>()
+            .UseNpgsql(_db.GetConnectionString()).Options);
 
     public HttpClient Client(string role = "Admin", string username = "hery.rakoto", params string[] groups)
     {

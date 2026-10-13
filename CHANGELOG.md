@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Conformité NIS 2 — version du référentiel** (NIS-18) : chaque évaluation enregistre la
+  version du ReCyF évaluée ; à la validation, ses exigences applicables sont figées, et une
+  nouvelle version embarquée ne change ni son questionnaire, ni son score, ni la synthèse du
+  reporting ; la rouvrir la réaligne sur la version en vigueur.
+
 - **Administration › Périmètres** (Admin) : liste des périmètres (supprimés grisés et
   restaurables), création, fiche avec renommage, enregistrements rattachés par pratique,
   affectations d'utilisateurs ou de groupes AD choisis dans l'annuaire (Manager ou User),

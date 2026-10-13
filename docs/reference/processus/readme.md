@@ -130,10 +130,9 @@ PER-07, 2026-10-12), **liens, console, reporting et recherche** (PER-08, PER-09,
 
 ### Itération suivante
 
-Étapes 4 à 6 terminées (2026-10-11 à 2026-10-13). Reste au lot 1 :
-[NIS-18](conformite-nis2.md) (version du référentiel figée dans une évaluation) et
-[RAG-10](../recherche.md) (calibrage de la recherche, qui attend un jeu de requêtes réelles de
-l'organisation). Viennent ensuite les prérequis communs de la sortie du MVP : commentaires
+Étapes 4 à 6 terminées (2026-10-11 à 2026-10-13), NIS-18 aussi (2026-10-13). Le lot 1 est
+terminé, sauf [RAG-10](../recherche.md) (calibrage de la recherche), **en attente** d'un jeu
+de requêtes réelles de l'organisation (décision du 2026-10-13). Itération en cours : les prérequis communs de la sortie du MVP : commentaires
 (SOC-24) et notifications (SOC-21) — [plan d'action](../../plan-action.md#sortie-du-mvp).
 
 ### Hors étapes

@@ -428,6 +428,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<string>("FrozenRequirementsJson")
+                        .HasColumnType("text");
+
                     b.Property<string>("OwnerDisplayName")
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
@@ -447,6 +450,11 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<string>("ReferentialVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Status")
                         .IsRequired()
