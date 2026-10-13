@@ -239,7 +239,7 @@ enregistrement retire ses notifications.
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| SOC-21 | Chaque événement listé au § 6 des documents de pratique notifie ses destinataires (responsable, groupe, demandeur, gestionnaires) dans l'application ; toute affectation notifie le nouveau responsable | ✅ (événements déclenchés par une action) / 🔜 (événements datés : échéances, retards, revues, J-1 — tâche périodique) | 2 |
+| SOC-21 | Chaque événement listé au § 6 des documents de pratique notifie ses destinataires (responsable, groupe, demandeur, gestionnaires) dans l'application ; toute affectation notifie le nouveau responsable | ✅ (événements déclenchés par une action ; événements datés relevés par une tâche périodique : SLA en risque ou dépassé, P1 ouvert, J-1 d'un changement, action en retard, revues échues, SLA expirant) | |
 | SOC-22 | Envoi par **courriel** des mêmes notifications, configurable par utilisateur (aucun, immédiat, résumé quotidien) | 🔜 | 3 |
 | SOC-23 | Une notification porte la référence, le titre, l'événement et un lien vers la fiche ; jamais de donnée au-delà de ce que le destinataire peut consulter (filtrée par ses périmètres à la lecture) | ✅ | |
 

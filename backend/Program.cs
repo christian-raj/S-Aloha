@@ -20,6 +20,8 @@ builder.Services.AddScoped<SearchIndexer>();
 builder.Services.AddScoped<HybridSearch>();
 builder.Services.AddScoped<SAloha.Api.Core.Perimeters.PerimeterAccess>();
 builder.Services.AddScoped<SAloha.Api.Core.Notifications.Notifier>();
+builder.Services.AddScoped<SAloha.Api.Core.Notifications.DatedEvents>();
+builder.Services.AddHostedService<SAloha.Api.Core.Notifications.DatedEventsWorker>();
 builder.Services.AddHostedService<IndexWorker>();
 
 builder.Services.AddHttpContextAccessor();

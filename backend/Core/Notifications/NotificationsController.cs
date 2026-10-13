@@ -61,6 +61,12 @@ public class NotificationsController(AppDbContext db, PerimeterAccess access) : 
         return NoContent();
     }
 
+    /// <summary>Relève tout de suite les événements datés (Admin ; la tâche périodique le fait seule).</summary>
+    [HttpPost("run")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> Run([FromServices] DatedEvents events) =>
+        Ok(new { Events = await events.RunAsync(DateTime.UtcNow) });
+
     [HttpPost("read-all")]
     public async Task<IActionResult> ReadAll()
     {
