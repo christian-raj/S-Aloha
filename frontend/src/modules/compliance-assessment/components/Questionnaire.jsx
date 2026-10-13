@@ -1,12 +1,45 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../../../api'
+import { hrefOf } from '../../../core/itemTypes'
 import { dateTimeFr } from '../../../core/fields'
 import { SCORE_LABELS } from '../config'
 
 const NA = 'na'
 const valueOf = (r) => (r.notApplicable ? NA : r.score ?? '')
 
-/** Une exigence : identifiant, mesures ISO, texte importé, réponse et justification. */
+/**
+ * NIS-08 : preuves d'une réponse — enregistrements désignés par leur référence
+ * (changement, article, CI…) ; pièces jointes à venir avec SOC-25.
+ */
+function Evidence({ assessmentId, req, readOnly }) {
+  const [items, setItems] = useState(req.evidence ?? [])
+  const [reference, setReference] = useState('')
+  const [error, setError] = useState('')
+  const add = () => api.assessments.addEvidence(assessmentId, req.id, reference.trim())
+    .then(x => { setItems(l => [...l, x]); setReference(''); setError('') }).catch(e => setError(e.message))
+  const remove = x => api.assessments.removeEvidence(assessmentId, x.id)
+    .then(() => setItems(l => l.filter(y => y.id !== x.id))).catch(e => setError(e.message))
+  if (readOnly && items.length === 0) return null
+  return (
+    <div style={{ marginTop: 6 }}>
+      {items.map(x => (
+        <span className="chip" key={x.id} title={x.title}>
+          <Link to={hrefOf(x.targetType, x.targetId)}>{x.reference}</Link>
+          {!readOnly && <button onClick={() => remove(x)} title="Retirer" aria-label={`Retirer la preuve ${x.reference}`}>×</button>}
+        </span>))}
+      {!readOnly && (
+        <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+          <input value={reference} onChange={e => setReference(e.target.value)} placeholder="Preuve : CHG-…, KB-…, CI-…"
+            aria-label={`Preuve ${req.code}`} onKeyDown={e => e.key === 'Enter' && reference.trim() && add()} />
+          <button className="btn ghost small" onClick={add} disabled={!reference.trim()}>Ajouter</button>
+        </div>)}
+      {error && <div className="error small" style={{ margin: '4px 0 0' }}>{error}</div>}
+    </div>
+  )
+}
+
+/** Une exigence : identifiant, mesures ISO, texte importé, réponse, justification et preuves. */
 function RequirementRow({ assessmentId, req, readOnly, onSaved }) {
   const [value, setValue] = useState(valueOf(req))
   const [justification, setJustification] = useState(req.justification)
@@ -45,6 +78,7 @@ function RequirementRow({ assessmentId, req, readOnly, onSaved }) {
           aria-label={`Justification ${req.code}`}
           onChange={e => setJustification(e.target.value)} onBlur={() => justification !== req.justification && save()} />
         {state.saved && <div className="muted small">{state.saved}</div>}
+        <Evidence assessmentId={assessmentId} req={req} readOnly={readOnly} />
       </td>
     </tr>
   )

@@ -52,6 +52,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SecurityRequirement> SecurityRequirements => Set<SecurityRequirement>();
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<AssessmentResponse> AssessmentResponses => Set<AssessmentResponse>();
+    public DbSet<AssessmentEvidence> AssessmentEvidences => Set<AssessmentEvidence>();
     // Gestion de projet
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectPhase> ProjectPhases => Set<ProjectPhase>();
@@ -102,6 +103,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<AssessmentResponse>().HasOne(r => r.Requirement).WithMany()
             .HasForeignKey(r => r.RequirementId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<AssessmentResponse>().HasIndex(r => new { r.AssessmentId, r.RequirementId }).IsUnique();
+        // NIS-08 : preuves supprimées avec l'évaluation ; une même preuve une fois par exigence.
+        b.Entity<AssessmentEvidence>().HasOne(x => x.Assessment).WithMany()
+            .HasForeignKey(x => x.AssessmentId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<AssessmentEvidence>().HasIndex(x => new { x.AssessmentId, x.RequirementId, x.TargetType, x.TargetId }).IsUnique();
 
         b.Entity<ConfigurationItem>().HasMany(c => c.Outgoing).WithOne(r => r.Source!)
             .HasForeignKey(r => r.SourceId).OnDelete(DeleteBehavior.Cascade);

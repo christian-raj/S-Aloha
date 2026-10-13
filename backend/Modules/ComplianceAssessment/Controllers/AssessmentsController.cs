@@ -94,6 +94,7 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
         var details = await Db.SecurityRequirements.AsNoTracking().ToDictionaryAsync(r => r.Id);
         var responses = await Db.AssessmentResponses.AsNoTracking()
             .Where(r => r.AssessmentId == id).ToDictionaryAsync(r => r.RequirementId);
+        var evidence = await EvidenceAsync(id);
 
         return Ok(new
         {
@@ -114,7 +115,8 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
                         {
                             r.Id, r.Code, d?.IsoControls, d?.Text,
                             resp?.Score, NotApplicable = resp?.NotApplicable ?? false,
-                            Justification = resp?.Justification ?? "", resp?.UpdatedBy, resp?.UpdatedAt
+                            Justification = resp?.Justification ?? "", resp?.UpdatedBy, resp?.UpdatedAt,
+                            Evidence = evidence.GetValueOrDefault(r.Id) ?? []
                         };
                     })
                 })
@@ -156,16 +158,7 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
     {
         var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (e is null || !await VisibleAsync(e)) return NotFound();
-        // NIS-18 : figées si l'évaluation est validée.
-        var requirements = await AssessmentReferential.RequirementsAsync(Db, e);
-        var responses = await Db.AssessmentResponses.AsNoTracking()
-            .Where(r => r.AssessmentId == id).ToDictionaryAsync(r => r.RequirementId);
-
-        var items = requirements.Select(r =>
-        {
-            responses.TryGetValue(r.Id, out var resp);
-            return new { Req = r, Score = resp is { NotApplicable: false } ? resp.Score : null, Na = resp?.NotApplicable ?? false };
-        }).ToList();
+        var items = await ItemsAsync(e);
 
         var actions = await GapActionsAsync(id);
         var global = Scoring.Percent(items.Select(i => i.Score));
@@ -241,6 +234,7 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
         var responses = await Db.AssessmentResponses.AsNoTracking()
             .Where(r => r.AssessmentId == id).ToDictionaryAsync(r => r.RequirementId);
         var actions = await GapActionsAsync(id);
+        var evidence = await EvidenceAsync(id);
         return Ok(new
         {
             e.Reference, e.Title, e.EntityCategory, e.Status, e.ReferentialVersion, e.ValidatedAt, e.NextAssessmentDate,
@@ -254,7 +248,8 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
                     r.Code, r.ObjectiveId, r.ObjectiveTitle, r.Pillar, r.Theme, Score = score,
                     NotApplicable = resp?.NotApplicable ?? false, Justification = resp?.Justification ?? "",
                     Gap = score is { } s ? Scoring.Gap(s) : (int?)null,
-                    Action = action?.Reference, ActionStatus = action?.Status
+                    Action = action?.Reference, ActionStatus = action?.Status,
+                    Evidence = string.Join(" ", (evidence.GetValueOrDefault(r.Id) ?? []).Select(x => x.Reference))
                 };
             })
         });
@@ -302,5 +297,135 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
         Db.ItemLinks.Add(new ItemLink { FromType = LinkType, FromId = id, ToType = "improvement", ToId = improvement.Id, CreatedBy = Me });
         await Db.SaveChangesAsync();
         return Ok(new { improvement.Id, improvement.Reference });
+    }
+
+    private record Item(EvaluatedRequirement Req, int? Score, bool Na);
+
+    /// <summary>Exigences évaluées (figées si l'évaluation est validée, NIS-18) et leur réponse.</summary>
+    private async Task<List<Item>> ItemsAsync(Assessment e)
+    {
+        var requirements = await AssessmentReferential.RequirementsAsync(Db, e);
+        var responses = await Db.AssessmentResponses.AsNoTracking()
+            .Where(r => r.AssessmentId == e.Id).ToDictionaryAsync(r => r.RequirementId);
+        return requirements.Select(r =>
+        {
+            responses.TryGetValue(r.Id, out var resp);
+            return new Item(r, resp is { NotApplicable: false } ? resp.Score : null, resp?.NotApplicable ?? false);
+        }).ToList();
+    }
+
+    public record Evidence(int Id, string TargetType, int TargetId, string Reference, string Title);
+
+    private async Task<Dictionary<int, List<Evidence>>> EvidenceAsync(int id) =>
+        (await Db.AssessmentEvidences.AsNoTracking().Where(x => x.AssessmentId == id).OrderBy(x => x.Id).ToListAsync())
+            .GroupBy(x => x.RequirementId)
+            .ToDictionary(g => g.Key, g => g.Select(x => new Evidence(x.Id, x.TargetType, x.TargetId, x.Reference, x.Title)).ToList());
+
+    /// <summary>
+    /// NIS-08 : preuve d'une réponse — un enregistrement désigné par sa référence (changement,
+    /// article, CI…), visible de l'utilisateur. Comme répondre : tout rôle, tant que l'évaluation
+    /// n'est pas validée (NIS-06).
+    /// </summary>
+    [HttpPost("{id:int}/responses/{requirementId:int}/evidence")]
+    public async Task<IActionResult> AddEvidence(int id, int requirementId, EvidenceDto dto)
+    {
+        var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        if (e.Status == "Validée")
+            return BadRequest(new { message = "Une évaluation validée est figée : un gestionnaire doit la rouvrir." });
+        var requirement = await Db.SecurityRequirements.FindAsync(requirementId);
+        if (requirement is null) return NotFound();
+        if (!e.Applies(requirement))
+            return BadRequest(new { message = $"L'exigence {requirement.Code} ne s'applique pas à une {e.EntityCategory.ToLower()}." });
+
+        var reference = (dto.Reference ?? "").Trim().ToUpperInvariant();
+        var kind = ItemLinks.ByReference(reference);
+        var target = kind is null || kind.Type == LinkType ? null
+            : await kind.Query(Db).FirstOrDefaultAsync(t => t.Reference == reference);
+        if (target is null || !(await ScopeAsync()).Sees(target))
+            return BadRequest(new { message = $"Aucun enregistrement {reference} : une preuve est un changement, un article, un CI… existant." });
+        if (await Db.AssessmentEvidences.AnyAsync(x => x.AssessmentId == id && x.RequirementId == requirementId
+                                                     && x.TargetType == kind!.Type && x.TargetId == target.Id))
+            return Conflict(new { message = $"{target.Reference} est déjà une preuve de cette exigence." });
+
+        var evidence = new AssessmentEvidence
+        {
+            AssessmentId = id, RequirementId = requirementId, TargetType = kind!.Type, TargetId = target.Id,
+            Reference = target.Reference, Title = target.Title.Length > 200 ? target.Title[..200] : target.Title,
+            CreatedBy = MyDisplay
+        };
+        Db.AssessmentEvidences.Add(evidence);
+        await Db.SaveChangesAsync();
+        return Ok(new Evidence(evidence.Id, evidence.TargetType, evidence.TargetId, evidence.Reference, evidence.Title));
+    }
+
+    [HttpDelete("{id:int}/evidence/{evidenceId:int}")]
+    public async Task<IActionResult> RemoveEvidence(int id, int evidenceId)
+    {
+        var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        var evidence = await Db.AssessmentEvidences.FirstOrDefaultAsync(x => x.Id == evidenceId && x.AssessmentId == id);
+        if (e is null || evidence is null || !await VisibleAsync(e)) return NotFound();
+        if (e.Status == "Validée")
+            return BadRequest(new { message = "Une évaluation validée est figée : un gestionnaire doit la rouvrir." });
+        Db.AssessmentEvidences.Remove(evidence);
+        await Db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    /// <summary>
+    /// NIS-09 : comparaison avec une autre évaluation du même périmètre — scores par pilier,
+    /// objectif et thématique, et exigences dont le score a changé (écart : actuel − autre).
+    /// </summary>
+    [HttpGet("{id:int}/compare/{otherId:int}")]
+    public async Task<IActionResult> Compare(int id, int otherId)
+    {
+        var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        var o = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == otherId);
+        if (e is null || o is null || !await VisibleAsync(e) || !await VisibleAsync(o)) return NotFound();
+        if (id == otherId) return BadRequest(new { message = "Choisir une autre évaluation à comparer." });
+        if (e.PerimeterId != o.PerimeterId)
+            return BadRequest(new { message = "Seules deux évaluations du même périmètre se comparent." });
+
+        var current = await ItemsAsync(e);
+        var other = await ItemsAsync(o);
+        static double? Delta(double? a, double? b) => a is null || b is null ? null : Math.Round(a.Value - b.Value, 1);
+        object Row(IEnumerable<Item> a, IEnumerable<Item> b) =>
+            new { Current = Scoring.Percent(a.Select(i => i.Score)), Other = Scoring.Percent(b.Select(i => i.Score)),
+                  Delta = Delta(Scoring.Percent(a.Select(i => i.Score)), Scoring.Percent(b.Select(i => i.Score))) };
+
+        var otherByCode = other.ToDictionary(i => i.Req.Code);
+        var currentByCode = current.ToDictionary(i => i.Req.Code);
+        var all = current.Select(i => i.Req).Concat(other.Select(i => i.Req).Where(r => !currentByCode.ContainsKey(r.Code))).ToList();
+        string Show(Item? i) => i is null ? "Non évaluée" : i.Na ? "Non applicable" : i.Score?.ToString() ?? "Sans réponse";
+
+        return Ok(new
+        {
+            Current = new { e.Id, e.Reference, e.Title, e.Status, e.ValidatedAt, e.ReferentialVersion },
+            Other = new { o.Id, o.Reference, o.Title, o.Status, o.ValidatedAt, o.ReferentialVersion },
+            Global = Row(current, other),
+            Pillars = all.Select(r => r.Pillar).Distinct().Select(p => new
+            {
+                Pillar = p, Score = Row(current.Where(i => i.Req.Pillar == p), other.Where(i => i.Req.Pillar == p))
+            }),
+            Objectives = all.GroupBy(r => r.ObjectiveId).OrderBy(g => g.Key).Select(g => new
+            {
+                Id = g.Key, Title = g.First().ObjectiveTitle,
+                Score = Row(current.Where(i => i.Req.ObjectiveId == g.Key), other.Where(i => i.Req.ObjectiveId == g.Key)),
+                Themes = g.Select(r => r.Theme).Distinct().Select(t => new
+                {
+                    Theme = t,
+                    Score = Row(current.Where(i => i.Req.ObjectiveId == g.Key && i.Req.Theme == t),
+                                        other.Where(i => i.Req.ObjectiveId == g.Key && i.Req.Theme == t))
+                })
+            }),
+            // Exigences dont la réponse diffère (score, non-applicabilité, ou évaluée d'un seul côté).
+            Requirements = all.OrderBy(r => r.ObjectiveId).ThenBy(r => r.Order).Select(r =>
+            {
+                var a = currentByCode.GetValueOrDefault(r.Code);
+                var b = otherByCode.GetValueOrDefault(r.Code);
+                return new { r.Code, r.ObjectiveId, r.Theme, Current = Show(a), Other = Show(b),
+                             Delta = a?.Score is { } x && b?.Score is { } y ? x - y : (int?)null };
+            }).Where(x => x.Current != x.Other)
+        });
     }
 }

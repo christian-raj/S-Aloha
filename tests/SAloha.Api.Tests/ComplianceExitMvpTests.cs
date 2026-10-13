@@ -5,7 +5,7 @@ using SAloha.Api.Modules.ComplianceAssessment;
 
 namespace SAloha.Api.Tests;
 
-/// <summary>Conformité NIS 2 : plan de traitement des écarts (NIS-14), revue périodique (NIS-16), export (NIS-17).</summary>
+/// <summary>Conformité NIS 2 : preuves (NIS-08), comparaison (NIS-09), plan de traitement des écarts (NIS-14), revue périodique (NIS-16), export (NIS-17).</summary>
 [Collection("api")]
 public class ComplianceExitMvpTests(ApiFixture api)
 {
@@ -16,23 +16,23 @@ public class ComplianceExitMvpTests(ApiFixture api)
         return JsonDocument.Parse(body).RootElement;
     }
 
-    private static object Dto(string title, string? status, DateTime? next = null, string owner = "nis.pilote") => new
+    private static object Dto(string title, string? status, DateTime? next = null, string owner = "nis.pilote", int? perimeterId = null) => new
     {
         title, description = "Périmètre", status, entityCategory = Assessment.Important,
-        ownerType = "User", ownerId = owner, ownerDisplayName = owner, nextAssessmentDate = next
+        ownerType = "User", ownerId = owner, ownerDisplayName = owner, nextAssessmentDate = next, perimeterId
     };
 
     /// <summary>Évaluation entièrement répondue : 3 partout sauf la première exigence (1, « Inventaire partiel »).</summary>
-    private async Task<(int Id, string Reference, string GapCode)> Answered(HttpClient manager, string title)
+    private async Task<(int Id, string Reference, string GapCode)> Answered(HttpClient manager, string title, int firstScore = 1, int? perimeterId = null)
     {
-        var created = await Json(await manager.PostAsJsonAsync("/api/assessments", Dto(title, null)));
+        var created = await Json(await manager.PostAsJsonAsync("/api/assessments", Dto(title, null, perimeterId: perimeterId)));
         var id = created.GetProperty("id").GetInt32();
         var q = (await Json(await manager.GetAsync($"/api/assessments/{id}/questionnaire"))).GetProperty("objectives").EnumerateArray()
             .SelectMany(o => o.GetProperty("themes").EnumerateArray())
             .SelectMany(t => t.GetProperty("requirements").EnumerateArray()).ToList();
         foreach (var (r, i) in q.Select((r, i) => (r, i)))
             await Json(await manager.PutAsJsonAsync($"/api/assessments/{id}/responses/{r.GetProperty("id").GetInt32()}",
-                new { score = i == 0 ? 1 : 3, notApplicable = false, justification = i == 0 ? "Inventaire partiel; à compléter" : "" }));
+                new { score = i == 0 ? firstScore : 3, notApplicable = false, justification = i == 0 ? "Inventaire partiel; à compléter" : "" }));
         return (id, created.GetProperty("reference").GetString()!, q[0].GetProperty("code").GetString()!);
     }
 
@@ -89,5 +89,70 @@ public class ComplianceExitMvpTests(ApiFixture api)
         // Console du gestionnaire : relance « À renouveler » (Revues échues).
         var due = (await Json(await m.GetAsync("/api/console"))).GetProperty("management").GetProperty("reviewsDue").EnumerateArray();
         Assert.Contains(due, d => d.GetProperty("reference").GetString() == reference && d.GetProperty("status").GetString() == "À renouveler");
+    }
+
+    [Fact]
+    public async Task NIS_08_preuves_reliees_a_une_reponse()
+    {
+        var m = api.Client("Manager", "nis08.manager");
+        var u = api.Client("User", "nis08.user");
+        var (id, _, code) = await Answered(m, "NIS-08");
+        var change = await Json(await u.PostAsJsonAsync("/api/changes", new { title = "Inventaire du SI", changeType = "Normal", risk = "Faible" }));
+        var reference = change.GetProperty("reference").GetString();
+        var requirement = Requirement(await Json(await u.GetAsync($"/api/assessments/{id}/questionnaire")), code);
+        var url = $"/api/assessments/{id}/responses/{requirement.GetProperty("id").GetInt32()}/evidence";
+
+        var evidence = await Json(await u.PostAsJsonAsync(url, new { reference = reference!.ToLower() }));
+        Assert.Equal(reference, evidence.GetProperty("reference").GetString());
+        Assert.Equal("change", evidence.GetProperty("targetType").GetString());
+        Assert.Equal(HttpStatusCode.Conflict, (await u.PostAsJsonAsync(url, new { reference })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await u.PostAsJsonAsync(url, new { reference = "CHG-1999-9999" })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await u.PostAsJsonAsync(url, new { reference = "n'importe quoi" })).StatusCode);
+
+        // Le questionnaire et l'export portent la preuve.
+        requirement = Requirement(await Json(await u.GetAsync($"/api/assessments/{id}/questionnaire")), code);
+        Assert.Equal(reference, requirement.GetProperty("evidence")[0].GetProperty("reference").GetString());
+        var row = (await Json(await u.GetAsync($"/api/assessments/{id}/export"))).GetProperty("rows").EnumerateArray()
+            .Single(r => r.GetProperty("code").GetString() == code);
+        Assert.Equal(reference, row.GetProperty("evidence").GetString());
+
+        // Validée, l'évaluation est figée : ni ajout ni retrait (NIS-06).
+        var evidenceId = evidence.GetProperty("id").GetInt32();
+        await Json(await m.PutAsJsonAsync($"/api/assessments/{id}", Dto("NIS-08", "Validée")));
+        Assert.Equal(HttpStatusCode.BadRequest, (await u.DeleteAsync($"/api/assessments/{id}/evidence/{evidenceId}")).StatusCode);
+        await Json(await m.PutAsJsonAsync($"/api/assessments/{id}", Dto("NIS-08", "En cours")));
+        Assert.Equal(HttpStatusCode.NoContent, (await u.DeleteAsync($"/api/assessments/{id}/evidence/{evidenceId}")).StatusCode);
+        requirement = Requirement(await Json(await u.GetAsync($"/api/assessments/{id}/questionnaire")), code);
+        Assert.Equal(0, requirement.GetProperty("evidence").GetArrayLength());
+    }
+
+    private static JsonElement Requirement(JsonElement questionnaire, string code) =>
+        questionnaire.GetProperty("objectives").EnumerateArray()
+            .SelectMany(o => o.GetProperty("themes").EnumerateArray())
+            .SelectMany(t => t.GetProperty("requirements").EnumerateArray())
+            .Single(r => r.GetProperty("code").GetString() == code);
+
+    [Fact]
+    public async Task NIS_09_comparaison_de_deux_evaluations_du_meme_perimetre()
+    {
+        var admin = api.Client();
+        var (before, _, code) = await Answered(admin, "NIS-09 avant", firstScore: 1);
+        var (after, _, _) = await Answered(admin, "NIS-09 après", firstScore: 3);
+
+        var c = await Json(await api.Client("User", "nis09.user").GetAsync($"/api/assessments/{after}/compare/{before}"));
+        Assert.True(c.GetProperty("global").GetProperty("delta").GetDouble() > 0);
+        var changed = c.GetProperty("requirements").EnumerateArray().ToList();
+        var only = Assert.Single(changed);
+        Assert.Equal(code, only.GetProperty("code").GetString());
+        Assert.Equal("3", only.GetProperty("current").GetString());
+        Assert.Equal("1", only.GetProperty("other").GetString());
+        Assert.Equal(2, only.GetProperty("delta").GetInt32());
+        Assert.Contains(c.GetProperty("objectives").EnumerateArray(), o => o.GetProperty("score").GetProperty("delta").GetDouble() > 0);
+
+        // Autre périmètre, ou elle-même : refusé.
+        var usine = (await Json(await admin.PostAsJsonAsync("/api/admin/perimeters", new { name = "Usine NIS-09" }))).GetProperty("id").GetInt32();
+        var (elsewhere, _, _) = await Answered(admin, "NIS-09 usine", perimeterId: usine);
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.GetAsync($"/api/assessments/{after}/compare/{elsewhere}")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.GetAsync($"/api/assessments/{after}/compare/{after}")).StatusCode);
     }
 }

@@ -618,6 +618,54 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.ToTable("Assessments");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ComplianceAssessment.AssessmentEvidence", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssessmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int>("RequirementId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TargetId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TargetType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssessmentId", "RequirementId", "TargetType", "TargetId")
+                        .IsUnique();
+
+                    b.ToTable("AssessmentEvidences");
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ComplianceAssessment.AssessmentResponse", b =>
                 {
                     b.Property<int>("Id")
@@ -2289,6 +2337,17 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasForeignKey("PerimeterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ComplianceAssessment.AssessmentEvidence", b =>
+                {
+                    b.HasOne("SAloha.Api.Modules.ComplianceAssessment.Assessment", "Assessment")
+                        .WithMany()
+                        .HasForeignKey("AssessmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assessment");
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ComplianceAssessment.AssessmentResponse", b =>

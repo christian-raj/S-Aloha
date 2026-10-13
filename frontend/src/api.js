@@ -94,6 +94,10 @@ export const api = {
       request(`/assessments/${id}/responses/${requirementId}`, { method: 'PUT', body: JSON.stringify(dto) }),
     score: (id) => request(`/assessments/${id}/score`),
     export: (id) => request(`/assessments/${id}/export`),
+    addEvidence: (id, requirementId, reference) =>
+      request(`/assessments/${id}/responses/${requirementId}/evidence`, { method: 'POST', body: JSON.stringify({ reference }) }),
+    removeEvidence: (id, evidenceId) => request(`/assessments/${id}/evidence/${evidenceId}`, { method: 'DELETE' }),
+    compare: (id, otherId) => request(`/assessments/${id}/compare/${otherId}`),
     createImprovement: (id, code) =>
       request(`/assessments/${id}/improvements`, { method: 'POST', body: JSON.stringify({ code }) })
   },

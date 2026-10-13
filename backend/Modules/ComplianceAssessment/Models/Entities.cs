@@ -78,10 +78,29 @@ public class AssessmentResponse
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
+/// <summary>
+/// NIS-08 : preuve d'une réponse — un enregistrement relié (changement, article, CI…),
+/// désigné comme un lien du socle ; référence et titre recopiés à l'ajout.
+/// </summary>
+public class AssessmentEvidence
+{
+    public int Id { get; set; }
+    public int AssessmentId { get; set; }
+    public Assessment? Assessment { get; set; }
+    public int RequirementId { get; set; }
+    [MaxLength(20)] public string TargetType { get; set; } = "";
+    public int TargetId { get; set; }
+    [MaxLength(30)] public string Reference { get; set; } = "";
+    [MaxLength(200)] public string Title { get; set; } = "";
+    [MaxLength(200)] public string CreatedBy { get; set; } = "";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
 public record AssessmentDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? EntityCategory, int? PerimeterId = null, DateTime? NextAssessmentDate = null) : IRecordDto;
 
 public record ResponseDto(int? Score, bool NotApplicable, string? Justification);
 public record GapActionDto(string Code);
+public record EvidenceDto(string Reference);
 public record ReferentialImportDto(string Csv);

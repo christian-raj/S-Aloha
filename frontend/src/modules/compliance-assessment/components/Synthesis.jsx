@@ -11,9 +11,9 @@ export async function exportAssessment(id) {
   const x = await api.assessments.export(id)
   downloadCsv(`${x.reference}-synthese.csv`, [{
     title: `${x.reference} — ${x.title} (${x.entityCategory}, ${x.referentialVersion}, ${x.status}${x.validatedAt ? ' le ' + date(x.validatedAt) : ''})`,
-    header: ['Exigence', 'Objectif', 'Pilier', 'Thématique', 'Score', 'Non applicable', 'Justification', 'Écart', 'Action liée', 'Statut de l\'action'],
+    header: ['Exigence', 'Objectif', 'Pilier', 'Thématique', 'Score', 'Non applicable', 'Justification', 'Écart', 'Action liée', 'Statut de l\'action', 'Preuves'],
     rows: x.rows.map(r => [r.code, `${r.objectiveId}. ${r.objectiveTitle}`, r.pillar, r.theme, r.score,
-      r.notApplicable ? 'Oui' : '', r.justification, r.gap, r.action, r.actionStatus])
+      r.notApplicable ? 'Oui' : '', r.justification, r.gap, r.action, r.actionStatus, r.evidence])
   }])
 }
 

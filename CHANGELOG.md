@@ -14,6 +14,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Conformité NIS 2 — preuves et comparaison** : chaque réponse porte ses **preuves**,
+  enregistrements désignés par leur référence (changement, article, CI…), reprises dans
+  l'export (NIS-08 ; pièces jointes à venir avec SOC-25) ; onglet **Comparaison** avec une
+  autre évaluation du même périmètre : évolution des scores par pilier, objectif et
+  thématique, exigences dont la réponse a changé (NIS-09). Migration `AssessmentEvidence`
+  (nouvelle table).
+
 - **Conformité NIS 2** : la synthèse montre pour chaque écart l'action d'amélioration liée et
   son statut (NIS-14) ; date de la prochaine évaluation (12 mois après la validation par
   défaut), relance du pilote à l'échéance et entrée « À renouveler » dans la console des
