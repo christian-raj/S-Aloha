@@ -49,8 +49,8 @@ AD, créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-proce
 | `Status` | texte 30 | ✔ | Planifié, En service, Hors service, Retiré ; choisi à la création (défaut En service) | ✅ |
 | `Owner…` | AD | ✔ (🔜) | Propriétaire du CI | ✅ |
 | `Attributes` | clé/valeur | | Attributs propres au type (version, adresse IP, éditeur, numéro de série…) | 🔜 CFG-16 |
-| `LastVerifiedAt`, `LastVerifiedBy` | date, AD | auto | Dernière vérification | 🔜 CFG-15 |
-| `ServiceIds` | liens | | Services supportés | 🔜 CFG-21 |
+| `LastVerifiedAt`, `LastVerifiedBy` | date, AD | auto | Dernière vérification | ✅ CFG-15 |
+| Services supportés | liens CI ↔ service | | Les services du catalogue reliés au CI (onglet Liens) | ✅ CFG-21 |
 
 **Relation** (`CiRelationships`) : source, cible, type orienté — *Dépend de*, *Héberge*,
 *Fait partie de*, *Se connecte à*. ✅
@@ -101,7 +101,7 @@ CFG-10, lot 1)** : seules les transitions ci-dessous (SOC-05).
 | CFG-12 | **Retirer** un CI : Manager uniquement | ✅ | 1 |
 | CFG-13 | Un CI relié à un **incident ou changement ouvert** ne peut pas être retiré (400, avec les références en cause) | ✅ | 1 |
 | CFG-14 | Un CI **Retiré** ne peut plus être relié à un nouvel incident, changement ou CI (400) ; ses liens existants restent visibles | ✅ | 1 |
-| CFG-15 | **Vérification** : le propriétaire ou un Manager atteste que la fiche est exacte (`LastVerifiedAt`) ; un CI En service non vérifié depuis **12 mois** remonte en relance au propriétaire | 🔜 | 2 |
+| CFG-15 | **Vérification** : le propriétaire ou un Manager atteste que la fiche est exacte (`LastVerifiedAt`) ; un CI En service non vérifié depuis **12 mois** remonte en relance au propriétaire. Vérification par `POST /api/configuration-items/{id}/verify` ; relance par notification (relevé périodique). | ✅ | |
 | CFG-16 | **Attributs par type** : chaque type de CI définit des attributs facultatifs (Serveur : système, adresse IP, CPU, mémoire ; Application : version, éditeur, URL ; Poste de travail : numéro de série, utilisateur…) | 🔜 | 3 |
 | CFG-17 | **Unicité** : deux CI non retirés ne peuvent pas avoir le même nom dans le même environnement (409) | ✅ | 1 |
 | CFG-18 | Un CI **Hors service** relié à un service En service signale ce service « dégradé » sur la fiche du service | 🔜 | 2 |
@@ -110,16 +110,16 @@ CFG-10, lot 1)** : seules les transitions ci-dessous (SOC-05).
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| CFG-20 | **Analyse d'impact d'un changement** : la fiche d'un changement montre, pour ses CI, la vue d'impact aval et les services touchés (CFG-21) | 🔜 | 2 |
-| CFG-21 | **Rattachement CI ↔ service** (F5) : un CI supporte un ou plusieurs services du catalogue ; la vue d'impact aval d'un CI liste les services touchés | 🔜 | 2 |
-| CFG-22 | Notifications (SOC-21) : CI passé Hors service → propriétaire et responsables des services touchés | ✅ (propriétaire) / 🔜 (responsables des services touchés, avec CFG-21) | |
+| CFG-20 | **Analyse d'impact d'un changement** : la fiche d'un changement montre, pour ses CI, la vue d'impact aval et les services touchés (CFG-21). Onglet « Impact » de la fiche d'un changement : CI reliés, CI touchés en aval, services. | ✅ | |
+| CFG-21 | **Rattachement CI ↔ service** (F5) : un CI supporte un ou plusieurs services du catalogue ; la vue d'impact aval d'un CI liste les services touchés. Un CI supporte les services auxquels il est relié ; la vue d'impact liste les services du CI et des CI en aval. | ✅ | |
+| CFG-22 | Notifications (SOC-21) : CI passé Hors service → propriétaire et responsables des services touchés | ✅ | |
 
 ## 7. Liens avec les autres pratiques
 
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
 | CI → CI | Relations de dépendance | CFG-02 à CFG-06 | ✅ |
-| CI → Service | Services supportés | CFG-21 | 🔜 |
+| CI → Service | Services supportés (lien CI ↔ service) | CFG-21 | ✅ |
 | Incident → CI | CI affecté | CFG-14 | ✅ (lien) / 🔜 |
 | Changement → CI | CI modifié ; conflits au calendrier | CHG-09, CFG-20 | ✅ / 🔜 |
 | Problème → CI | CI en cause | Lien manuel | ✅ |
@@ -142,7 +142,9 @@ service depuis plus de 7 jours (Relances, gestionnaires, lot 2).
 | Route | Policy | Rôle |
 |---|---|---|
 | `GET /api/configuration-items` (filtres `status`, `q`, `owner`, `type`), `GET /api/configuration-items/{id}` | User | Registre, fiche (relations) |
-| `GET /api/configuration-items/{id}/impact` | User | Vue d'impact amont et aval |
+| `GET /api/configuration-items/{id}/impact` | User | Vue d'impact amont et aval, services touchés (CFG-21) |
+| `GET /api/configuration-items/impact-of?type=&id=` | User | Impact d'un enregistrement (changement) : CI reliés, CI en aval, services (CFG-20) |
+| `POST /api/configuration-items/{id}/verify` | User (propriétaire) ou Manager | Marque la fiche vérifiée (CFG-15) |
 | `POST /api/configuration-items`, `PUT /api/configuration-items/{id}` | User | Création, modification |
 | `POST /api/configuration-items/{id}/relations`, `DELETE /api/configuration-items/relations/{id}` | User | Relations |
 | `DELETE /api/configuration-items/{id}` | Admin | Suppression |

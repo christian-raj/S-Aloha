@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../../../api'
+import { api, getUser } from '../../../api'
+import { dateFr } from '../../../core/fields'
 import RecordDetail from '../../../core/components/RecordDetail'
 import { ciConfig, RELATION_TYPES } from '../config'
 
@@ -74,11 +75,52 @@ function Impact({ ci }) {
       <h3 style={{ color: 'var(--navy)', marginBottom: 10 }}>Impact</h3>
       {error && <div className="error">{error}</div>}
       {impact && (
-        <div className="row2">
-          <ImpactList title="En aval" hint="Touchés si ce CI tombe." nodes={impact.downstream} />
-          <ImpactList title="En amont" hint="Ce dont ce CI dépend." nodes={impact.upstream} />
-        </div>
+        <>
+          <div className="row2">
+            <ImpactList title="En aval" hint="Touchés si ce CI tombe." nodes={impact.downstream} />
+            <ImpactList title="En amont" hint="Ce dont ce CI dépend." nodes={impact.upstream} />
+          </div>
+          <ServicesTouched services={impact.services} />
+        </>
       )}
+    </div>
+  )
+}
+
+/** CFG-21 : services du catalogue touchés (supportés par ce CI ou par un CI en aval). */
+export function ServicesTouched({ services }) {
+  return (
+    <div style={{ marginTop: 12 }}>
+      <h4 style={{ color: 'var(--navy)', marginBottom: 2 }}>Services touchés ({services.length})</h4>
+      <p style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)', marginBottom: 8 }}>
+        Services supportés par ce CI ou par un CI en aval (liens CI ↔ service, onglet Liens).</p>
+      {services.length === 0 && <p style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)' }}>Aucun.</p>}
+      {services.map(s => (
+        <div key={s.id} style={{ marginBottom: 6 }}>
+          <Link to={'/services/' + s.id}><b>{s.reference}</b> {s.title}</Link>
+          <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-xs)' }}> — {s.status}{s.ownerDisplayName && ` · ${s.ownerDisplayName}`}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** CFG-15 : le propriétaire (ou un gestionnaire) atteste que la fiche est exacte. */
+function Verification({ ci, onSaved }) {
+  const [msg, setMsg] = useState(null)
+  const user = getUser()
+  const can = ['Admin', 'Manager'].includes(user?.role) || ci.ownerType === 'Group'
+    || (ci.ownerId ?? '').toLowerCase() === (user?.username ?? '').toLowerCase()
+  const verify = () => api.configurationItems.verify(ci.id)
+    .then(() => { setMsg({ ok: true, text: 'Fiche attestée exacte.' }); onSaved() }).catch(e => setMsg({ ok: false, text: e.message }))
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <h3 style={{ color: 'var(--navy)', marginBottom: 6 }}>Vérification</h3>
+      {msg && <div className="error" style={msg.ok ? { background: 'var(--blue-soft)', color: 'var(--navy)' } : undefined}>{msg.text}</div>}
+      <p style={{ fontSize: 13, marginBottom: 10 }}>
+        {ci.lastVerifiedAt ? `Vérifiée le ${dateFr(ci.lastVerifiedAt)} par ${ci.lastVerifiedBy}.` : 'Jamais vérifiée.'}
+        {' '}Un CI en service non vérifié depuis 12 mois est signalé à son propriétaire.</p>
+      {can && <button className="btn ghost" onClick={verify}>Attester que la fiche est exacte</button>}
     </div>
   )
 }
@@ -88,6 +130,8 @@ export default function ConfigurationItemDetail() {
     <RecordDetail config={ciConfig} tab={{
       label: 'Relations et impact',
       render: (r, reload) => <><Relations ci={r} onChanged={reload} /><Impact ci={r} /></>
-    }} />
+    }}>
+      {(r, reload) => <Verification ci={r} onSaved={reload} />}
+    </RecordDetail>
   )
 }

@@ -68,10 +68,10 @@ propre au processus :
 - `tab = { label, render(record, reload) }` : l'**onglet propre à la pratique** — Conflits
   (changement), Relations et impact (CI), Accords (SLA) (service) ; une pratique à
   plusieurs onglets passe une **liste** `[{ label, render }]` (évaluation NIS 2 :
-  Questionnaire, Synthèse) ;
+  Questionnaire, Synthèse ; changement : Conflits, Impact) ;
 - `children(record, reload)` : complément de l'onglet **Informations** (ex. « Ouvrir un
   problème lié » et l'encadré « Cas similaires » sur un incident ; « Cas similaires » sur un
-  problème) ;
+  problème ; services touchés et vérification sur un CI) ;
 - `RecordList` accepte un `intro` affiché sous le titre du registre (bloc « Chercher
   d'abord » des connaissances).
 

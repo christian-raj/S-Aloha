@@ -22,6 +22,9 @@ public class ConfigurationItem : Record
         ["Application", "Serveur", "Base de données", "Réseau", "Stockage", "Poste de travail", "Logiciel", "Autre"];
     public static readonly string[] Environments = ["Production", "Recette", "Développement", "Autre"];
 
+    /// <summary>CFG-15 : dernière attestation de la fiche par le propriétaire ou un gestionnaire.</summary>
+    public DateTime? LastVerifiedAt { get; set; }
+    [MaxLength(200)] public string? LastVerifiedBy { get; set; }
     [MaxLength(30)] public string CiType { get; set; } = "Autre";
     [MaxLength(20)] public string Environment { get; set; } = "Production";
     [MaxLength(150)] public string Location { get; set; } = "";
