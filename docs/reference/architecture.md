@@ -43,7 +43,7 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)
 │   ├── Itil/                         # Priority (matrice impact × urgence → P1–P4)
 │   ├── Links/                        # ItemLink, registre ItemLinks, LinksController (liens inter-processus)
-│   ├── Notifications/                # Notification, NotificationRead, Notifier (émission), NotificationsController (SOC-21)
+│   ├── Notifications/                # Notification, NotificationRead, Notifier (émission), DatedEvents (événements datés), NotificationsController (SOC-21)
 │   ├── Perimeters/                   # Perimeter, PerimeterAssignment, PerimeterAccess (rôle effectif), PerimetersController (ADR-0014)
 │   ├── Pilotage/                     # ConsoleController, ReportsController, DashboardController (vues transverses)
 │   └── Records/                      # Record (entité de base), RecordController<T,TDto>, Allowed, Dates
@@ -165,6 +165,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/perimeters` | User | Périmètres en service (sélecteurs) | Core/Perimeters |
 | GET/POST/PUT `/api/admin/perimeters[/{id}]`, DELETE `/{id}` (douce), POST `/{id}/restore`, DELETE `/{id}/purge` ; GET/POST `/{id}/assignments`, DELETE `/api/admin/assignments/{id}` | Admin | Périmètres et affectations, compteurs par pratique ([PER-01, PER-02, PER-12](perimetres.md)) | Core/Perimeters |
 | GET `/api/notifications`, POST `/api/notifications/{id}/read`, POST `/api/notifications/read-all` | User | Mes notifications (compte, groupes, périmètres gérés ; SOC-21, SOC-23) | Core/Notifications |
+| POST `/api/notifications/run` | Admin | Relevé immédiat des notifications datées (sinon toutes les 15 minutes, `DatedEventsWorker`) | Core/Notifications |
 | GET `/api/comments?type=&id=`, POST `/api/comments`, DELETE `/api/comments/{id}` | User | Commentaires publics et notes de travail ([SOC-24](regles-metier.md#9-traçabilité-commentaires-administration)) ; retrait : auteur ou Admin | Core/Comments |
 | GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
 | GET `/api/audit?type=&id=` | User | Historique d'un enregistrement (journal d'audit, SOC-20) | Core/Audit |

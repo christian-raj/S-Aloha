@@ -14,6 +14,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Notifications datées** (SOC-21) : relevé périodique (15 minutes, `Notifications:IntervalMinutes`) — SLA en risque → responsable ; SLA dépassé et incident P1 → responsable et gestionnaires (escalade, INC-18) ; veille d'une mise en œuvre → responsable du changement ; action corrective en retard → R, A et gestionnaires ; revue d'article échue → responsable ; SLA expirant dans 30 jours → gestionnaires, revue de SLA échue → propriétaire du service. Un même événement n'est notifié qu'une fois.
+
 - **Notifications dans l'application** (SOC-21, SOC-23) : cloche avec compteur des non lues ;
   toute affectation notifie le nouveau responsable (ou son groupe) ; décisions attendues →
   gestionnaires du périmètre (demande soumise, changement évalué, amélioration proposée,

@@ -13,7 +13,9 @@ public class Notifier(AppDbContext db, IHttpContextAccessor http)
 {
     private readonly List<Notification> _pending = [];
     private ClaimsPrincipal? User => http.HttpContext?.User;
-    private string Actor => (User?.Identity?.Name ?? "système").ToLowerInvariant();
+    /// <summary>Événements de la tâche périodique : l'auteur est « système », même déclenchés par un Admin.</summary>
+    public bool AsSystem { get; set; }
+    private string Actor => AsSystem ? "système" : (User?.Identity?.Name ?? "système").ToLowerInvariant();
 
     private void Add(string type, string id, int perimeterId, string targetType, int targetId, string reference, string title, string ev)
     {
@@ -25,7 +27,7 @@ public class Notifier(AppDbContext db, IHttpContextAccessor http)
         {
             RecipientType = type, RecipientId = id, PerimeterId = perimeterId, TargetType = targetType, TargetId = targetId,
             Reference = reference, Title = title.Length > 200 ? title[..200] : title, Event = ev,
-            Actor = Actor, ActorDisplayName = User?.FindFirst("displayName")?.Value ?? User?.Identity?.Name ?? "système"
+            Actor = Actor, ActorDisplayName = AsSystem ? "S-Aloha" : User?.FindFirst("displayName")?.Value ?? User?.Identity?.Name ?? "système"
         });
     }
 

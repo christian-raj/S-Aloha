@@ -1,0 +1,129 @@
+using Microsoft.EntityFrameworkCore;
+using SAloha.Api.Core.Data;
+using SAloha.Api.Modules.ChangeEnablement;
+using SAloha.Api.Modules.IncidentManagement;
+using SAloha.Api.Modules.ProblemManagement;
+
+namespace SAloha.Api.Core.Notifications;
+
+/// <summary>
+/// Événements datés (SOC-21) : ceux qu'aucune action ne déclenche, relevés par une tâche
+/// périodique. Chaque événement n'est notifié qu'une fois par enregistrement (son libellé
+/// porte l'échéance quand elle peut changer).
+/// </summary>
+public class DatedEvents(AppDbContext db, Notifier notify)
+{
+    private static string Day(DateTime d) => d.ToString("dd/MM/yyyy");
+
+    public async Task<int> RunAsync(DateTime now)
+    {
+        notify.AsSystem = true;
+        var today = now.Date;
+        // Déjà notifiés (événements de la tâche, auteur « système ») : un même événement ne se répète pas.
+        var since = now.AddDays(-400);
+        var done = (await db.Notifications.AsNoTracking().Where(n => n.Actor == "système" && n.CreatedAt >= since)
+                .Select(n => new { n.TargetType, n.TargetId, n.Event }).Distinct().ToListAsync())
+            .Select(n => (n.TargetType, n.TargetId, n.Event)).ToHashSet();
+        var count = 0;
+        bool Fresh(string type, int id, string ev)
+        {
+            if (!done.Add((type, id, ev))) return false;
+            count++;
+            return true;
+        }
+
+        // INC-24, INC-25 : SLA en risque (moins de 25 % du délai) → responsable ;
+        // INC-18 : SLA dépassé, ou incident P1 ouvert → responsable et gestionnaires.
+        foreach (var i in await db.Incidents.AsNoTracking().Where(i => !Incident.Done.Contains(i.Status)).ToListAsync())
+        {
+            if (i.ResolutionDueAt is { } due)
+            {
+                if (now > due && Fresh("incident", i.Id, "SLA dépassé"))
+                {
+                    notify.ToOwner(i, "incident", "SLA dépassé");
+                    notify.ToManagers(i, "incident", "SLA dépassé");
+                }
+                else if (now <= due && (due - now).TotalMinutes < (due - i.CreatedAt).TotalMinutes * 0.25
+                         && Fresh("incident", i.Id, "SLA en risque"))
+                    notify.ToOwner(i, "incident", "SLA en risque");
+            }
+            if (i.Priority == "P1" && Fresh("incident", i.Id, "Incident P1 ouvert"))
+                notify.ToManagers(i, "incident", "Incident P1 ouvert");
+        }
+
+        // CHG-24 : la veille de la mise en œuvre → responsable.
+        foreach (var c in await db.Changes.AsNoTracking()
+                     .Where(c => (c.Status == "Autorisé" || c.Status == "Planifié") && c.PlannedStart > now && c.PlannedStart <= now.AddDays(1))
+                     .ToListAsync())
+        {
+            var ev = $"Mise en œuvre le {Day(c.PlannedStart!.Value)}";
+            if (Fresh("change", c.Id, ev)) notify.ToOwner(c, "change", ev);
+        }
+
+        // PRB-31 : action en retard → R, A et gestionnaires du problème.
+        foreach (var a in await db.Actions.AsNoTracking().Include(a => a.Raci).Include(a => a.Problem)
+                     .Where(a => a.Status != "Terminée" && a.Status != "Annulée" && a.DueDate != null && a.DueDate < today)
+                     .ToListAsync())
+        {
+            var ev = $"Action en retard : {a.Title} (échéance {Day(a.DueDate!.Value)})";
+            ev = ev.Length > 200 ? ev[..200] : ev;
+            if (!Fresh("problem", a.ProblemId, ev)) continue;
+            foreach (var r in a.Raci.Where(r => r.Role is "R" or "A"))
+                notify.ToPrincipal(a.Problem!, "problem", r.AssigneeType, r.AssigneeId, ev);
+            notify.ToManagers(a.Problem!, "problem", ev);
+        }
+
+        // KB-20 : revue échue → responsable de l'article (à défaut, son rédacteur).
+        foreach (var k in await db.KnowledgeArticles.AsNoTracking()
+                     .Where(k => k.Status == "Publié" && k.ReviewDate != null && k.ReviewDate < today).ToListAsync())
+        {
+            var ev = $"Revue de l'article échue ({Day(k.ReviewDate!.Value)})";
+            if (!Fresh("article", k.Id, ev)) continue;
+            if (!string.IsNullOrWhiteSpace(k.OwnerId)) notify.ToOwner(k, "article", ev);
+            else notify.ToCreator(k, "article", ev);
+        }
+
+        // SLM-24 : SLA expirant dans 30 jours → gestionnaires ; revue échue → propriétaire du service.
+        foreach (var s in await db.Agreements.AsNoTracking().Include(s => s.Service).Where(s => s.Status == "En vigueur").ToListAsync())
+        {
+            if (s.ValidTo is { } end && end >= today && end <= today.AddDays(30))
+            {
+                var ev = $"SLA expirant le {Day(end)}";
+                if (Fresh("agreement", s.Id, ev)) notify.ToManagers(s, "agreement", ev);
+            }
+            if (s.ReviewDate is { } review && review < today)
+            {
+                var ev = $"Revue du SLA échue ({Day(review)})";
+                if (Fresh("agreement", s.Id, ev)) notify.ToPrincipal(s, "agreement", s.Service?.OwnerType, s.Service?.OwnerId, ev);
+            }
+        }
+
+        await notify.SaveAsync();
+        return count;
+    }
+}
+
+/// <summary>Relève les événements datés à intervalle régulier (Notifications:IntervalMinutes, 15 par défaut ; 0 : jamais).</summary>
+public class DatedEventsWorker(IServiceScopeFactory scopes, IConfiguration config, ILogger<DatedEventsWorker> logger) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken ct)
+    {
+        var minutes = config.GetValue("Notifications:IntervalMinutes", 15);
+        if (minutes <= 0) return;
+        var every = TimeSpan.FromMinutes(minutes);
+        while (!ct.IsCancellationRequested)
+        {
+            await Task.Delay(every, ct);
+            try
+            {
+                await using var scope = scopes.CreateAsyncScope();
+                var n = await scope.ServiceProvider.GetRequiredService<DatedEvents>().RunAsync(DateTime.UtcNow);
+                if (n > 0) logger.LogInformation("Notifications datées : {Count} événement(s).", n);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogError(ex, "Notifications datées : relevé en échec.");
+            }
+        }
+    }
+}
