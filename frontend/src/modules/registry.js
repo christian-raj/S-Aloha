@@ -117,6 +117,7 @@ export const SECTIONS = [
   },
   {
     id: 'administration', label: 'Administration', roles: ['Admin'], entries: [
+      { href: '/admin/perimeters', label: 'Périmètres', description: 'Directions, sites, affectations', icon: 'admin' },
       { href: '/admin/search', label: 'Index de recherche', description: 'État et reconstruction', icon: 'admin' },
     ]
   },

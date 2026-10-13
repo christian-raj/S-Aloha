@@ -104,6 +104,7 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/improvements`, `/improvements/:id` | `modules/continual-improvement/pages/*` | Pratiques › Amélioration (CSI) |
 | `/assessments`, `/assessments/:id` | `modules/compliance-assessment/pages/Assessments`, `AssessmentDetail` | Conformité & réglementation › NIS 2 |
 | `/projects`, `/projects/:id` | `modules/project-management/pages/Projects`, `ProjectDetail` | Projets › Projets |
+| `/admin/perimeters`, `/admin/perimeters/:id` | `core/pages/admin/Perimeters`, `PerimeterDetail` | Administration › Périmètres (Admin) |
 | `/settings/nis2` | `modules/compliance-assessment/pages/ReferentialSettings` | Paramétrage › Référentiel NIS 2 (Admin) |
 
 Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont rendues dans
@@ -294,7 +295,7 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 | Santé | Base, annuaire, version déployée | SOC-26 | 🔜 |
 | Journal d'audit | Journal global, filtrable par auteur, pratique, période | [SOC-20](regles-metier.md#9-traçabilité-commentaires-administration), SOC-26 | 🔜 |
 | Nettoyage | Doublons à fusionner ou supprimer | SOC-26 | 🔜 |
-| Périmètres | Périmètres (création, renommage, suppression douce, restauration), fiche avec compteurs par pratique et affectations d'utilisateurs ou de groupes AD (Manager, User) | [PER-01 à PER-12](perimetres.md) | 🔜 |
+| Périmètres | Périmètres (création, renommage, suppression douce, restauration, suppression définitive si rien n'y est rattaché), fiche avec compteurs par pratique et affectations d'utilisateurs ou de groupes AD (Manager, User) | [PER-01 à PER-12](perimetres.md) | ✅ |
 | Index de recherche | État du service d'embeddings et de l'index par source, reconstruction ; avis ambre si le service est injoignable | [RAG-08](recherche.md) | ✅ |
 
 « Index de recherche » est la **première entrée réelle** de la section : un Admin voit

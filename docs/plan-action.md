@@ -85,11 +85,11 @@ sont spécifiés règle par règle dans [`reference/processus/`](reference/proce
 Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 ([plan d'implémentation du lot 1](reference/processus/readme.md#plan-dimplémentation-conseillé--lot-1)).
 
-**Itération suivante** (lot 1) : étape 6 (**périmètres**,
-[PER-01 à PER-12](reference/perimetres.md)) — décisions D1 à D4 acceptées
-([ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md)). Étape 4 terminée le
-2026-10-11 (INC-11, INC-13, REQ-09, CFG-12 à CFG-14, PRB-24), étape 5 le 2026-10-12
-(groupes AD dans le jeton : SOC-10, PRB-26).
+**Lot 1** : étapes 4 (2026-10-11), 5 (2026-10-12) et 6 (**périmètres**,
+[PER-01 à PER-12](reference/perimetres.md), [ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md),
+2026-10-13) terminées. Restent NIS-18 et RAG-10 (calibrage : jeu de requêtes réelles
+attendu). **Itération suivante** : prérequis communs de la sortie du MVP — commentaires
+(SOC-24) et notifications (SOC-21).
 
 ### Sortie du MVP
 

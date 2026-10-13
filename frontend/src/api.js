@@ -109,7 +109,19 @@ export const api = {
     referential: () => request('/compliance/referential'),
     importText: (csv) => request('/compliance/referential/import', { method: 'POST', body: JSON.stringify({ csv }) })
   },
-  perimeters: { mine: () => request('/perimeters') },
+  perimeters: {
+    mine: () => request('/perimeters'),
+    // Administration › Périmètres (Admin, PER-01, PER-02, PER-12)
+    list: () => request('/admin/perimeters'),
+    get: (id) => request('/admin/perimeters/' + id),
+    create: (dto) => request('/admin/perimeters', { method: 'POST', body: JSON.stringify(dto) }),
+    update: (id, dto) => request('/admin/perimeters/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+    remove: (id) => request('/admin/perimeters/' + id, { method: 'DELETE' }),
+    restore: (id) => request(`/admin/perimeters/${id}/restore`, { method: 'POST' }),
+    purge: (id) => request(`/admin/perimeters/${id}/purge`, { method: 'DELETE' }),
+    assign: (id, dto) => request(`/admin/perimeters/${id}/assignments`, { method: 'POST', body: JSON.stringify(dto) }),
+    unassign: (assignmentId) => request('/admin/assignments/' + assignmentId, { method: 'DELETE' })
+  },
   links: {
     list: (type, id) => request(`/links?type=${type}&id=${id}`),
     create: (dto) => request('/links', { method: 'POST', body: JSON.stringify(dto) }),

@@ -126,13 +126,15 @@ Décisions D1 à D4 acceptées le 2026-10-10 : [ADR-0014](../../decisions/adr-00
 Livraison en plusieurs PR : **modèle, reprise et API d'administration** (fait le 2026-10-12 :
 PER-01, PER-02, PER-10 à PER-12), **droits et visibilité des enregistrements** (PER-03 à
 PER-07, 2026-10-12), **liens, console, reporting et recherche** (PER-08, PER-09,
-2026-10-13), puis **écran d'administration**.
+2026-10-13) et **écran d'administration** (2026-10-13). **Étape 6 terminée le 2026-10-13.**
 
 ### Itération suivante
 
-Étape 6 (étape 4 terminée le 2026-10-11, étape 5 le 2026-10-12) : les groupes AD du jeton
-servent aux affectations de groupes des périmètres. Suivi : issue « Périmètres » du
-[plan d'action](../../plan-action.md#7-feuille-de-route-fonctionnelle).
+Étapes 4 à 6 terminées (2026-10-11 à 2026-10-13). Reste au lot 1 :
+[NIS-18](conformite-nis2.md) (version du référentiel figée dans une évaluation) et
+[RAG-10](../recherche.md) (calibrage de la recherche, qui attend un jeu de requêtes réelles de
+l'organisation). Viennent ensuite les prérequis communs de la sortie du MVP : commentaires
+(SOC-24) et notifications (SOC-21) — [plan d'action](../../plan-action.md#sortie-du-mvp).
 
 ### Hors étapes
 
