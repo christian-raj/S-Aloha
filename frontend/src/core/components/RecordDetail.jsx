@@ -8,6 +8,7 @@ import { dateFr } from '../fields'
 import useTransitions from '../useTransitions'
 import StatusField, { forceOptions } from './StatusField'
 import History, { labelsOf } from './History'
+import Comments from './Comments'
 import PerimeterSelect from './PerimeterSelect'
 import usePerimeters, { perimeterName } from '../usePerimeters'
 
@@ -93,7 +94,8 @@ export default function RecordDetail({ config, children, tab }) {
   // `tab` : objet, liste, ou fonction de l'enregistrement (onglets d'un projet selon ses composants).
   const practice = tab ? [].concat(typeof tab === 'function' ? tab(r) : tab) : []
   const tabs = [['infos', 'Informations'], ...practice.map((t, i) => ['practice-' + i, t.label]),
-    config.linkType && ['links', 'Liens'], config.linkType && ['history', 'Historique']].filter(Boolean)
+    config.linkType && ['links', 'Liens'], config.linkType && ['comments', 'Commentaires'],
+    config.linkType && ['history', 'Historique']].filter(Boolean)
   return (
     <>
       <p style={{ marginBottom: 8 }}><Link to={config.basePath}>← {config.title}</Link></p>
@@ -118,6 +120,7 @@ export default function RecordDetail({ config, children, tab }) {
       </>}
       {practice.map((t, i) => current === 'practice-' + i && <React.Fragment key={i}>{t.render(r, load)}</React.Fragment>)}
       {current === 'links' && <LinkedItems type={config.linkType} id={r.id} hint={config.linkHint} refreshKey={version} />}
+      {current === 'comments' && <Comments type={config.linkType} id={r.id} />}
       {current === 'history' && <History type={config.linkType} id={r.id} labels={labelsOf(config.fields)} refreshKey={version} />}
     </>
   )

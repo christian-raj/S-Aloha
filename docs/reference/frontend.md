@@ -30,6 +30,7 @@ frontend/
     │   │   ├── RecordDetail.jsx  # fiche : en-tête, éditeur, contenu propre, éléments liés
     │   │   ├── RecordForm.jsx    # formulaire décrit par des champs ; conversions API ↔ formulaire
     │   │   ├── StatusBadge.jsx   # badge de statut selon la tonalité déclarée
+    │   │   ├── Comments.jsx      # fil de commentaires d'une fiche, public ou note de travail (SOC-24)
     │   │   ├── PerimeterSelect.jsx # choix du périmètre (création, déplacement), masqué avec un seul périmètre ; core/usePerimeters.js
     │   │   ├── Markdown.jsx      # rendu Markdown sûr (éléments React, jamais de HTML brut), KB-10
     │   │   └── LinkedItems.jsx   # éléments liés (tous processus), ajout par référence
@@ -313,7 +314,7 @@ un onglet sans contenu reste visible avec un état vide explicite.
 | Informations | Champs du § 3, actions de transition (§ 4) en boutons nommés par l'étape (« Prendre en charge », « Autoriser »…) | § 3 et § 4 de chaque pratique | ✅ (champs) / 🔜 (boutons de transition) |
 | Propre à la pratique | Analyse de cause racine et Actions correctives (problème), Relations et impact (CI), Accords (SLA) (service), Conflits (changement) | PRB-05, CFG-04, SLM-02, CHG-09 | ✅ |
 | Liens | Enregistrements reliés, toutes pratiques ; onglet dédié ; un enregistrement d'un autre périmètre est listé masqué, sans lien ni retrait (PER-08) | SOC-12, PER-08 | ✅ |
-| Commentaires | Fil public / notes de travail | SOC-24 | 🔜 |
+| Commentaires | Fil chronologique, public ou note de travail (marquée, invisible du demandeur) ; `core/components/Comments.jsx` | SOC-24 | ✅ |
 | Pièces jointes | | SOC-25 | 🔜 |
 | Historique | Journal d'audit de l'enregistrement (`core/components/History.jsx`) ; un Admin voit aussi, dans la liste des statuts, les transitions hors graphe, marquées « transition forcée », avec motif obligatoire (`StatusField.jsx`) | SOC-20, SOC-05 | ✅ |
 

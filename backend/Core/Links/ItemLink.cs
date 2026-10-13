@@ -73,6 +73,16 @@ public static class ItemLinks
 
     public static Kind? ByType(string type) => Kinds.FirstOrDefault(k => k.Type == type);
 
+    /// <summary>Enregistrements du socle d'un type (commentaires, SOC-24) ; null pour un type inconnu.</summary>
+    public static IQueryable<Records.Record>? Records(AppDbContext db, string type) => type switch
+    {
+        "incident" => db.Incidents, "request" => db.ServiceRequests, "problem" => db.Problems,
+        "change" => db.Changes, "ci" => db.ConfigurationItems, "service" => db.Services,
+        "agreement" => db.Agreements, "article" => db.KnowledgeArticles, "improvement" => db.Improvements,
+        "assessment" => db.Assessments, "project" => db.Projects,
+        _ => null
+    };
+
     /// <summary>Type désigné par une référence XXX-AAAA-NNNN.</summary>
     public static Kind? ByReference(string reference)
     {

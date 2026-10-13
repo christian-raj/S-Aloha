@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Commentaires** (SOC-24) : onglet « Commentaires » sur chaque fiche ; un commentaire est
+  public (lu par le demandeur) ou note de travail (lue et écrite par ceux qui traitent
+  l'enregistrement, jamais par le demandeur qui n'est pas intervenant) ; retrait par l'auteur
+  ou un Admin.
+
 - **Conformité NIS 2 — version du référentiel** (NIS-18) : chaque évaluation enregistre la
   version du ReCyF évaluée ; à la validation, ses exigences applicables sont figées, et une
   nouvelle version embarquée ne change ni son questionnaire, ni son score, ni la synthèse du
