@@ -4,13 +4,13 @@
 
 > Droits **scopés par périmètre** : un périmètre est une partie de l'organisation (direction,
 > site, entité) ; un gestionnaire ou un intervenant n'agit que sur les enregistrements de ses
-> périmètres, l'administrateur sur tous. Règles préfixées **PER**. Statut : **spécifié, à
-> implémenter** (étape 6 du [plan du lot 1](processus/readme.md#plan-dimplémentation-conseillé--lot-1)) ;
+> périmètres, l'administrateur sur tous. Règles préfixées **PER**. Statut : **implémenté**
+> (étape 6 du [plan du lot 1](processus/readme.md#plan-dimplémentation-conseillé--lot-1)) ;
 > les choix structurants sont tranchés dans l'[ADR-0014](../decisions/adr-0014-perimetres-droits-scopes.md) (accepté).
 > **Avancement** : modèle, reprise des données et API d'administration (PER-01, PER-02,
 > PER-10 à PER-12) ; rôle effectif, création, visibilité, décisions et déplacement par
 > périmètre (PER-03 à PER-07) ; liens, console, reporting et recherche limités au périmètre
-> (PER-08, PER-09). À venir : écran d'administration (Administration › Périmètres).
+> (PER-08, PER-09) ; écran Administration › Périmètres. Étape 6 terminée le 2026-10-13.
 
 ## 1. Pourquoi
 
@@ -46,8 +46,8 @@ erDiagram
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| PER-01 | **Périmètre** : nom unique (insensible à la casse) et description ; créé, renommé et supprimé par l'**Admin** seul. Suppression **douce** (restaurable) ; suppression définitive seulement si aucun enregistrement ni affectation n'y est rattaché (409 sinon, avec les compteurs). « Organisation » ne se supprime pas | ✅ (API) / 🔜 (écran) | |
-| PER-02 | **Affectation** d'un utilisateur ou d'un **groupe AD** à un périmètre avec le rôle Manager ou User, par l'Admin ; plusieurs affectations par compte ; jamais d'Admin scopé | ✅ (API) / 🔜 (écran) | |
+| PER-01 | **Périmètre** : nom unique (insensible à la casse) et description ; créé, renommé et supprimé par l'**Admin** seul. Suppression **douce** (restaurable) ; suppression définitive seulement si aucun enregistrement ni affectation n'y est rattaché (409 sinon, avec les compteurs). « Organisation » ne se supprime pas | ✅ | |
+| PER-02 | **Affectation** d'un utilisateur ou d'un **groupe AD** à un périmètre avec le rôle Manager ou User, par l'Admin ; plusieurs affectations par compte ; jamais d'Admin scopé | ✅ | |
 | PER-03 | **Rôle effectif** sur un enregistrement : le plus élevé des rôles que l'utilisateur tient sur le périmètre de l'enregistrement, directement ou par un de ses groupes (étape 5, SOC-10) ; Admin partout ; le rôle par périmètre prime sur le rôle AD (D4) | ✅ | |
 | PER-04 | Tout enregistrement de pratique **porte un périmètre**, obligatoire à la création ; proposé par défaut quand l'utilisateur n'a qu'un périmètre (sélecteur masqué) ; on ne crée que dans un périmètre où l'on est affecté (403), jamais dans un périmètre supprimé (400) | ✅ | |
 | PER-05 | **Visibilité** : un utilisateur voit les enregistrements de ses périmètres ; les **référentiels partagés** (catalogue des services, articles publiés) restent visibles de tous (ADR-0014, D2), en lecture seule hors de ses périmètres ; hors de ses périmètres, un enregistrement répond 404 (fiche et routes propres : impact d'un CI, questionnaire NIS 2, éléments et synthèse d'un projet, analyses et actions d'un problème) | ✅ | |
@@ -57,7 +57,7 @@ erDiagram
 | PER-09 | **Console, reporting, recherche, cas similaires** : limités aux périmètres de l'utilisateur ; les blocs de pilotage de la console, aux périmètres dont il est **gestionnaire** (un User AD Manager d'un périmètre y a accès, D4) ; l'Admin voit tout ; filtre « Périmètre » (`?perimeter=`) dans la console et le reporting dès que l'on a plusieurs périmètres | ✅ | |
 | PER-10 | **Reprise des données** : à la mise à niveau, un périmètre « Organisation » est créé et reçoit tous les enregistrements ; un compte qu'**aucune affectation** ne désigne (ni directement ni par ses groupes) est réputé affecté à ce périmètre avec son rôle AD (comportement inchangé) (ADR-0014, D3). *Amendé le 2026-10-12 : la règle valait « tant qu'aucune affectation n'existe » ; la première affectation créée par l'Admin aurait alors coupé l'accès de tous les autres comptes* | ✅ (rattachement par la migration `Perimeters`) | |
 | PER-11 | Créations, modifications, suppressions de périmètres et d'affectations sont **tracées** au journal d'audit (SOC-20) | ✅ | |
-| PER-12 | Fiche d'un périmètre : compteurs des enregistrements rattachés par pratique et liste des affectations | ✅ (API) / 🔜 (écran) | |
+| PER-12 | Fiche d'un périmètre : compteurs des enregistrements rattachés par pratique et liste des affectations | ✅ | |
 
 ## 4. Administration
 

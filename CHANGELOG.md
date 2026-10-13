@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Administration › Périmètres** (Admin) : liste des périmètres (supprimés grisés et
+  restaurables), création, fiche avec renommage, enregistrements rattachés par pratique,
+  affectations d'utilisateurs ou de groupes AD choisis dans l'annuaire (Manager ou User),
+  suppression douce et suppression définitive quand rien n'y est rattaché (PER-01, PER-02,
+  PER-12). L'étape 6 du lot 1 est terminée.
 - **Périmètres — vues transverses** (lot 1, étape 6) : un lien vers un enregistrement d'un
   autre périmètre reste visible mais masqué ; la console, le reporting, la recherche et les
   cas similaires se limitent aux périmètres de l'utilisateur, le pilotage de la console aux
