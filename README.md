@@ -81,7 +81,7 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 | **Changements** — standard pré-autorisé, autorisation, retour arrière, calendrier | ✅ Disponible (MVP) |
 | **Configuration (CMDB)** — éléments de configuration et leurs relations | ✅ Disponible (MVP) |
 | **Niveaux de service** — catalogue des services, SLA et dates de revue | ✅ Disponible (MVP) |
-| **Connaissances** — articles en Markdown, soumission et publication validée, revue périodique, articles d'erreur connue issus des problèmes | ✅ Disponible (MVP) |
+| **Connaissances** — articles en Markdown, soumission et publication validée, revue périodique, articles d'erreur connue issus des problèmes, notifications | ✅ Disponible |
 | **Amélioration continue** — registre et modèle ITIL 4 en 7 étapes | ✅ Disponible (MVP) |
 | **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions | ✅ Disponible (MVP) |
 | **Projets** — Scrum, Kanban, Cycle en V, PRINCE2 ou hybride : la méthode active backlog, sprints, phases, jalons, risques… | ✅ Disponible (MVP) |
