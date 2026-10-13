@@ -93,6 +93,15 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             else notify.ToCreator(i, "improvement", ev);
         }
 
+        // CFG-15 : CI En service non vérifié depuis 12 mois → propriétaire.
+        var limit = today.AddMonths(-12);
+        foreach (var c in await db.ConfigurationItems.AsNoTracking()
+                     .Where(c => c.Status == "En service" && (c.LastVerifiedAt ?? c.CreatedAt) < limit).ToListAsync())
+        {
+            var ev = $"Fiche à vérifier (dernière vérification : {Day(c.LastVerifiedAt ?? c.CreatedAt)})";
+            if (Fresh("ci", c.Id, ev)) notify.ToOwner(c, "ci", ev);
+        }
+
         // SLM-24 : SLA expirant dans 30 jours → gestionnaires ; revue échue → propriétaire du service.
         foreach (var s in await db.Agreements.AsNoTracking().Include(s => s.Service).Where(s => s.Status == "En vigueur").ToListAsync())
         {

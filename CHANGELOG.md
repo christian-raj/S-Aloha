@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Configuration** : vérification d'un CI par son propriétaire ou un gestionnaire, relance
+  au propriétaire d'un CI En service non vérifié depuis 12 mois (CFG-15) ; services touchés
+  par un CI et par ses CI en aval (CFG-21) ; onglet **Impact** de la fiche d'un changement
+  (CFG-20) ; CI passé Hors service notifié aussi aux responsables des services touchés
+  (CFG-22). Migration `CiVerification` (deux colonnes nulles).
+
 - **Amélioration continue** : source de chaque amélioration et enregistrement d'origine
   relié (CSI-10) ; valeur et effort notés à la validation, priorité calculée (CSI-12) ;
   amélioration en retard relancée à son porteur (CSI-21) ; **récurrence après correctif** :

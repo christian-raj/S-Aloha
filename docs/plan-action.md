@@ -75,7 +75,7 @@ sont spécifiés règle par règle dans [`reference/processus/`](reference/proce
 | F2 | Incidents, Problèmes | Service et catégorie tirés du catalogue et d'un référentiel | [SOC-27](reference/regles-metier.md#9-traçabilité-commentaires-administration), [SLM-10](reference/processus/gestion-des-niveaux-de-service.md) |
 | F3 | Demandes | Catalogue de demandes, approbation facultative, tâches | [REQ-20 à REQ-25](reference/processus/gestion-des-demandes.md) |
 | F4 | Changements | Modèles standard, revue post-implémentation, gel, CAB | [CHG-15, CHG-20, CHG-25, CHG-26](reference/processus/habilitation-des-changements.md) |
-| F5 | Configuration | Rattachement CI ↔ service, import en masse | [CFG-21, CFG-30](reference/processus/gestion-de-la-configuration.md) |
+| F5 | Configuration | ~~Rattachement CI ↔ service~~ (2026-10-13), import en masse | [CFG-21, CFG-30](reference/processus/gestion-de-la-configuration.md) |
 | F6 | Tous | Transitions contraintes, journal d'audit | [SOC-05, SOC-20](reference/regles-metier.md#5-règles-communes-aux-processus) et § 4 de chaque pratique |
 | F7 | Tous | Notifications, commentaires, pièces jointes | [SOC-21 à SOC-25](reference/regles-metier.md#8-notifications) |
 | F8 | Connaissances | Rendu Markdown, suggestion d'articles | [KB-10](reference/processus/gestion-des-connaissances.md), [INC-19](reference/processus/gestion-des-incidents.md) |
@@ -109,7 +109,7 @@ en attente, sans effet sur la sortie du MVP (décision du 2026-10-13) ;
 | [Demandes](reference/processus/gestion-des-demandes.md) | REQ-09 ; REQ-20 à REQ-23 (catalogue de demandes, modèles, échéance, groupe d'exécution), REQ-30 (retard), REQ-31 |
 | [Problèmes](reference/processus/gestion-des-problemes.md) | PRB-10 (motif de réouverture), PRB-24, PRB-26 ; PRB-25 (approbation par l'A), PRB-27 (changement depuis une action), PRB-30 (article d'erreur connue), PRB-31 |
 | [Changements](reference/processus/habilitation-des-changements.md) | CHG-14, CHG-15 (dates réelles, revue post-implémentation), CHG-16 (CI reliés), CHG-20, CHG-21 (autorité selon le risque, séparation des tâches), CHG-25 (gel), CHG-26 (modèles standard), CHG-24 |
-| [Configuration](reference/processus/gestion-de-la-configuration.md) | CFG-12 à CFG-14 ; CFG-15 (vérification), CFG-20 (impact d'un changement), CFG-21 (CI ↔ service), CFG-22 |
+| [Configuration](reference/processus/gestion-de-la-configuration.md) | ~~CFG-12 à CFG-14~~ ; ~~CFG-15 (vérification), CFG-20 (impact d'un changement), CFG-21 (CI ↔ service), CFG-22~~ (2026-10-13) : toutes les règles de sortie sont faites |
 | [Niveaux de service](reference/processus/gestion-des-niveaux-de-service.md) | SLM-04 (expiration), SLM-10, SLM-13, SLM-14 (heures de service), **SLM-20 (mesure du respect, F1)**, SLM-22, SLM-23, SLM-24 |
 | [Connaissances](reference/processus/gestion-des-connaissances.md) | ~~KB-10, KB-11, KB-12, KB-17, KB-21~~ faits le 2026-10-12 (avec KB-14, KB-18) ; ~~KB-20~~ (2026-10-13) : **sortie du MVP le 2026-10-13** |
 | [Amélioration continue](reference/processus/amelioration-continue.md) | ~~CSI-10, CSI-12 (source, priorisation)~~, ~~CSI-21, CSI-23~~ (2026-10-13) ; CSI-20 fait pour les problèmes récurrents, reste sa part SLA (dépend de SLM-20 et SLM-23) |

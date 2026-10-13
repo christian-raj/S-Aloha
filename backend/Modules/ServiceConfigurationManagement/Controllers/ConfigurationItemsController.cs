@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Links;
 using SAloha.Api.Core.Records;
 using SAloha.Api.Core.Notifications;
 
@@ -26,10 +28,35 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
         return null;
     }
 
-    // CFG-22 : CI passé Hors service → propriétaire.
+    // CFG-22 : CI passé Hors service → propriétaire, et responsables des services touchés (CFG-21).
     protected override void OnNotify(ConfigurationItem e, string? from, Notifier n)
     {
-        if (from is not null && from != "" && e.Status == "Hors service") n.ToOwner(e, LinkType, "CI passé hors service");
+        if (from is null || from == "" || e.Status != "Hors service") return;
+        n.ToOwner(e, LinkType, "CI passé hors service");
+        foreach (var s in _servicesTouched) n.ToPrincipal(e, LinkType, s.OwnerType, s.OwnerId, $"CI passé hors service : service {s.Reference} touché");
+    }
+
+    private List<ServiceLevelManagement.ItService> _servicesTouched = [];
+
+    // Les services touchés se calculent avant l'envoi (OnNotify est synchrone).
+    protected override async Task BeforeSaveAsync(ConfigurationItem e, bool creating)
+    {
+        if (creating || e.Status != "Hors service" || Db.Entry(e).Property(x => x.Status).OriginalValue == "Hors service") return;
+        var graph = await ImpactGraphAsync();
+        _servicesTouched = await ServicesOfAsync(Traverse(e.Id, graph.Down).Select(x => x.Id).Append(e.Id));
+    }
+
+    /// <summary>CFG-15 : le propriétaire (ou un gestionnaire) atteste que la fiche est exacte.</summary>
+    [HttpPost("{id:int}/verify")]
+    public async Task<IActionResult> Verify(int id)
+    {
+        var e = await Db.ConfigurationItems.FindAsync(id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        ActOn(e.PerimeterId);
+        if (!IsManager && !User.Designates(e.OwnerType, e.OwnerId)) return Forbid();
+        e.LastVerifiedAt = DateTime.UtcNow; e.LastVerifiedBy = MyDisplay;
+        await Db.SaveChangesAsync();
+        return Ok(e);
     }
 
     // CFG-12 : retirer un CI est réservé aux gestionnaires.
@@ -103,30 +130,86 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
     public async Task<IActionResult> Impact(int id)
     {
         if (!await VisibleAsync(id)) return NotFound();
+        var graph = await ImpactGraphAsync();
+        var downstream = Traverse(id, graph.Down);
+        var upstream = Traverse(id, graph.Up);
+        var describe = await DescriberAsync(downstream.Concat(upstream).SelectMany(n => new[] { n.Id, n.Via }));
+        // CFG-21 : les services touchés si ce CI tombe (les siens et ceux des CI en aval).
+        var services = await ServicesTouchedAsync(downstream.Select(n => n.Id).Append(id));
+        return Ok(new { Downstream = downstream.Select(describe), Upstream = upstream.Select(describe), Services = services });
+    }
+
+    /// <summary>
+    /// CFG-20 : impact d'un enregistrement relié à des CI (un changement) — ses CI visibles,
+    /// tout ce qui en dépend en aval (à la plus courte distance), et les services touchés.
+    /// </summary>
+    [HttpGet("impact-of")]
+    public async Task<IActionResult> ImpactOf([FromQuery] string type, [FromQuery] int id)
+    {
+        var kind = ItemLinks.ByType(type);
+        var target = kind is null ? null : await kind.Query(Db).FirstOrDefaultAsync(t => t.Id == id);
+        var scope = await ScopeAsync();
+        if (target is null || !scope.Sees(target)) return NotFound();
+        var linked = await Db.ItemLinks.AsNoTracking()
+            .Where(l => (l.FromType == type && l.FromId == id && l.ToType == "ci") || (l.ToType == type && l.ToId == id && l.FromType == "ci"))
+            .Select(l => l.FromType == "ci" ? l.FromId : l.ToId).Distinct().ToListAsync();
+        var cis = await Db.ConfigurationItems.AsNoTracking().Where(c => linked.Contains(c.Id)).ToListAsync();
+        cis = cis.Where(c => scope.Sees(c.PerimeterId)).ToList();
+        var graph = await ImpactGraphAsync();
+        var downstream = cis.SelectMany(c => Traverse(c.Id, graph.Down))
+            .Where(n => !cis.Any(c => c.Id == n.Id))
+            .GroupBy(n => n.Id).Select(g => g.OrderBy(n => n.Depth).First()).OrderBy(n => n.Depth).ToList();
+        var describe = await DescriberAsync(downstream.SelectMany(n => new[] { n.Id, n.Via }));
+        var services = await ServicesTouchedAsync(cis.Select(c => c.Id).Concat(downstream.Select(n => n.Id)));
+        return Ok(new
+        {
+            Cis = cis.Select(c => new { c.Id, c.Reference, c.Title, c.CiType, c.Status }),
+            Downstream = downstream.Select(describe), Services = services
+        });
+    }
+
+    private record Graph(ILookup<int, (int Next, string Type)> Down, ILookup<int, (int Next, string Type)> Up);
+
+    /// <summary>Arcs « la panne de From touche To », avec la relation d'origine, dans les deux sens.</summary>
+    private async Task<Graph> ImpactGraphAsync()
+    {
         var relations = await Db.CiRelationships.AsNoTracking().ToListAsync();
-        // Arcs « la panne de From touche To », avec la relation d'origine.
         var impacts = relations.Select(r => CiRelationship.FailureFlowsFromTarget(r.Type)
             ? (From: r.TargetId, To: r.SourceId, r.Type)
             : (From: r.SourceId, To: r.TargetId, r.Type)).ToList();
+        return new Graph(impacts.ToLookup(a => a.From, a => (Next: a.To, a.Type)), impacts.ToLookup(a => a.To, a => (Next: a.From, a.Type)));
+    }
 
-        var downstream = Traverse(id, impacts.ToLookup(a => a.From, a => (Next: a.To, a.Type)));
-        var upstream = Traverse(id, impacts.ToLookup(a => a.To, a => (Next: a.From, a.Type)));
-
-        var ids = downstream.Concat(upstream).SelectMany(n => new[] { n.Id, n.Via }).Distinct().ToList();
+    /// <summary>Description d'un nœud d'impact ; un CI d'un autre périmètre n'est pas décrit (PER-08).</summary>
+    private async Task<Func<ImpactNode, object>> DescriberAsync(IEnumerable<int> idList)
+    {
+        var ids = idList.Distinct().ToList();
         var cis = await Db.ConfigurationItems.AsNoTracking().Where(c => ids.Contains(c.Id))
             .Select(c => new { c.Id, c.Reference, c.Title, c.CiType, c.Status, c.PerimeterId }).ToDictionaryAsync(c => c.Id);
-        // PER-08 : le parcours suit tout le graphe, mais un CI d'un autre périmètre n'est pas décrit.
         var scope = await ScopeAsync();
         string Name(int ciId, string text) => scope.Sees(cis[ciId].PerimeterId) ? text : "CI d'un autre périmètre";
-        object Describe(ImpactNode n) => new
+        return n => new
         {
             Id = scope.Sees(cis[n.Id].PerimeterId) ? n.Id : 0,
             Reference = Name(n.Id, cis[n.Id].Reference), Title = Name(n.Id, cis[n.Id].Title), cis[n.Id].CiType, cis[n.Id].Status,
             n.Depth, n.Relation,
             Via = new { Id = scope.Sees(cis[n.Via].PerimeterId) ? n.Via : 0, Reference = Name(n.Via, cis[n.Via].Reference), Title = Name(n.Via, cis[n.Via].Title) }
         };
-        return Ok(new { Downstream = downstream.Select(Describe), Upstream = upstream.Select(Describe) });
     }
+
+    /// <summary>CFG-21 : services supportés par ces CI (liens CI ↔ service), du catalogue.</summary>
+    private async Task<List<ServiceLevelManagement.ItService>> ServicesOfAsync(IEnumerable<int> ciIdList)
+    {
+        var ciIds = ciIdList.Distinct().ToList();
+        var serviceIds = await Db.ItemLinks.AsNoTracking()
+            .Where(l => (l.FromType == "ci" && ciIds.Contains(l.FromId) && l.ToType == "service")
+                        || (l.ToType == "ci" && ciIds.Contains(l.ToId) && l.FromType == "service"))
+            .Select(l => l.FromType == "service" ? l.FromId : l.ToId).Distinct().ToListAsync();
+        return await Db.Services.AsNoTracking().Where(s => serviceIds.Contains(s.Id)).OrderBy(s => s.Title).ToListAsync();
+    }
+
+    private async Task<List<object>> ServicesTouchedAsync(IEnumerable<int> ciIds) =>
+        (await ServicesOfAsync(ciIds)).Select(s => (object)new { s.Id, s.Reference, s.Title, s.Status, s.OwnerDisplayName }).ToList();
 
     private record ImpactNode(int Id, int Depth, int Via, string Relation);
 

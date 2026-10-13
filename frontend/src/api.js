@@ -69,6 +69,8 @@ export const api = {
   },
   configurationItems: {
     impact: (id) => request(`/configuration-items/${id}/impact`),
+    impactOf: (type, id) => request(`/configuration-items/impact-of?type=${type}&id=${id}`),
+    verify: (id) => request(`/configuration-items/${id}/verify`, { method: 'POST' }),
     ...records('/configuration-items'),
     addRelation: (id, dto) => request(`/configuration-items/${id}/relations`, { method: 'POST', body: JSON.stringify(dto) }),
     removeRelation: (relId) => request('/configuration-items/relations/' + relId, { method: 'DELETE' })
