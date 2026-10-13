@@ -211,7 +211,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 |---|---|---|---|
 | Ma console (filtre « Périmètre » dès que l'on en a plusieurs, PER-09) | Tous | [socle § 2](regles-metier.md#2-consoles-par-rôle) | ✅ |
 | Reporting : tableau de bord à onglets (synthèse, incidents, problèmes, changements et projets, conformité), période, service, export CSV et PDF | Tous | [REP-01 à REP-43](reporting.md), [SOC-18, SOC-19](regles-metier.md#7-reporting) | ✅ |
-| Notifications : **cloche** dans l'en-tête avec compteur, pas une entrée de menu | Tous | [SOC-21](regles-metier.md#8-notifications) | 🔜 |
+| Notifications : **cloche** au pied de la barre latérale (barre supérieure en mobile) avec compteur, pas une entrée de menu ; `core/components/NotificationBell.jsx` | Tous | [SOC-21](regles-metier.md#8-notifications) | ✅ |
 
 ### Pratiques
 

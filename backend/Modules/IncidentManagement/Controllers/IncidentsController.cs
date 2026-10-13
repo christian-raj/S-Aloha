@@ -4,6 +4,7 @@ using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Itil;
 using SAloha.Api.Core.Links;
 using SAloha.Api.Core.Records;
+using SAloha.Api.Core.Notifications;
 
 namespace SAloha.Api.Modules.IncidentManagement;
 
@@ -29,6 +30,7 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
             return "Seul un gestionnaire peut déclarer ou retirer le caractère majeur d'un incident.";
 
         e.Impact = dto.Impact!; e.Urgency = dto.Urgency!;
+        _becameMajor = dto.IsMajor && (creating || !e.IsMajor);
         e.IsMajor = dto.IsMajor;
         // INC-13 : un incident majeur a toujours priorité P1.
         e.Priority = e.IsMajor ? "P1" : Priority.Compute(e.Impact, e.Urgency);
@@ -90,6 +92,15 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         if (creating || entry.Property(x => x.Priority).IsModified || entry.Property(x => x.AffectedService).IsModified
             || e.ResolutionDueAt is null)
             e.ResolutionDueAt = await IncidentSla.DueAsync(Db, e);
+    }
+
+    private bool _becameMajor;
+
+    // INC-25 : incident majeur déclaré → gestionnaires ; résolution → déclarant.
+    protected override void OnNotify(Incident e, string? from, Notifier n)
+    {
+        if (_becameMajor) n.ToManagers(e, LinkType, "Incident majeur déclaré");
+        if (from is not null && e.Status == "Résolu") n.ToCreator(e, LinkType, "Incident résolu");
     }
 
     protected override void OnStatusChanged(Incident e, string from)

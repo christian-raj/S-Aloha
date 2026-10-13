@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import Layout from './Layout'
 
 let role = 'Admin'
-vi.mock('../../api', () => ({ getUser: () => ({ username: 'u', displayName: 'U', role }) }))
+vi.mock('../../api', () => ({ api: {}, getUser: () => ({ username: 'u', displayName: 'U', role }) }))
 
 afterEach(cleanup)
 

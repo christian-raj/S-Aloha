@@ -5,6 +5,7 @@ using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Links;
+using SAloha.Api.Core.Notifications;
 using SAloha.Api.Core.Perimeters;
 using System.Linq.Expressions;
 
@@ -140,6 +141,26 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     /// qui interrogent la base (échéance SLA d'un incident, INC-21).
     /// </summary>
     protected virtual Task BeforeSaveAsync(T e, bool creating) => Task.CompletedTask;
+    /// <summary>Notifications de l'enregistrement (SOC-21), envoyées après l'enregistrement.</summary>
+    protected Notifier Notify => HttpContext.RequestServices.GetRequiredService<Notifier>();
+    /// <summary>
+    /// Événements propres à la pratique (§ 6 de son document) : <paramref name="from"/> est le
+    /// statut quitté (null s'il n'a pas changé, vide à la création). L'affectation au
+    /// responsable est notifiée par le socle.
+    /// </summary>
+    protected virtual void OnNotify(T e, string? from, Notifier n) { }
+
+    /// <summary>SOC-21 : affectation au nouveau responsable, puis événements de la pratique.</summary>
+    private async Task NotifyAsync(T e, string? from, (string? Type, string? Id) ownerBefore)
+    {
+        var n = Notify;
+        if (!string.IsNullOrWhiteSpace(e.OwnerId)
+            && (!string.Equals(e.OwnerId, ownerBefore.Id, StringComparison.OrdinalIgnoreCase) || e.OwnerType != ownerBefore.Type))
+            n.ToOwner(e, LinkType, e.OwnerType == "Group" ? "Confié à votre groupe" : "Confié à vous");
+        OnNotify(e, from, n);
+        await n.SaveAsync();
+    }
+
     /// <summary>Après la création (référence attribuée, enregistré) : éléments dépendants à créer.</summary>
     protected virtual Task OnCreatedAsync(T e) => Task.CompletedTask;
     protected virtual IQueryable<T> Filter(IQueryable<T> q) => q;
@@ -223,6 +244,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         await BeforeSaveAsync(e, true);
         await db.SaveChangesAsync();
         await OnCreatedAsync(e);
+        await NotifyAsync(e, "", (null, null));
         return CreatedAtAction(nameof(Get), new { id = e.Id }, e);
     }
 
@@ -245,6 +267,8 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
             if (moveError is not null) return BadRequest(new { message = moveError });
         }
         var demoted = IsManager ? null : StatusAfterEdit(e, dto);
+        var ownerBefore = (e.OwnerType, e.OwnerId);
+        string? left = null;
         var error = Fill(e, dto, false) ?? await ValidateAsync(e);
         if (error is not null) return BadRequest(new { message = error });
         error = await ConflictAsync(e);
@@ -269,11 +293,13 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
             var from = e.Status;
             e.Status = target;
             OnStatusChanged(e, from);
+            left = from;
         }
         if (moveTo is not null) e.PerimeterId = moveTo.Value;
         e.UpdatedAt = DateTime.UtcNow;
         await BeforeSaveAsync(e, false);
         await db.SaveChangesAsync();
+        await NotifyAsync(e, left, ownerBefore);
         return Ok(e);
     }
 
@@ -287,6 +313,10 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         ItemLinks.RemoveFor(db, LinkType, id);
         // SOC-24 : ses commentaires partent avec lui.
         db.Comments.RemoveRange(db.Comments.Where(c => c.TargetType == LinkType && c.TargetId == id));
+        // SOC-21 : ses notifications aussi (elles mèneraient à une fiche disparue).
+        var notifications = db.Notifications.Where(n => n.TargetType == LinkType && n.TargetId == id);
+        db.NotificationReads.RemoveRange(db.NotificationReads.Where(r => notifications.Any(n => n.Id == r.NotificationId)));
+        db.Notifications.RemoveRange(notifications);
         await db.SaveChangesAsync();
         return NoContent();
     }

@@ -149,7 +149,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | INC-22 | Les délais se comptent en **heures de service** du service (SLM-14) et excluent le temps En attente | 🔜 | 2 |
 | INC-23 | **Résolu au premier contact** : résolu sans passer par En cours, sans changement de responsable ni réouverture ; fixé à la première résolution, une réouverture le met à faux | ✅ | |
 | INC-24 | **SLA en risque** : moins de 25 % du délai de résolution restant ⇒ bloc « Urgent » de la console du responsable et des gestionnaires ; **SLA dépassé** ⇒ marqué sur la fiche et le registre | 🔜 | 2 |
-| INC-25 | Notifications (SOC-21) : affectation → responsable (ou membres du groupe) ; résolution → utilisateur affecté ; incident majeur déclaré → tous les gestionnaires ; SLA en risque → responsable | 🔜 | 2 |
+| INC-25 | Notifications (SOC-21) : affectation → responsable (ou membres du groupe) ; résolution → utilisateur affecté ; incident majeur déclaré → tous les gestionnaires ; SLA en risque → responsable | ✅ (affectation, résolution, incident majeur) / 🔜 (SLA en risque, avec les échéances) | |
 | INC-26 | Un incident **En attente** depuis plus de 5 jours ouvrés remonte en relance au responsable | 🔜 | 3 |
 | INC-27 | **Début constaté** (`OccurredAt`), facultatif, jamais postérieur à la déclaration (5 minutes de tolérance, 400 sinon) ; le MTTD en découle ([REP-11](../reporting.md)) | ✅ | |
 

@@ -148,7 +148,7 @@ stateDiagram-v2
 | NIS-13 | **Écart** d'une exigence = 3 − score ; la liste des écarts est triée par écart décroissant | ✅ | |
 | NIS-14 | La synthèse montre, pour chaque écart, l'**action d'amélioration** liée et son statut (plan de traitement) | 🔜 | 2 |
 | NIS-15 | **Créer une action d'amélioration** depuis un écart : enregistrement AMI (étape 2, priorité Élevée si score ≤ 1, sinon Moyenne ; mesure de départ = score, cible 3/3) relié à l'évaluation ; un seul par exigence (409 sinon, avec la référence existante) ; refusé sans écart noté (400) | ✅ | |
-| NIS-24 | Notifications (SOC-21) : évaluation créée → responsable ; validation ou réouverture → responsable et contributeurs | 🔜 | 3 |
+| NIS-24 | Notifications (SOC-21) : évaluation créée → responsable ; validation ou réouverture → responsable et contributeurs | ✅ | |
 
 ## 7. Liens avec les autres pratiques
 

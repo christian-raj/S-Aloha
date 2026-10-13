@@ -231,14 +231,17 @@ et à venir, sont au § 8 de son document. Indicateurs historiques, toujours ser
 
 ## 8. Notifications
 
-Aucune notification n'existe aujourd'hui. Cible : notifications **dans l'application**
-(cloche, compteur), puis par courriel (SMTP configurable).
+Notifications **dans l'application** (cloche dans la barre latérale ou la barre mobile,
+compteur des non lues, ouverture de la fiche) ; le courriel viendra ensuite (SOC-22). Le
+destinataire est un compte, un groupe AD ou « les gestionnaires du périmètre », résolu à la
+lecture ; l'auteur d'un événement n'est jamais notifié ; les 30 derniers jours, 50 au plus ; supprimer un
+enregistrement retire ses notifications.
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| SOC-21 | Chaque événement listé au § 6 des documents de pratique notifie ses destinataires (responsable, groupe, demandeur, gestionnaires) dans l'application | 🔜 | 2 |
+| SOC-21 | Chaque événement listé au § 6 des documents de pratique notifie ses destinataires (responsable, groupe, demandeur, gestionnaires) dans l'application ; toute affectation notifie le nouveau responsable | ✅ (événements déclenchés par une action) / 🔜 (événements datés : échéances, retards, revues, J-1 — tâche périodique) | 2 |
 | SOC-22 | Envoi par **courriel** des mêmes notifications, configurable par utilisateur (aucun, immédiat, résumé quotidien) | 🔜 | 3 |
-| SOC-23 | Une notification porte la référence, le titre, l'événement et un lien vers la fiche ; jamais de donnée au-delà de ce que le destinataire peut consulter | 🔜 | 2 |
+| SOC-23 | Une notification porte la référence, le titre, l'événement et un lien vers la fiche ; jamais de donnée au-delà de ce que le destinataire peut consulter (filtrée par ses périmètres à la lecture) | ✅ | |
 
 ## 9. Traçabilité, commentaires, administration
 

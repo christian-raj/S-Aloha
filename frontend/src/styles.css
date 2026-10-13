@@ -779,3 +779,28 @@ table.compact td { padding: 9px 12px; font-size: var(--fs-sm); }
 .comments li.is-note { border-left: 3px solid var(--accent-amber); background: var(--accent-amber-soft); }
 .comment-meta { display: flex; gap: 8px; align-items: center; font-size: var(--fs-sm); color: var(--text-secondary); }
 .comment-body { margin-top: 6px; white-space: pre-wrap; color: var(--text-primary); }
+
+/* Notifications (SOC-21) : cloche au pied de la barre latérale (bureau) ou dans la barre mobile. */
+.topbar .push { margin-left: auto; }
+.notif { position: relative; }
+.notif-btn { position: relative; display: grid; place-items: center; background: none; border: none; padding: 4px;
+  color: rgb(255 255 255 / .6); cursor: pointer; }
+.notif-btn:hover { color: rgb(255 255 255 / .9); }
+.notif-btn:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
+.notif-count { position: absolute; top: -4px; right: -6px; min-width: 18px; padding: 0 4px; background: var(--accent-red);
+  color: #fff; font-size: var(--fs-2xs); font-weight: 600; line-height: 18px; text-align: center; }
+.notif-panel { position: fixed; z-index: 50; width: min(380px, calc(100vw - 32px)); max-height: 70vh; overflow-y: auto;
+  background: var(--bg-surface-raised); border: 1px solid var(--border-default); box-shadow: var(--shadow-lg); color: var(--text-primary); }
+.notif.side .notif-panel { left: 284px; bottom: 16px; }
+.notif.top .notif-panel { right: 16px; top: 56px; }
+.notif-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); }
+.notif-empty { padding: 14px; }
+.notif-panel ul { list-style: none; margin: 0; padding: 0; }
+.notif-panel li + li { border-top: 1px solid var(--border-subtle); }
+.notif-panel li button { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; padding: 10px 14px;
+  background: none; border: 0; font-family: inherit; color: inherit; cursor: pointer; }
+.notif-panel li button:hover { background: var(--bg-surface-hover); }
+.notif-panel li.unread button { border-left: 3px solid var(--accent-blue); padding-left: 11px; }
+.notif-event { font-size: var(--fs-sm); font-weight: 600; }
+.notif-title { font-size: var(--fs-sm); }
+.notif-meta { font-size: var(--fs-2xs); color: var(--text-tertiary); }

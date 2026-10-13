@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Links;
 using SAloha.Api.Core.Records;
+using SAloha.Api.Core.Notifications;
 using SAloha.Api.Modules.ContinualImprovement;
 
 namespace SAloha.Api.Modules.ComplianceAssessment;
@@ -50,6 +51,13 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
 
     // NIS-18 : version évaluée et exigences figées à la validation, libérées à la réouverture.
     protected override Task BeforeSaveAsync(Assessment e, bool creating) => AssessmentReferential.AlignAsync(Db, e);
+
+    // NIS-24 : validation ou réouverture → responsable (la création lui est notifiée par le socle).
+    protected override void OnNotify(Assessment e, string? from, Notifier n)
+    {
+        if (from == "Validée") n.ToOwner(e, LinkType, "Évaluation rouverte");
+        else if (from is not null && from != "" && e.Status == "Validée") n.ToOwner(e, LinkType, "Évaluation validée");
+    }
 
     protected override void OnStatusChanged(Assessment e, string from)
     {

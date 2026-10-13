@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { getUser } from '../../api'
 import { GROUPS, MODULES, SECTIONS, groupOf, visibleFor } from '../../modules/registry'
 import ThemeToggle from './ThemeToggle'
+import NotificationBell from './NotificationBell'
 import { SOURCE_URL, LICENSE_LABEL } from '../about'
 import { BrandMark, IconConsole, IconReport, IconLogout, IconMenu, IconClose, MODULE_ICONS, SECTION_ICONS } from './icons'
 
@@ -172,6 +173,7 @@ function SidebarContent({ user, location, collapsed, onToggle, onClose, onLogout
             <p className="me-name">{user?.displayName}</p>
             <p className="me-role">{ROLE_LABEL[user?.role] ?? user?.role}</p>
           </div>
+          <NotificationBell placement="side" onNavigate={onClose} />
           <ThemeToggle />
         </div>
         <button className="logout" onClick={onLogout}><IconLogout /> Se déconnecter</button>
@@ -211,7 +213,8 @@ export default function Layout() {
           <button className="topbar-btn" onClick={() => setOpen(true)} aria-label="Ouvrir la navigation"><IconMenu /></button>
           <div className="brand-mark small"><BrandMark size={16} /></div>
           <span className="brand-name">S-Aloha</span>
-          <button className="topbar-btn push" onClick={logout} aria-label="Se déconnecter" title="Se déconnecter"><IconLogout /></button>
+          <span className="push"><NotificationBell placement="top" /></span>
+          <button className="topbar-btn" onClick={logout} aria-label="Se déconnecter" title="Se déconnecter"><IconLogout /></button>
         </header>
         <main className="main bg-canvas">
           <div className="main-inner"><Outlet /></div>

@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import Layout from './Layout'
 
-vi.mock('../../api', () => ({ getUser: () => ({ username: 'u', displayName: 'U', role: 'User' }) }))
+vi.mock('../../api', () => ({ api: {}, getUser: () => ({ username: 'u', displayName: 'U', role: 'User' }) }))
 
 beforeEach(() => localStorage.clear())
 afterEach(cleanup)

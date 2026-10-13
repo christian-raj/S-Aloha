@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 let role = 'User'
 let emptySections = false
-vi.mock('../../api', () => ({ getUser: () => ({ username: 'u', displayName: 'Utilisateur', role }) }))
+vi.mock('../../api', () => ({ api: {}, getUser: () => ({ username: 'u', displayName: 'Utilisateur', role }) }))
 
 // Registre réel, plus une sous-entrée de paramétrage réservée aux gestionnaires :
 // aucune entrée réelle n'utilise encore `roles` (les pages 🔜 l'utiliseront).

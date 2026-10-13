@@ -143,7 +143,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | PRB-30 | Au passage à **Erreur connue**, l'interface propose de créer un article de connaissance de type *Erreur connue* (symptômes, contournement) relié au problème ; s'il existe, la fiche y renvoie | ✅ | |
-| PRB-31 | Notifications (SOC-21) : action affectée → R et A ; action en retard → R, A, gestionnaire ; problème qualifié ou clos → déclarant | 🔜 | 2 |
+| PRB-31 | Notifications (SOC-21) : action affectée → R et A ; action en retard → R, A, gestionnaire ; problème qualifié ou clos → déclarant | ✅ (action affectée, problème qualifié ou clos) / 🔜 (action en retard, avec les échéances) | |
 | PRB-32 | Un problème **sans activité depuis 30 jours** (aucune analyse, action ni modification) remonte en relance aux gestionnaires | 🔜 | 3 |
 
 ## 7. Liens avec les autres pratiques

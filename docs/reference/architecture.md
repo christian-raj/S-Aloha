@@ -43,6 +43,7 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)
 │   ├── Itil/                         # Priority (matrice impact × urgence → P1–P4)
 │   ├── Links/                        # ItemLink, registre ItemLinks, LinksController (liens inter-processus)
+│   ├── Notifications/                # Notification, NotificationRead, Notifier (émission), NotificationsController (SOC-21)
 │   ├── Perimeters/                   # Perimeter, PerimeterAssignment, PerimeterAccess (rôle effectif), PerimetersController (ADR-0014)
 │   ├── Pilotage/                     # ConsoleController, ReportsController, DashboardController (vues transverses)
 │   └── Records/                      # Record (entité de base), RecordController<T,TDto>, Allowed, Dates
@@ -79,7 +80,7 @@ Les processus autres que les problèmes héritent d'un même socle :
   la modification d'un non-gestionnaire ramène l'enregistrement), `RequiresManager(from, to)` (statut réservé selon le statut d'origine : réactiver un article archivé), `InitialStatus`, `ManagerOnly`
   (référentiels), `CanCreate` et `CanEdit` (droit de créer, de modifier un enregistrement
   d'après ses valeurs enregistrées : un projet se modifie par son chef de projet ; par défaut
-  `ManagerOnly`), `OnCreatedAsync` (objets dépendants créés après l'enregistrement : phases
+  `ManagerOnly`), `OnNotify` (événements notifiés de la pratique, SOC-21 ; l'affectation au responsable est notifiée par le socle), `OnCreatedAsync` (objets dépendants créés après l'enregistrement : phases
   proposées d'un projet), `BeforeSaveAsync` (valeurs calculées qui interrogent la base, juste
   avant l'enregistrement : échéance SLA d'un incident, INC-21), `Filter`/`Search`/`WithDetails`, `ListItems` (colonnes du registre).
   Les longueurs `[MaxLength]` sont contrôlées avant l'enregistrement (`Lengths`).
@@ -163,6 +164,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET/POST/PUT/DELETE `/api/projects/{id}/{phases,milestones,deliverables,sprints,workitems,risks,issues}[/{id}]`, POST `phases/{id}/approve`, GET `sprints/{id}/burndown` | User ; phases, jalons, sprints, suppressions, validations : chef de projet ou Manager | Composants du projet ; 400 si le composant n'est pas actif | Modules/ProjectManagement |
 | GET `/api/perimeters` | User | Périmètres en service (sélecteurs) | Core/Perimeters |
 | GET/POST/PUT `/api/admin/perimeters[/{id}]`, DELETE `/{id}` (douce), POST `/{id}/restore`, DELETE `/{id}/purge` ; GET/POST `/{id}/assignments`, DELETE `/api/admin/assignments/{id}` | Admin | Périmètres et affectations, compteurs par pratique ([PER-01, PER-02, PER-12](perimetres.md)) | Core/Perimeters |
+| GET `/api/notifications`, POST `/api/notifications/{id}/read`, POST `/api/notifications/read-all` | User | Mes notifications (compte, groupes, périmètres gérés ; SOC-21, SOC-23) | Core/Notifications |
 | GET `/api/comments?type=&id=`, POST `/api/comments`, DELETE `/api/comments/{id}` | User | Commentaires publics et notes de travail ([SOC-24](regles-metier.md#9-traçabilité-commentaires-administration)) ; retrait : auteur ou Admin | Core/Comments |
 | GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
 | GET `/api/audit?type=&id=` | User | Historique d'un enregistrement (journal d'audit, SOC-20) | Core/Audit |

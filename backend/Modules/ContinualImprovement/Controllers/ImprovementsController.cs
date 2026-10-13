@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
+using SAloha.Api.Core.Notifications;
 
 namespace SAloha.Api.Modules.ContinualImprovement;
 
@@ -45,6 +46,17 @@ public class ImprovementsController(AppDbContext db) : RecordController<Improvem
         if (status == "Réalisée" && string.IsNullOrWhiteSpace(e.Outcome))
             return "Décrire le résultat constaté avant de déclarer l'amélioration réalisée.";
         return null;
+    }
+
+    // CSI-23 : proposition → gestionnaires ; validation ou abandon → proposant et porteur.
+    protected override void OnNotify(Improvement e, string? from, Notifier n)
+    {
+        if (from is null) return;
+        if (e.Status == "Proposée") n.ToManagers(e, LinkType, "Amélioration proposée");
+        var ev = e.Status switch { "Validée" => "Amélioration validée", "Abandonnée" => "Amélioration abandonnée", _ => null };
+        if (ev is null) return;
+        n.ToCreator(e, LinkType, ev);
+        n.ToOwner(e, LinkType, ev);
     }
 
     protected override void OnStatusChanged(Improvement e, string from)

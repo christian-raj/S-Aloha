@@ -112,7 +112,7 @@ stateDiagram-v2
 | CSI-20 | **Amélioration proposée par le système** depuis un SLA sous la cible (SLM-23) ou un problème récurrent (PRB-23) : brouillon Proposée, source et lien renseignés, à valider par un gestionnaire | 🔜 | 2 |
 | CSI-21 | Une amélioration **En cours** dont l'échéance est passée remonte en relance à son porteur (même règle de date que PRB-19) | 🔜 | 2 |
 | CSI-22 | **Revue du registre** : les améliorations Proposée depuis plus de 30 jours remontent dans « Décisions » des gestionnaires | 🔜 | 2 |
-| CSI-23 | Notifications (SOC-21) : proposition → gestionnaires ; validation ou abandon → proposant et porteur | 🔜 | 2 |
+| CSI-23 | Notifications (SOC-21) : proposition → gestionnaires ; validation ou abandon → proposant et porteur | ✅ | |
 
 ## 7. Liens avec les autres pratiques
 

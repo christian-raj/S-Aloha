@@ -99,7 +99,7 @@ stateDiagram-v2
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| KB-20 | Notifications (SOC-21) : brouillon soumis à publication → gestionnaires ; publication → rédacteur ; revue échue → responsable | 🔜 | 2 |
+| KB-20 | Notifications (SOC-21) : brouillon soumis à publication → gestionnaires ; publication → rédacteur ; revue échue → responsable | ✅ (soumission, publication) / 🔜 (revue échue, avec les échéances) | |
 | KB-21 | **Soumettre à publication** : un User marque son brouillon « prêt » (contenu exigé) ; il remonte dans « Décisions » des gestionnaires | ✅ | |
 
 ## 7. Liens avec les autres pratiques
