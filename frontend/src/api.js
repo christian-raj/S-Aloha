@@ -58,7 +58,9 @@ export const api = {
   actions: {
     all: (params = {}) => request('/actions?' + new URLSearchParams(params)),
     create: (pid, dto) => request(`/problems/${pid}/actions`, { method: 'POST', body: JSON.stringify(dto) }),
-    update: (id, dto) => request('/actions/' + id, { method: 'PUT', body: JSON.stringify(dto) })
+    update: (id, dto) => request('/actions/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+    requestApproval: id => request(`/actions/${id}/request-approval`, { method: 'POST' }),
+    setChange: (id, reference) => request(`/actions/${id}/change`, { method: 'PUT', body: JSON.stringify({ reference }) })
   },
   incidents: records('/incidents'),
   requests: records('/requests'),

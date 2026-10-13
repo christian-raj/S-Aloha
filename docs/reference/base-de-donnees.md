@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `Notifications` | Tables `Notifications` (destinataire : `RecipientType` User, Group ou Managers et `RecipientId` ; `PerimeterId`, cible, référence, titre, événement, auteur, date ; index sur destinataire et date) et `NotificationReads` (clé : notification et compte) — SOC-21 |
+| `ProblemReopenActionApproval` | `Problems.ReopenReason` (PRB-10) ; `Actions.ApprovalRequestedAt`, `ApprovalRequestedBy` (PRB-25), `ChangeId`, `ChangeReference` (PRB-27) ; colonnes nulles |
 | `CiVerification` | `ConfigurationItems.LastVerifiedAt`, `ConfigurationItems.LastVerifiedBy` (CFG-15), nulles pour l'existant |
 | `ImprovementSourcePriority` | `Improvements.Source` (« Suggestion » pour l'existant, CSI-10), `Improvements.Value`, `Improvements.Effort` (CSI-12) |
 | `Comments` | Table `Comments` (SOC-24) : `TargetType`, `TargetId` (comme un lien), `Visibility` (`Public` ou `Note`), `Body` (4 000), `Author`, `AuthorDisplayName`, `CreatedAt` ; index sur (`TargetType`, `TargetId`) |

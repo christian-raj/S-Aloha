@@ -83,7 +83,7 @@ public class TransitionsTests(ApiFixture api)
         {
             title = "Transitions PRB", description = "d", status, impact = "Moyen", urgency = "Moyenne",
             category = "c", affectedService = "s", knownErrorWorkaround = (string?)null, rootCause = "Cause établie",
-            closureCode = "Corrigé"
+            closureCode = "Corrigé", reopenReason = "Réouverture motivée (PRB-10)"
         };
         var p = await Json(await m.PostAsJsonAsync("/api/problems", Dto(null)));
         await Refused(await m.PutAsJsonAsync($"/api/problems/{Id(p)}", Dto("Résolu")));

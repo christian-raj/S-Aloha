@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Links;
 using SAloha.Api.Core.Notifications;
 using SAloha.Api.Core.Perimeters;
 using SAloha.Api.Core.Records;
@@ -98,9 +99,15 @@ public class ActionsController(AppDbContext db, PerimeterAccess access, Notifier
         var invalid = Allowed.Check("Statut d'action", dto.Status, ProblemRules.ActionStatuses, optional: true)
                       ?? ProblemRules.CheckRaci(dto.Raci);
         if (invalid is not null) return BadRequest(new { message = invalid });
+        // PRB-25 : une action ne passe à Terminée qu'avec l'accord de son A (ou d'un gestionnaire) ;
+        // son R la passe En cours puis demande l'approbation.
+        if (dto.Status == "Terminée" && a.Status != "Terminée" && !isManager && !IsAccountable(a))
+            return StatusCode(403, new { message = "Seul l'approbateur (A) de l'action ou un gestionnaire la déclare terminée : demander l'approbation." });
         a.Title = dto.Title; a.Description = dto.Description; a.DueDate = Dates.Utc(dto.DueDate);
         if (dto.Status != null && dto.Status != a.Status)
         {
+            // Toute décision sur le statut clôt la demande d'approbation en cours.
+            a.ApprovalRequestedAt = null; a.ApprovalRequestedBy = null;
             // PRB-18 : CompletedAt posé au seul passage à Terminée, effacé à la sortie (#24) ;
             // renommer une action terminée ne le change pas.
             a.CompletedAt = dto.Status == "Terminée" ? DateTime.UtcNow : null;
@@ -117,6 +124,63 @@ public class ActionsController(AppDbContext db, PerimeterAccess access, Notifier
         if (error is not null) return BadRequest(new { message = error });
         await db.SaveChangesAsync();
         await NotifyAssigneesAsync(a, raciBefore);
+        return Ok(a);
+    }
+
+    private bool IsAccountable(CorrectiveAction a) =>
+        a.Raci.Any(r => r.Role == "A" && User.Designates(r.AssigneeType, r.AssigneeId));
+
+    /// <summary>
+    /// PRB-25 : le R d'une action En cours demande à son A de l'approuver (notification à l'A).
+    /// </summary>
+    [HttpPost("api/actions/{id:int}/request-approval")]
+    public async Task<IActionResult> RequestApproval(int id)
+    {
+        var a = await db.Actions.Include(x => x.Raci).FirstOrDefaultAsync(x => x.Id == id);
+        var perimeter = a is null ? null : await VisiblePerimeterAsync(a.ProblemId);
+        if (a is null || perimeter is null) return NotFound();
+        var isR = a.Raci.Any(r => r.Role == "R" && User.Designates(r.AssigneeType, r.AssigneeId));
+        if (!isR && !(await access.GetAsync()).ManagerOn(perimeter.Value)) return Forbid();
+        if (a.Status != "En cours")
+            return BadRequest(new { message = "Passer l'action En cours avant de demander son approbation." });
+        if (!a.Raci.Any(r => r.Role == "A"))
+            return BadRequest(new { message = "L'action n'a pas d'approbateur (A) : en désigner un dans la matrice RACI." });
+        a.ApprovalRequestedAt = DateTime.UtcNow;
+        a.ApprovalRequestedBy = User.Identity?.Name;
+        await db.SaveChangesAsync();
+        var problem = await db.Problems.AsNoTracking().FirstAsync(p => p.Id == a.ProblemId);
+        var ev = $"Approbation demandée : {a.Title}";
+        foreach (var r in a.Raci.Where(r => r.Role == "A"))
+            notify.ToPrincipal(problem, "problem", r.AssigneeType, r.AssigneeId, ev.Length > 200 ? ev[..200] : ev);
+        await notify.SaveAsync();
+        return Ok(a);
+    }
+
+    /// <summary>
+    /// PRB-27, CHG-23 : rattache à l'action le changement qui met en œuvre son correctif
+    /// (créé depuis l'action par l'interface) et relie ce changement au problème.
+    /// </summary>
+    [HttpPut("api/actions/{id:int}/change")]
+    public async Task<IActionResult> SetChange(int id, ActionChangeDto dto)
+    {
+        var a = await db.Actions.Include(x => x.Raci).FirstOrDefaultAsync(x => x.Id == id);
+        var perimeter = a is null ? null : await VisiblePerimeterAsync(a.ProblemId);
+        if (a is null || perimeter is null) return NotFound();
+        var scope = await access.GetAsync();
+        var isRorA = a.Raci.Any(r => r.Role is "R" or "A" && User.Designates(r.AssigneeType, r.AssigneeId));
+        if (!isRorA && !scope.ManagerOn(perimeter.Value)) return Forbid();
+        var change = await db.Changes.AsNoTracking()
+            .Where(c => c.Reference == dto.Reference.Trim().ToUpper())
+            .Select(c => new { c.Id, c.Reference, c.PerimeterId }).FirstOrDefaultAsync();
+        if (change is null || !scope.Sees(change.PerimeterId))
+            return BadRequest(new { message = $"Changement introuvable : {dto.Reference}." });
+        a.ChangeId = change.Id; a.ChangeReference = change.Reference;
+        var linked = await db.ItemLinks.AnyAsync(l =>
+            (l.FromType == "problem" && l.FromId == a.ProblemId && l.ToType == "change" && l.ToId == change.Id) ||
+            (l.FromType == "change" && l.FromId == change.Id && l.ToType == "problem" && l.ToId == a.ProblemId));
+        if (!linked)
+            db.ItemLinks.Add(new ItemLink { FromType = "problem", FromId = a.ProblemId, ToType = "change", ToId = change.Id, CreatedBy = User.Identity?.Name ?? "" });
+        await db.SaveChangesAsync();
         return Ok(a);
     }
 

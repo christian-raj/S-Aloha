@@ -31,6 +31,9 @@ proactive, depuis une tendance), **contrôle** (analyse, contournement, erreur c
 | Déclarer un problème | ✔ | ✔ | ✔ | ✅ |
 | Créer / modifier une analyse RCA | ✔ | ✔ | ✔ | ✅ |
 | Créer / mettre à jour le statut d'une action corrective | ✔ | ✔ | ✔ | ✅ |
+| Déclarer une action **Terminée** | A de l'action | ✔ | ✔ | ✅ PRB-25 |
+| Demander l'approbation d'une action En cours | R de l'action | ✔ | ✔ | ✅ PRB-25 |
+| Créer un changement depuis une action | R ou A de l'action | ✔ | ✔ | ✅ PRB-27 |
 | Modifier une action (titre, échéance, RACI) | R ou A de l'action | ✔ | ✔ | ✅ PRB-24 |
 | Qualifier : statut, impact, urgence, catégorie, cause racine, contournement | ✘ | ✔ | ✔ | ✅ |
 | Supprimer une analyse ou une action | ✘ | ✔ | ✔ | ✅ |
@@ -56,6 +59,7 @@ proactive, depuis une tendance), **contrôle** (analyse, contournement, erreur c
 | `Source` | texte 10 | ✔ | Réactif (défaut), Proactif | 🔜 PRB-20 |
 | `OwnerType/Id/DisplayName` | AD | | Gestionnaire du problème (responsable du socle) ; par défaut le gestionnaire qui qualifie | ✅ PRB-21 |
 | `ClosureCode` | texte 30 | à la clôture | Corrigé, Erreur connue acceptée, Doublon, Non retenu | ✅ |
+| `ReopenReason` | texte | à la réouverture | Motif de la réouverture en cours ; effacé à la résolution ou à la clôture suivante (l'historique le garde) | ✅ PRB-10 |
 | `ResolvedAt` | date UTC | auto | Posée à l'entrée de Résolu (SOC-08) | ✅ |
 
 ### Analyse RCA (`Analyses`)
@@ -68,6 +72,10 @@ proactive, depuis une tendance), **contrôle** (analyse, contournement, erreur c
 Action : `Title`, `Description`, `Status` (À faire, En cours, Terminée, Annulée), `DueDate`
 (date), `CompletedAt`. RACI : `Role` (R, A, C, I), `AssigneeType` (User, Group),
 `AssigneeId`, `AssigneeDisplayName`. ✅
+
+Action, suite : `ApprovalRequestedAt`, `ApprovalRequestedBy` (approbation demandée à l'A,
+effacée à tout changement de statut, PRB-25) ; `ChangeId`, `ChangeReference` (changement
+qui met en œuvre le correctif, PRB-27). ✅
 
 ## 4. Cycle de vie
 
@@ -103,8 +111,8 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | Erreur connue → Résolu | Manager | Cause racine renseignée ; aucune action ouverte (toutes Terminée ou Annulée), au moins une Terminée | `ResolvedAt` | ✅ |
 | Erreur connue → Clos | Manager | `ClosureCode` = Erreur connue acceptée (pas de correctif, risque accepté) | `ClosedAt` | ✅ |
 | Résolu → Clos | Manager | `ClosureCode` = Corrigé | `ClosedAt` | ✅ |
-| Résolu → En analyse | Manager | Motif (commentaire) | `ResolvedAt` effacé | ✅ / 🔜 PRB-10 (motif) |
-| Clos → En analyse | Manager | Motif (commentaire) | `ClosedAt` et `ClosureCode` effacés | ✅ / 🔜 PRB-10 (motif) |
+| Résolu → En analyse | Manager | Motif (`ReopenReason`) | `ResolvedAt` effacé | ✅ |
+| Clos → En analyse | Manager | Motif (`ReopenReason`) | `ClosedAt` et `ClosureCode` effacés | ✅ |
 
 ## 5. Règles de gestion
 
@@ -119,7 +127,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | PRB-07 | Un Manager peut **valider la conclusion** d'une analyse comme cause racine du problème en un clic (copie dans `RootCause`) | 🔜 | 2 |
 | PRB-08 | Le passage à **Clos** horodate `ClosedAt` ; quitter Clos l'efface (SOC-08) ; seul un problème actuellement clos compte dans le MTTR | ✅ | |
 | PRB-09 | Recherche (titre, référence) insensible à la casse | ✅ | |
-| PRB-10 | **Transitions contraintes** selon le tableau du § 4 (SOC-05) ; une réouverture exige un motif — résout R4 | ✅ (transitions) / 🔜 (motif) | 1 |
+| PRB-10 | **Transitions contraintes** selon le tableau du § 4 (SOC-05) ; une réouverture exige un motif — résout R4 | ✅ | 1 |
 | PRB-11 | **Erreur connue** exige un contournement renseigné (aujourd'hui : bonne pratique non bloquante) | ✅ | 1 |
 | PRB-12 | **Résolu** exige une cause racine validée et aucune action corrective ouverte | ✅ | 1 |
 | PRB-13 | **Clos** exige un code de clôture : *Corrigé* (depuis Résolu), *Erreur connue acceptée* (depuis Erreur connue), *Doublon* ou *Non retenu* (depuis Nouveau) | ✅ | 1 |
@@ -134,9 +142,9 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | PRB-22 | Un **incident majeur** résolu sans problème relié crée une alerte « problème à ouvrir » (voir INC-15) | 🔜 | 2 |
 | PRB-23 | **Récurrence** : un problème Résolu ou Clos qui reçoit un nouvel incident relié est signalé aux gestionnaires (« récurrence après correctif ») | ✅ (alerte « Récurrence après correctif » aux gestionnaires du périmètre, amélioration proposée, CSI-20) | |
 | PRB-24 | **Modifier une action** (titre, description, échéance, RACI) : son R, son A (en personne ou par un groupe AD, PRB-26) ou un Manager — résout M7 | ✅ | 1 |
-| PRB-25 | Une action ne passe à **Terminée** que si son A l'approuve (ou un Manager) : un R la passe à *En cours*, puis demande l'approbation | 🔜 | 2 |
+| PRB-25 | Une action ne passe à **Terminée** que si son A l'approuve (ou un Manager) : un R la passe à *En cours*, puis demande l'approbation | ✅ (403 sinon ; la demande notifie l'A) | |
 | PRB-26 | Les actions confiées à un **groupe AD** apparaissent pour chaque membre du groupe (SOC-10) — résout M3 ; un membre du groupe désigné R ou A en a les droits (PRB-24) | ✅ | |
-| PRB-27 | Depuis une action, **créer un changement** lié (correctif à mettre en œuvre) : titre et description repris | 🔜 | 2 |
+| PRB-27 | Depuis une action, **créer un changement** lié (correctif à mettre en œuvre) : titre et description repris | ✅ (le changement est rattaché à l'action et relié au problème) | |
 
 ## 6. Délais, calculs et alertes
 
@@ -152,7 +160,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 |---|---|---|---|
 | Incident → Problème | Un ou plusieurs incidents causés par le problème | Ouverture depuis l'incident (INC-14) ; PRB-20 | ✅ / 🔜 |
 | Problème → Article | Erreur connue publiée comme article | PRB-30, KB-12 | ✅ |
-| Problème → Changement | Correctif mis en œuvre | PRB-27, CHG-23 | ✅ (lien manuel) / 🔜 |
+| Problème → Changement | Correctif mis en œuvre | PRB-27, CHG-23 | ✅ (lien manuel, ou créé depuis une action) |
 | Problème → CI | CI en cause | Lien manuel | ✅ |
 | Problème → cas similaires | Articles, problèmes et incidents proches, dans l'onglet Informations | [RAG-06](../recherche.md) | ✅ |
 | Problème → Amélioration | Tendance, cause systémique | Lien manuel | ✅ |
@@ -180,12 +188,17 @@ mes problèmes déclarés, mes actions (en retard, en cours), actions en retard 
 | `PUT /api/problems/{id}` | Manager du périmètre | Qualification, statut, gestionnaire du problème ; `?force=true&reason=` (Admin, SOC-05) |
 | `DELETE /api/problems/{id}` | Admin | Suppression (liens compris) |
 | `GET/POST/PUT /api/problems/{id}/analyses[/{id}]`, `DELETE` : Manager | User | Analyses RCA |
-| `GET /api/actions`, `POST /api/problems/{id}/actions`, `PUT /api/actions/{id}`, `DELETE` : Manager | User | Actions et RACI |
+| `GET /api/actions`, `POST /api/problems/{id}/actions`, `PUT /api/actions/{id}`, `DELETE` : Manager | User | Actions et RACI ; Terminée : A ou Manager (PRB-25) |
+| `POST /api/actions/{id}/request-approval` | R de l'action ou Manager | Demande d'approbation à l'A (PRB-25) |
+| `PUT /api/actions/{id}/change` (`{ reference }`) | R ou A de l'action, ou Manager | Rattache le changement du correctif, relié au problème (PRB-27) |
 
 ## 10. Scénarios d'acceptation
 
 - **PRB-04** — *Étant donné* un problème Nouveau, *quand* un User crée une analyse 5 Pourquoi, *alors* le problème passe En analyse.
 - **PRB-10** — *Étant donné* un problème Clos, *quand* un Manager le passe à Nouveau, *alors* 400 « Transition de Clos vers Nouveau non permise ».
+- **PRB-10** — *Étant donné* un problème Résolu, *quand* un Manager le repasse En analyse sans motif, *alors* 400 « Motiver la réouverture du problème. » ; avec un motif, il est rouvert.
+- **PRB-25** — *Étant donné* une action En cours, *quand* son R la passe à Terminée, *alors* 403 ; il demande l'approbation, l'A est notifié et la passe à Terminée.
+- **PRB-27** — *Étant donné* une action ouverte, *quand* son R clique « Créer un changement », *alors* un changement reprenant titre et description est créé, rattaché à l'action et relié au problème.
 - **PRB-12** — *Étant donné* un problème En analyse avec une action À faire, *quand* un Manager le passe à Résolu, *alors* 400 qui cite l'action ouverte.
 - **PRB-13** — *Étant donné* un problème Nouveau, *quand* un Manager le clôt avec le code *Doublon*, *alors* il est Clos, `ClosedAt` posé ; sans code, 400.
 - **PRB-17** — *Étant donné* une action avec un R et un A, *quand* on la modifie avec deux A, *alors* 400 et le message de la création.

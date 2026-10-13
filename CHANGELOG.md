@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Problèmes** : rouvrir un problème résolu ou clos exige un motif (PRB-10) ; une action
+  corrective n'est déclarée terminée que par son approbateur (A) ou un gestionnaire, son
+  responsable (R) demande l'approbation, l'A est notifié (PRB-25) ; **créer un changement
+  depuis une action** : titre et description repris, changement rattaché à l'action et relié
+  au problème (PRB-27, CHG-23). Migration `ProblemReopenActionApproval` (colonnes nulles).
+
 - **Configuration sort du MVP** : toutes les règles listées pour sa sortie sont en place
   (CFG-12 à CFG-15, CFG-20 à CFG-22) ; la mention **(MVP)** disparaît du README et de la
   cartographie.
