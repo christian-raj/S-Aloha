@@ -560,6 +560,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("FrozenRequirementsJson")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("NextAssessmentDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("OwnerDisplayName")
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");

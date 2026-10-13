@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Conformité NIS 2** : la synthèse montre pour chaque écart l'action d'amélioration liée et
+  son statut (NIS-14) ; date de la prochaine évaluation (12 mois après la validation par
+  défaut), relance du pilote à l'échéance et entrée « À renouveler » dans la console des
+  gestionnaires (NIS-16) ; **export CSV de la synthèse** pour les auditeurs (NIS-17).
+  Migration `AssessmentNextDate` (une colonne nulle).
+
 - **Problèmes** : rouvrir un problème résolu ou clos exige un motif (PRB-10) ; une action
   corrective n'est déclarée terminée que par son approbateur (A) ou un gestionnaire, son
   responsable (R) demande l'approbation, l'A est notifié (PRB-25) ; **créer un changement

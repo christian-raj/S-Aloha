@@ -174,7 +174,7 @@ export default function Console() {
           render={r => <Row reference={r.reference} title={r.title}
             meta={<span className={'badge ' + r.priority}>{r.priority}</span>} />} />
         <List title="Revues échues" tone="amber" rows={m.reviewsDue} onRow={goItem}
-          hint="Articles publiés et SLA en vigueur dont la date de revue est passée." render={itemRow} />
+          hint="Articles publiés et SLA en vigueur dont la date de revue est passée, évaluations NIS 2 à renouveler." render={itemRow} />
       </Group>}
 
       <Group id="travail" title="Mon travail" total={work}>

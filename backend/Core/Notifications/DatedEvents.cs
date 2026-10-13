@@ -102,6 +102,14 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             if (Fresh("ci", c.Id, ev)) notify.ToOwner(c, "ci", ev);
         }
 
+        // NIS-16 : évaluation validée arrivée à la date de la prochaine évaluation → responsable.
+        foreach (var a in await db.Assessments.AsNoTracking()
+                     .Where(a => a.Status == "Validée" && a.NextAssessmentDate != null && a.NextAssessmentDate <= today).ToListAsync())
+        {
+            var ev = $"Évaluation à renouveler (échéance : {Day(a.NextAssessmentDate!.Value)})";
+            if (Fresh("assessment", a.Id, ev)) notify.ToOwner(a, "assessment", ev);
+        }
+
         // SLM-24 : SLA expirant dans 30 jours → gestionnaires ; revue échue → propriétaire du service.
         foreach (var s in await db.Agreements.AsNoTracking().Include(s => s.Service).Where(s => s.Status == "En vigueur").ToListAsync())
         {

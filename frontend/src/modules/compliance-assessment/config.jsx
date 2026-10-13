@@ -1,5 +1,5 @@
 import { api } from '../../api'
-import { titleField, descriptionField, ownerField, dateTimeFr } from '../../core/fields'
+import { titleField, descriptionField, ownerField, dateFr, dateTimeFr } from '../../core/fields'
 
 export const CATEGORIES = ['Entité importante', 'Entité essentielle']
 
@@ -22,14 +22,18 @@ export const assessmentConfig = {
     { key: 'entityCategory', label: 'Catégorie d\'entité', type: 'select', options: CATEGORIES, required: true,
       default: CATEGORIES[0] },
     ownerField('Pilote'),
+    // NIS-16 : 12 mois après la validation si vide ; reste modifiable une fois l'évaluation validée.
+    { key: 'nextAssessmentDate', label: 'Prochaine évaluation', type: 'date', create: false },
     descriptionField('Périmètre', 'Systèmes d\'information, sites et activités couverts…', 3),
   ],
   columns: [
     { h: 'Catégorie', v: r => r.entityCategory },
     { h: 'Pilote', v: r => r.ownerDisplayName || '—' },
+    { h: 'Prochaine évaluation', v: r => dateFr(r.nextAssessmentDate) },
   ],
-  meta: r => [r.validatedAt && `Validée par ${r.validatedBy} le ${dateTimeFr(r.validatedAt)}`],
-  help: 'Une entité importante est évaluée sur les exigences « EI/EE », une entité essentielle sur toutes. Créée et validée par un gestionnaire ; tout le monde peut répondre au questionnaire. Une évaluation validée est figée : la rouvrir (statut « En cours ») pour la modifier.',
+  meta: r => [r.validatedAt && `Validée par ${r.validatedBy} le ${dateTimeFr(r.validatedAt)}`,
+    r.nextAssessmentDate && `Prochaine évaluation le ${dateFr(r.nextAssessmentDate)}`],
+  help: 'Une entité importante est évaluée sur les exigences « EI/EE », une entité essentielle sur toutes. Créée et validée par un gestionnaire ; tout le monde peut répondre au questionnaire. Une évaluation validée est figée : la rouvrir (statut « En cours ») pour la modifier ; seule la date de la prochaine évaluation (12 mois après la validation par défaut) reste modifiable, le pilote est relancé à l\'échéance.',
   linkHint: 'Actions d\'amélioration issues des écarts, CI et services du périmètre…',
 }
 

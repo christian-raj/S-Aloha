@@ -24,6 +24,10 @@ vi.mock('../../../api', () => ({
       objectives: [{ id: 1, title: 'Recensement', pillar: 'Gouvernance', percent: 33.3, applicable: 3, answered: 1 }],
       gaps: [{ requirementId: 11, code: '1.1-EI/EE', theme: 'Recensement des SI', objectiveId: 1, score: 1, gap: 2 }] }),
     createImprovement: (...a) => createImprovement(...a),
+    export: () => Promise.resolve({ reference: 'EVA-2026-0005', title: 'SI', entityCategory: 'Entité importante',
+      referentialVersion: 'ReCyF v2.5', status: 'En cours', rows: [
+        { code: '1.1-EI/EE', objectiveId: 1, objectiveTitle: 'Recensement', pillar: 'Gouvernance', theme: 'Recensement des SI',
+          score: 1, notApplicable: false, justification: 'Partiel; à compléter', gap: 2, action: 'AMI-2026-0009', actionStatus: 'Proposée' }] }),
   } }
 }))
 
@@ -60,5 +64,18 @@ describe('Synthèse NIS 2', () => {
     fireEvent.click(screen.getByText('Créer une action d\'amélioration'))
     await waitFor(() => expect(createImprovement).toHaveBeenCalledWith(5, '1.1-EI/EE'))
     expect((await screen.findByText('AMI-2026-0009 →')).getAttribute('href')).toBe('/improvements/9')
+  })
+})
+
+describe('Synthèse NIS 2 — plan de traitement et export', () => {
+  it('NIS-17 : l\'export produit une ligne par exigence, action liée comprise', async () => {
+    const { exportAssessment } = await import('./Synthesis')
+    let csv = ''
+    const OriginalBlob = global.Blob
+    global.Blob = class { constructor(parts) { csv = parts.join('') } }
+    URL.createObjectURL = () => 'blob:x'; URL.revokeObjectURL = () => {}
+    try { await exportAssessment(5) } finally { global.Blob = OriginalBlob }
+    expect(csv).toContain('Exigence;Objectif;Pilier')
+    expect(csv).toContain('1.1-EI/EE;1. Recensement;Gouvernance;Recensement des SI;1;;"Partiel; à compléter";2;AMI-2026-0009;Proposée')
   })
 })
