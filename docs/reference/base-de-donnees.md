@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `Notifications` | Tables `Notifications` (destinataire : `RecipientType` User, Group ou Managers et `RecipientId` ; `PerimeterId`, cible, référence, titre, événement, auteur, date ; index sur destinataire et date) et `NotificationReads` (clé : notification et compte) — SOC-21 |
+| `AssessmentEvidence` | Table `AssessmentEvidences` (NIS-08) : évaluation (FK, cascade), exigence, `TargetType`, `TargetId`, `Reference`, `Title` recopiés, `CreatedBy`, `CreatedAt` ; unique par (évaluation, exigence, type, cible) |
 | `AssessmentNextDate` | `Assessments.NextAssessmentDate` (NIS-16), nulle pour l'existant : fixée à la prochaine validation |
 | `ProblemReopenActionApproval` | `Problems.ReopenReason` (PRB-10) ; `Actions.ApprovalRequestedAt`, `ApprovalRequestedBy` (PRB-25), `ChangeId`, `ChangeReference` (PRB-27) ; colonnes nulles |
 | `CiVerification` | `ConfigurationItems.LastVerifiedAt`, `ConfigurationItems.LastVerifiedBy` (CFG-15), nulles pour l'existant |

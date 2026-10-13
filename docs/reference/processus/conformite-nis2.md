@@ -90,7 +90,7 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `NotApplicable` | booléen | Exige une justification à la validation | ✅ |
 | `Justification` | texte | | ✅ |
 | `UpdatedBy`, `UpdatedAt` | | Dernier répondant | ✅ |
-| Preuves | liens, pièces jointes | | 🔜 NIS-08 |
+| Preuves (`AssessmentEvidences`) | liens | Enregistrements désignés par leur référence (changement, article, CI…) : type, identifiant, référence et titre recopiés, auteur, date ; une même preuve une fois par exigence ; supprimées avec l'évaluation | ✅ NIS-08 (pièces jointes 🔜 SOC-25) |
 
 ## 4. Cycle de vie
 
@@ -123,8 +123,8 @@ stateDiagram-v2
 | NIS-05 | **Validation** seulement si toutes les exigences applicables ont une réponse et si tout « non applicable » est justifié (400 avec le nombre manquant) | ✅ | |
 | NIS-06 | Une évaluation **validée est figée** : ses réponses et ses champs ne se modifient plus (400) | ✅ | |
 | NIS-07 | Seul un gestionnaire la **rouvre** (statut En cours), ce qui efface la validation | ✅ | |
-| NIS-08 | **Preuves** : chaque réponse peut porter des liens vers des enregistrements (changement, article, CI) et des pièces jointes (SOC-25) | 🔜 | 2 |
-| NIS-09 | **Comparaison** de deux évaluations du même périmètre : évolution des scores par exigence, thématique, objectif et pilier | 🔜 | 2 |
+| NIS-08 | **Preuves** : chaque réponse peut porter des liens vers des enregistrements (changement, article, CI) et des pièces jointes (SOC-25) | ✅ (liens : tout rôle, tant que l'évaluation n'est pas validée ; dans le questionnaire et l'export) / 🔜 (pièces jointes, avec SOC-25) | |
+| NIS-09 | **Comparaison** de deux évaluations du même périmètre : évolution des scores par exigence, thématique, objectif et pilier | ✅ (onglet « Comparaison », par défaut avec la dernière évaluation validée du périmètre ; 400 entre deux périmètres) | |
 | NIS-16 | **Revue périodique** : une évaluation validée porte la date de la prochaine évaluation (12 mois par défaut) ; à l'échéance, relance au responsable (console, Relances) | ✅ (notification au pilote, relevé périodique ; console des gestionnaires, Revues échues « À renouveler ») | |
 | NIS-17 | **Export** de la synthèse (CSV : exigence, score, justification, écart, action liée) pour les auditeurs | ✅ (bouton « Exporter la synthèse (CSV) » ; une ligne par exigence évaluée, objectif, pilier, thématique, non-applicabilité et statut de l'action compris ; « ; » et BOM UTF-8) | |
 | NIS-18 | Une évaluation enregistre la **version du référentiel** évaluée ; une nouvelle version embarquée ne modifie pas une évaluation validée : à la validation, ses exigences applicables (code, objectif, pilier, thématique) sont figées, et son questionnaire, son score et la synthèse du reporting (REP-40) s'en servent ; la rouvrir la réaligne sur la version en vigueur. Les évaluations validées avant la règle sont figées au démarrage, avant l'alignement de la structure embarquée | ✅ | |
@@ -155,8 +155,8 @@ stateDiagram-v2
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
 | Évaluation → Amélioration | Traitement d'un écart | NIS-15, [CSI-10](amelioration-continue.md) | ✅ |
-| Évaluation → Changement, Article, CI | Preuves de mise en œuvre | NIS-08 | ✅ (lien manuel) / 🔜 |
-| Évaluation → Évaluation | Évaluation précédente du même périmètre | NIS-09 | 🔜 |
+| Évaluation → Changement, Article, CI | Preuves de mise en œuvre | NIS-08 | ✅ (preuve d'une réponse, ou lien manuel de l'évaluation) |
+| Évaluation → Évaluation | Évaluation précédente du même périmètre | NIS-09 | ✅ (comparaison, sans lien à créer) |
 | Incident cyber → Déclaration réglementaire | Obligation de notification NIS 2 (art. 23) | [déclarations réglementaires](declarations-reglementaires.md) | 🔜 |
 
 ## 8. Console et indicateurs
@@ -199,6 +199,8 @@ Admin, NIS-23).
 | `GET /api/assessments/{id}/questionnaire` | User | Exigences évaluées (figées si validée) et réponses ; `referentialVersion`, `currentReferentialVersion`, `frozen` (NIS-18) |
 | `PUT /api/assessments/{id}/responses/{requirementId}` | User | Réponse à une exigence |
 | `GET /api/assessments/{id}/score` | User | Scores, maturité, écarts et leur action d'amélioration (`action` : id, référence, statut — NIS-14) |
+| `POST /api/assessments/{id}/responses/{requirementId}/evidence` (`{ reference }`), `DELETE /api/assessments/{id}/evidence/{evidenceId}` | User | Preuves d'une réponse (NIS-08) ; 400 si l'évaluation est validée |
+| `GET /api/assessments/{id}/compare/{otherId}` | User | Comparaison avec une évaluation du même périmètre (NIS-09) : global, piliers, objectifs, thématiques (actuel, autre, évolution) et exigences dont la réponse diffère |
 | `GET /api/assessments/{id}/export` | User | Lignes de l'export pour les auditeurs : une par exigence évaluée (NIS-17) ; l'interface en fait le CSV |
 | `POST /api/assessments/{id}/improvements` (`{ code }`) | Manager | Action d'amélioration depuis un écart |
 | `GET /api/compliance/referential` | User | Référentiel (objectifs et exigences) |
