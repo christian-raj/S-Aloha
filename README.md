@@ -83,7 +83,7 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 | **Niveaux de service** — catalogue des services, SLA et dates de revue | ✅ Disponible (MVP) |
 | **Connaissances** — articles en Markdown, soumission et publication validée, revue périodique, articles d'erreur connue issus des problèmes, notifications | ✅ Disponible |
 | **Amélioration continue** — registre et modèle ITIL 4 en 7 étapes | ✅ Disponible (MVP) |
-| **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions | ✅ Disponible (MVP) |
+| **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions, preuves liées, comparaison, export CSV, revue annuelle | ✅ Disponible |
 | **Projets** — Scrum, Kanban, Cycle en V, PRINCE2 ou hybride : la méthode active backlog, sprints, phases, jalons, risques… | ✅ Disponible (MVP) |
 | **Périmètres** — droits et visibilité par direction, site ou entité, affectations d'utilisateurs et de groupes AD, écran d'administration | ✅ [Disponible](docs/reference/perimetres.md) |
 | **Déclarations réglementaires** — NIS 2 et RGPD, échéances 24 h / 72 h depuis l'incident | 🔜 [Spécifié](docs/reference/processus/declarations-reglementaires.md) |

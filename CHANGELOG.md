@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Conformité NIS 2 sort du MVP** : toutes les règles listées pour sa sortie sont en place
+  (NIS-08, NIS-09, NIS-14, NIS-16, NIS-17, NIS-18) ; la mention **(MVP)** disparaît du README
+  et de la cartographie. Les preuves se relient aux enregistrements ; les pièces jointes
+  suivront avec SOC-25.
+
 - **Conformité NIS 2 — preuves et comparaison** : chaque réponse porte ses **preuves**,
   enregistrements désignés par leur référence (changement, article, CI…), reprises dans
   l'export (NIS-08 ; pièces jointes à venir avec SOC-25) ; onglet **Comparaison** avec une
