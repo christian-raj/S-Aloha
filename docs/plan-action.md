@@ -111,7 +111,7 @@ en attente ;
 | [Changements](reference/processus/habilitation-des-changements.md) | CHG-14, CHG-15 (dates réelles, revue post-implémentation), CHG-16 (CI reliés), CHG-20, CHG-21 (autorité selon le risque, séparation des tâches), CHG-25 (gel), CHG-26 (modèles standard), CHG-24 |
 | [Configuration](reference/processus/gestion-de-la-configuration.md) | CFG-12 à CFG-14 ; CFG-15 (vérification), CFG-20 (impact d'un changement), CFG-21 (CI ↔ service), CFG-22 |
 | [Niveaux de service](reference/processus/gestion-des-niveaux-de-service.md) | SLM-04 (expiration), SLM-10, SLM-13, SLM-14 (heures de service), **SLM-20 (mesure du respect, F1)**, SLM-22, SLM-23, SLM-24 |
-| [Connaissances](reference/processus/gestion-des-connaissances.md) | ~~KB-10, KB-11, KB-12, KB-17, KB-21~~ faits le 2026-10-12 (avec KB-14, KB-18) ; reste KB-20 (notifications, prérequis SOC-21) |
+| [Connaissances](reference/processus/gestion-des-connaissances.md) | ✅ **Sortie du MVP le 2026-10-13** : KB-10, KB-11, KB-12, KB-17, KB-21 (2026-10-12), KB-20 (notifications, 2026-10-13) |
 | [Amélioration continue](reference/processus/amelioration-continue.md) | CSI-10, CSI-12 (source, priorisation), CSI-20 (proposition par le système), CSI-21, CSI-23 |
 | [Conformité NIS 2](reference/processus/conformite-nis2.md) | ~~NIS-18~~ (2026-10-13) ; NIS-08 (preuves), NIS-09 (comparaison), NIS-14, NIS-16 (revue périodique), NIS-17 (export) |
 

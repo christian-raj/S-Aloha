@@ -125,6 +125,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Modifié
 
+- **Connaissances** sort du MVP : toutes ses règles de sortie sont faites (Markdown, revue,
+  soumission, articles d'erreur connue, notifications) et les prérequis communs sont remplis.
 - **Sous-titres des pages** : le numéro de version d'ITIL est retiré (« (ITIL) ») ; la page
   Problèmes affichait « ITIL v3 » alors que l'application suit les pratiques ITIL 4.
 - **Problèmes sur le socle commun** : le module Problèmes repose désormais, comme les autres

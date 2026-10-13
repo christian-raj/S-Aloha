@@ -41,7 +41,7 @@ où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-
 | **Changements** | Changements et mises en production | Actif (MVP) | `Modules/ChangeEnablement`, `modules/change-enablement` |
 | **Configuration** | Actifs et dépendances (CMDB) | Actif (MVP) | `Modules/ServiceConfigurationManagement`, `modules/service-configuration-management` |
 | **Niveaux de service** | Catalogue, SLA et engagements | Actif (MVP) | `Modules/ServiceLevelManagement`, `modules/service-level-management` |
-| **Connaissances** | Capitalisation et formation | Actif (MVP) | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
+| **Connaissances** | Capitalisation et formation | Actif | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
 | **Amélioration (CSI)** | Amélioration continue des services | Actif (MVP) | `Modules/ContinualImprovement`, `modules/continual-improvement` |
 | **Conformité NIS 2** | Évaluer la conformité au Référentiel Cyber France (ANSSI) | Actif (MVP) | `Modules/ComplianceAssessment`, `modules/compliance-assessment` |
 | **Projets** | Conduire les projets de la DSI : Scrum, Kanban, Cycle en V, PRINCE2, hybride | Actif (MVP) | `Modules/ProjectManagement`, `modules/project-management` |
