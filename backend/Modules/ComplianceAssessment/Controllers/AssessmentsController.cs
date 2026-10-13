@@ -48,6 +48,9 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
         return null;
     }
 
+    // NIS-18 : version évaluée et exigences figées à la validation, libérées à la réouverture.
+    protected override Task BeforeSaveAsync(Assessment e, bool creating) => AssessmentReferential.AlignAsync(Db, e);
+
     protected override void OnStatusChanged(Assessment e, string from)
     {
         if (e.Status == "Validée") { e.ValidatedAt = DateTime.UtcNow; e.ValidatedBy = MyDisplay; }
@@ -71,32 +74,36 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
     {
         var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (e is null || !await VisibleAsync(e)) return NotFound();
-        var objectives = await Db.SecurityObjectives.AsNoTracking().Include(o => o.Requirements)
-            .OrderBy(o => o.Id).ToListAsync();
+        // NIS-18 : les exigences évaluées (figées si validée) ; le texte vient du référentiel importé.
+        var evaluated = await AssessmentReferential.RequirementsAsync(Db, e);
+        var details = await Db.SecurityRequirements.AsNoTracking().ToDictionaryAsync(r => r.Id);
         var responses = await Db.AssessmentResponses.AsNoTracking()
             .Where(r => r.AssessmentId == id).ToDictionaryAsync(r => r.RequirementId);
 
         return Ok(new
         {
-            ReferentialVersion = ReferentialStore.Version,
-            Objectives = objectives.Select(o => new
+            e.ReferentialVersion,
+            CurrentReferentialVersion = ReferentialStore.Version,
+            Frozen = e.FrozenRequirementsJson is not null,
+            Objectives = evaluated.GroupBy(r => r.ObjectiveId).OrderBy(g => g.Key).Select(o => new
             {
-                o.Id, o.Title, o.Pillar,
-                Themes = o.Requirements.Where(e.Applies).OrderBy(r => r.Order).GroupBy(r => r.Theme).Select(g => new
+                Id = o.Key, Title = o.First().ObjectiveTitle, o.First().Pillar,
+                Themes = o.OrderBy(r => r.Order).GroupBy(r => r.Theme).Select(g => new
                 {
                     Theme = g.Key,
                     Requirements = g.Select(r =>
                     {
                         responses.TryGetValue(r.Id, out var resp);
+                        details.TryGetValue(r.Id, out var d);
                         return new
                         {
-                            r.Id, r.Code, r.IsoControls, r.Text,
+                            r.Id, r.Code, d?.IsoControls, d?.Text,
                             resp?.Score, NotApplicable = resp?.NotApplicable ?? false,
                             Justification = resp?.Justification ?? "", resp?.UpdatedBy, resp?.UpdatedAt
                         };
                     })
                 })
-            }).Where(o => o.Themes.Any())
+            })
         });
     }
 
@@ -134,12 +141,12 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
     {
         var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (e is null || !await VisibleAsync(e)) return NotFound();
-        var requirements = await Db.SecurityRequirements.AsNoTracking().Include(r => r.Objective)
-            .OrderBy(r => r.Order).ToListAsync();
+        // NIS-18 : figées si l'évaluation est validée.
+        var requirements = await AssessmentReferential.RequirementsAsync(Db, e);
         var responses = await Db.AssessmentResponses.AsNoTracking()
             .Where(r => r.AssessmentId == id).ToDictionaryAsync(r => r.RequirementId);
 
-        var items = requirements.Where(e.Applies).Select(r =>
+        var items = requirements.Select(r =>
         {
             responses.TryGetValue(r.Id, out var resp);
             return new { Req = r, Score = resp is { NotApplicable: false } ? resp.Score : null, Na = resp?.NotApplicable ?? false };
@@ -153,15 +160,14 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
             Applicable = items.Count,
             Answered = items.Count(i => i.Score.HasValue || i.Na),
             NotApplicable = items.Count(i => i.Na),
-            Pillars = items.GroupBy(i => i.Req.Objective!.Pillar).Select(g => new
+            ReferentialVersion = e.ReferentialVersion,
+            Pillars = items.GroupBy(i => i.Req.Pillar).Select(g => new
             {
                 Pillar = g.Key, Percent = Scoring.Percent(g.Select(i => i.Score))
             }),
-            // Par identifiant, pas par instance : sans suivi (AsNoTracking), chaque
-            // exigence porte sa propre copie de l'objectif.
             Objectives = items.GroupBy(i => i.Req.ObjectiveId).OrderBy(g => g.Key).Select(g => new
             {
-                Id = g.Key, g.First().Req.Objective!.Title, g.First().Req.Objective!.Pillar,
+                Id = g.Key, Title = g.First().Req.ObjectiveTitle, g.First().Req.Pillar,
                 Percent = Scoring.Percent(g.Select(i => i.Score)),
                 Applicable = g.Count(), Answered = g.Count(i => i.Score.HasValue || i.Na),
                 Themes = g.GroupBy(i => i.Req.Theme).Select(t => new

@@ -77,7 +77,8 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `EntityCategory` | texte 30 | ✔ | Entité importante, Entité essentielle | ✅ |
 | `Status` | texte 30 | auto | Brouillon, En cours, Validée | ✅ |
 | `ValidatedBy`, `ValidatedAt` | texte, date | auto | Validation (SOC-08) | ✅ |
-| `ReferentialVersion` | texte | auto | Version du référentiel évaluée | 🔜 NIS-18 |
+| `ReferentialVersion` | texte 100 | auto | Version du référentiel évaluée (celle en vigueur à la création, puis à chaque réouverture) | ✅ NIS-18 |
+| `FrozenRequirementsJson` | texte (JSON) | auto | Exigences applicables figées à la validation (code, objectif, pilier, thématique) ; effacées à la réouverture ; non exposé par l'API | ✅ NIS-18 |
 | `NextAssessmentDate` | date | | Prochaine évaluation | 🔜 NIS-16 |
 
 ### Réponse (`AssessmentResponses`)
@@ -126,7 +127,7 @@ stateDiagram-v2
 | NIS-09 | **Comparaison** de deux évaluations du même périmètre : évolution des scores par exigence, thématique, objectif et pilier | 🔜 | 2 |
 | NIS-16 | **Revue périodique** : une évaluation validée porte la date de la prochaine évaluation (12 mois par défaut) ; à l'échéance, relance au responsable (console, Relances) | 🔜 | 2 |
 | NIS-17 | **Export** de la synthèse (CSV : exigence, score, justification, écart, action liée) pour les auditeurs | 🔜 | 2 |
-| NIS-18 | Une évaluation enregistre la **version du référentiel** évaluée ; une nouvelle version embarquée ne modifie pas une évaluation validée | 🔜 | 1 |
+| NIS-18 | Une évaluation enregistre la **version du référentiel** évaluée ; une nouvelle version embarquée ne modifie pas une évaluation validée : à la validation, ses exigences applicables (code, objectif, pilier, thématique) sont figées, et son questionnaire, son score et la synthèse du reporting (REP-40) s'en servent ; la rouvrir la réaligne sur la version en vigueur. Les évaluations validées avant la règle sont figées au démarrage, avant l'alignement de la structure embarquée | ✅ | |
 
 ### Référentiel
 
@@ -194,7 +195,7 @@ renouveler (Relances, NIS-16), texte du référentiel incomplet (Relances, Admin
 | `GET /api/assessments` (filtres `status`, `q`, `owner`), `GET /api/assessments/{id}` | User | Registre, fiche |
 | `POST /api/assessments`, `PUT /api/assessments/{id}` | Manager | Création, modification, validation, réouverture |
 | `DELETE /api/assessments/{id}` | Admin | Suppression |
-| `GET /api/assessments/{id}/questionnaire` | User | Exigences applicables et réponses |
+| `GET /api/assessments/{id}/questionnaire` | User | Exigences évaluées (figées si validée) et réponses ; `referentialVersion`, `currentReferentialVersion`, `frozen` (NIS-18) |
 | `PUT /api/assessments/{id}/responses/{requirementId}` | User | Réponse à une exigence |
 | `GET /api/assessments/{id}/score` | User | Scores, maturité, écarts |
 | `POST /api/assessments/{id}/improvements` (`{ code }`) | Manager | Action d'amélioration depuis un écart |

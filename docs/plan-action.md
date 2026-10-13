@@ -87,8 +87,8 @@ Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 
 **Lot 1** : étapes 4 (2026-10-11), 5 (2026-10-12) et 6 (**périmètres**,
 [PER-01 à PER-12](reference/perimetres.md), [ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md),
-2026-10-13) terminées. Restent NIS-18 et RAG-10 (calibrage : jeu de requêtes réelles
-attendu). **Itération suivante** : prérequis communs de la sortie du MVP — commentaires
+2026-10-13) terminées, NIS-18 aussi. RAG-10 (calibrage de la recherche) est **en attente**
+(décision du 2026-10-13) jusqu'à ce qu'un jeu de requêtes réelles soit disponible. **Itération en cours** : prérequis communs de la sortie du MVP — commentaires
 (SOC-24) et notifications (SOC-21).
 
 ### Sortie du MVP
@@ -112,7 +112,7 @@ règle à ✅ (README, produit, CHANGELOG dans la même PR).
 | [Niveaux de service](reference/processus/gestion-des-niveaux-de-service.md) | SLM-04 (expiration), SLM-10, SLM-13, SLM-14 (heures de service), **SLM-20 (mesure du respect, F1)**, SLM-22, SLM-23, SLM-24 |
 | [Connaissances](reference/processus/gestion-des-connaissances.md) | ~~KB-10, KB-11, KB-12, KB-17, KB-21~~ faits le 2026-10-12 (avec KB-14, KB-18) ; reste KB-20 (notifications, prérequis SOC-21) |
 | [Amélioration continue](reference/processus/amelioration-continue.md) | CSI-10, CSI-12 (source, priorisation), CSI-20 (proposition par le système), CSI-21, CSI-23 |
-| [Conformité NIS 2](reference/processus/conformite-nis2.md) | NIS-18 ; NIS-08 (preuves), NIS-09 (comparaison), NIS-14, NIS-16 (revue périodique), NIS-17 (export) |
+| [Conformité NIS 2](reference/processus/conformite-nis2.md) | ~~NIS-18~~ (2026-10-13) ; NIS-08 (preuves), NIS-09 (comparaison), NIS-14, NIS-16 (revue périodique), NIS-17 (export) |
 
 Les règles du lot 3 (enquêtes, versions d'articles, import en masse…) ne conditionnent pas la
 sortie du MVP.

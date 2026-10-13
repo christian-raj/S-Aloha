@@ -88,7 +88,7 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| REP-40 | Dernière **évaluation NIS 2 validée** : score, maturité, score par pilier, écarts, actions d'amélioration reliées ([NIS-10 à NIS-12](processus/conformite-nis2.md)). Seule une évaluation Validée donne un score ; les évaluations non validées sont listées à part (référence, statut, lien vers la fiche), sans score | ✅ | |
+| REP-40 | Dernière **évaluation NIS 2 validée** : score, maturité, score par pilier, écarts, actions d'amélioration reliées ([NIS-10 à NIS-12](processus/conformite-nis2.md)), calculés sur ses exigences figées ([NIS-18](processus/conformite-nis2.md)). Seule une évaluation Validée donne un score ; les évaluations non validées sont listées à part (référence, statut, lien vers la fiche), sans score | ✅ | |
 | REP-41 | **Respect des SLA par service** (incidents résolus sur la période ayant une échéance) et **SLA à revoir** (En vigueur, date de revue passée) | ✅ | |
 | REP-42 | **Amélioration continue** : registre par statut, améliorations réalisées sur la période | ✅ | |
 | REP-43 | **Connaissances** : articles publiés, brouillons, revues en retard, publications de la période | ✅ | |

@@ -339,16 +339,17 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
         object? nis2 = null;
         if (last is not null)
         {
-            var reqs = (await db.SecurityRequirements.AsNoTracking().Include(r => r.Objective).ToListAsync()).Where(last.Applies).ToList();
+            // NIS-18 : les exigences figées à la validation, pas celles du référentiel en vigueur.
+            var reqs = await AssessmentReferential.RequirementsAsync(db, last);
             var resp = await db.AssessmentResponses.AsNoTracking().Where(r => r.AssessmentId == last.Id).ToDictionaryAsync(r => r.RequirementId);
-            int? ScoreOf(SecurityRequirement r) => resp.TryGetValue(r.Id, out var x) && !x.NotApplicable ? x.Score : null;
+            int? ScoreOf(EvaluatedRequirement r) => resp.TryGetValue(r.Id, out var x) && !x.NotApplicable ? x.Score : null;
             var percent = Scoring.Percent(reqs.Select(ScoreOf));
             var improvements = await db.ItemLinks.CountAsync(l => l.FromType == "assessment" && l.FromId == last.Id && l.ToType == "improvement");
             nis2 = new
             {
                 last.Id, last.Reference, last.Title, last.ValidatedAt, Percent = percent,
                 Maturity = percent is null ? null : Scoring.MaturityOf(percent.Value),
-                Pillars = reqs.GroupBy(r => r.Objective!.Pillar).Select(g => new { Pillar = g.Key, Percent = Scoring.Percent(g.Select(ScoreOf)) }),
+                Pillars = reqs.GroupBy(r => r.Pillar).Select(g => new { Pillar = g.Key, Percent = Scoring.Percent(g.Select(ScoreOf)) }),
                 Gaps = reqs.Count(r => ScoreOf(r) is < Scoring.Max),
                 Improvements = improvements,
             };
