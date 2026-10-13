@@ -124,6 +124,10 @@ un changement, un changement touche des CI.
     <td><img src="docs/screenshots/14-connaissances.png" alt="Base de connaissances" /><br/><b>Connaissances</b> — solutions, procédures, erreurs connues</td>
     <td><img src="docs/screenshots/15-amelioration-continue.png" alt="Amélioration continue" /><br/><b>Amélioration continue</b> — registre et modèle ITIL 4 en 7 étapes</td>
   </tr>
+  <tr>
+    <td><img src="docs/screenshots/17-projet-scrum.png" alt="Projet Scrum" /><br/><b>Projets</b> — Scrum, cycle en V, PRINCE2 : backlog, sprints, tableau</td>
+    <td><img src="docs/screenshots/18-conformite-nis2.png" alt="Conformité NIS 2" /><br/><b>Conformité NIS 2</b> — évaluation, score, maturité et écarts par objectif</td>
+  </tr>
 </table>
 
 ## Essayer en 5 minutes

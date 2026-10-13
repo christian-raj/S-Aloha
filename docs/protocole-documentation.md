@@ -50,7 +50,9 @@ Chaque changement est replié dans le document de [`reference/`](reference/) con
 | Décision structurante actée | nouvel ADR dans [`decisions/`](decisions/readme.md) |
 
 Une interface modifiée rend les **captures d'écran** obsolètes : les régénérer
-(`docs/screenshots/`, mêmes noms de fichiers).
+(`docs/screenshots/`, mêmes noms de fichiers) depuis une instance chargée avec les données
+du mode démonstration, sans enregistrement de test, trou de numérotation ni adresse interne
+visible.
 
 ## 3. Journaliser les sujets traités
 
