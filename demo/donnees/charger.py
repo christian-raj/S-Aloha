@@ -109,11 +109,12 @@ def main():
     lier(m, 'ci', bdd['id'], erp['reference'])
 
     # --- Incidents ---------------------------------------------------------------
-    inc_vpn = creer(u, '/api/incidents', {**URSULA, 'title': 'VPN inaccessible pour les directions régionales',
+    # Incident majeur : déclaré par un gestionnaire, responsable nominatif (INC-13).
+    inc_vpn = creer(m, '/api/incidents', {**MARC, 'title': 'VPN inaccessible pour les directions régionales',
         'description': 'Depuis 8 h, aucune connexion VPN n’aboutit hors du siège.',
         'impact': 'Élevé', 'urgency': 'Élevée', 'category': 'Réseau',
         'affectedService': 'Accès distant (VPN)', 'isMajor': True, 'resolution': None}, 'En cours')
-    lier(u, 'incident', inc_vpn['id'], passerelle['reference'])
+    lier(m, 'incident', inc_vpn['id'], passerelle['reference'])
     inc_vpn2 = creer(u, '/api/incidents', {**URSULA, 'title': 'Coupures VPN toutes les 20 minutes',
         'description': 'Les sessions VPN tombent régulièrement à Toamasina.',
         'impact': 'Moyen', 'urgency': 'Moyenne', 'category': 'Réseau',
