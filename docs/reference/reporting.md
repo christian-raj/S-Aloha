@@ -17,13 +17,16 @@ projets à risque, la conformité. Chaque onglet se lit seul et s'exporte.
 
 ## 2. Filtres et onglets
 
-Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=`) :
+Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=&perimeter=`) :
 
 - **Période** : 7, 30 (défaut), 90 jours, 12 mois ou personnalisée ; bornes **incluses**,
   aujourd'hui compris ([SOC-18](regles-metier.md#7-reporting)).
 - **Service** : nom d'un service du catalogue. Il filtre les **incidents** et les
   **problèmes** (service affecté), pas les changements ni les projets, qui n'ont pas de
   service ; l'onglet Changements & projets l'ignore.
+- **Périmètre** ([PER-09](perimetres.md)) : les indicateurs portent sur les périmètres de
+  l'utilisateur (tous pour l'Admin) ; le filtre, affiché dès qu'on en a plusieurs, en retient
+  un. Un périmètre qui n'est pas le sien ne renvoie rien.
 
 | Onglet | API | Règles |
 |---|---|---|

@@ -91,7 +91,9 @@ filtre les registres (`InScopeAsync`), répond 404 hors portée (`VisibleAsync`,
 routes propres d'un module), évalue `IsManager` sur le périmètre de l'enregistrement
 (`ActOn`) et contrôle le choix (`ChooseAsync`) et le changement (`CheckMoveAsync`) de
 périmètre. `SharedWithAll` déclare un référentiel lisible de tous (catalogue des services,
-articles publiés).
+articles publiés). Les vues transverses suivent la même portée (PER-08, PER-09) : liens
+(`LinkTarget.PerimeterId`, `Shared`), recherche (filtre après classement), console (pilotage
+limité aux périmètres gérés) et reporting (`Core/Pilotage/ReportScope`, paramètre `perimeter`).
 
 Règles de dépendance :
 - un **module** peut utiliser le socle (auth, annuaire, `AppDbContext`) ;

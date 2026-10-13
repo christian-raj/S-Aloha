@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Links;
+using SAloha.Api.Core.Perimeters;
 
 namespace SAloha.Api.Core.Search;
 
@@ -12,8 +14,29 @@ namespace SAloha.Api.Core.Search;
 [ApiController]
 [Route("api/search")]
 [Authorize(Policy = "User")]
-public class SearchController(AppDbContext db, HybridSearch search, IEmbeddingClient embeddings, VectorStore store, IndexQueue queue) : ControllerBase
+public class SearchController(AppDbContext db, HybridSearch search, IEmbeddingClient embeddings, VectorStore store, IndexQueue queue,
+    PerimeterAccess access) : ControllerBase
 {
+    /// <summary>
+    /// PER-09 : seuls les résultats visibles de l'utilisateur (ses périmètres, articles publiés).
+    /// Le filtre vient après le classement : on demande trois fois plus de candidats.
+    /// </summary>
+    private async Task<List<HybridSearch.Hit>> VisibleAsync(List<HybridSearch.Hit> hits, int limit)
+    {
+        var scope = await access.GetAsync();
+        if (scope.Global) return hits.Take(limit).ToList();
+        var visible = new HashSet<(string, int)>();
+        foreach (var group in hits.GroupBy(h => h.Type))
+        {
+            var kind = ItemLinks.ByType(group.Key);
+            if (kind is null) continue;
+            var ids = group.Select(h => h.Id).ToList();
+            foreach (var t in await kind.Query(db).Where(t => ids.Contains(t.Id)).ToListAsync())
+                if (scope.Sees(t)) visible.Add((group.Key, t.Id));
+        }
+        return hits.Where(h => visible.Contains((h.Type, h.Id))).Take(limit).ToList();
+    }
+
     private static IReadOnlyCollection<string> TypesOf(string? types) =>
         string.IsNullOrWhiteSpace(types)
             ? SearchSources.Types
@@ -25,7 +48,8 @@ public class SearchController(AppDbContext db, HybridSearch search, IEmbeddingCl
     public async Task<IActionResult> Search([FromQuery] string? q, [FromQuery] string? types, [FromQuery] int limit = 10)
     {
         if (string.IsNullOrWhiteSpace(q)) return Ok(Array.Empty<object>());
-        return Ok(await search.SearchAsync(q.Trim(), TypesOf(types), null, Math.Clamp(limit, 1, 50)));
+        var max = Math.Clamp(limit, 1, 50);
+        return Ok(await VisibleAsync(await search.SearchAsync(q.Trim(), TypesOf(types), null, max * 3), max));
     }
 
     /// <summary>
@@ -36,9 +60,12 @@ public class SearchController(AppDbContext db, HybridSearch search, IEmbeddingCl
     public async Task<IActionResult> Similar([FromQuery] string type, [FromQuery] int id, [FromQuery] string? types, [FromQuery] int limit = 5)
     {
         var doc = await SearchSources.LoadAsync(db, type, id);
-        if (doc is null) return NotFound();
+        var kind = ItemLinks.ByType(type);
+        var source = kind is null ? null : await kind.Query(db).FirstOrDefaultAsync(t => t.Id == id);
+        if (doc is null || source is null || !(await access.GetAsync()).Sees(source)) return NotFound();
         var query = doc.Title + "\n" + (doc.Text.Length > 2000 ? doc.Text[..2000] : doc.Text);
-        return Ok(await search.SearchAsync(query, TypesOf(types), (type, id), Math.Clamp(limit, 1, 20), lexicalQuery: doc.Title));
+        var max = Math.Clamp(limit, 1, 20);
+        return Ok(await VisibleAsync(await search.SearchAsync(query, TypesOf(types), (type, id), max * 3, lexicalQuery: doc.Title), max));
     }
 
     /// <summary>État de l'index et du service d'embeddings (RAG-08, Admin).</summary>

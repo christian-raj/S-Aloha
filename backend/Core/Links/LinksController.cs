@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Perimeters;
 
 namespace SAloha.Api.Core.Links;
 
@@ -11,12 +12,14 @@ public record LinkDto(string FromType, int FromId, string ToReference);
 [ApiController]
 [Route("api/links")]
 [Authorize(Policy = "User")]
-public class LinksController(AppDbContext db) : ControllerBase
+public class LinksController(AppDbContext db, PerimeterAccess access) : ControllerBase
 {
     /// <summary>Enregistrements reliés à (type, id), quel que soit le sens du lien.</summary>
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] string type, [FromQuery] int id)
     {
+        var scope = await access.GetAsync();
+        if (!await SeesAsync(scope, type, id)) return NotFound();
         var links = await db.ItemLinks.AsNoTracking()
             .Where(l => (l.FromType == type && l.FromId == id) || (l.ToType == type && l.ToId == id))
             .ToListAsync();
@@ -35,7 +38,10 @@ public class LinksController(AppDbContext db) : ControllerBase
             result.AddRange(group.Where(o => targets.ContainsKey(o.Id)).Select(o =>
             {
                 var t = targets[o.Id];
-                return new { o.LinkId, o.Type, t.Id, t.Reference, t.Title, t.Status };
+                // PER-08 : le lien se voit, l'enregistrement d'un autre périmètre non.
+                return scope.Sees(t)
+                    ? new { o.LinkId, o.Type, t.Id, t.Reference, t.Title, t.Status, Hidden = false }
+                    : new { o.LinkId, o.Type, Id = 0, Reference = "", Title = "Enregistrement d'un autre périmètre", Status = "", Hidden = true };
             }));
         }
         return Ok(result);
@@ -47,12 +53,15 @@ public class LinksController(AppDbContext db) : ControllerBase
     {
         var from = ItemLinks.ByType(dto.FromType);
         if (from is null) return BadRequest(new { message = $"Type inconnu : « {dto.FromType} »." });
-        if (!await from.Query(db).AnyAsync(t => t.Id == dto.FromId)) return NotFound();
+        var scope = await access.GetAsync();
+        var source = await from.Query(db).FirstOrDefaultAsync(t => t.Id == dto.FromId);
+        if (source is null || !scope.Sees(source)) return NotFound();
 
         var reference = dto.ToReference.Trim().ToUpper();
         var to = ItemLinks.ByReference(reference);
         var target = to is null ? null : await to.Query(db).FirstOrDefaultAsync(t => t.Reference == reference);
-        if (to is null || target is null)
+        // PER-08 : relier suppose de voir les deux ; hors de ses périmètres, la référence n'existe pas.
+        if (to is null || target is null || !scope.Sees(target))
             return BadRequest(new { message = $"Aucun enregistrement de référence « {dto.ToReference} »." });
         if (to.Type == from.Type && target.Id == dto.FromId)
             return BadRequest(new { message = "Un enregistrement ne peut pas être relié à lui-même." });
@@ -76,11 +85,21 @@ public class LinksController(AppDbContext db) : ControllerBase
         return Ok(new { LinkId = link.Id, to.Type, target.Id, target.Reference, target.Title, target.Status });
     }
 
+    /// <summary>L'enregistrement (type, id) existe et l'utilisateur le voit.</summary>
+    private async Task<bool> SeesAsync(PerimeterScope scope, string type, int id)
+    {
+        var kind = ItemLinks.ByType(type);
+        var t = kind is null ? null : await kind.Query(db).FirstOrDefaultAsync(x => x.Id == id);
+        return t is not null && scope.Sees(t);
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
         var link = await db.ItemLinks.FindAsync(id);
         if (link is null) return NotFound();
+        var scope = await access.GetAsync();
+        if (!await SeesAsync(scope, link.FromType, link.FromId) || !await SeesAsync(scope, link.ToType, link.ToId)) return NotFound();
         db.ItemLinks.Remove(link);
         await db.SaveChangesAsync();
         return NoContent();

@@ -37,6 +37,10 @@ public class LinkTarget
     public string Reference { get; set; } = "";
     public string Title { get; set; } = "";
     public string Status { get; set; } = "";
+    /// <summary>Périmètre de l'enregistrement (PER-05).</summary>
+    public int PerimeterId { get; set; }
+    /// <summary>Référentiel partagé, lisible de tous (ADR-0014 D2 : services, articles publiés).</summary>
+    public bool Shared { get; set; }
 }
 
 /// <summary>
@@ -48,19 +52,20 @@ public static class ItemLinks
     public record Kind(string Type, string Code, Func<AppDbContext, IQueryable<LinkTarget>> Query);
 
     private static IQueryable<LinkTarget> Of<T>(DbSet<T> set) where T : Records.Record =>
-        set.Select(x => new LinkTarget { Id = x.Id, Reference = x.Reference, Title = x.Title, Status = x.Status });
+        set.Select(x => new LinkTarget { Id = x.Id, Reference = x.Reference, Title = x.Title, Status = x.Status, PerimeterId = x.PerimeterId });
 
     public static readonly Kind[] Kinds =
     [
         new("incident", "INC", db => Of(db.Incidents)),
         new("request", "REQ", db => Of(db.ServiceRequests)),
-        new("problem", "PRB", db => db.Problems.Select(p =>
-            new LinkTarget { Id = p.Id, Reference = p.Reference, Title = p.Title, Status = p.Status })),
+        new("problem", "PRB", db => Of(db.Problems)),
         new("change", "CHG", db => Of(db.Changes)),
         new("ci", "CI", db => Of(db.ConfigurationItems)),
-        new("service", "SVC", db => Of(db.Services)),
+        new("service", "SVC", db => db.Services.Select(x => new LinkTarget
+            { Id = x.Id, Reference = x.Reference, Title = x.Title, Status = x.Status, PerimeterId = x.PerimeterId, Shared = true })),
         new("agreement", "SLA", db => Of(db.Agreements)),
-        new("article", "KB", db => Of(db.KnowledgeArticles)),
+        new("article", "KB", db => db.KnowledgeArticles.Select(x => new LinkTarget
+            { Id = x.Id, Reference = x.Reference, Title = x.Title, Status = x.Status, PerimeterId = x.PerimeterId, Shared = x.Status == "Publié" })),
         new("improvement", "AMI", db => Of(db.Improvements)),
         new("assessment", "EVA", db => Of(db.Assessments)),
         new("project", "PRJ", db => Of(db.Projects)),

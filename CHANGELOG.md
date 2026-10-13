@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Périmètres — vues transverses** (lot 1, étape 6) : un lien vers un enregistrement d'un
+  autre périmètre reste visible mais masqué ; la console, le reporting, la recherche et les
+  cas similaires se limitent aux périmètres de l'utilisateur, le pilotage de la console aux
+  périmètres qu'il gère ; filtre « Périmètre » dans la console et le reporting (PER-08,
+  PER-09).
+
 - **Périmètres — droits et visibilité** (lot 1, étape 6, deuxième partie) : chacun voit les
   enregistrements de ses périmètres (plus le catalogue des services et les articles publiés)
   et crée dans l'un d'eux (choix proposé dès qu'il en a plusieurs) ; les décisions de
