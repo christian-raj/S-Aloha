@@ -85,7 +85,7 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 | **Amélioration continue** — registre et modèle ITIL 4 en 7 étapes | ✅ Disponible (MVP) |
 | **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions | ✅ Disponible (MVP) |
 | **Projets** — Scrum, Kanban, Cycle en V, PRINCE2 ou hybride : la méthode active backlog, sprints, phases, jalons, risques… | ✅ Disponible (MVP) |
-| **Périmètres** — droits par direction, site ou entité, affectations d'utilisateurs et de groupes AD | 🟡 [En cours](docs/reference/perimetres.md) (droits et visibilité livrés ; écran d'administration à venir) |
+| **Périmètres** — droits et visibilité par direction, site ou entité, affectations d'utilisateurs et de groupes AD, écran d'administration | ✅ [Disponible](docs/reference/perimetres.md) |
 | **Déclarations réglementaires** — NIS 2 et RGPD, échéances 24 h / 72 h depuis l'incident | 🔜 [Spécifié](docs/reference/processus/declarations-reglementaires.md) |
 
 **(MVP)** : le processus tient son cycle de vie et ses garde-fous, mais pas encore tous ses
@@ -95,7 +95,9 @@ enrichissements ; la mention disparaît pratique par pratique selon des
 Chaque processus est un module, aligné sur la pratique **ITIL 4** correspondante, sur un
 socle commun : même connexion, même console, même reporting. Les enregistrements se
 relient entre eux par leur référence : un incident ouvre un problème, un problème appelle
-un changement, un changement touche des CI.
+un changement, un changement touche des CI. Sur chaque fiche : **commentaires** publics ou
+notes de travail, **historique** complet ; une **cloche** signale ce qui vous attend
+(affectations, décisions, échéances).
 
 ## Aperçu
 
@@ -207,7 +209,7 @@ documentation en passant par les retours d'usage.
 | 🛡️ [Sécurité](docs/reference/securite.md) | Modèle d'autorisation, durcissement |
 | 🔎 [Recherche](docs/reference/recherche.md) | Recherche hybride, cas similaires, service d'embeddings |
 | 📊 [Reporting](docs/reference/reporting.md) | Tableau de bord : score de santé, indicateurs par onglet, filtres, exports |
-| 🧭 [Périmètres](docs/reference/perimetres.md) | Droits scopés par direction, site ou entité (en cours : droits et visibilité livrés) |
+| 🧭 [Périmètres](docs/reference/perimetres.md) | Droits scopés par direction, site ou entité (droits, visibilité, écran d'administration) |
 | 📦 [Journal des versions](CHANGELOG.md) | Nouveautés et consignes de mise à jour de chaque version |
 | 🤝 [Contribuer](CONTRIBUTING.md) | Issues, pull requests, contrôles avant envoi |
 | 🚨 [Signaler une faille](SECURITY.md) | En privé, jamais dans une issue publique |
@@ -227,14 +229,15 @@ their attention, ranked by severity.
   self-assessment against the French ANSSI reference framework.
 - **Built-in governance**: lifecycle transitions enforced per practice, mandatory fields
   (resolution codes, rejection reasons, plans before approval…), and a full **audit trail**
-  (history tab) on every record.
+  (history tab), **comments** (public or work notes) and in-app **notifications** on every
+  record.
 - **Hybrid search** (keywords + semantic, local `bge-m3` model) to find similar incidents,
   problems and knowledge articles.
 - **Project management** (Scrum, Kanban, V-model, PRINCE2 or hybrid) and a tabbed
   **reporting dashboard** (service health score, incident/problem/change/project KPIs,
   CSV and PDF exports).
-- **Perimeter-scoped permissions** (by department, site or entity): rights and visibility
-  are in place; the administration screen is coming.
+- **Perimeter-scoped permissions** (by department, site or entity): rights, visibility
+  and an administration screen.
 - **Coming next**: regulatory incident notifications (NIS 2, GDPR).
 - **Stack**: ASP.NET Core 8, EF Core, PostgreSQL 16, React 18 + Vite, Docker Compose.
 - **Try it**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`,

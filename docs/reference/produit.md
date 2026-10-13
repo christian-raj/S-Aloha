@@ -61,8 +61,8 @@ Indépendants des processus, accessibles à tous les rôles :
 - **Recherche** — recherche hybride (mots et sens) sur les contenus validés, cas
   similaires sur les fiches ([recherche](recherche.md)) ;
 - **Périmètres** — droits et visibilité limités à une direction, un site ou une entité,
-  affectations d'utilisateurs et de groupes AD ; en cours (écran d'administration à venir,
-  [périmètres](perimetres.md)) ;
+  affectations d'utilisateurs et de groupes AD, écran Administration › Périmètres
+  ([périmètres](perimetres.md)) ;
 - **Reporting** — tableau de bord à onglets : score de santé des services, incidents
   (MTTR, MTTD, résolution au premier contact, SLA), problèmes, changements et projets,
   conformité ; filtres période et service, exports CSV et PDF ([reporting](reporting.md)).
