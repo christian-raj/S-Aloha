@@ -8,7 +8,7 @@ export const RELATION_TYPES = ['Dépend de', 'Héberge', 'Fait partie de', 'Se c
 // et fiable sur les services et les CI, quand et où elle est nécessaire.
 export const ciConfig = {
   title: 'Configuration',
-  sub: 'Éléments de configuration (CI) et leurs dépendances : une information fiable, disponible quand il le faut (ITIL 4).',
+  sub: 'Éléments de configuration (CI) et leurs dépendances : une information fiable, disponible quand il le faut (ITIL).',
   api: api.configurationItems, basePath: '/configuration', linkType: 'ci',
   createLabel: '+ Nouveau CI', createTitle: 'Nouvel élément de configuration',
   empty: 'Aucun élément de configuration enregistré.', ownerLabel: 'Dont je suis propriétaire',

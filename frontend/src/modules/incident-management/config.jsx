@@ -6,7 +6,7 @@ import { titleField, descriptionField, ownerField, dateTimeFr } from '../../core
 // en rétablissant le service normal au plus vite.
 export const incidentConfig = {
   title: 'Incidents',
-  sub: 'Rétablir le service normal au plus vite et limiter l\'impact des interruptions (ITIL 4).',
+  sub: 'Rétablir le service normal au plus vite et limiter l\'impact des interruptions (ITIL).',
   api: api.incidents, basePath: '/incidents', linkType: 'incident',
   createLabel: '+ Déclarer un incident', createTitle: 'Déclarer un incident',
   empty: 'Aucun incident enregistré.', ownerLabel: 'Assignés à moi',

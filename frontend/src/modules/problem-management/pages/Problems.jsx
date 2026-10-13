@@ -28,7 +28,7 @@ export default function Problems() {
       <h1 className="page-title">{status === 'Erreur connue' ? 'Erreurs connues' : 'Problèmes'}</h1>
       <p className="page-sub">{status === 'Erreur connue'
         ? 'Problèmes dont la cause est identifiée et le contournement documenté, en attente de correction définitive.'
-        : 'Enregistrement et suivi des problèmes (ITIL v3).'}</p>
+        : 'Enregistrement et suivi des problèmes (ITIL).'}</p>
       {error && <div className="error">{error}</div>}
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>

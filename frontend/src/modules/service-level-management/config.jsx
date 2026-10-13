@@ -5,7 +5,7 @@ import { titleField, descriptionField, ownerField, dateFr } from '../../core/fie
 // orientées métier, et évaluer la prestation au regard de ces cibles.
 export const serviceConfig = {
   title: 'Catalogue des services',
-  sub: 'Services délivrés aux métiers, avec leur criticité et leurs heures de service (ITIL 4). Tenu par les gestionnaires.',
+  sub: 'Services délivrés aux métiers, avec leur criticité et leurs heures de service (ITIL). Tenu par les gestionnaires.',
   api: api.services, basePath: '/services', linkType: 'service', managerOnly: true,
   createLabel: '+ Nouveau service', createTitle: 'Nouveau service', titleLabel: 'Service',
   empty: 'Aucun service au catalogue.', statusAtCreation: 'En conception (par défaut)',
@@ -30,7 +30,7 @@ const hours = (p) => ({ key: 'resolutionHours' + p, label: `Résolution ${p} (he
 /** Configuration des SLA : la liste des services du catalogue alimente le choix du service. */
 export const agreementConfig = (services) => ({
   title: 'Accords de niveau de service',
-  sub: 'Cibles convenues avec les clients (disponibilité, délais de résolution par priorité) et dates de revue (ITIL 4).',
+  sub: 'Cibles convenues avec les clients (disponibilité, délais de résolution par priorité) et dates de revue (ITIL).',
   api: api.agreements, basePath: '/agreements', linkType: 'agreement', managerOnly: true,
   createLabel: '+ Nouveau SLA', createTitle: 'Nouvel accord de niveau de service',
   empty: 'Aucun SLA enregistré.',

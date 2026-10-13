@@ -5,7 +5,7 @@ import { titleField, descriptionField, ownerField, dateFr, dateTimeFr } from '..
 // initiées par les utilisateurs, de façon efficace et conviviale.
 export const requestConfig = {
   title: 'Demandes',
-  sub: 'Traiter les demandes de service des utilisateurs (accès, matériel, information) selon la qualité convenue (ITIL 4).',
+  sub: 'Traiter les demandes de service des utilisateurs (accès, matériel, information) selon la qualité convenue (ITIL).',
   api: api.requests, basePath: '/requests', linkType: 'request',
   createLabel: '+ Nouvelle demande', createTitle: 'Nouvelle demande de service',
   empty: 'Aucune demande enregistrée.', ownerLabel: 'Traitées par moi',

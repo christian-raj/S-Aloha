@@ -94,6 +94,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Modifié
 
+- **Sous-titres des pages** : le numéro de version d'ITIL est retiré (« (ITIL) ») ; la page
+  Problèmes affichait « ITIL v3 » alors que l'application suit les pratiques ITIL 4.
 - **Problèmes sur le socle commun** : le module Problèmes repose désormais, comme les autres
   pratiques, sur `Record` et `RecordController` (registre, transitions, transition forcée,
   périmètres, journal) ; il gagne un **gestionnaire du problème** (responsable AD, par défaut

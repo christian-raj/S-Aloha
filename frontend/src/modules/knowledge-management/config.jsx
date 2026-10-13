@@ -7,7 +7,7 @@ export const ARTICLE_TYPES = ['Solution', 'Procédure', 'Erreur connue', 'FAQ']
 // efficace, efficient et pratique de l'information et des connaissances.
 export const knowledgeConfig = {
   title: 'Connaissances',
-  sub: 'Solutions, procédures, erreurs connues et FAQ : capitaliser pour résoudre plus vite et former (ITIL 4).',
+  sub: 'Solutions, procédures, erreurs connues et FAQ : capitaliser pour résoudre plus vite et former (ITIL).',
   api: api.knowledge, basePath: '/knowledge', linkType: 'article',
   createLabel: '+ Rédiger un article', createTitle: 'Nouvel article',
   empty: 'Aucun article dans la base de connaissances.', ownerLabel: 'Dont je suis responsable',
