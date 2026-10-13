@@ -83,6 +83,16 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             else notify.ToCreator(k, "article", ev);
         }
 
+        // CSI-21 : amélioration En cours dont l'échéance est passée → porteur (à défaut, proposant).
+        foreach (var i in await db.Improvements.AsNoTracking()
+                     .Where(i => i.Status == "En cours" && i.DueDate != null && i.DueDate < today).ToListAsync())
+        {
+            var ev = $"Amélioration en retard (échéance {Day(i.DueDate!.Value)})";
+            if (!Fresh("improvement", i.Id, ev)) continue;
+            if (!string.IsNullOrWhiteSpace(i.OwnerId)) notify.ToOwner(i, "improvement", ev);
+            else notify.ToCreator(i, "improvement", ev);
+        }
+
         // SLM-24 : SLA expirant dans 30 jours → gestionnaires ; revue échue → propriétaire du service.
         foreach (var s in await db.Agreements.AsNoTracking().Include(s => s.Service).Where(s => s.Status == "En vigueur").ToListAsync())
         {

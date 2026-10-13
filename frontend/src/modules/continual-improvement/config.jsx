@@ -22,7 +22,14 @@ export const improvementConfig = {
   ],
   fields: [
     titleField('Titre', 'Ex. : Réduire le délai de traitement des demandes d\'accès'),
+    { key: 'source', label: 'Source', type: 'select', required: true, default: 'Suggestion',
+      options: ['Suggestion', 'Incident', 'Problème', 'SLA', 'Audit', 'Retour client'] },
+    { key: 'originReference', label: 'Enregistrement d\'origine', onlyCreate: true, placeholder: 'Ex. : INC-2026-0012 (facultatif)' },
     { key: 'priority', label: 'Priorité', type: 'select', options: ['Faible', 'Moyenne', 'Élevée'], required: true, default: 'Moyenne' },
+    { key: 'value', label: 'Valeur métier (1 à 3)', type: 'select', numeric: true, create: false,
+      options: [{ value: 1, label: '1 — faible' }, { value: 2, label: '2 — moyenne' }, { value: 3, label: '3 — forte' }] },
+    { key: 'effort', label: 'Effort estimé (1 à 3)', type: 'select', numeric: true, create: false,
+      options: [{ value: 1, label: '1 — faible' }, { value: 2, label: '2 — moyen' }, { value: 3, label: '3 — important' }] },
     { key: 'step', label: 'Étape du modèle', type: 'select', required: true, numeric: true, default: 1,
       options: STEPS.map((s, i) => ({ value: i + 1, label: `${i + 1}. ${s}` })) },
     ownerField('Porteur'),
@@ -38,11 +45,12 @@ export const improvementConfig = {
   ],
   columns: [
     { h: 'Étape', v: r => `${r.step}. ${STEPS[r.step - 1]}` },
+    { h: 'Source', v: r => r.source },
     { h: 'Priorité', v: r => r.priority },
     { h: 'Porteur', v: r => r.ownerDisplayName || '—' },
     { h: 'Échéance', v: r => dateFr(r.dueDate) },
   ],
   meta: r => [r.validatedAt && `Validée par ${r.validatedBy} le ${dateTimeFr(r.validatedAt)}`],
-  help: 'Validation par un gestionnaire, avec valeur attendue, mesure de départ et mesure cible. Réalisée : à l\'étape 6 au moins, avec le résultat constaté. Un abandon se motive.',
+  help: 'Validation par un gestionnaire, avec valeur attendue, mesures de départ et cible, et la note de valeur et d\'effort (1 à 3) dont découle la priorité. Réalisée : à l\'étape 6 au moins, avec le résultat constaté. Un abandon se motive.',
   linkHint: 'Problèmes, incidents récurrents, services ou SLA à l\'origine de l\'amélioration…',
 }

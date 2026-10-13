@@ -40,14 +40,14 @@ porteur AD, créateur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 | Champ | Type | Oblig. | Valeurs / règle | Statut |
 |---|---|---|---|---|
 | `Step` | entier | ✔ | 1 à 7 (modèle ITIL 4, ci-dessous) | ✅ |
-| `Priority` | texte 10 | ✔ | Faible, Moyenne, Élevée | ✅ (calculée 🔜 CSI-12) |
+| `Priority` | texte 10 | ✔ | Faible, Moyenne, Élevée ; calculée dès que valeur et effort sont notés | ✅ CSI-12 |
 | `Benefit` | texte | | Valeur attendue | ✅ |
 | `Baseline`, `Target` | texte 300 | | Mesure de départ, mesure cible | ✅ |
 | `Outcome` | texte | à la réalisation | Résultat constaté | ✅ |
 | `DueDate` | date | | Échéance | ✅ |
 | `ValidatedBy`, `ValidatedAt`, `CompletedAt` | texte, date | auto | SOC-08 | ✅ |
-| `Source` | texte 20 | ✔ (🔜) | Suggestion, Incident, Problème, SLA, Audit, Retour client | 🔜 CSI-10 |
-| `Value`, `Effort` | entier 1–3 | à la validation | Valeur métier, effort estimé | 🔜 CSI-12 |
+| `Source` | texte 20 | ✔ | Suggestion (défaut), Incident, Problème, SLA, Audit, Retour client ; l'enregistrement d'origine, s'il est donné à la proposition, est relié | ✅ CSI-10 |
+| `Value`, `Effort` | entier 1–3 | à la validation | Valeur métier, effort estimé ; la priorité en découle. Exigés à l'entrée dans Validée (une amélioration validée avant la règle reste modifiable) | ✅ CSI-12 |
 | `AbandonReason` | texte | à l'abandon | Motif | ✅ |
 | `FollowUpDate` | date | | Date de contrôle de la durabilité (étape 7) | 🔜 CSI-15 |
 
@@ -97,9 +97,9 @@ stateDiagram-v2
 | CSI-03 | **Validée** et **Abandonnée** : gestionnaire uniquement | ✅ | |
 | CSI-04 | **En cours** et **Réalisée** exigent une amélioration validée ; **Réalisée** exige le résultat constaté | ✅ | |
 | CSI-05 | **Abandonner**, comme revenir à Proposée, **retire la validation** : relancer demande une nouvelle validation | ✅ | |
-| CSI-10 | **Source** de l'amélioration et lien vers l'enregistrement d'origine (incident, problème, SLA) quand il existe | 🔜 | 2 |
+| CSI-10 | **Source** de l'amélioration et lien vers l'enregistrement d'origine (incident, problème, SLA) quand il existe | ✅ |  |
 | CSI-11 | **Transitions contraintes** selon le § 4 (SOC-05) ; Réalisée est finale | ✅ | 1 |
-| CSI-12 | **Priorisation** : à la validation, le gestionnaire note la valeur et l'effort (1 à 3) ; la priorité est calculée : valeur 3 et effort 1–2 → Élevée ; valeur 1 et effort 2–3 → Faible ; sinon Moyenne | 🔜 | 2 |
+| CSI-12 | **Priorisation** : à la validation, le gestionnaire note la valeur et l'effort (1 à 3) ; la priorité est calculée : valeur 3 et effort 1–2 → Élevée ; valeur 1 et effort 2–3 → Faible ; sinon Moyenne | ✅ |  |
 | CSI-13 | **Abandon** motivé : le motif est obligatoire et visible sur la fiche | ✅ | 1 |
 | CSI-14 | **Validation** exige valeur attendue, mesure de départ et mesure cible (une amélioration se mesure) | ✅ | 1 |
 | CSI-15 | **Durabilité** (étape 7) : une amélioration Réalisée peut porter une date de contrôle ; à cette date, le porteur confirme que le résultat tient, ou ouvre une nouvelle amélioration reliée | 🔜 | 3 |
@@ -109,8 +109,8 @@ stateDiagram-v2
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| CSI-20 | **Amélioration proposée par le système** depuis un SLA sous la cible (SLM-23) ou un problème récurrent (PRB-23) : brouillon Proposée, source et lien renseignés, à valider par un gestionnaire | 🔜 | 2 |
-| CSI-21 | Une amélioration **En cours** dont l'échéance est passée remonte en relance à son porteur (même règle de date que PRB-19) | 🔜 | 2 |
+| CSI-20 | **Amélioration proposée par le système** depuis un SLA sous la cible (SLM-23) ou un problème récurrent (PRB-23) : brouillon Proposée, source et lien renseignés, à valider par un gestionnaire | ✅ (problème récurrent, avec PRB-23) / 🔜 (SLA sous la cible, avec SLM-20 et SLM-23) | 2 |
+| CSI-21 | Une amélioration **En cours** dont l'échéance est passée remonte en relance à son porteur (même règle de date que PRB-19) | ✅ (notification au porteur, relevé périodique) |  |
 | CSI-22 | **Revue du registre** : les améliorations Proposée depuis plus de 30 jours remontent dans « Décisions » des gestionnaires | 🔜 | 2 |
 | CSI-23 | Notifications (SOC-21) : proposition → gestionnaires ; validation ou abandon → proposant et porteur | ✅ | |
 
@@ -119,8 +119,8 @@ stateDiagram-v2
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
 | SLA → Amélioration | Cible non tenue | CSI-20, SLM-23 | 🔜 |
-| Problème → Amélioration | Cause systémique, récurrence | CSI-20, PRB-23 | ✅ (lien) / 🔜 |
-| Incident → Amélioration | Tendance | CSI-10 | ✅ (lien) / 🔜 |
+| Problème → Amélioration | Cause systémique, récurrence (amélioration proposée par le système) | CSI-20, PRB-23 | ✅ |
+| Incident → Amélioration | Tendance (source « Incident », origine reliée) | CSI-10 | ✅ |
 | Amélioration → Changement | Mise en œuvre | Lien manuel | ✅ |
 
 ## 8. Console et indicateurs

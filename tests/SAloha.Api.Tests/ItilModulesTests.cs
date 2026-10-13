@@ -291,7 +291,7 @@ public class ItilModulesTests(ApiFixture api)
         var manager = api.Client("Manager");
         object Dto(string? status) => new
         {
-            title = "Abandon", step = 1, priority = "Moyenne", status, benefit = "b", baseline = "5 j", target = "2 j",
+            title = "Abandon", step = 1, priority = "Moyenne", status, benefit = "b", baseline = "5 j", target = "2 j", value = 2, effort = 2,
             abandonReason = "Priorité revue"
         };
         var a = await Create(user, "/api/improvements", Dto(null));

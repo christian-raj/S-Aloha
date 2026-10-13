@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Notifications;
 using SAloha.Api.Core.Perimeters;
 
 namespace SAloha.Api.Core.Links;
@@ -12,7 +13,7 @@ public record LinkDto(string FromType, int FromId, string ToReference);
 [ApiController]
 [Route("api/links")]
 [Authorize(Policy = "User")]
-public class LinksController(AppDbContext db, PerimeterAccess access) : ControllerBase
+public class LinksController(AppDbContext db, PerimeterAccess access, Notifier notify) : ControllerBase
 {
     /// <summary>Enregistrements reliés à (type, id), quel que soit le sens du lien.</summary>
     [HttpGet]
@@ -82,6 +83,8 @@ public class LinksController(AppDbContext db, PerimeterAccess access) : Controll
         };
         db.ItemLinks.Add(link);
         await db.SaveChangesAsync();
+        // PRB-23, CSI-20 : nouvel incident relié à un problème résolu ou clos.
+        await Recurrence.OnLinkAsync(db, notify, link, User.Identity?.Name ?? "", User.FindFirst("displayName")?.Value ?? User.Identity?.Name ?? "");
         return Ok(new { LinkId = link.Id, to.Type, target.Id, target.Reference, target.Title, target.Status });
     }
 
