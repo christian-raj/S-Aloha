@@ -140,6 +140,10 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
             reviewsDue.AddRange(await db.Agreements.AsNoTracking()
                 .Where(a => a.Status == "En vigueur" && a.ReviewDate != null && a.ReviewDate < today && (all || managed.Contains(a.PerimeterId)))
                 .Select(a => new Item("agreement", a.Id, a.Reference, a.Title, a.Status)).ToListAsync());
+            // NIS-16 : évaluation NIS 2 validée arrivée à la date de la prochaine évaluation.
+            reviewsDue.AddRange(await db.Assessments.AsNoTracking()
+                .Where(a => a.Status == "Validée" && a.NextAssessmentDate != null && a.NextAssessmentDate <= today && (all || managed.Contains(a.PerimeterId)))
+                .Select(a => new Item("assessment", a.Id, a.Reference, a.Title, "À renouveler")).ToListAsync());
 
             management = new { ToQualify = toQualify, InAnalysisNoRootCause = inAnalysisNoRootCause,
                                KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue,

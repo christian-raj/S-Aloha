@@ -64,7 +64,7 @@ Chaque rôle dispose de sa propre console (page d'accueil « Ma console »), **o
 | | Problèmes à qualifier (statut Nouveau) | Manager, Admin |
 | **Relances** | Actions en retard toutes équipes (à relancer) | Manager, Admin |
 | | Erreurs connues sans action corrective | Manager, Admin |
-| | Revues échues : articles Publié et SLA En vigueur dont la date de revue est passée | Manager, Admin |
+| | Revues échues : articles Publié et SLA En vigueur dont la date de revue est passée, évaluations NIS 2 validées à renouveler (NIS-16) | Manager, Admin |
 | **Mon travail** | Mes actions en cours (non en retard) | Tous |
 | | Mes incidents, demandes, changements et améliorations ouverts (dont je suis le responsable) | Tous |
 | **À suivre** | Mes problèmes déclarés encore ouverts | Tous |

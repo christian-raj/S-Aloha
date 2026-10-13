@@ -32,7 +32,7 @@ découverte automatique du réseau.
 |---|---|---|---|---|
 | Créer, modifier un CI, gérer ses relations | ✔ | ✔ | ✔ | ✅ |
 | Passer un CI à **Retiré** | ✘ | ✔ | ✔ | ✅ CFG-12 |
-| Enregistrer une vérification | Propriétaire | ✔ | ✔ | 🔜 CFG-15 |
+| Enregistrer une vérification | Propriétaire | ✔ | ✔ | ✅ CFG-15 |
 | Importer en masse | ✘ | ✘ | ✔ | 🔜 CFG-30 |
 | Supprimer | ✘ | ✘ | ✔ | ✅ |
 

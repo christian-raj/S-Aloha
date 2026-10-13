@@ -52,6 +52,8 @@ public class Assessment : Record
     [MaxLength(30)] public string EntityCategory { get; set; } = Important;
     [MaxLength(200)] public string? ValidatedBy { get; set; }
     public DateTime? ValidatedAt { get; set; }
+    /// <summary>NIS-16 : prochaine évaluation (12 mois après la validation par défaut).</summary>
+    public DateTime? NextAssessmentDate { get; set; }
     /// <summary>NIS-18 : version du référentiel évaluée.</summary>
     [MaxLength(100)] public string ReferentialVersion { get; set; } = ReferentialStore.Version;
     /// <summary>NIS-18 : exigences applicables figées à la validation (JSON) ; null tant que non validée.</summary>
@@ -78,7 +80,7 @@ public class AssessmentResponse
 
 public record AssessmentDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
-    string? EntityCategory, int? PerimeterId = null) : IRecordDto;
+    string? EntityCategory, int? PerimeterId = null, DateTime? NextAssessmentDate = null) : IRecordDto;
 
 public record ResponseDto(int? Score, bool NotApplicable, string? Justification);
 public record GapActionDto(string Code);

@@ -79,7 +79,7 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `ValidatedBy`, `ValidatedAt` | texte, date | auto | Validation (SOC-08) | ✅ |
 | `ReferentialVersion` | texte 100 | auto | Version du référentiel évaluée (celle en vigueur à la création, puis à chaque réouverture) | ✅ NIS-18 |
 | `FrozenRequirementsJson` | texte (JSON) | auto | Exigences applicables figées à la validation (code, objectif, pilier, thématique) ; effacées à la réouverture ; non exposé par l'API | ✅ NIS-18 |
-| `NextAssessmentDate` | date | | Prochaine évaluation | 🔜 NIS-16 |
+| `NextAssessmentDate` | date | | Prochaine évaluation : 12 mois après la validation si vide ; reste modifiable sur une évaluation validée | ✅ NIS-16 |
 
 ### Réponse (`AssessmentResponses`)
 
@@ -125,8 +125,8 @@ stateDiagram-v2
 | NIS-07 | Seul un gestionnaire la **rouvre** (statut En cours), ce qui efface la validation | ✅ | |
 | NIS-08 | **Preuves** : chaque réponse peut porter des liens vers des enregistrements (changement, article, CI) et des pièces jointes (SOC-25) | 🔜 | 2 |
 | NIS-09 | **Comparaison** de deux évaluations du même périmètre : évolution des scores par exigence, thématique, objectif et pilier | 🔜 | 2 |
-| NIS-16 | **Revue périodique** : une évaluation validée porte la date de la prochaine évaluation (12 mois par défaut) ; à l'échéance, relance au responsable (console, Relances) | 🔜 | 2 |
-| NIS-17 | **Export** de la synthèse (CSV : exigence, score, justification, écart, action liée) pour les auditeurs | 🔜 | 2 |
+| NIS-16 | **Revue périodique** : une évaluation validée porte la date de la prochaine évaluation (12 mois par défaut) ; à l'échéance, relance au responsable (console, Relances) | ✅ (notification au pilote, relevé périodique ; console des gestionnaires, Revues échues « À renouveler ») | |
+| NIS-17 | **Export** de la synthèse (CSV : exigence, score, justification, écart, action liée) pour les auditeurs | ✅ (bouton « Exporter la synthèse (CSV) » ; une ligne par exigence évaluée, objectif, pilier, thématique, non-applicabilité et statut de l'action compris ; « ; » et BOM UTF-8) | |
 | NIS-18 | Une évaluation enregistre la **version du référentiel** évaluée ; une nouvelle version embarquée ne modifie pas une évaluation validée : à la validation, ses exigences applicables (code, objectif, pilier, thématique) sont figées, et son questionnaire, son score et la synthèse du reporting (REP-40) s'en servent ; la rouvrir la réaligne sur la version en vigueur. Les évaluations validées avant la règle sont figées au démarrage, avant l'alignement de la structure embarquée | ✅ | |
 
 ### Référentiel
@@ -146,7 +146,7 @@ stateDiagram-v2
 | NIS-11 | Score **vide** (null) s'il n'y a aucune réponse notée | ✅ | |
 | NIS-12 | **Maturité** (échelle inspirée du CMMI) : 1 *Initial* < 25 % ; 2 *Géré* ≥ 25 % ; 3 *Défini* ≥ 50 % ; 4 *Maîtrisé et mesuré* ≥ 75 % ; 5 *Optimisé* ≥ 90 % | ✅ | |
 | NIS-13 | **Écart** d'une exigence = 3 − score ; la liste des écarts est triée par écart décroissant | ✅ | |
-| NIS-14 | La synthèse montre, pour chaque écart, l'**action d'amélioration** liée et son statut (plan de traitement) | 🔜 | 2 |
+| NIS-14 | La synthèse montre, pour chaque écart, l'**action d'amélioration** liée et son statut (plan de traitement) | ✅ | |
 | NIS-15 | **Créer une action d'amélioration** depuis un écart : enregistrement AMI (étape 2, priorité Élevée si score ≤ 1, sinon Moyenne ; mesure de départ = score, cible 3/3) relié à l'évaluation ; un seul par exigence (409 sinon, avec la référence existante) ; refusé sans écart noté (400) | ✅ | |
 | NIS-24 | Notifications (SOC-21) : évaluation créée → responsable ; validation ou réouverture → responsable et contributeurs | ✅ | |
 
@@ -161,8 +161,9 @@ stateDiagram-v2
 
 ## 8. Console et indicateurs
 
-Console : mes évaluations ouvertes (Mon travail) — 🔜 (lot 2). À venir : évaluations à
-renouveler (Relances, NIS-16), texte du référentiel incomplet (Relances, Admin, NIS-23).
+Console : évaluations à renouveler (Revues échues, gestionnaires, NIS-16) ✅. Mes évaluations
+ouvertes (Mon travail) — 🔜 (lot 2). À venir : texte du référentiel incomplet (Relances,
+Admin, NIS-23).
 
 | Indicateur | Calcul | Statut |
 |---|---|---|
@@ -197,7 +198,8 @@ renouveler (Relances, NIS-16), texte du référentiel incomplet (Relances, Admin
 | `DELETE /api/assessments/{id}` | Admin | Suppression |
 | `GET /api/assessments/{id}/questionnaire` | User | Exigences évaluées (figées si validée) et réponses ; `referentialVersion`, `currentReferentialVersion`, `frozen` (NIS-18) |
 | `PUT /api/assessments/{id}/responses/{requirementId}` | User | Réponse à une exigence |
-| `GET /api/assessments/{id}/score` | User | Scores, maturité, écarts |
+| `GET /api/assessments/{id}/score` | User | Scores, maturité, écarts et leur action d'amélioration (`action` : id, référence, statut — NIS-14) |
+| `GET /api/assessments/{id}/export` | User | Lignes de l'export pour les auditeurs : une par exigence évaluée (NIS-17) ; l'interface en fait le CSV |
 | `POST /api/assessments/{id}/improvements` (`{ code }`) | Manager | Action d'amélioration depuis un écart |
 | `GET /api/compliance/referential` | User | Référentiel (objectifs et exigences) |
 | `POST /api/compliance/referential/import` | Admin | Import du texte des exigences |

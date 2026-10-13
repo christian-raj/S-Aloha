@@ -93,6 +93,7 @@ export const api = {
     answer: (id, requirementId, dto) =>
       request(`/assessments/${id}/responses/${requirementId}`, { method: 'PUT', body: JSON.stringify(dto) }),
     score: (id) => request(`/assessments/${id}/score`),
+    export: (id) => request(`/assessments/${id}/export`),
     createImprovement: (id, code) =>
       request(`/assessments/${id}/improvements`, { method: 'POST', body: JSON.stringify({ code }) })
   },

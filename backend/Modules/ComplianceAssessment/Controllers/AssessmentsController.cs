@@ -27,15 +27,18 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
         var error = Allowed.Check("Catégorie d'entité", dto.EntityCategory, Assessment.Categories);
         if (error is not null) return error;
         e.EntityCategory = dto.EntityCategory!;
+        // NIS-16 : date de la prochaine évaluation, fixée par le gestionnaire (sinon à la validation).
+        e.NextAssessmentDate = Dates.Utc(dto.NextAssessmentDate);
         return null;
     }
 
     protected override async Task<string?> CheckStatusAsync(Assessment e, string status)
     {
         // NIS-07 : une évaluation validée est figée ; seul un gestionnaire la
-        // rouvre (ManagerOnly), en changeant son statut.
+        // rouvre (ManagerOnly), en changeant son statut. La date de la prochaine évaluation
+        // reste modifiable : elle planifie la suite, sans toucher au résultat (NIS-16).
         if (e.Status == "Validée" && status == "Validée" && e.Id != 0
-            && Db.Entry(e).Properties.Any(p => p.IsModified && p.Metadata.Name != nameof(Record.UpdatedAt)))
+            && Db.Entry(e).Properties.Any(p => p.IsModified && p.Metadata.Name is not (nameof(Record.UpdatedAt) or nameof(Assessment.NextAssessmentDate))))
             return "Une évaluation validée est figée : la rouvrir (statut « En cours ») pour la modifier.";
         if (status != "Validée" || e.Status == "Validée") return null;
 
@@ -61,7 +64,11 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
 
     protected override void OnStatusChanged(Assessment e, string from)
     {
-        if (e.Status == "Validée") { e.ValidatedAt = DateTime.UtcNow; e.ValidatedBy = MyDisplay; }
+        if (e.Status == "Validée")
+        {
+            e.ValidatedAt = DateTime.UtcNow; e.ValidatedBy = MyDisplay;
+            e.NextAssessmentDate ??= e.ValidatedAt.Value.Date.AddMonths(12);   // NIS-16
+        }
         else { e.ValidatedAt = null; e.ValidatedBy = null; }
     }
 
@@ -160,6 +167,7 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
             return new { Req = r, Score = resp is { NotApplicable: false } ? resp.Score : null, Na = resp?.NotApplicable ?? false };
         }).ToList();
 
+        var actions = await GapActionsAsync(id);
         var global = Scoring.Percent(items.Select(i => i.Score));
         return Ok(new
         {
@@ -189,8 +197,66 @@ public class AssessmentsController(AppDbContext db) : RecordController<Assessmen
                 .Select(i => new
                 {
                     RequirementId = i.Req.Id, i.Req.Code, i.Req.Theme, ObjectiveId = i.Req.ObjectiveId,
-                    Score = i.Score!.Value, Gap = Scoring.Gap(i.Score!.Value)
+                    Score = i.Score!.Value, Gap = Scoring.Gap(i.Score!.Value),
+                    // NIS-14 : plan de traitement, l'action d'amélioration liée et son statut.
+                    Action = actions.GetValueOrDefault(i.Req.Code)
                 })
+        });
+    }
+
+    public record GapAction(int Id, string Reference, string Status);
+
+    /// <summary>
+    /// NIS-14 : actions d'amélioration reliées à l'évaluation, par code d'exigence (titre
+    /// « NIS 2 {code} — … » posé par NIS-15).
+    /// </summary>
+    private async Task<Dictionary<string, GapAction>> GapActionsAsync(int id)
+    {
+        var linked = await Db.ItemLinks
+            .Where(l => (l.FromType == LinkType && l.FromId == id && l.ToType == "improvement")
+                        || (l.ToType == LinkType && l.ToId == id && l.FromType == "improvement"))
+            .Select(l => l.FromType == LinkType ? l.ToId : l.FromId).ToListAsync();
+        var improvements = await Db.Improvements.AsNoTracking()
+            .Where(i => linked.Contains(i.Id) && i.Title.StartsWith("NIS 2 "))
+            .OrderBy(i => i.Id).Select(i => new { i.Id, i.Reference, i.Status, i.Title }).ToListAsync();
+        var map = new Dictionary<string, GapAction>();
+        foreach (var i in improvements)
+        {
+            var code = i.Title["NIS 2 ".Length..].Split(" — ")[0];
+            map.TryAdd(code, new GapAction(i.Id, i.Reference, i.Status));
+        }
+        return map;
+    }
+
+    /// <summary>
+    /// NIS-17 : lignes de l'export pour les auditeurs — chaque exigence évaluée avec son
+    /// score, sa justification, son écart et l'action liée. L'interface en fait un CSV.
+    /// </summary>
+    [HttpGet("{id:int}/export")]
+    public async Task<IActionResult> Export(int id)
+    {
+        var e = await Db.Assessments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        var requirements = await AssessmentReferential.RequirementsAsync(Db, e);
+        var responses = await Db.AssessmentResponses.AsNoTracking()
+            .Where(r => r.AssessmentId == id).ToDictionaryAsync(r => r.RequirementId);
+        var actions = await GapActionsAsync(id);
+        return Ok(new
+        {
+            e.Reference, e.Title, e.EntityCategory, e.Status, e.ReferentialVersion, e.ValidatedAt, e.NextAssessmentDate,
+            Rows = requirements.OrderBy(r => r.ObjectiveId).ThenBy(r => r.Order).Select(r =>
+            {
+                responses.TryGetValue(r.Id, out var resp);
+                var score = resp is { NotApplicable: false } ? resp.Score : null;
+                var action = actions.GetValueOrDefault(r.Code);
+                return new
+                {
+                    r.Code, r.ObjectiveId, r.ObjectiveTitle, r.Pillar, r.Theme, Score = score,
+                    NotApplicable = resp?.NotApplicable ?? false, Justification = resp?.Justification ?? "",
+                    Gap = score is { } s ? Scoring.Gap(s) : (int?)null,
+                    Action = action?.Reference, ActionStatus = action?.Status
+                };
+            })
         });
     }
 
