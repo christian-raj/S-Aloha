@@ -771,6 +771,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("Effort")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Outcome")
                         .HasColumnType("text");
 
@@ -795,6 +798,11 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("character varying(10)");
 
                     b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
@@ -826,6 +834,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("ValidatedBy")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("Value")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

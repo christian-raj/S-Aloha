@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Amélioration continue** : source de chaque amélioration et enregistrement d'origine
+  relié (CSI-10) ; valeur et effort notés à la validation, priorité calculée (CSI-12) ;
+  amélioration en retard relancée à son porteur (CSI-21) ; **récurrence après correctif** :
+  un nouvel incident relié à un problème résolu ou clos alerte les gestionnaires et propose
+  une amélioration reliée (PRB-23, CSI-20).
+
 - **Connaissances sort du MVP** : toutes les règles listées pour sa sortie sont en place
   (KB-10, KB-11, KB-12, KB-17, KB-20, KB-21) ; la mention **(MVP)** disparaît du README et
   de la cartographie. RAG-10 (calibrage de la recherche), en attente d'un jeu de requêtes

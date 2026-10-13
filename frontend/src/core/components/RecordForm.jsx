@@ -7,7 +7,8 @@ import { getUser } from '../../api'
  *   { key, label, type, options, required, default, full, create, readOnly, managerOnly, placeholder, rows }
  * type : text (défaut), textarea, select, date, datetime, number, checkbox,
  *        person (utilisateur/groupe AD : clés `key` et `nameKey`, `typeKey` facultatif).
- * `create: false` masque le champ dans le formulaire de création ; `numeric`
+ * `create: false` masque le champ dans le formulaire de création, `onlyCreate` hors de
+ * la création (donnée de proposition, comme l'enregistrement d'origine) ; `numeric`
  * envoie la valeur d'une liste comme nombre (identifiant, étape…) ; `managerOnly`
  * fige le champ pour qui n'est ni Manager ni Admin (incident majeur, INC-13).
  */
@@ -115,7 +116,7 @@ export default function RecordForm({ fields, form, onChange, disabled, creating 
   const isManager = ['Admin', 'Manager'].includes(getUser()?.role)
   return (
     <div className="form-grid">
-      {fields.filter(fd => !(creating && fd.create === false)).map(fd =>
+      {fields.filter(fd => !(creating && fd.create === false) && !(!creating && fd.onlyCreate)).map(fd =>
         <Field key={fd.key} fd={fd} form={form} onChange={onChange} disabled={disabled || fd.readOnly || (fd.managerOnly && !isManager)} />)}
     </div>
   )

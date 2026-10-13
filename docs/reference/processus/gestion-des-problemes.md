@@ -132,7 +132,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | PRB-20 | **Source** du problème : *Réactif* (issu d'incidents) ou *Proactif* (tendance, analyse de risque) ; un problème réactif doit être relié à au moins un incident avant de quitter Nouveau | 🔜 | 2 |
 | PRB-21 | **Gestionnaire du problème** (responsable AD, utilisateur ou groupe) : par défaut le Manager qui qualifie ; « Mon travail » de ce gestionnaire (ou des membres du groupe) | ✅ | |
 | PRB-22 | Un **incident majeur** résolu sans problème relié crée une alerte « problème à ouvrir » (voir INC-15) | 🔜 | 2 |
-| PRB-23 | **Récurrence** : un problème Résolu ou Clos qui reçoit un nouvel incident relié est signalé aux gestionnaires (« récurrence après correctif ») | 🔜 | 2 |
+| PRB-23 | **Récurrence** : un problème Résolu ou Clos qui reçoit un nouvel incident relié est signalé aux gestionnaires (« récurrence après correctif ») | ✅ (alerte « Récurrence après correctif » aux gestionnaires du périmètre, amélioration proposée, CSI-20) | |
 | PRB-24 | **Modifier une action** (titre, description, échéance, RACI) : son R, son A (en personne ou par un groupe AD, PRB-26) ou un Manager — résout M7 | ✅ | 1 |
 | PRB-25 | Une action ne passe à **Terminée** que si son A l'approuve (ou un Manager) : un R la passe à *En cours*, puis demande l'approbation | 🔜 | 2 |
 | PRB-26 | Les actions confiées à un **groupe AD** apparaissent pour chaque membre du groupe (SOC-10) — résout M3 ; un membre du groupe désigné R ou A en a les droits (PRB-24) | ✅ | |

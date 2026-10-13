@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `Notifications` | Tables `Notifications` (destinataire : `RecipientType` User, Group ou Managers et `RecipientId` ; `PerimeterId`, cible, référence, titre, événement, auteur, date ; index sur destinataire et date) et `NotificationReads` (clé : notification et compte) — SOC-21 |
+| `ImprovementSourcePriority` | `Improvements.Source` (« Suggestion » pour l'existant, CSI-10), `Improvements.Value`, `Improvements.Effort` (CSI-12) |
 | `Comments` | Table `Comments` (SOC-24) : `TargetType`, `TargetId` (comme un lien), `Visibility` (`Public` ou `Note`), `Body` (4 000), `Author`, `AuthorDisplayName`, `CreatedAt` ; index sur (`TargetType`, `TargetId`) |
 | `AssessmentReferentialVersion` | `Assessments.ReferentialVersion` (les évaluations existantes reçoivent la version embarquée, ReCyF v2.5) et `Assessments.FrozenRequirementsJson` (NIS-18) |
 | `ProblemOwner` | `Problems` passe sur le socle `Record` : colonnes `OwnerType`, `OwnerId`, `OwnerDisplayName` (gestionnaire du problème, PRB-21) |
@@ -146,7 +147,7 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 | `Services` (`ItService`) | SVC | `Criticality`, `ServiceHours` |
 | `Agreements` (`ServiceLevelAgreement`) | SLA | `ServiceId` (FK → `Services`, cascade), `Customer`, `AvailabilityTarget` (décimal 5,2), `ResolutionHoursP1`…`P4`, `ValidFrom`, `ValidTo`, `ReviewDate` |
 | `KnowledgeArticles` (`KnowledgeArticle`) | KB | `ArticleType`, `Content` (Markdown), `Keywords`, `ReviewDate`, `PublishedBy`, `PublishedAt`, `SubmittedAt`, `SubmittedBy`, `LastReviewedAt`, `LastReviewedBy`, `ArchiveRequestedAt`, `ArchiveRequestedBy`, `ArchiveRequestReason` |
-| `Improvements` (`Improvement`) | AMI | `AbandonReason`, `Step` (1–7), `Priority`, `Benefit`, `Baseline`, `Target`, `Outcome`, `DueDate`, `ValidatedBy`, `ValidatedAt`, `CompletedAt` |
+| `Improvements` (`Improvement`) | AMI | `Source`, `Value`, `Effort`, `AbandonReason`, `Step` (1–7), `Priority`, `Benefit`, `Baseline`, `Target`, `Outcome`, `DueDate`, `ValidatedBy`, `ValidatedAt`, `CompletedAt` |
 | `Assessments` (`Assessment`) | EVA | `EntityCategory` (Entité importante, Entité essentielle), `ValidatedBy`, `ValidatedAt`, `ReferentialVersion` (texte 100), `FrozenRequirementsJson` (exigences figées à la validation, NIS-18) |
 | `Projects` (`Project`) | PRJ | `Method`, `Components` (liste séparée par des virgules), `StartDate`, `TargetEndDate`, `Budget`, `ActualCost` (décimal 14,2), business case (`Justification`, `ExpectedBenefits`, `ExpectedCosts`, `MajorRisks`), tolérances (`ToleranceDays`, `ToleranceCostPercent` décimal 6,2, `ToleranceScope`, `ToleranceQuality`), `ValidatedBy`, `ValidatedAt`, `AbandonReason`, `ClosedAt` |
 

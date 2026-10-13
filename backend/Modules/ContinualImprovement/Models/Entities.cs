@@ -22,6 +22,12 @@ public class Improvement : Record
     };
     public static readonly string[] Done = ["Réalisée", "Abandonnée"];
     public static readonly string[] Priorities = ["Faible", "Moyenne", "Élevée"];
+    /// <summary>CSI-10 : origine de l'amélioration.</summary>
+    public static readonly string[] Sources = ["Suggestion", "Incident", "Problème", "SLA", "Audit", "Retour client"];
+
+    /// <summary>CSI-12 : priorité tirée de la valeur et de l'effort (1 à 3).</summary>
+    public static string PriorityOf(int value, int effort) =>
+        value == 3 && effort <= 2 ? "Élevée" : value == 1 && effort >= 2 ? "Faible" : "Moyenne";
     /// <summary>Modèle d'amélioration continue ITIL 4, étapes 1 à 7.</summary>
     public static readonly string[] Steps =
     [
@@ -37,6 +43,9 @@ public class Improvement : Record
     [MaxLength(300)] public string Target { get; set; } = "";     // mesure cible
     public string? Outcome { get; set; }                   // résultat constaté
     public string? AbandonReason { get; set; }             // motif d'abandon (CSI-13)
+    [MaxLength(20)] public string Source { get; set; } = "Suggestion";   // CSI-10
+    public int? Value { get; set; }                        // CSI-12 : valeur métier, 1 à 3
+    public int? Effort { get; set; }                       // CSI-12 : effort estimé, 1 à 3
     public DateTime? DueDate { get; set; }
     [MaxLength(200)] public string? ValidatedBy { get; set; }
     public DateTime? ValidatedAt { get; set; }
@@ -46,4 +55,5 @@ public class Improvement : Record
 public record ImprovementDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     int Step, string? Priority, string? Benefit, string? Baseline, string? Target,
-    string? Outcome, DateTime? DueDate, string? AbandonReason = null, int? PerimeterId = null) : IRecordDto;
+    string? Outcome, DateTime? DueDate, string? AbandonReason = null, int? PerimeterId = null,
+    string? Source = null, int? Value = null, int? Effort = null, string? OriginReference = null) : IRecordDto;

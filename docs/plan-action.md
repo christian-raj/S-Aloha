@@ -112,7 +112,7 @@ en attente, sans effet sur la sortie du MVP (décision du 2026-10-13) ;
 | [Configuration](reference/processus/gestion-de-la-configuration.md) | CFG-12 à CFG-14 ; CFG-15 (vérification), CFG-20 (impact d'un changement), CFG-21 (CI ↔ service), CFG-22 |
 | [Niveaux de service](reference/processus/gestion-des-niveaux-de-service.md) | SLM-04 (expiration), SLM-10, SLM-13, SLM-14 (heures de service), **SLM-20 (mesure du respect, F1)**, SLM-22, SLM-23, SLM-24 |
 | [Connaissances](reference/processus/gestion-des-connaissances.md) | ~~KB-10, KB-11, KB-12, KB-17, KB-21~~ faits le 2026-10-12 (avec KB-14, KB-18) ; ~~KB-20~~ (2026-10-13) : **sortie du MVP le 2026-10-13** |
-| [Amélioration continue](reference/processus/amelioration-continue.md) | CSI-10, CSI-12 (source, priorisation), CSI-20 (proposition par le système), CSI-21, CSI-23 |
+| [Amélioration continue](reference/processus/amelioration-continue.md) | ~~CSI-10, CSI-12 (source, priorisation)~~, ~~CSI-21, CSI-23~~ (2026-10-13) ; CSI-20 fait pour les problèmes récurrents, reste sa part SLA (dépend de SLM-20 et SLM-23) |
 | [Conformité NIS 2](reference/processus/conformite-nis2.md) | ~~NIS-18~~ (2026-10-13) ; NIS-08 (preuves), NIS-09 (comparaison), NIS-14, NIS-16 (revue périodique), NIS-17 (export) |
 
 Les règles du lot 3 (enquêtes, versions d'articles, import en masse…) ne conditionnent pas la
