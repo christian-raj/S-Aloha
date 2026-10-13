@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Connaissances sort du MVP** : toutes les règles listées pour sa sortie sont en place
+  (KB-10, KB-11, KB-12, KB-17, KB-20, KB-21) ; la mention **(MVP)** disparaît du README et
+  de la cartographie. RAG-10 (calibrage de la recherche), en attente d'un jeu de requêtes
+  réelles, ne la conditionne pas (décision du 2026-10-13).
+
 - **Notifications datées** (SOC-21) : relevé périodique (15 minutes, `Notifications:IntervalMinutes`) — SLA en risque → responsable ; SLA dépassé et incident P1 → responsable et gestionnaires (escalade, INC-18) ; veille d'une mise en œuvre → responsable du changement ; action corrective en retard → R, A et gestionnaires ; revue d'article échue → responsable ; SLA expirant dans 30 jours → gestionnaires, revue de SLA échue → propriétaire du service. Un même événement n'est notifié qu'une fois.
 
 - **Notifications dans l'application** (SOC-21, SOC-23) : cloche avec compteur des non lues ;
