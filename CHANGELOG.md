@@ -14,6 +14,10 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Configuration sort du MVP** : toutes les règles listées pour sa sortie sont en place
+  (CFG-12 à CFG-15, CFG-20 à CFG-22) ; la mention **(MVP)** disparaît du README et de la
+  cartographie.
+
 - **Configuration** : vérification d'un CI par son propriétaire ou un gestionnaire, relance
   au propriétaire d'un CI En service non vérifié depuis 12 mois (CFG-15) ; services touchés
   par un CI et par ses CI en aval (CFG-21) ; onglet **Impact** de la fiche d'un changement

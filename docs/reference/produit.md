@@ -39,7 +39,7 @@ où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-
 | **Demandes** | Demandes de service utilisateurs | Actif (MVP) | `Modules/ServiceRequestManagement`, `modules/service-request-management` |
 | **Problèmes** | Causes racines et erreurs connues | Actif | `Modules/ProblemManagement`, `modules/problem-management` |
 | **Changements** | Changements et mises en production | Actif (MVP) | `Modules/ChangeEnablement`, `modules/change-enablement` |
-| **Configuration** | Actifs et dépendances (CMDB) | Actif (MVP) | `Modules/ServiceConfigurationManagement`, `modules/service-configuration-management` |
+| **Configuration** | Actifs et dépendances (CMDB) | Actif | `Modules/ServiceConfigurationManagement`, `modules/service-configuration-management` |
 | **Niveaux de service** | Catalogue, SLA et engagements | Actif (MVP) | `Modules/ServiceLevelManagement`, `modules/service-level-management` |
 | **Connaissances** | Capitalisation et formation | Actif | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
 | **Amélioration (CSI)** | Amélioration continue des services | Actif (MVP) | `Modules/ContinualImprovement`, `modules/continual-improvement` |

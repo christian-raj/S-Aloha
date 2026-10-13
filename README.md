@@ -79,7 +79,7 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 | **Incidents** — priorité P1–P4, incidents majeurs, ouverture d'un problème lié | ✅ Disponible (MVP) |
 | **Demandes** — objet demandé, bénéficiaire, approbation avant traitement | ✅ Disponible (MVP) |
 | **Changements** — standard pré-autorisé, autorisation, retour arrière, calendrier | ✅ Disponible (MVP) |
-| **Configuration (CMDB)** — éléments de configuration et leurs relations | ✅ Disponible (MVP) |
+| **Configuration (CMDB)** — éléments de configuration, relations et impact, rattachement aux services, vérification | ✅ Disponible |
 | **Niveaux de service** — catalogue des services, SLA et dates de revue | ✅ Disponible (MVP) |
 | **Connaissances** — articles en Markdown, soumission et publication validée, revue périodique, articles d'erreur connue issus des problèmes, notifications | ✅ Disponible |
 | **Amélioration continue** — registre et modèle ITIL 4 en 7 étapes | ✅ Disponible (MVP) |
