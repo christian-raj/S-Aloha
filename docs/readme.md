@@ -18,7 +18,7 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 | ⚙️ | [Exploitation](reference/exploitation.md) | Installer, brancher l'Active Directory, mettre à jour |
 | 📊 | [Reporting](reference/reporting.md) | Lire le tableau de bord : score de santé, indicateurs par onglet, filtres, exports |
 | 🔎 | [Recherche](reference/recherche.md) | Comprendre la recherche hybride : contenu indexé, cas similaires, service d'embeddings |
-| 🧭 | [Périmètres](reference/perimetres.md) | Droits scopés par direction, site ou entité (en cours : droits et visibilité livrés, écran d'administration à venir) |
+| 🧭 | [Périmètres](reference/perimetres.md) | Droits scopés par direction, site ou entité (droits, visibilité, écran d'administration) |
 | 🛡️ | [Sécurité](reference/securite.md) | Préparer une mise en production |
 | 📖 | [Glossaire](reference/glossaire.md) | Retrouver un terme ITIL, technique ou malgache |
 
