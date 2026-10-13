@@ -235,7 +235,8 @@ Notifications **dans l'application** (cloche dans la barre latérale ou la barre
 compteur des non lues, ouverture de la fiche) ; le courriel viendra ensuite (SOC-22). Le
 destinataire est un compte, un groupe AD ou « les gestionnaires du périmètre », résolu à la
 lecture ; l'auteur d'un événement n'est jamais notifié ; les 30 derniers jours, 50 au plus ; supprimer un
-enregistrement retire ses notifications.
+enregistrement retire ses notifications ; un même événement reçu à plusieurs titres (A d'une
+action et gestionnaire) ne s'affiche et ne se compte qu'une fois.
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|

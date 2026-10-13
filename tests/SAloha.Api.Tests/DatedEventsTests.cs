@@ -93,6 +93,14 @@ public class DatedEventsTests(ApiFixture api)
         Assert.Single(await Events(owner, Ref(p)), e => e.StartsWith("Action en retard : Changer de résolveur"));
         // Les gestionnaires aussi, même s'ils ne sont pas l'A.
         Assert.Contains(await Events(api.Client("Manager", "autre.chef.dated2"), Ref(p)), e => e.StartsWith("Action en retard"));
+        // A de l'action ET gestionnaire : une seule notification affichée, lue d'un coup.
+        var chef = api.Client("Manager", "chef.dated2");
+        Assert.Single(await Events(chef, Ref(p)), e => e.StartsWith("Action en retard"));
+        var n = (await Json(await chef.GetAsync("/api/notifications"))).GetProperty("items").EnumerateArray()
+            .First(x => x.GetProperty("reference").GetString() == Ref(p) && x.GetProperty("event").GetString()!.StartsWith("Action en retard"));
+        await chef.PostAsync($"/api/notifications/{n.GetProperty("id").GetInt64()}/read", null);
+        Assert.True((await Json(await chef.GetAsync("/api/notifications"))).GetProperty("items").EnumerateArray()
+            .Where(x => x.GetProperty("reference").GetString() == Ref(p)).All(x => x.GetProperty("read").GetBoolean()));
     }
 
     [Fact]
