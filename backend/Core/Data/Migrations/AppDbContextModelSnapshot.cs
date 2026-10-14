@@ -1001,6 +1001,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("ResponseDueAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -2026,6 +2029,45 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.ToTable("ConfigurationItems");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.AgreementReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AgreementId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Decisions")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("Findings")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTime?>("NextReviewDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReviewedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgreementId");
+
+                    b.ToTable("AgreementReviews");
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.ItService", b =>
                 {
                     b.Property<int>("Id")
@@ -2168,6 +2210,18 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int?>("ResolutionHoursP4")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ResponseHoursP1")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ResponseHoursP2")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ResponseHoursP3")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ResponseHoursP4")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("ReviewDate")
@@ -2563,6 +2617,17 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.AgreementReview", b =>
+                {
+                    b.HasOne("SAloha.Api.Modules.ServiceLevelManagement.ServiceLevelAgreement", "Agreement")
+                        .WithMany("Reviews")
+                        .HasForeignKey("AgreementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Agreement");
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.ItService", b =>
                 {
                     b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
@@ -2630,6 +2695,11 @@ namespace SAloha.Api.Core.Data.Migrations
             modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.ItService", b =>
                 {
                     b.Navigation("Agreements");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.ServiceLevelAgreement", b =>
+                {
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

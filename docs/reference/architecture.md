@@ -153,7 +153,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET/POST/PUT `/api/requests[/{id}]` | User | Demandes ; Approuvée/Rejetée : Manager (DELETE : Admin) | Modules/ServiceRequestManagement |
 | GET/POST/PUT `/api/changes[/{id}]`, GET `/api/changes/schedule`, GET `/api/changes/{id}/conflicts` | User | Changements, calendrier et conflits ; Autorisé/Rejeté : Manager (DELETE : Admin) | Modules/ChangeEnablement |
 | GET/POST/PUT `/api/configuration-items[/{id}]`, GET `/{id}/impact`, GET `/impact-of?type=&id=`, POST `/{id}/relations`, POST `/{id}/verify`, DELETE `/relations/{id}` | User | CI, relations, vue d'impact transitive et services touchés, impact d'un changement (CFG-20), vérification par le propriétaire ou un gestionnaire (CFG-15) (DELETE d'un CI : Admin) | Modules/ServiceConfigurationManagement |
-| GET `/api/services`, `/api/agreements` ; POST/PUT | User ; écriture Manager | Catalogue des services, SLA (DELETE : Admin) | Modules/ServiceLevelManagement |
+| GET `/api/services`, `/api/agreements` ; POST/PUT ; POST `/api/agreements/{id}/reviews` | User ; écriture Manager | Catalogue des services, SLA et leurs revues (SLM-22) (DELETE : Admin) | Modules/ServiceLevelManagement |
 | GET/POST/PUT `/api/knowledge[/{id}]` | User | Articles ; Publié, Archivé, réactivation : Manager (DELETE : Admin) | Modules/KnowledgeManagement |
 | POST `/api/knowledge/{id}/submit`, `/review`, `/archive-request` ; GET `/{id}/usage` | User ; revue et archivage : responsable ou Manager | Soumission, revue, demande d'archivage, utilisation (KB-14, KB-17, KB-21) | Modules/KnowledgeManagement |
 | GET/POST/PUT `/api/improvements[/{id}]` | User | Améliorations ; Validée/Abandonnée : Manager (DELETE : Admin) | Modules/ContinualImprovement |

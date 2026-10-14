@@ -91,7 +91,10 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         var entry = Db.Entry(e);
         if (creating || entry.Property(x => x.Priority).IsModified || entry.Property(x => x.AffectedService).IsModified
             || e.ResolutionDueAt is null)
+        {
             e.ResolutionDueAt = await IncidentSla.DueAsync(Db, e);
+            e.ResponseDueAt = await IncidentSla.ResponseDueAsync(Db, e);
+        }
     }
 
     private bool _becameMajor;

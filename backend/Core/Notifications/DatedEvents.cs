@@ -3,6 +3,7 @@ using SAloha.Api.Core.Data;
 using SAloha.Api.Modules.ChangeEnablement;
 using SAloha.Api.Modules.IncidentManagement;
 using SAloha.Api.Modules.ProblemManagement;
+using SAloha.Api.Modules.ServiceLevelManagement;
 
 namespace SAloha.Api.Core.Notifications;
 
@@ -109,6 +110,17 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             var ev = $"Évaluation à renouveler (échéance : {Day(a.NextAssessmentDate!.Value)})";
             if (Fresh("assessment", a.Id, ev)) notify.ToOwner(a, "assessment", ev);
         }
+
+        // SLM-04 : un SLA En vigueur passe Expiré le lendemain de sa fin de validité → gestionnaires.
+        // Le journal d'audit trace le changement de statut (auteur : système, ou l'Admin qui lance le relevé).
+        var expired = await db.Agreements.Where(s => s.Status == "En vigueur" && s.ValidTo != null && s.ValidTo < today).ToListAsync();
+        foreach (var s in expired)
+        {
+            s.Status = "Expiré"; s.UpdatedAt = now;
+            notify.ToManagers(s, "agreement", $"SLA expiré (fin de validité : {Day(s.ValidTo!.Value)})");
+            count++;
+        }
+        if (expired.Count > 0) await db.SaveChangesAsync();
 
         // SLM-24 : SLA expirant dans 30 jours → gestionnaires ; revue échue → propriétaire du service.
         foreach (var s in await db.Agreements.AsNoTracking().Include(s => s.Service).Where(s => s.Status == "En vigueur").ToListAsync())

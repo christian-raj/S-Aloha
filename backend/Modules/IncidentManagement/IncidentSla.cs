@@ -4,7 +4,7 @@ using SAloha.Api.Core.Data;
 namespace SAloha.Api.Modules.IncidentManagement;
 
 /// <summary>
-/// INC-21 : échéance de résolution d'un incident = déclaration + délai de
+/// INC-21 : échéance de résolution d'un incident (et de prise en charge, SLM-13) = déclaration + délai de
 /// résolution de sa priorité dans le SLA En vigueur de son service.
 /// En attendant le service choisi dans le catalogue (INC-20), le service est
 /// retrouvé par son nom, sans tenir compte de la casse. Délais en heures
@@ -13,17 +13,26 @@ namespace SAloha.Api.Modules.IncidentManagement;
 /// </summary>
 public static class IncidentSla
 {
-    public static async Task<DateTime?> DueAsync(AppDbContext db, Incident e)
+    public static Task<DateTime?> DueAsync(AppDbContext db, Incident e) => DeadlineAsync(db, e, response: false);
+
+    /// <summary>SLM-13 : échéance de prise en charge, selon les délais de prise en charge du même SLA.</summary>
+    public static Task<DateTime?> ResponseDueAsync(AppDbContext db, Incident e) => DeadlineAsync(db, e, response: true);
+
+    private static async Task<DateTime?> DeadlineAsync(AppDbContext db, Incident e, bool response)
     {
         if (string.IsNullOrWhiteSpace(e.AffectedService)) return null;
         var name = e.AffectedService.Trim().ToLower();
         var at = e.CreatedAt;
-        var hours = await db.Agreements.AsNoTracking()
+        var agreements = db.Agreements.AsNoTracking()
             .Where(a => a.Status == "En vigueur" && a.Service!.Title.ToLower() == name
-                        && (a.ValidFrom == null || a.ValidFrom <= at) && (a.ValidTo == null || a.ValidTo >= at))
-            .Select(a => e.Priority == "P1" ? a.ResolutionHoursP1 : e.Priority == "P2" ? a.ResolutionHoursP2
+                        && (a.ValidFrom == null || a.ValidFrom <= at) && (a.ValidTo == null || a.ValidTo >= at));
+        var hours = response
+            ? await agreements.Select(a => e.Priority == "P1" ? a.ResponseHoursP1 : e.Priority == "P2" ? a.ResponseHoursP2
+                       : e.Priority == "P3" ? a.ResponseHoursP3 : a.ResponseHoursP4)
+                .Where(h => h != null).MinAsync(h => (int?)h)
+            : await agreements.Select(a => e.Priority == "P1" ? a.ResolutionHoursP1 : e.Priority == "P2" ? a.ResolutionHoursP2
                        : e.Priority == "P3" ? a.ResolutionHoursP3 : a.ResolutionHoursP4)
-            .Where(h => h != null).MinAsync(h => (int?)h);
+                .Where(h => h != null).MinAsync(h => (int?)h);
         return hours is null ? null : at.AddHours(hours.Value);
     }
 
@@ -31,7 +40,11 @@ public static class IncidentSla
     public static async Task BackfillAsync(AppDbContext db)
     {
         var pending = await db.Incidents.Where(i => i.ResolutionDueAt == null && i.AffectedService != "").ToListAsync();
-        foreach (var i in pending) i.ResolutionDueAt = await DueAsync(db, i);
-        if (pending.Count > 0) await db.SaveChangesAsync();
+        foreach (var i in pending) { i.ResolutionDueAt = await DueAsync(db, i); i.ResponseDueAt = await ResponseDueAsync(db, i); }
+        // SLM-13 : incidents ouverts pas encore pris en charge, dont le SLA a reçu des délais de prise en charge.
+        var waiting = await db.Incidents.Where(i => i.ResponseDueAt == null && i.FirstResponseAt == null
+                                                    && i.AffectedService != "" && !Incident.Done.Contains(i.Status)).ToListAsync();
+        foreach (var i in waiting.Except(pending)) i.ResponseDueAt = await ResponseDueAsync(db, i);
+        if (pending.Count > 0 || waiting.Count > 0) await db.SaveChangesAsync();
     }
 }

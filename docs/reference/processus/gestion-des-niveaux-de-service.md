@@ -58,7 +58,8 @@ Champs communs (référence, titre, description, statut, responsable AD, créate
 | `Status` | texte 30 | auto | Brouillon, En vigueur, Expiré | ✅ |
 | `AvailabilityTarget` | décimal | | Disponibilité cible en % (ex. 99,5) | ✅ |
 | `ResolutionHoursP1` … `P4` | entier | | Délai de résolution par priorité, en heures de service | ✅ |
-| `ResponseHoursP1` … `P4` | entier | | Délai de prise en charge par priorité | 🔜 SLM-13 |
+| `ResponseHoursP1` … `P4` | entier | | Délai de prise en charge par priorité ; facultatifs, complets et croissants s'ils sont donnés, chacun au plus égal au délai de résolution de sa priorité | ✅ SLM-13 |
+| Revues (`AgreementReviews`) | liste | | Date, auteur, constats, décisions, prochaine revue (SLM-22) | ✅ |
 | `ValidFrom`, `ValidTo`, `ReviewDate` | date | | Validité, prochaine revue | ✅ |
 
 ## 4. Cycle de vie
@@ -92,7 +93,7 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 | Service | En conception → En service | Manager | Propriétaire renseigné, heures de service | ✅ |
 | Service | En service → Retiré | Manager | Aucun SLA En vigueur ; aucun incident ou demande ouvert sur le service | 🔜 SLM-15 |
 | SLA | Brouillon → En vigueur | Manager | Service En service ; délais P1–P4 renseignés et croissants (P1 ≤ P2 ≤ P3 ≤ P4) ; `ValidFrom` ; pas d'autre SLA En vigueur pour le même service et le même client | ✅ |
-| SLA | En vigueur → Expiré | Auto, ou Manager | `ValidTo` passé (auto) | 🔜 SLM-04 |
+| SLA | En vigueur → Expiré | Auto, ou Manager | `ValidTo` passé (auto, relevé périodique ; gestionnaires notifiés) | ✅ SLM-04 |
 | SLA | En vigueur → Brouillon | Manager | Renégociation ; les mesures en cours restent sur la version précédente | 🔜 SLM-12 |
 | SLA | Expiré → … | — | Statut final ; un nouvel accord se crée | 🔜 SLM-12 |
 
@@ -103,12 +104,12 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 | SLM-01 | **Catalogue des services** : nom, criticité, heures de service, responsable ; tenu par les gestionnaires | ✅ | |
 | SLM-02 | **SLA** rattaché à un service : client, disponibilité cible, délais de résolution P1 à P4, validité, date de revue ; tenus par les gestionnaires ; supprimer un service supprime ses SLA | ✅ | |
 | SLM-03 | Passer un SLA **En vigueur** exige des cibles complètes et croissantes, et l'unicité (service, client) parmi les SLA En vigueur | ✅ | 1 |
-| SLM-04 | Un SLA passe **Expiré** automatiquement le lendemain de `ValidTo` | 🔜 | 2 |
+| SLM-04 | Un SLA passe **Expiré** automatiquement le lendemain de `ValidTo` | ✅ (relevé périodique des événements datés ; notification « SLA expiré » aux gestionnaires ; le journal d'audit trace le passage) | |
 | SLM-05 | **Revue échue** : un SLA En vigueur dont la date de revue est passée remonte dans « Relances » des gestionnaires | ✅ | |
 | SLM-10 | Les incidents (INC-20), problèmes et demandes désignent leur **service** dans le catalogue (`ServiceId`) au lieu d'un texte libre | 🔜 | 2 |
 | SLM-11 | Un service **En service** a obligatoirement un propriétaire | ✅ | 1 |
 | SLM-12 | **Transitions contraintes** selon le § 4 (SOC-05) | ✅ | 1 |
-| SLM-13 | **Délais de prise en charge** P1 à P4 dans le SLA (`ResponseHoursP1…P4`), mesurés sur `FirstResponseAt` des incidents (INC-06) | 🔜 | 2 |
+| SLM-13 | **Délais de prise en charge** P1 à P4 dans le SLA (`ResponseHoursP1…P4`), mesurés sur `FirstResponseAt` des incidents (INC-06) | ✅ (délais dans le SLA ; échéance `ResponseDueAt` de l'incident, comparée à `FirstResponseAt`) / 🔜 (taux de respect, avec SLM-20) | |
 | SLM-14 | **Heures de service structurées** : jours ouvrés, plages horaires, jours fériés, fuseau (défaut : 24 h/24 et 7 j/7) ; tous les délais SLA se comptent dans ces heures | 🔜 | 2 |
 | SLM-15 | Un service **Retiré** ne peut plus être choisi pour un nouvel incident, demande ou SLA | 🔜 | 2 |
 
@@ -118,7 +119,7 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 |---|---|---|---|
 | SLM-20 | **Mesure du respect** (F1) : pour chaque SLA En vigueur, chaque mois, part des incidents du service (et de sa priorité) résolus dans le délai — échéances calculées par INC-21, hors temps En attente (INC-22) | 🔜 | 2 |
 | SLM-21 | **Disponibilité mesurée** : 100 % moins la durée cumulée des incidents **majeurs** du service (création → résolution, dans les heures de service), rapportée aux heures de service du mois ; comparée à `AvailabilityTarget` | 🔜 | 3 |
-| SLM-22 | **Revue de SLA** : le gestionnaire enregistre la revue (date, constats, décisions) ; la prochaine date de revue est reportée de 12 mois par défaut | 🔜 | 2 |
+| SLM-22 | **Revue de SLA** : le gestionnaire enregistre la revue (date, constats, décisions) ; la prochaine date de revue est reportée de 12 mois par défaut | ✅ (encadré « Revues du SLA » de la fiche ; refusée sur un SLA expiré) | |
 | SLM-23 | Un mois sous la cible (SLM-20 ou SLM-21) crée une **alerte** pour le gestionnaire et propose une **amélioration** reliée (CSI-20) | 🔜 | 2 |
 | SLM-24 | Notifications (SOC-21) : SLA expirant dans 30 jours → gestionnaires ; revue échue → propriétaire du service | ✅ | |
 
@@ -153,6 +154,7 @@ Console ✅ : SLA à revoir (Relances, gestionnaires). À venir : SLA sous la ci
 | `GET /api/agreements`, `GET /api/agreements/{id}` | User | SLA |
 | `POST/PUT /api/agreements[/{id}]` | Manager | Tenue des SLA |
 | `DELETE /api/services/{id}`, `/api/agreements/{id}` | Admin | Suppression |
+| `POST /api/agreements/{id}/reviews` (`{ findings, decisions, nextReviewDate }`) | Manager du périmètre | Revue du SLA (SLM-22) ; la fiche (`GET /api/agreements/{id}`) liste les revues, la plus récente d'abord |
 | `GET /api/agreements/{id}/compliance?from=&to=` | User | Respect mesuré — 🔜 SLM-20 |
 
 ## 10. Scénarios d'acceptation
