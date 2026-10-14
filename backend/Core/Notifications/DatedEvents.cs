@@ -138,6 +138,9 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             }
         }
 
+        // SLM-23, CSI-20 : mois précédent sous la cible → gestionnaires, amélioration proposée.
+        count += await SAloha.Api.Core.Itil.SlaCompliance.AlertAsync(db, notify, now, (t, id, ev) => done.Add((t, id, ev)));
+
         await notify.SaveAsync();
         return count;
     }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SAloha.Api.Tests;
 
-/// <summary>Niveaux de service : expiration (SLM-04), service du catalogue (SLM-10, SLM-15, INC-20), délais de prise en charge (SLM-13), heures de service et attente (SLM-14, INC-07, INC-22), revue de SLA (SLM-22).</summary>
+/// <summary>Niveaux de service : expiration (SLM-04), service du catalogue (SLM-10, SLM-15, INC-20), délais de prise en charge (SLM-13), heures de service et attente (SLM-14, INC-07, INC-22), respect mesuré et alerte (SLM-20, SLM-23, CSI-20), revue de SLA (SLM-22).</summary>
 [Collection("api")]
 public class ServiceLevelExitMvpTests(ApiFixture api)
 {
@@ -208,5 +208,57 @@ public class ServiceLevelExitMvpTests(ApiFixture api)
         Assert.Equal(JsonValueKind.Null, resumed.GetProperty("onHoldReason").ValueKind);
         Assert.InRange(resumed.GetProperty("heldMinutes").GetInt32(), 119, 121);
         Assert.Equal(due.AddMinutes(resumed.GetProperty("heldMinutes").GetInt32()), resumed.GetProperty("resolutionDueAt").GetDateTime(), TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task SLM_20_23_respect_mesure_alerte_et_amelioration_proposee()
+    {
+        var m = api.Client("Manager", "slm20.manager");
+        var svc = await Service(m, "Service SLM-20");
+        var sla = await Json(await m.PostAsJsonAsync("/api/agreements", Sla(svc, "SLM-20", null)));
+        object Target(string? status, decimal? target) => new
+        {
+            title = "SLA SLM-20", status, serviceId = svc, customer = "SLM-20", resolutionHoursP1 = 4, resolutionHoursP2 = 8,
+            resolutionHoursP3 = 24, resolutionHoursP4 = 48, validFrom = DateTime.UtcNow.Date.AddMonths(-6), complianceTarget = target
+        };
+        Assert.Equal(HttpStatusCode.BadRequest, (await m.PutAsJsonAsync($"/api/agreements/{Id(sla)}", Target(null, 120))).StatusCode);
+        await Json(await m.PutAsJsonAsync($"/api/agreements/{Id(sla)}", Target("En vigueur", 90)));
+
+        // Le mois dernier : un incident résolu à temps, un résolu en retard, un encore ouvert dont l'échéance est passée.
+        var now = DateTime.UtcNow;
+        var month = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-1);
+        var ids = new List<int>();
+        foreach (var t in new[] { "à temps", "en retard", "ouvert" })
+            ids.Add(Id(await Json(await m.PostAsJsonAsync("/api/incidents", new { title = $"SLM-20 {t}", impact = "Faible", urgency = "Faible", serviceId = svc }))));
+        await using (var db = api.Database())
+        {
+            var list = await db.Incidents.Where(i => ids.Contains(i.Id)).OrderBy(i => i.Id).ToListAsync();
+            foreach (var i in list) { i.CreatedAt = month.AddDays(2); i.ResolutionDueAt = month.AddDays(4); }
+            list[0].Status = "Résolu"; list[0].ResolvedAt = month.AddDays(3);
+            list[1].Status = "Résolu"; list[1].ResolvedAt = month.AddDays(5);
+            await db.SaveChangesAsync();
+        }
+
+        var c = await Json(await api.Client("User", "slm20.user").GetAsync($"/api/agreements/{Id(sla)}/compliance?from={month:yyyy-MM}&to={month:yyyy-MM}"));
+        var measured = Assert.Single(c.GetProperty("months").EnumerateArray());
+        Assert.Equal(3, measured.GetProperty("total").GetInt32());
+        Assert.Equal(1, measured.GetProperty("onTime").GetInt32());
+        Assert.Equal(33.3, measured.GetProperty("percent").GetDouble());
+        Assert.False(measured.GetProperty("met").GetBoolean());
+        Assert.Equal("P4", measured.GetProperty("byPriority")[0].GetProperty("priority").GetString());
+        Assert.Equal(HttpStatusCode.BadRequest, (await m.GetAsync($"/api/agreements/{Id(sla)}/compliance?from=2026-13")).StatusCode);
+
+        // SLM-23 : alerte aux gestionnaires et amélioration Proposée reliée au SLA, une seule fois.
+        await Json(await api.Client().PostAsync("/api/notifications/run", null));
+        await Json(await api.Client().PostAsync("/api/notifications/run", null));
+        var events = (await Json(await api.Client("Manager", "slm20.autre").GetAsync("/api/notifications"))).GetProperty("items").EnumerateArray()
+            .Where(n => n.GetProperty("reference").GetString() == sla.GetProperty("reference").GetString())
+            .Select(n => n.GetProperty("event").GetString()!).ToList();
+        Assert.Single(events, e => e.StartsWith($"SLA sous la cible ({month:yyyy-MM}"));
+        var links = (await Json(await m.GetAsync($"/api/links?type=agreement&id={Id(sla)}"))).EnumerateArray()
+            .Where(l => l.GetProperty("type").GetString() == "improvement").ToList();
+        var improvement = await Json(await m.GetAsync($"/api/improvements/{Assert.Single(links).GetProperty("id").GetInt32()}"));
+        Assert.Equal("Proposée", improvement.GetProperty("status").GetString());
+        Assert.Equal("SLA", improvement.GetProperty("source").GetString());
     }
 }

@@ -80,7 +80,8 @@ export const api = {
   services: records('/services'),
   agreements: {
     ...records('/agreements'),
-    review: (id, dto) => request(`/agreements/${id}/reviews`, { method: 'POST', body: JSON.stringify(dto) })
+    review: (id, dto) => request(`/agreements/${id}/reviews`, { method: 'POST', body: JSON.stringify(dto) }),
+    compliance: (id, params = {}) => request(`/agreements/${id}/compliance?` + new URLSearchParams(params))
   },
   knowledge: {
     ...records('/knowledge'),

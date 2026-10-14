@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Respect des SLA mesuré** (SLM-20) : part mensuelle des incidents du service résolus dans
+  le délai, par priorité, sur la fiche du SLA et par `GET /api/agreements/{id}/compliance` ;
+  **cible de respect** facultative sur le SLA. Un mois achevé sous la cible **alerte** les
+  gestionnaires et **propose une amélioration** reliée au SLA (SLM-23, CSI-20). Migration
+  `AgreementComplianceTarget`.
+
 - **Heures de service** : chaque service porte ses jours ouvrés, sa plage horaire, ses jours
   fériés et son fuseau ; les échéances SLA des incidents s'y comptent (SLM-14, INC-22).
   **Attente motivée** : passer un incident En attente exige un motif (utilisateur,

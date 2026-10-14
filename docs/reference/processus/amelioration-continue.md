@@ -109,7 +109,7 @@ stateDiagram-v2
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| CSI-20 | **Amélioration proposée par le système** depuis un SLA sous la cible (SLM-23) ou un problème récurrent (PRB-23) : brouillon Proposée, source et lien renseignés, à valider par un gestionnaire | ✅ (problème récurrent, avec PRB-23) / 🔜 (SLA sous la cible, avec SLM-20 et SLM-23) | 2 |
+| CSI-20 | **Amélioration proposée par le système** depuis un SLA sous la cible (SLM-23) ou un problème récurrent (PRB-23) : brouillon Proposée, source et lien renseignés, à valider par un gestionnaire | ✅ (problème récurrent, avec PRB-23 ; SLA sous la cible, avec SLM-20 et SLM-23) | |
 | CSI-21 | Une amélioration **En cours** dont l'échéance est passée remonte en relance à son porteur (même règle de date que PRB-19) | ✅ (notification au porteur, relevé périodique) |  |
 | CSI-22 | **Revue du registre** : les améliorations Proposée depuis plus de 30 jours remontent dans « Décisions » des gestionnaires | 🔜 | 2 |
 | CSI-23 | Notifications (SOC-21) : proposition → gestionnaires ; validation ou abandon → proposant et porteur | ✅ | |
@@ -118,7 +118,7 @@ stateDiagram-v2
 
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
-| SLA → Amélioration | Cible non tenue | CSI-20, SLM-23 | 🔜 |
+| SLA → Amélioration | Cible non tenue | CSI-20, SLM-23 | ✅ |
 | Problème → Amélioration | Cause systémique, récurrence (amélioration proposée par le système) | CSI-20, PRB-23 | ✅ |
 | Incident → Amélioration | Tendance (source « Incident », origine reliée) | CSI-10 | ✅ |
 | Amélioration → Changement | Mise en œuvre | Lien manuel | ✅ |

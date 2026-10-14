@@ -54,6 +54,7 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
     protected override string? Apply(ServiceLevelAgreement e, ServiceLevelAgreementDto dto, bool creating)
     {
         if (dto.AvailabilityTarget is < 0 or > 100) return "La disponibilité cible est un pourcentage (0 à 100).";
+        if (dto.ComplianceTarget is <= 0 or > 100) return "La cible de respect est un pourcentage (au-dessus de 0, jusqu'à 100).";
         int?[] hours = [dto.ResolutionHoursP1, dto.ResolutionHoursP2, dto.ResolutionHoursP3, dto.ResolutionHoursP4];
         if (hours.Any(h => h is <= 0)) return "Les délais de résolution sont des nombres d'heures positifs.";
         int?[] response = [dto.ResponseHoursP1, dto.ResponseHoursP2, dto.ResponseHoursP3, dto.ResponseHoursP4];
@@ -63,6 +64,7 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
         e.ServiceId = dto.ServiceId;
         e.Customer = dto.Customer ?? "";
         e.AvailabilityTarget = dto.AvailabilityTarget;
+        e.ComplianceTarget = dto.ComplianceTarget;
         e.ResolutionHoursP1 = dto.ResolutionHoursP1; e.ResolutionHoursP2 = dto.ResolutionHoursP2;
         e.ResolutionHoursP3 = dto.ResolutionHoursP3; e.ResolutionHoursP4 = dto.ResolutionHoursP4;
         e.ResponseHoursP1 = dto.ResponseHoursP1; e.ResponseHoursP2 = dto.ResponseHoursP2;
@@ -125,6 +127,29 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
 
     protected override IQueryable<ServiceLevelAgreement> WithDetails(IQueryable<ServiceLevelAgreement> q) =>
         q.Include(a => a.Service).Include(a => a.Reviews.OrderByDescending(r => r.ReviewedAt));
+
+    /// <summary>
+    /// SLM-20 : respect mesuré, mois par mois (format AAAA-MM, six derniers mois par défaut,
+    /// vingt-quatre au plus), avec le détail par priorité et la cible.
+    /// </summary>
+    [HttpGet("{id:int}/compliance")]
+    public async Task<IActionResult> Compliance(int id, [FromQuery] string? from, [FromQuery] string? to)
+    {
+        var e = await Db.Agreements.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        static DateTime? Month(string? s) => DateTime.TryParseExact(s, "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var d)
+            ? DateTime.SpecifyKind(d, DateTimeKind.Utc) : null;
+        var now = DateTime.UtcNow;
+        var last = Month(to) ?? new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var first = Month(from) ?? last.AddMonths(-5);
+        if ((from is not null && Month(from) is null) || (to is not null && Month(to) is null))
+            return BadRequest(new { message = "Mois au format AAAA-MM." });
+        if (first > last || first < last.AddMonths(-23)) return BadRequest(new { message = "Période de 1 à 24 mois." });
+        var months = new List<SAloha.Api.Core.Itil.SlaCompliance.Month>();
+        for (var m = first; m <= last; m = m.AddMonths(1)) months.Add(await SAloha.Api.Core.Itil.SlaCompliance.MonthAsync(Db, e, m, now));
+        return Ok(new { e.ComplianceTarget, Months = months });
+    }
 
     /// <summary>
     /// SLM-22 : le gestionnaire enregistre la revue du SLA (constats, décisions) ; la
