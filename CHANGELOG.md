@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Demandes sort du MVP** : toutes les règles listées pour sa sortie sont en place (REQ-09,
+  REQ-20 à REQ-23, REQ-30, REQ-31) ; la mention **(MVP)** disparaît du README et de la
+  cartographie. Le modèle reste facultatif (demande libre possible) ; les tâches (REQ-24,
+  REQ-25) restent au lot 3.
+
 - **Catalogue de demandes** (REQ-20) : les gestionnaires tiennent des modèles (objet, service,
   approbation requise, délai cible, groupe d'exécution) ; une demande se crée depuis un modèle,
   qui en donne l'objet et le service. Un modèle **pré-approuvé** crée la demande Approuvée

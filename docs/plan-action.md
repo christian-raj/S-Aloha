@@ -106,7 +106,7 @@ en attente, sans effet sur la sortie du MVP (décision du 2026-10-13) ;
 | Pratique | Règles à ✅ (lot 1 restant, puis cœur de métier du lot 2) |
 |---|---|
 | [Incidents](reference/processus/gestion-des-incidents.md) | ~~INC-11, INC-25~~ ; ~~INC-07 (attente motivée, hors délais), INC-20 (service du catalogue), INC-21, INC-22 (échéances en heures de service), INC-13 (rôle du responsable), INC-24 (SLA en risque)~~ (2026-10-14) : **sortie du MVP le 2026-10-14** |
-| [Demandes](reference/processus/gestion-des-demandes.md) | ~~REQ-09, REQ-31~~ ; ~~REQ-20 à REQ-23 (catalogue de demandes, modèles, échéance, groupe d'exécution), REQ-30 (retard)~~ (2026-10-14) : toutes les règles de sortie sont faites ; REQ-24, REQ-25 (tâches) au lot 3 |
+| [Demandes](reference/processus/gestion-des-demandes.md) | ~~REQ-09, REQ-31~~ ; ~~REQ-20 à REQ-23 (catalogue de demandes, modèles, échéance, groupe d'exécution), REQ-30 (retard)~~ (2026-10-14) : **sortie du MVP le 2026-10-14** ; REQ-24, REQ-25 (tâches) au lot 3 |
 | [Problèmes](reference/processus/gestion-des-problemes.md) | ~~PRB-24, PRB-26, PRB-30, PRB-31~~ ; ~~PRB-10 (motif de réouverture), PRB-25 (approbation par l'A), PRB-27 (changement depuis une action)~~ (2026-10-13) : toutes les règles de sortie sont faites |
 | [Changements](reference/processus/habilitation-des-changements.md) | CHG-14, CHG-15 (dates réelles, revue post-implémentation), CHG-16 (CI reliés), CHG-20, CHG-21 (autorité selon le risque, séparation des tâches), CHG-25 (gel), CHG-26 (modèles standard), CHG-24 |
 | [Configuration](reference/processus/gestion-de-la-configuration.md) | ~~CFG-12 à CFG-14~~ ; ~~CFG-15 (vérification), CFG-20 (impact d'un changement), CFG-21 (CI ↔ service), CFG-22~~ (2026-10-13) : **sortie du MVP le 2026-10-13** |
