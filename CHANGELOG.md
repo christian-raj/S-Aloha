@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Incidents** : le responsable d'un incident majeur doit être gestionnaire du périmètre de
+  l'incident, vérifié dans l'annuaire (INC-13) ; **état SLA** de chaque incident (en risque,
+  dépassé, suspendu, respecté…) sur la fiche et dans le registre, et incidents en risque ou
+  hors délai dans le groupe Urgent de la console du responsable et des gestionnaires (INC-24).
+
 - **Niveaux de service et Amélioration continue sortent du MVP** : toutes les règles listées
   pour leur sortie sont en place (SLM-04, SLM-10, SLM-13, SLM-14, SLM-20, SLM-22 à SLM-24 ;
   CSI-10, CSI-12, CSI-20, CSI-21, CSI-23) ; la mention **(MVP)** disparaît du README et de

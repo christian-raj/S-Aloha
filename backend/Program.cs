@@ -33,6 +33,7 @@ builder.Services.AddDbContext<AppDbContext>((sp, o) => o
     .AddInterceptors(sp.GetRequiredService<SearchIndexInterceptor>(), sp.GetRequiredService<AuditInterceptor>()));
 
 builder.Services.AddSingleton<LdapService>();
+builder.Services.AddSingleton<IUserDirectory>(sp => sp.GetRequiredService<LdapService>());
 builder.Services.AddSingleton<TokenService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

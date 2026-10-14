@@ -13,6 +13,23 @@ namespace SAloha.Api.Modules.IncidentManagement;
 /// </summary>
 public static class IncidentSla
 {
+    public const string None = "Sans SLA", Breached = "SLA dépassé", AtRisk = "SLA en risque", Within = "Dans le SLA",
+        Suspended = "SLA suspendu", Met = "SLA respecté", Missed = "SLA non respecté";
+
+    /// <summary>
+    /// INC-24 : état SLA d'un incident. Ouvert : dépassé, en risque (moins de 25 % du délai
+    /// restant), dans le délai, ou suspendu En attente (INC-22). Résolu : respecté ou non.
+    /// </summary>
+    public static string State(Incident i, DateTime now)
+    {
+        if (i.ResolutionDueAt is not { } due) return None;
+        if (i.ResolvedAt is { } resolved) return resolved <= due ? Met : Missed;
+        if (i.Status == "En attente") return Suspended;
+        if (now > due) return Breached;
+        var window = (due - i.CreatedAt).TotalMinutes;
+        return window > 0 && (due - now).TotalMinutes < window * 0.25 ? AtRisk : Within;
+    }
+
     public static Task<DateTime?> DueAsync(AppDbContext db, Incident e) => DeadlineAsync(db, e, response: false);
 
     /// <summary>SLM-13 : échéance de prise en charge, selon les délais de prise en charge du même SLA.</summary>

@@ -115,7 +115,7 @@ stateDiagram-v2
 | INC-10 | **Clôture** par un Manager, ou **automatique** 5 jours ouvrés après la résolution sans réouverture | 🔜 | 2 (manuelle) / 3 (auto) |
 | INC-11 | **Réouverture** d'un incident Résolu dans les 10 jours ouvrés, avec motif, `ReopenCount` + 1 ; au-delà, ou une fois Clos, un **nouvel** incident est créé et relié | ✅ | 1 |
 | INC-12 | **Incident majeur** : remonte dans la console des gestionnaires tant qu'il n'est ni Résolu ni Clos | ✅ | |
-| INC-13 | Seul un **Manager** déclare ou retire le caractère majeur ; un incident majeur a toujours priorité P1 et un Manager pour responsable | ✅ (responsable nominatif, désigné par un Manager) / 🔜 (rôle du responsable vérifié, étape 5) | 1 |
+| INC-13 | Seul un **Manager** déclare ou retire le caractère majeur ; un incident majeur a toujours priorité P1 et un Manager pour responsable | ✅ (responsable nominatif, désigné par un Manager ; il est gestionnaire du périmètre de l'incident — rôle par périmètre, PER-03, lu dans l'annuaire — vérifié quand il est désigné ou que l'incident devient majeur ; annuaire injoignable : désignation acceptée et tracée au journal de l'API) | 1 |
 | INC-14 | **Ouvrir un problème lié** depuis l'incident : crée le problème avec les mêmes titre, description, impact, urgence, catégorie et service, puis relie les deux | ✅ | |
 | INC-15 | Un incident **majeur** ne passe à Résolu que relié à un **problème** (existant ou créé, INC-14) : la revue de l'incident majeur s'y conduit | 🔜 | 2 |
 | INC-16 | **Incidents enfants** : un incident peut être rattaché à un incident parent (même panne) ; résoudre le parent résout ses enfants avec la même résolution | 🔜 | 3 |
@@ -149,7 +149,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | INC-21 | **Échéances** calculées à la création et au changement de priorité : `ResolutionDueAt` = création + délai de résolution de la priorité (SLA du service) ; `ResponseDueAt` = création + délai de prise en charge (SLM-13). Sans SLA : pas d'échéance | ✅ (SLA En vigueur du service du catalogue, INC-20 ; recalculées quand la priorité ou le service change et à la sortie d'une attente, reprises au démarrage de l'API ; `ResponseDueAt` si le SLA a des délais de prise en charge) | |
 | INC-22 | Les délais se comptent en **heures de service** du service (SLM-14) et excluent le temps En attente | ✅ (échéance = création + délai + attente cumulée, comptés dans le calendrier du service ; 24 h/24 sans calendrier) | |
 | INC-23 | **Résolu au premier contact** : résolu sans passer par En cours, sans changement de responsable ni réouverture ; fixé à la première résolution, une réouverture le met à faux | ✅ | |
-| INC-24 | **SLA en risque** : moins de 25 % du délai de résolution restant ⇒ bloc « Urgent » de la console du responsable et des gestionnaires ; **SLA dépassé** ⇒ marqué sur la fiche et le registre | 🔜 | 2 |
+| INC-24 | **SLA en risque** : moins de 25 % du délai de résolution restant ⇒ bloc « Urgent » de la console du responsable et des gestionnaires ; **SLA dépassé** ⇒ marqué sur la fiche et le registre | ✅ (état SLA calculé `slaState` : Dans le SLA, SLA en risque, SLA dépassé, SLA suspendu En attente, SLA respecté ou non une fois résolu, Sans SLA ; badge sur la fiche et colonne du registre ; console : Urgent du responsable et des gestionnaires) | |
 | INC-25 | Notifications (SOC-21) : affectation → responsable (ou membres du groupe) ; résolution → utilisateur affecté ; incident majeur déclaré → tous les gestionnaires ; SLA en risque → responsable | ✅ | |
 | INC-26 | Un incident **En attente** depuis plus de 5 jours ouvrés remonte en relance au responsable | 🔜 | 3 |
 | INC-27 | **Début constaté** (`OccurredAt`), facultatif, jamais postérieur à la déclaration (5 minutes de tolérance, 400 sinon) ; le MTTD en découle ([REP-11](../reporting.md)) | ✅ | |
@@ -167,8 +167,9 @@ priorité (aujourd'hui enregistré, pas mesuré).
 
 ## 8. Console et indicateurs
 
-Console ✅ : incidents majeurs en cours (Urgent, gestionnaires) ; mes incidents ouverts
-(Mon travail). À venir : SLA en risque (Urgent, INC-24), incidents non pris en charge
+Console ✅ : incidents majeurs en cours (Urgent, gestionnaires) ; SLA en risque ou dépassé
+(Urgent : les miens, et ceux des périmètres gérés, INC-24) ; mes incidents ouverts (Mon
+travail). À venir : incidents non pris en charge
 depuis plus d'une heure (Décisions, gestionnaires, lot 2), En attente prolongés
 (Relances, INC-26).
 

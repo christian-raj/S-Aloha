@@ -3,7 +3,7 @@ using SAloha.Api.Core.Directory;
 
 namespace SAloha.Api.Core.Auth;
 
-public class LdapService(IConfiguration config, ILogger<LdapService> logger)
+public class LdapService(IConfiguration config, ILogger<LdapService> logger) : IUserDirectory
 {
     private string Host => config["Ldap:Host"]!;
     private int Port => int.Parse(config["Ldap:Port"] ?? "389");
@@ -59,6 +59,20 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger)
             logger.LogWarning(ex, "Échec d'authentification LDAP pour {User}", logged);
             return null;
         }
+    }
+
+    /// <summary>INC-13 : rôle et groupes d'un compte, lus par le compte de service (sans mot de passe de l'utilisateur).</summary>
+    public DirectoryAccount? Find(string username)
+    {
+        using var svc = ServiceConnect();
+        var filter = string.Format(config["Ldap:UserFilter"] ?? "(sAMAccountName={0})", EscapeFilter(username));
+        var search = svc.Search(BaseDn, LdapConnection.ScopeSub, filter, new[] { "memberOf" }, false);
+        if (!search.HasMore()) return null;
+        var groups = GetAttrValues(search.Next(), "memberOf")
+            .Select(dn => dn.Split(',')[0].Replace("CN=", "", StringComparison.OrdinalIgnoreCase))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var role = ResolveRole(groups);
+        return role is null ? null : new DirectoryAccount(role, groups);
     }
 
     private string? ResolveRole(HashSet<string> groups)

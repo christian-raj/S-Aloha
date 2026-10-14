@@ -38,17 +38,38 @@ public class PerimeterAccess(AppDbContext db, IHttpContextAccessor http)
         if (user.IsInRole("Admin")) return _scope = new PerimeterScope(true, new Dictionary<int, string>());
 
         var adRole = user.IsInRole("Manager") ? "Manager" : "User";
-        var me = user.MeKey();
-        var groups = user.GroupKeys();
+        return _scope = new PerimeterScope(false, await RolesAsync(db, user.MeKey(), user.GroupKeys(), adRole));
+    }
+
+    /// <summary>
+    /// Rôle par périmètre d'un compte, d'après ses affectations directes ou par groupe ; sans
+    /// aucune affectation, son rôle AD vaut sur « Organisation » (PER-10).
+    /// </summary>
+    public static async Task<Dictionary<int, string>> RolesAsync(AppDbContext db, string me, IReadOnlyCollection<string> groups, string adRole)
+    {
         var mine = await db.PerimeterAssignments.AsNoTracking()
             .Where(a => a.Perimeter!.DeletedAt == null
                         && (a.PrincipalType == "Group" ? groups.Contains(a.PrincipalId.ToLower()) : a.PrincipalId.ToLower() == me))
             .Select(a => new { a.PerimeterId, a.Role }).ToListAsync();
         // ADR-0014 D4 : le rôle par périmètre prime sur le rôle AD (un User AD peut être Manager d'un périmètre).
-        var roles = mine.Count == 0
+        return mine.Count == 0
             ? new Dictionary<int, string> { [Perimeter.DefaultId] = adRole }
             : mine.GroupBy(a => a.PerimeterId).ToDictionary(g => g.Key, g => g.Any(a => a.Role == "Manager") ? "Manager" : "User");
-        return _scope = new PerimeterScope(false, roles);
+    }
+
+    /// <summary>
+    /// INC-13 : un autre compte est-il gestionnaire de ce périmètre ? Admin partout ; sinon
+    /// rôle par périmètre (PER-03). Null si le compte est inconnu de l'annuaire ou hors des
+    /// groupes autorisés ; l'annuaire injoignable lève une exception.
+    /// </summary>
+    public static async Task<bool?> IsManagerAsync(AppDbContext db, IUserDirectory directory, string username, int perimeterId)
+    {
+        var account = directory.Find(username);
+        if (account is null) return null;
+        if (account.Role == "Admin") return true;
+        var groups = account.Groups.Select(g => g.ToLowerInvariant()).ToList();
+        var roles = await RolesAsync(db, username.ToLowerInvariant(), groups, account.Role == "Manager" ? "Manager" : "User");
+        return roles.GetValueOrDefault(perimeterId) == "Manager";
     }
 
     /// <summary>

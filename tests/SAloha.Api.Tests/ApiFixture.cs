@@ -41,6 +41,9 @@ public sealed class ApiFixture : IAsyncLifetime
             {
                 s.RemoveAll<IEmbeddingClient>();
                 s.AddSingleton<IEmbeddingClient, FakeEmbeddingClient>();
+                // Rôle d'un autre compte (INC-13) : annuaire de test, sans LDAP.
+                s.RemoveAll<SAloha.Api.Core.Auth.IUserDirectory>();
+                s.AddSingleton<SAloha.Api.Core.Auth.IUserDirectory, FakeUserDirectory>();
             }));
     }
 
