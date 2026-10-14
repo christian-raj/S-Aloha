@@ -80,9 +80,9 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 | **Demandes** — objet demandé, bénéficiaire, approbation avant traitement | ✅ Disponible (MVP) |
 | **Changements** — standard pré-autorisé, autorisation, retour arrière, calendrier | ✅ Disponible (MVP) |
 | **Configuration (CMDB)** — éléments de configuration, relations et impact, rattachement aux services, vérification | ✅ Disponible |
-| **Niveaux de service** — catalogue des services, SLA et dates de revue | ✅ Disponible (MVP) |
+| **Niveaux de service** — catalogue des services, SLA en heures de service, respect mesuré et alerte sous la cible, revues | ✅ Disponible |
 | **Connaissances** — articles en Markdown, soumission et publication validée, revue périodique, articles d'erreur connue issus des problèmes, notifications | ✅ Disponible |
-| **Amélioration continue** — registre et modèle ITIL 4 en 7 étapes | ✅ Disponible (MVP) |
+| **Amélioration continue** — registre priorisé, modèle ITIL 4 en 7 étapes, propositions sur problèmes récurrents et SLA sous la cible | ✅ Disponible |
 | **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions, preuves liées, comparaison, export CSV, revue annuelle | ✅ Disponible |
 | **Projets** — Scrum, Kanban, Cycle en V, PRINCE2 ou hybride : la méthode active backlog, sprints, phases, jalons, risques… | ✅ Disponible (MVP) |
 | **Périmètres** — droits et visibilité par direction, site ou entité, affectations d'utilisateurs et de groupes AD, écran d'administration | ✅ [Disponible](docs/reference/perimetres.md) |
