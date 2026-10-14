@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Service du catalogue** sur les incidents, problèmes et demandes : choisi dans une liste au
+  lieu d'un texte libre, son nom recopié pour l'affichage et le reporting ; l'échéance SLA de
+  l'incident suit ce service (SLM-10, INC-20) ; un service retiré ne se choisit plus pour un
+  nouvel enregistrement ni un nouveau SLA (SLM-15). Migration `ServiceCatalogLinks` : les
+  anciens libellés égaux au nom d'un service du catalogue y sont rattachés.
+
 - **Niveaux de service** : un SLA dont la validité est passée **expire** de lui-même, les
   gestionnaires sont prévenus (SLM-04) ; **délais de prise en charge** P1 à P4 dans le SLA et
   échéance de prise en charge sur l'incident (SLM-13) ; **revue de SLA** : constats et

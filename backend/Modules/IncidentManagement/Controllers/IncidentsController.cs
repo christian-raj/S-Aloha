@@ -42,7 +42,7 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         if (e.IsMajor && !IsManager && e.OwnerId != OriginalOwner(e, creating))
             return "Seul un gestionnaire désigne le responsable d'un incident majeur.";
 
-        e.Category = dto.Category ?? ""; e.AffectedService = dto.AffectedService ?? "";
+        e.Category = dto.Category ?? ""; e.AffectedService = dto.AffectedService ?? ""; e.ServiceId = dto.ServiceId;
         e.Resolution = dto.Resolution;
         e.ResolutionCode = string.IsNullOrEmpty(dto.ResolutionCode) ? null : dto.ResolutionCode;
         e.ReopenReason = string.IsNullOrWhiteSpace(dto.ReopenReason) ? null : dto.ReopenReason.Trim();
@@ -54,6 +54,9 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         if (!creating && e.OwnerId != OriginalOwner(e, creating)) e.OwnerChanged = true;
         return null;
     }
+
+    // SLM-10, INC-20 : service du catalogue (vérifié ici, recopié avant l'écriture).
+    protected override Task<string?> ValidateAsync(Incident e) => ServiceCatalog.ResolveAsync(Db, e);
 
     /// <summary>Responsable avant la modification (aucun à la création).</summary>
     private string? OriginalOwner(Incident e, bool creating) =>
@@ -88,9 +91,10 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
     /// <summary>INC-21 : échéance recalculée à la création et quand la priorité ou le service change.</summary>
     protected override async Task BeforeSaveAsync(Incident e, bool creating)
     {
+        await ServiceCatalog.ResolveAsync(Db, e);   // SLM-10, INC-20
         var entry = Db.Entry(e);
         if (creating || entry.Property(x => x.Priority).IsModified || entry.Property(x => x.AffectedService).IsModified
-            || e.ResolutionDueAt is null)
+            || entry.Property(x => x.ServiceId).IsModified || e.ResolutionDueAt is null)
         {
             e.ResolutionDueAt = await IncidentSla.DueAsync(Db, e);
             e.ResponseDueAt = await IncidentSla.ResponseDueAsync(Db, e);

@@ -44,6 +44,7 @@ créateur = demandeur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 | Champ | Type | Oblig. | Valeurs / règle | Statut |
 |---|---|---|---|---|
 | `RequestedItem` | texte 200 | ✔ | Objet demandé ; repris du modèle (🔜) | ✅ |
+| `ServiceId`, `AffectedService` | lien, texte 150 | | Service du catalogue concerné et son nom recopié ([SLM-10](gestion-des-niveaux-de-service.md)) | ✅ |
 | `RequestedFor`, `RequestedForDisplayName` | AD | | Bénéficiaire ; par défaut le demandeur (🔜) | ✅ |
 | `DueDate` | date | | Échéance souhaitée ; calculée depuis le modèle (🔜 REQ-22) | ✅ |
 | `ApprovedBy`, `ApprovedAt` | texte, date | auto | Approbation (SOC-08) | ✅ |

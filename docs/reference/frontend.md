@@ -32,6 +32,7 @@ frontend/
     │   │   ├── StatusBadge.jsx   # badge de statut selon la tonalité déclarée
     │   │   ├── Comments.jsx      # fil de commentaires d'une fiche, public ou note de travail (SOC-24)
     │   │   ├── PerimeterSelect.jsx # choix du périmètre (création, déplacement), masqué avec un seul périmètre ; core/usePerimeters.js
+    │   │   ├── ServiceSelect.jsx # choix du service dans le catalogue (SLM-10) ; core/useServices.js (withServices pour les configurations)
     │   │   ├── Markdown.jsx      # rendu Markdown sûr (éléments React, jamais de HTML brut), KB-10
     │   │   └── LinkedItems.jsx   # éléments liés (tous processus), ajout par référence
     │   └── pages/

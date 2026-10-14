@@ -66,8 +66,14 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
         return null;
     }
 
-    protected override async Task<string?> ValidateAsync(ServiceLevelAgreement e) =>
-        await Db.Services.AnyAsync(s => s.Id == e.ServiceId) ? null : "Choisir un service du catalogue.";
+    protected override async Task<string?> ValidateAsync(ServiceLevelAgreement e)
+    {
+        var status = await Db.Services.Where(s => s.Id == e.ServiceId).Select(s => s.Status).FirstOrDefaultAsync();
+        if (status is null) return "Choisir un service du catalogue.";
+        // SLM-15 : un service retiré ne reçoit plus de nouvel accord.
+        var changed = e.Id == 0 || !Equals(Db.Entry(e).Property(x => x.ServiceId).OriginalValue, e.ServiceId);
+        return changed && status == "Retiré" ? "Le service est retiré : il ne reçoit plus de nouvel accord." : null;
+    }
 
     /// <summary>
     /// SLM-03 : un accord en vigueur a des cibles complètes et croissantes

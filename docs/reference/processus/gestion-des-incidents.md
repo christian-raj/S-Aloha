@@ -44,11 +44,11 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `Impact` / `Urgency` | texte 10 | ✔ | Faible, Moyen, Élevé / Faible, Moyenne, Élevée | ✅ |
 | `Priority` | texte 10 | calculé | P1–P4 ([matrice](../regles-metier.md#6-priorité)) | ✅ |
 | `Category` | texte 100 | | Texte libre ; référentiel 🔜 SOC-27 | ✅ |
-| `AffectedService` | texte 150 | | Texte libre ; remplacé par `ServiceId` 🔜 | ✅ |
+| `AffectedService` | texte 150 | | Nom du service, recopié du catalogue ; un libellé inconnu du catalogue reste un simple texte, sans SLA | ✅ |
 | `IsMajor` | booléen | | Incident majeur | ✅ |
 | `Resolution` | texte | à la résolution | Description de la résolution | ✅ |
 | `ResolvedAt`, `ClosedAt` | date UTC | auto | SOC-08 | ✅ |
-| `ServiceId` | lien | ✔ (🔜) | Service du catalogue ([SLM-10](gestion-des-niveaux-de-service.md)) | 🔜 INC-20 |
+| `ServiceId` | lien | | Service du catalogue ([SLM-10](gestion-des-niveaux-de-service.md)) ; un service retiré ne se choisit plus (SLM-15) | ✅ INC-20 |
 | `Channel` | texte 20 | | Portail, Téléphone, Courriel, Supervision, Sur place | 🔜 INC-04 |
 | `CallerId`, `CallerDisplayName` | AD | | Utilisateur affecté (déclarant métier) | 🔜 INC-05 |
 | `OnHoldReason` | texte 30 | si En attente | Attente utilisateur, Attente fournisseur, Attente changement | 🔜 INC-07 |
@@ -144,8 +144,8 @@ priorité (aujourd'hui enregistré, pas mesuré).
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| INC-20 | Le service affecté est choisi dans le **catalogue** (`ServiceId`) ; l'ancien texte libre est repris à la migration | 🔜 | 2 |
-| INC-21 | **Échéances** calculées à la création et au changement de priorité : `ResolutionDueAt` = création + délai de résolution de la priorité (SLA du service) ; `ResponseDueAt` = création + délai de prise en charge (SLM-13). Sans SLA : pas d'échéance | ✅ (partiel : `ResolutionDueAt`, SLA En vigueur du service retrouvé par son nom en attendant INC-20, recalculée quand la priorité ou le service change, reprise au démarrage de l'API ; heures calendaires en attendant INC-22) ; `ResponseDueAt` de même, si le SLA a des délais de prise en charge) | 2 |
+| INC-20 | Le service affecté est choisi dans le **catalogue** (`ServiceId`) ; l'ancien texte libre est repris à la migration | ✅ (liste du catalogue dans le formulaire ; un nom donné par l'API est retrouvé dans le catalogue, casse ignorée ; migration `ServiceCatalogLinks` : les noms connus rattachent l'incident au service) | |
+| INC-21 | **Échéances** calculées à la création et au changement de priorité : `ResolutionDueAt` = création + délai de résolution de la priorité (SLA du service) ; `ResponseDueAt` = création + délai de prise en charge (SLM-13). Sans SLA : pas d'échéance | ✅ (partiel : `ResolutionDueAt`, SLA En vigueur du service du catalogue (INC-20), recalculée quand la priorité ou le service change, reprise au démarrage de l'API ; heures calendaires en attendant INC-22) ; `ResponseDueAt` de même, si le SLA a des délais de prise en charge) | 2 |
 | INC-22 | Les délais se comptent en **heures de service** du service (SLM-14) et excluent le temps En attente | 🔜 | 2 |
 | INC-23 | **Résolu au premier contact** : résolu sans passer par En cours, sans changement de responsable ni réouverture ; fixé à la première résolution, une réouverture le met à faux | ✅ | |
 | INC-24 | **SLA en risque** : moins de 25 % du délai de résolution restant ⇒ bloc « Urgent » de la console du responsable et des gestionnaires ; **SLA dépassé** ⇒ marqué sur la fiche et le registre | 🔜 | 2 |
@@ -159,7 +159,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 |---|---|---|---|
 | Incident → Problème | Cause à rechercher | INC-14, INC-15 | ✅ / 🔜 |
 | Incident → CI | CI affecté | Lien manuel ; CI Retiré refusé (CFG-14) | ✅ / 🔜 |
-| Incident → Service / SLA | Service affecté, cibles | INC-20, INC-21 | 🔜 |
+| Incident → Service / SLA | Service affecté, cibles | INC-20, INC-21 | ✅ |
 | Incident → Article | Solution utilisée, cas similaires | INC-19, RAG-06, RAG-09 | ✅ (suggestion) / 🔜 (lien en un clic) |
 | Incident → Changement | Changement à l'origine de l'incident | Lien manuel ; indicateur CHG-33 | ✅ / 🔜 |
 | Incident → Déclaration réglementaire | Incident cyber à déclarer (NIS 2, RGPD) | INC-40 à INC-44, [DRG-01](declarations-reglementaires.md) | 🔜 |

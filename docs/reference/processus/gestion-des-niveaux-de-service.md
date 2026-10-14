@@ -106,12 +106,12 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 | SLM-03 | Passer un SLA **En vigueur** exige des cibles complètes et croissantes, et l'unicité (service, client) parmi les SLA En vigueur | ✅ | 1 |
 | SLM-04 | Un SLA passe **Expiré** automatiquement le lendemain de `ValidTo` | ✅ (relevé périodique des événements datés ; notification « SLA expiré » aux gestionnaires ; le journal d'audit trace le passage) | |
 | SLM-05 | **Revue échue** : un SLA En vigueur dont la date de revue est passée remonte dans « Relances » des gestionnaires | ✅ | |
-| SLM-10 | Les incidents (INC-20), problèmes et demandes désignent leur **service** dans le catalogue (`ServiceId`) au lieu d'un texte libre | 🔜 | 2 |
+| SLM-10 | Les incidents (INC-20), problèmes et demandes désignent leur **service** dans le catalogue (`ServiceId`) au lieu d'un texte libre | ✅ (nom recopié dans `AffectedService` pour l'affichage et le reporting ; l'échéance SLA de l'incident suit le service du catalogue) | |
 | SLM-11 | Un service **En service** a obligatoirement un propriétaire | ✅ | 1 |
 | SLM-12 | **Transitions contraintes** selon le § 4 (SOC-05) | ✅ | 1 |
 | SLM-13 | **Délais de prise en charge** P1 à P4 dans le SLA (`ResponseHoursP1…P4`), mesurés sur `FirstResponseAt` des incidents (INC-06) | ✅ (délais dans le SLA ; échéance `ResponseDueAt` de l'incident, comparée à `FirstResponseAt`) / 🔜 (taux de respect, avec SLM-20) | |
 | SLM-14 | **Heures de service structurées** : jours ouvrés, plages horaires, jours fériés, fuseau (défaut : 24 h/24 et 7 j/7) ; tous les délais SLA se comptent dans ces heures | 🔜 | 2 |
-| SLM-15 | Un service **Retiré** ne peut plus être choisi pour un nouvel incident, demande ou SLA | 🔜 | 2 |
+| SLM-15 | Un service **Retiré** ne peut plus être choisi pour un nouvel incident, demande ou SLA | ✅ (400 ; les enregistrements qui le portaient le gardent et restent modifiables) | |
 
 ## 6. Délais, calculs et alertes
 
@@ -128,7 +128,7 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
 | Service → SLA | Engagements | SLM-02 | ✅ |
-| Incident → Service | Mesure du respect | SLM-10, SLM-20 | 🔜 |
+| Incident → Service | Mesure du respect | SLM-10, SLM-20 | ✅ (service) / 🔜 (mesure) |
 | CI → Service | Services supportés | CFG-21 | 🔜 |
 | Demande → Service | Modèles de demande par service | REQ-20 | 🔜 |
 | SLA → Amélioration | Écart à la cible | SLM-23, CSI-20 | 🔜 |

@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../../api'
 import PerimeterSelect from '../../../core/components/PerimeterSelect'
 import usePerimeters from '../../../core/usePerimeters'
+import useServices from '../../../core/useServices'
+import ServiceSelect from '../../../core/components/ServiceSelect'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
 const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
@@ -71,12 +73,13 @@ export default function Problems() {
 }
 
 function NewProblem({ onCreated }) {
-  const [f, setF] = useState({ title: '', description: '', impact: 'Moyen', urgency: 'Moyenne', category: '', affectedService: '' })
+  const [f, setF] = useState({ title: '', description: '', impact: 'Moyen', urgency: 'Moyenne', category: '', affectedService: '', serviceId: '' })
+  const services = useServices() ?? []
   const [error, setError] = useState('')
   const [perimeterId, setPerimeterId] = useState(null)
   const perimeters = usePerimeters()
   const set = k => e => setF({ ...f, [k]: e.target.value })
-  const submit = () => api.problems.create({ ...f, perimeterId }).then(onCreated).catch(e => setError(e.message))
+  const submit = () => api.problems.create({ ...f, serviceId: f.serviceId ? Number(f.serviceId) : null, perimeterId }).then(onCreated).catch(e => setError(e.message))
   return (
     <div className="card" style={{ marginBottom: 20 }}>
       <h3 style={{ color: 'var(--navy)', marginBottom: 14 }}>Déclarer un problème</h3>
@@ -91,7 +94,7 @@ function NewProblem({ onCreated }) {
         <div className="field"><label>Catégorie</label>
           <input value={f.category} onChange={set('category')} placeholder="Réseau, Serveur, Application…" /></div>
         <div className="field"><label>Service affecté</label>
-          <input value={f.affectedService} onChange={set('affectedService')} placeholder="Ex. : Messagerie" /></div>
+          <ServiceSelect services={services} value={f.serviceId} onChange={set('serviceId')} /></div>
       </div>
       <div className="row2">
         <div className="field"><label>Impact</label>

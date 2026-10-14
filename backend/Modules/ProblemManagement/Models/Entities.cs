@@ -1,3 +1,4 @@
+using SAloha.Api.Core.Itil;
 using System.ComponentModel.DataAnnotations;
 using SAloha.Api.Core.Records;
 
@@ -8,7 +9,7 @@ namespace SAloha.Api.Modules.ProblemManagement;
 /// Enregistrement du socle commun (référence, statut, responsable = gestionnaire du
 /// problème, périmètre), avec ses analyses de cause racine et ses actions correctives.
 /// </summary>
-public class Problem : Record
+public class Problem : Record, IServiceBound
 {
     public static readonly string[] Statuses = ["Nouveau", "En analyse", "Erreur connue", "Résolu", "Clos"];
     /// <summary>
@@ -29,6 +30,7 @@ public class Problem : Record
     [MaxLength(10)] public string Priority { get; set; } = "P3";    // P1..P4 (dérivée impact x urgence)
     [MaxLength(100)] public string Category { get; set; } = "";     // Réseau, Serveur, Application...
     [MaxLength(150)] public string AffectedService { get; set; } = "";
+    public int? ServiceId { get; set; }                             // SLM-10 : service du catalogue
     public string? KnownErrorWorkaround { get; set; }               // contournement (Known Error)
     public string? RootCause { get; set; }                          // cause racine validée
     [MaxLength(30)] public string? ClosureCode { get; set; }        // code de clôture (PRB-13)
