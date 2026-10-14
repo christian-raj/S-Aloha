@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SAloha.Api.Tests;
 
-/// <summary>Niveaux de service : expiration (SLM-04), service du catalogue (SLM-10, SLM-15, INC-20), délais de prise en charge (SLM-13), revue de SLA (SLM-22).</summary>
+/// <summary>Niveaux de service : expiration (SLM-04), service du catalogue (SLM-10, SLM-15, INC-20), délais de prise en charge (SLM-13), heures de service et attente (SLM-14, INC-07, INC-22), revue de SLA (SLM-22).</summary>
 [Collection("api")]
 public class ServiceLevelExitMvpTests(ApiFixture api)
 {
@@ -151,5 +151,62 @@ public class ServiceLevelExitMvpTests(ApiFixture api)
         Assert.Equal(HttpStatusCode.BadRequest, (await m.PostAsJsonAsync("/api/agreements", Sla(svc, "SLM-15", null))).StatusCode);
         // L'incident qui le portait déjà se modifie toujours.
         await Json(await m.PutAsJsonAsync($"/api/incidents/{Id(inc)}", new { title = "Avant retrait (modifié)", impact = "Faible", urgency = "Faible", serviceId = svc }));
+    }
+
+    [Fact]
+    public async Task SLM_14_heures_de_service_controlees_et_appliquees_a_l_echeance()
+    {
+        var m = api.Client("Manager", "slm14.manager");
+        object Svc(string days, string? open, string? close, string? zone = null) => new
+        {
+            title = "Service SLM-14", status = "En service", criticality = "Moyenne", ownerType = "User", ownerId = "svc.owner",
+            ownerDisplayName = "Owner", workingDays = days, openingTime = open, closingTime = close, holidays = "2026-12-25", timeZone = zone
+        };
+        Assert.Equal(HttpStatusCode.BadRequest, (await m.PostAsJsonAsync("/api/services", Svc("1,2,3,4,5", "18:00", "08:00"))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await m.PostAsJsonAsync("/api/services", Svc("1,2,3,4,5", "08:00", "18:00", "Nulle/Part"))).StatusCode);
+        var svc = Id(await Json(await m.PostAsJsonAsync("/api/services", Svc("1,2,3,4,5", "08:00", "18:00", "Europe/Paris"))));
+        var sla = await Json(await m.PostAsJsonAsync("/api/agreements", Sla(svc, "SLM-14", null)));
+        await Json(await m.PutAsJsonAsync($"/api/agreements/{Id(sla)}", Sla(svc, "SLM-14", "En vigueur")));
+
+        var inc = await Json(await m.PostAsJsonAsync("/api/incidents", new { title = "SLM-14", impact = "Faible", urgency = "Faible", serviceId = svc }));
+        var created = inc.GetProperty("createdAt").GetDateTime().ToUniversalTime();
+        var (calendar, _) = SAloha.Api.Core.Itil.ServiceCalendar.Parse("1,2,3,4,5", "08:00", "18:00", "2026-12-25", "Europe/Paris");
+        Assert.Equal(calendar!.Add(created, TimeSpan.FromHours(48)), inc.GetProperty("resolutionDueAt").GetDateTime().ToUniversalTime(), TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task INC_07_22_attente_motivee_et_horloge_suspendue()
+    {
+        var m = api.Client("Manager", "inc22.manager");
+        var svc = await Service(m, "Service INC-22");   // sans calendrier : 24 h/24
+        var sla = await Json(await m.PostAsJsonAsync("/api/agreements", Sla(svc, "INC-22", null)));
+        await Json(await m.PutAsJsonAsync($"/api/agreements/{Id(sla)}", Sla(svc, "INC-22", "En vigueur")));
+        object Inc(string? status, string? onHoldReason = null) => new
+        {
+            title = "INC-22", impact = "Faible", urgency = "Faible", serviceId = svc, status, onHoldReason,
+            ownerType = "User", ownerId = "inc22.tech", ownerDisplayName = "Tech"
+        };
+        var inc = await Json(await m.PostAsJsonAsync("/api/incidents", Inc(null)));
+        var url = $"/api/incidents/{Id(inc)}";
+        var due = inc.GetProperty("resolutionDueAt").GetDateTime();
+        await Json(await m.PutAsJsonAsync(url, Inc("En cours")));
+
+        // INC-07 : sans motif, ou hors liste : 400.
+        Assert.Equal(HttpStatusCode.BadRequest, (await m.PutAsJsonAsync(url, Inc("En attente"))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await m.PutAsJsonAsync(url, Inc("En attente", "Pause café"))).StatusCode);
+        var held = await Json(await m.PutAsJsonAsync(url, Inc("En attente", "Attente fournisseur")));
+        Assert.Equal("Attente fournisseur", held.GetProperty("onHoldReason").GetString());
+
+        // Deux heures d'attente (horloge reculée en base) : à la reprise, l'échéance recule d'autant.
+        await using (var db = api.Database())
+        {
+            var i = await db.Incidents.FirstAsync(x => x.Id == Id(inc));
+            i.OnHoldSince = DateTime.UtcNow.AddHours(-2);
+            await db.SaveChangesAsync();
+        }
+        var resumed = await Json(await m.PutAsJsonAsync(url, Inc("En cours")));
+        Assert.Equal(JsonValueKind.Null, resumed.GetProperty("onHoldReason").ValueKind);
+        Assert.InRange(resumed.GetProperty("heldMinutes").GetInt32(), 119, 121);
+        Assert.Equal(due.AddMinutes(resumed.GetProperty("heldMinutes").GetInt32()), resumed.GetProperty("resolutionDueAt").GetDateTime(), TimeSpan.FromSeconds(1));
     }
 }

@@ -29,6 +29,12 @@ public class ServicesController(AppDbContext db) : RecordController<ItService, I
         if (error is not null) return error;
         e.Criticality = dto.Criticality!;
         e.ServiceHours = dto.ServiceHours ?? "";
+        // SLM-14 : heures de service structurées, contrôlées avant d'être enregistrées.
+        var (_, invalid) = SAloha.Api.Core.Itil.ServiceCalendar.Parse(dto.WorkingDays, dto.OpeningTime, dto.ClosingTime, dto.Holidays, dto.TimeZone);
+        if (invalid is not null) return invalid;
+        static string? Blank(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+        e.WorkingDays = (dto.WorkingDays ?? "").Replace(" ", ""); e.OpeningTime = Blank(dto.OpeningTime);
+        e.ClosingTime = Blank(dto.ClosingTime); e.Holidays = (dto.Holidays ?? "").Trim(); e.TimeZone = Blank(dto.TimeZone);
         return null;
     }
 

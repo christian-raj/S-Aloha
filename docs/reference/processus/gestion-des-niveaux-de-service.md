@@ -45,9 +45,9 @@ Champs communs (référence, titre, description, statut, responsable AD, créate
 |---|---|---|---|---|
 | `Status` | texte 30 | ✔ | En conception, En service, Retiré ; choisi à la création | ✅ |
 | `Criticality` | texte 10 | ✔ | Faible, Moyenne, Élevée | ✅ |
-| `ServiceHours` | texte 150 | | Heures de service, texte libre (« Lun–Ven 8 h–18 h ») | ✅ (structuré 🔜 SLM-14) |
+| `ServiceHours` | texte 150 | | Libellé des heures de service (« Lun–Ven 8 h–18 h ») | ✅ |
 | `Owner…` | AD | ✔ (🔜) | Propriétaire de service | ✅ |
-| `ServiceCalendar` | structure | | Jours, plages horaires, jours fériés, fuseau | 🔜 SLM-14 |
+| `WorkingDays`, `OpeningTime`, `ClosingTime`, `Holidays`, `TimeZone` | textes | | Heures de service structurées (SLM-14) : jours « 1,2,3,4,5 » (1 = lundi), plage « HH:mm » (ouverture avant fermeture, les deux ou aucune), jours fériés « AAAA-MM-JJ », fuseau IANA (UTC par défaut) ; tout vide : 24 h/24, 7 j/7 | ✅ |
 
 ### Accord de niveau de service (`Agreements`, `SLA-AAAA-NNNN`)
 
@@ -110,7 +110,7 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 | SLM-11 | Un service **En service** a obligatoirement un propriétaire | ✅ | 1 |
 | SLM-12 | **Transitions contraintes** selon le § 4 (SOC-05) | ✅ | 1 |
 | SLM-13 | **Délais de prise en charge** P1 à P4 dans le SLA (`ResponseHoursP1…P4`), mesurés sur `FirstResponseAt` des incidents (INC-06) | ✅ (délais dans le SLA ; échéance `ResponseDueAt` de l'incident, comparée à `FirstResponseAt`) / 🔜 (taux de respect, avec SLM-20) | |
-| SLM-14 | **Heures de service structurées** : jours ouvrés, plages horaires, jours fériés, fuseau (défaut : 24 h/24 et 7 j/7) ; tous les délais SLA se comptent dans ces heures | 🔜 | 2 |
+| SLM-14 | **Heures de service structurées** : jours ouvrés, plages horaires, jours fériés, fuseau (défaut : 24 h/24 et 7 j/7) ; tous les délais SLA se comptent dans ces heures | ✅ (`Core/Itil/ServiceCalendar.cs` ; échéances des incidents, INC-22 ; une plage par jour, sans passage de minuit) | |
 | SLM-15 | Un service **Retiré** ne peut plus être choisi pour un nouvel incident, demande ou SLA | ✅ (400 ; les enregistrements qui le portaient le gardent et restent modifiables) | |
 
 ## 6. Délais, calculs et alertes

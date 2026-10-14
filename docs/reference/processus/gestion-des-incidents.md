@@ -51,7 +51,8 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `ServiceId` | lien | | Service du catalogue ([SLM-10](gestion-des-niveaux-de-service.md)) ; un service retiré ne se choisit plus (SLM-15) | ✅ INC-20 |
 | `Channel` | texte 20 | | Portail, Téléphone, Courriel, Supervision, Sur place | 🔜 INC-04 |
 | `CallerId`, `CallerDisplayName` | AD | | Utilisateur affecté (déclarant métier) | 🔜 INC-05 |
-| `OnHoldReason` | texte 30 | si En attente | Attente utilisateur, Attente fournisseur, Attente changement | 🔜 INC-07 |
+| `OnHoldReason` | texte 30 | si En attente | Attente utilisateur, Attente fournisseur, Attente changement ; effacé à la sortie de l'attente | ✅ INC-07 |
+| `OnHoldSince`, `HeldMinutes` | date UTC, entier | auto | Début de l'attente en cours ; attente cumulée en minutes de service (INC-22) | ✅ |
 | `ResolutionCode` | texte 30 | à la résolution | Correctif appliqué, Contournement, Résolu sans action, Non reproductible, Doublon | ✅ |
 | `FirstResponseAt` | date UTC | auto | Première prise en charge (passage à En cours) | ✅ |
 | `ResolutionDueAt` | date UTC | calculé | Échéance de résolution tirée du SLA (§ 6) | ✅ INC-21 (partiel) |
@@ -91,8 +92,8 @@ stateDiagram-v2
 | — → Nouveau | Tous | Titre, impact, urgence | Référence, priorité | ✅ |
 | Nouveau → En cours | Tous | Responsable renseigné (utilisateur ou groupe) | `FirstResponseAt` | ✅ |
 | Nouveau → Résolu | Tous | Résolution et code | `ResolvedAt` ; résolu au premier contact (INC-23) | ✅ / 🔜 INC-23 (premier contact) |
-| En cours → En attente | Tous | `OnHoldReason` | Horloge SLA suspendue (INC-22) | 🔜 INC-07 |
-| En attente → En cours | Tous | | `OnHoldReason` effacé, horloge reprise | 🔜 INC-07 |
+| En cours → En attente | Tous | `OnHoldReason` | Horloge SLA suspendue (INC-22) ; ni risque ni dépassement relevés pendant l'attente | ✅ INC-07 |
+| En attente → En cours | Tous | | `OnHoldReason` effacé, horloge reprise : l'attente, en heures de service, prolonge les échéances | ✅ INC-07, INC-22 |
 | En cours → Résolu | Tous | Résolution et `ResolutionCode` | `ResolvedAt` | ✅ |
 | Résolu → En cours | Tous | Motif ; dans les 10 jours ouvrés suivant la résolution | `ResolvedAt` effacé, `ReopenCount` + 1 | ✅ INC-11 |
 | Résolu → Clos | Manager, ou automatique après 5 jours ouvrés | | `ClosedAt` | ✅ (horodatage) / 🔜 INC-10 |
@@ -108,7 +109,7 @@ stateDiagram-v2
 | INC-04 | **Canal** de signalement enregistré (Portail, Téléphone, Courriel, Supervision, Sur place) | 🔜 | 2 |
 | INC-05 | **Utilisateur affecté** (AD) distinct du créateur : un agent enregistre pour un utilisateur ; l'utilisateur affecté reçoit les notifications publiques | 🔜 | 2 |
 | INC-06 | **Prise en charge** : passer à En cours exige un responsable ; horodate `FirstResponseAt` (délai de prise en charge, INC-21) | ✅ | 1 |
-| INC-07 | **En attente** exige un motif fermé ; le temps passé En attente ne compte pas dans les délais SLA | 🔜 | 2 |
+| INC-07 | **En attente** exige un motif fermé ; le temps passé En attente ne compte pas dans les délais SLA | ✅ (motif vérifié à l'entrée En attente : un incident déjà en attente avant la règle reste modifiable) | |
 | INC-08 | La résolution exige un **code de résolution** fermé ; *Doublon* exige un lien vers l'incident conservé | ✅ | 1 |
 | INC-09 | **Transitions contraintes** selon le § 4 (SOC-05) | ✅ | 1 |
 | INC-10 | **Clôture** par un Manager, ou **automatique** 5 jours ouvrés après la résolution sans réouverture | 🔜 | 2 (manuelle) / 3 (auto) |
@@ -145,8 +146,8 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | INC-20 | Le service affecté est choisi dans le **catalogue** (`ServiceId`) ; l'ancien texte libre est repris à la migration | ✅ (liste du catalogue dans le formulaire ; un nom donné par l'API est retrouvé dans le catalogue, casse ignorée ; migration `ServiceCatalogLinks` : les noms connus rattachent l'incident au service) | |
-| INC-21 | **Échéances** calculées à la création et au changement de priorité : `ResolutionDueAt` = création + délai de résolution de la priorité (SLA du service) ; `ResponseDueAt` = création + délai de prise en charge (SLM-13). Sans SLA : pas d'échéance | ✅ (partiel : `ResolutionDueAt`, SLA En vigueur du service du catalogue (INC-20), recalculée quand la priorité ou le service change, reprise au démarrage de l'API ; heures calendaires en attendant INC-22) ; `ResponseDueAt` de même, si le SLA a des délais de prise en charge) | 2 |
-| INC-22 | Les délais se comptent en **heures de service** du service (SLM-14) et excluent le temps En attente | 🔜 | 2 |
+| INC-21 | **Échéances** calculées à la création et au changement de priorité : `ResolutionDueAt` = création + délai de résolution de la priorité (SLA du service) ; `ResponseDueAt` = création + délai de prise en charge (SLM-13). Sans SLA : pas d'échéance | ✅ (SLA En vigueur du service du catalogue, INC-20 ; recalculées quand la priorité ou le service change et à la sortie d'une attente, reprises au démarrage de l'API ; `ResponseDueAt` si le SLA a des délais de prise en charge) | |
+| INC-22 | Les délais se comptent en **heures de service** du service (SLM-14) et excluent le temps En attente | ✅ (échéance = création + délai + attente cumulée, comptés dans le calendrier du service ; 24 h/24 sans calendrier) | |
 | INC-23 | **Résolu au premier contact** : résolu sans passer par En cours, sans changement de responsable ni réouverture ; fixé à la première résolution, une réouverture le met à faux | ✅ | |
 | INC-24 | **SLA en risque** : moins de 25 % du délai de résolution restant ⇒ bloc « Urgent » de la console du responsable et des gestionnaires ; **SLA dépassé** ⇒ marqué sur la fiche et le registre | 🔜 | 2 |
 | INC-25 | Notifications (SOC-21) : affectation → responsable (ou membres du groupe) ; résolution → utilisateur affecté ; incident majeur déclaré → tous les gestionnaires ; SLA en risque → responsable | ✅ | |

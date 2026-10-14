@@ -23,4 +23,11 @@ describe('Champs selon le formulaire', () => {
     expect(screen.queryByText("Enregistrement d'origine")).toBeNull()
     expect(screen.getByText('Valeur')).toBeTruthy()
   })
+  it('champ heure (SLM-14 : ouverture et fermeture du service)', () => {
+    const { container } = render(<RecordForm fields={[{ key: 'openingTime', label: 'Ouverture', type: 'time' }]}
+      form={{ openingTime: '08:00' }} onChange={() => {}} />)
+    const input = container.querySelector('input[type="time"]')
+    expect(input).toBeTruthy()
+    expect(input.value).toBe('08:00')
+  })
 })

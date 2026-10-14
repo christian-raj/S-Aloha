@@ -105,12 +105,12 @@ en attente, sans effet sur la sortie du MVP (décision du 2026-10-13) ;
 
 | Pratique | Règles à ✅ (lot 1 restant, puis cœur de métier du lot 2) |
 |---|---|
-| [Incidents](reference/processus/gestion-des-incidents.md) | INC-11, INC-13 ; INC-07 (attente motivée, hors délais), INC-20 (service du catalogue), INC-21, INC-22 (échéances en heures de service), INC-24 (SLA en risque), INC-25 |
+| [Incidents](reference/processus/gestion-des-incidents.md) | INC-11, INC-13 ; ~~INC-07 (attente motivée, hors délais), INC-20 (service du catalogue), INC-21, INC-22 (échéances en heures de service)~~ (2026-10-14) ; INC-24 (SLA en risque), INC-25 |
 | [Demandes](reference/processus/gestion-des-demandes.md) | REQ-09 ; REQ-20 à REQ-23 (catalogue de demandes, modèles, échéance, groupe d'exécution), REQ-30 (retard), REQ-31 |
 | [Problèmes](reference/processus/gestion-des-problemes.md) | ~~PRB-24, PRB-26, PRB-30, PRB-31~~ ; ~~PRB-10 (motif de réouverture), PRB-25 (approbation par l'A), PRB-27 (changement depuis une action)~~ (2026-10-13) : toutes les règles de sortie sont faites |
 | [Changements](reference/processus/habilitation-des-changements.md) | CHG-14, CHG-15 (dates réelles, revue post-implémentation), CHG-16 (CI reliés), CHG-20, CHG-21 (autorité selon le risque, séparation des tâches), CHG-25 (gel), CHG-26 (modèles standard), CHG-24 |
 | [Configuration](reference/processus/gestion-de-la-configuration.md) | ~~CFG-12 à CFG-14~~ ; ~~CFG-15 (vérification), CFG-20 (impact d'un changement), CFG-21 (CI ↔ service), CFG-22~~ (2026-10-13) : **sortie du MVP le 2026-10-13** |
-| [Niveaux de service](reference/processus/gestion-des-niveaux-de-service.md) | ~~SLM-24~~ ; ~~SLM-04 (expiration), SLM-13 (délais de prise en charge), SLM-22 (revue)~~ (2026-10-14) ; ~~SLM-10 (service du catalogue)~~ (2026-10-14) ; SLM-14 (heures de service), **SLM-20 (mesure du respect, F1)**, SLM-23 |
+| [Niveaux de service](reference/processus/gestion-des-niveaux-de-service.md) | ~~SLM-24~~ ; ~~SLM-04 (expiration), SLM-13 (délais de prise en charge), SLM-22 (revue)~~ (2026-10-14) ; ~~SLM-10 (service du catalogue), SLM-14 (heures de service)~~ (2026-10-14) ; **SLM-20 (mesure du respect, F1)**, SLM-23 |
 | [Connaissances](reference/processus/gestion-des-connaissances.md) | ~~KB-10, KB-11, KB-12, KB-17, KB-21~~ faits le 2026-10-12 (avec KB-14, KB-18) ; ~~KB-20~~ (2026-10-13) : **sortie du MVP le 2026-10-13** |
 | [Amélioration continue](reference/processus/amelioration-continue.md) | ~~CSI-10, CSI-12 (source, priorisation)~~, ~~CSI-21, CSI-23~~ (2026-10-13) ; CSI-20 fait pour les problèmes récurrents, reste sa part SLA (dépend de SLM-20 et SLM-23) |
 | [Conformité NIS 2](reference/processus/conformite-nis2.md) | ~~NIS-18~~, ~~NIS-14, NIS-16 (revue périodique), NIS-17 (export), NIS-08 (preuves), NIS-09 (comparaison)~~ (2026-10-13) : **sortie du MVP le 2026-10-13** ; les pièces jointes de NIS-08 suivront SOC-25, sans conditionner la sortie (décision du 2026-10-13) |

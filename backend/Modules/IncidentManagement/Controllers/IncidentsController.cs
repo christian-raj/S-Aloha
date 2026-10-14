@@ -20,7 +20,8 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
     {
         var error = Allowed.Check("Impact", dto.Impact, Priority.Impacts)
                     ?? Allowed.Check("Urgence", dto.Urgency, Priority.Urgencies)
-                    ?? Allowed.Check("Code de résolution", dto.ResolutionCode, Incident.ResolutionCodes, optional: true);
+                    ?? Allowed.Check("Code de résolution", dto.ResolutionCode, Incident.ResolutionCodes, optional: true)
+                    ?? Allowed.Check("Motif d'attente", dto.OnHoldReason, Incident.OnHoldReasons, optional: true);
         if (error is not null) return error;
 
         // INC-13 : seul un gestionnaire déclare ou retire le caractère majeur.
@@ -46,6 +47,7 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         e.Resolution = dto.Resolution;
         e.ResolutionCode = string.IsNullOrEmpty(dto.ResolutionCode) ? null : dto.ResolutionCode;
         e.ReopenReason = string.IsNullOrWhiteSpace(dto.ReopenReason) ? null : dto.ReopenReason.Trim();
+        e.OnHoldReason = string.IsNullOrEmpty(dto.OnHoldReason) ? null : dto.OnHoldReason;
         // INC-27 : début constaté, jamais postérieur à la déclaration.
         e.OccurredAt = Dates.Utc(dto.OccurredAt);
         if (e.OccurredAt > (creating ? DateTime.UtcNow : e.CreatedAt).AddMinutes(5))
@@ -64,6 +66,11 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
 
     protected override async Task<string?> CheckStatusAsync(Incident e, string status)
     {
+        // INC-07 : l'attente est motivée (motif fermé) ; vérifié à l'entrée En attente, pour qu'un
+        // incident déjà en attente avant la règle reste modifiable.
+        if (status == "En attente" && e.Status != "En attente" && e.OnHoldReason is null)
+            return $"Choisir le motif de l'attente : {string.Join(", ", Incident.OnHoldReasons)}.";
+
         // INC-06 : la prise en charge suppose un responsable, utilisateur ou groupe.
         if (status == "En cours" && string.IsNullOrWhiteSpace(e.OwnerId))
             return "Désigner un responsable (utilisateur ou groupe) pour prendre l'incident en charge.";
@@ -93,7 +100,22 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
     {
         await ServiceCatalog.ResolveAsync(Db, e);   // SLM-10, INC-20
         var entry = Db.Entry(e);
-        if (creating || entry.Property(x => x.Priority).IsModified || entry.Property(x => x.AffectedService).IsModified
+        // INC-22 : l'horloge SLA s'arrête En attente ; à la reprise, l'attente (en heures de
+        // service) prolonge les échéances. Le motif ne vaut que pendant l'attente (INC-07).
+        var from = creating ? null : entry.Property(x => x.Status).OriginalValue;
+        var resumed = false;
+        if (e.Status == "En attente" && from != "En attente") e.OnHoldSince = DateTime.UtcNow;
+        else if (from == "En attente" && e.Status != "En attente")
+        {
+            if (e.OnHoldSince is { } since)
+            {
+                var held = (await IncidentSla.CalendarAsync(Db, e.ServiceId)).Between(since, DateTime.UtcNow);
+                e.HeldMinutes += (int)Math.Round(held.TotalMinutes);
+            }
+            e.OnHoldSince = null; resumed = true;
+        }
+        if (e.Status != "En attente") e.OnHoldReason = null;
+        if (creating || resumed || entry.Property(x => x.Priority).IsModified || entry.Property(x => x.AffectedService).IsModified
             || entry.Property(x => x.ServiceId).IsModified || e.ResolutionDueAt is null)
         {
             e.ResolutionDueAt = await IncidentSla.DueAsync(Db, e);

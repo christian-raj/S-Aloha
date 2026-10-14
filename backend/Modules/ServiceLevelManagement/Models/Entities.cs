@@ -17,7 +17,17 @@ public class ItService : Record
     public static readonly string[] Criticalities = ["Faible", "Moyenne", "Élevée"];
 
     [MaxLength(10)] public string Criticality { get; set; } = "Moyenne";
-    [MaxLength(150)] public string ServiceHours { get; set; } = "";    // ex. Lun–Ven 8h–18h
+    [MaxLength(150)] public string ServiceHours { get; set; } = "";    // ex. Lun–Ven 8h–18h (libellé)
+    // SLM-14 : heures de service structurées (ServiceCalendar) ; toutes vides : 24 h/24, 7 j/7.
+    [MaxLength(20)] public string WorkingDays { get; set; } = "";      // « 1,2,3,4,5 » (1 = lundi)
+    [MaxLength(5)] public string? OpeningTime { get; set; }           // « 08:00 »
+    [MaxLength(5)] public string? ClosingTime { get; set; }           // « 18:00 »
+    [MaxLength(2000)] public string Holidays { get; set; } = "";      // « 2026-12-25 2027-01-01 »
+    [MaxLength(64)] public string? TimeZone { get; set; }             // IANA, UTC par défaut
+
+    public SAloha.Api.Core.Itil.ServiceCalendar Calendar() =>
+        SAloha.Api.Core.Itil.ServiceCalendar.Parse(WorkingDays, OpeningTime, ClosingTime, Holidays, TimeZone).Calendar
+        ?? SAloha.Api.Core.Itil.ServiceCalendar.AlwaysOpen;
     public List<ServiceLevelAgreement> Agreements { get; set; } = new();
 }
 
@@ -70,7 +80,8 @@ public class AgreementReview
 
 public record ItServiceDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
-    string? Criticality, string? ServiceHours, int? PerimeterId = null) : IRecordDto;
+    string? Criticality, string? ServiceHours, int? PerimeterId = null,
+    string? WorkingDays = null, string? OpeningTime = null, string? ClosingTime = null, string? Holidays = null, string? TimeZone = null) : IRecordDto;
 
 public record ServiceLevelAgreementDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
