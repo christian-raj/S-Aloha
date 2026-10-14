@@ -36,8 +36,14 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
             var filter = string.Format(config["Ldap:UserFilter"] ?? "(sAMAccountName={0})", EscapeFilter(username));
             var search = svc.Search(BaseDn, LdapConnection.ScopeSub, filter,
                 new[] { "distinguishedName", "sAMAccountName", "displayName", "memberOf" }, false);
-            if (!search.HasMore()) return null;
-            var entry = search.Next();
+            // Les référents d'un AD (Configuration, DomainDnsZones…) ne sont pas des comptes.
+            LdapEntry? entry = null;
+            while (entry is null && search.HasMore())
+            {
+                try { entry = search.Next(); }
+                catch (LdapReferralException) { }
+            }
+            if (entry is null) return null;
 
             // vérifie le mot de passe par un bind avec le DN de l'utilisateur
             using (var userConn = Connect(entry.Dn, password)) { }
@@ -67,12 +73,20 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
         using var svc = ServiceConnect();
         var filter = string.Format(config["Ldap:UserFilter"] ?? "(sAMAccountName={0})", EscapeFilter(username));
         var search = svc.Search(BaseDn, LdapConnection.ScopeSub, filter, new[] { "memberOf" }, false);
-        if (!search.HasMore()) return null;
-        var groups = GetAttrValues(search.Next(), "memberOf")
-            .Select(dn => dn.Split(',')[0].Replace("CN=", "", StringComparison.OrdinalIgnoreCase))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var role = ResolveRole(groups);
-        return role is null ? null : new DirectoryAccount(role, groups);
+        while (search.HasMore())
+        {
+            LdapEntry entry;
+            // Un AD renvoie des référents (DomainDnsZones…) : les ignorer, comme Search. Sans
+            // cela, un compte inexistant levait une exception, prise pour un annuaire injoignable.
+            try { entry = search.Next(); }
+            catch (LdapReferralException) { continue; }
+            var groups = GetAttrValues(entry, "memberOf")
+                .Select(dn => dn.Split(',')[0].Replace("CN=", "", StringComparison.OrdinalIgnoreCase))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var role = ResolveRole(groups);
+            return role is null ? null : new DirectoryAccount(role, groups);
+        }
+        return null;
     }
 
     private string? ResolveRole(HashSet<string> groups)
