@@ -129,11 +129,18 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
 
     // Le registre n'affiche pas les plans : ils restent dans la fiche.
     protected override async Task<IEnumerable<object>> ListItems(IQueryable<Change> q) =>
-        await q.Select(c => new
+        (await q.Select(c => new
         {
             c.Id, c.Reference, c.Title, c.Status, c.ChangeType, c.Risk, c.PlannedStart, c.PlannedEnd,
-            c.OwnerId, c.OwnerDisplayName, c.CreatedAt
-        }).ToListAsync();
+            c.ActualEnd, c.OwnerId, c.OwnerDisplayName, c.CreatedAt
+        }).ToListAsync())
+        // CHG-14 : dépassement de la fin planifiée, aussi au registre (calculé après lecture).
+        .Select(c => new
+        {
+            c.Id, c.Reference, c.Title, c.Status, c.ChangeType, c.Risk, c.PlannedStart, c.PlannedEnd,
+            c.ActualEnd, c.OwnerId, c.OwnerDisplayName, c.CreatedAt,
+            Overrun = new Change { PlannedEnd = c.PlannedEnd, ActualEnd = c.ActualEnd, Status = c.Status }.Overrun
+        });
 
     /// <summary>Calendrier des changements : changements planifiés non rejetés, à partir d'une date.</summary>
     [HttpGet("schedule")]

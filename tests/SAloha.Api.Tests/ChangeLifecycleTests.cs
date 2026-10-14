@@ -84,6 +84,9 @@ public class ChangeLifecycleTests(ApiFixture api)
         // Fini une heure après la fin planifiée : dépassement signalé.
         var closed = await Json(await r.PutAsJsonAsync(url, Change("Normal", "Clos", Slot, Slot.AddHours(3), "Réussi")));
         Assert.True(closed.GetProperty("overrun").GetBoolean());
+        // Aussi au registre.
+        var listed = (await Json(await r.GetAsync("/api/changes"))).EnumerateArray().Single(c => Id(c) == Id(closed));
+        Assert.True(listed.GetProperty("overrun").GetBoolean());
     }
 
     [Fact]

@@ -39,7 +39,7 @@ export const changeConfig = {
   columns: [
     { h: 'Type', v: r => r.changeType },
     { h: 'Risque', v: r => r.risk },
-    { h: 'Début planifié', v: r => dateTimeFr(r.plannedStart) },
+    { h: 'Début planifié', v: r => <>{dateTimeFr(r.plannedStart)}{r.overrun && <span className="badge t-bad" style={{ marginLeft: 6 }}>Dépassement</span>}</>},
   ],
   meta: r => [r.authorizedAt && `Autorisé par ${r.authorizedBy} le ${dateTimeFr(r.authorizedAt)}`,
     r.overrun && `Dépassement : fin planifiée le ${dateTimeFr(r.plannedEnd)}${r.actualEnd ? `, fin réelle le ${dateTimeFr(r.actualEnd)}` : ''}`],
