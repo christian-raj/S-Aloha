@@ -943,6 +943,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<DateTime?>("FirstResponseAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("HeldMinutes")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Impact")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -952,6 +955,13 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OnHoldReason")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime?>("OnHoldSince")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("OwnerChanged")
@@ -2086,6 +2096,10 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ClosingTime")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2107,6 +2121,15 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("Holidays")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("OpeningTime")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
 
                     b.Property<string>("OwnerDisplayName")
                         .HasMaxLength(250)
@@ -2138,6 +2161,10 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<string>("TimeZone")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -2145,6 +2172,11 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("WorkingDays")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
 

@@ -92,6 +92,7 @@ function Field({ fd, form, onChange, disabled }) {
         </select>)
       break
     case 'date': input = <input type="date" value={v} onChange={set} disabled={disabled} />; break
+    case 'time': input = <input type="time" value={v} onChange={set} disabled={disabled} />; break
     case 'datetime': input = <input type="datetime-local" value={v} onChange={set} disabled={disabled} />; break
     case 'number': input = <input type="number" step="any" value={v} onChange={set} disabled={disabled} />; break
     case 'checkbox':

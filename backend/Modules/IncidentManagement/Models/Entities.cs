@@ -48,10 +48,16 @@ public class Incident : Record, IServiceBound
     /// <summary>INC-23 : résolu sans passer par En cours ni changer de responsable ; null tant que non résolu.</summary>
     public bool? FirstContactResolution { get; set; }
     public string? ReopenReason { get; set; }                            // INC-11 : motif de réouverture
+    /// <summary>INC-07 : motifs d'attente (valeurs fermées).</summary>
+    public static readonly string[] OnHoldReasons = ["Attente utilisateur", "Attente fournisseur", "Attente changement"];
+    [MaxLength(30)] public string? OnHoldReason { get; set; }            // INC-07
+    public DateTime? OnHoldSince { get; set; }                           // INC-22 : début de l'attente en cours
+    public int HeldMinutes { get; set; }                                 // INC-22 : attente cumulée, en minutes de service
 }
 
 public record IncidentDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? Impact, string? Urgency, string? Category, string? AffectedService,
     bool IsMajor, string? Resolution, string? ResolutionCode = null,
-    string? ReopenReason = null, DateTime? OccurredAt = null, int? PerimeterId = null, int? ServiceId = null) : IRecordDto;
+    string? ReopenReason = null, DateTime? OccurredAt = null, int? PerimeterId = null, int? ServiceId = null,
+    string? OnHoldReason = null) : IRecordDto;

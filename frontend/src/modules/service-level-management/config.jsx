@@ -13,7 +13,13 @@ export const serviceConfig = {
   fields: [
     titleField('Nom du service', 'Ex. : Messagerie'),
     { key: 'criticality', label: 'Criticité', type: 'select', options: ['Faible', 'Moyenne', 'Élevée'], required: true, default: 'Moyenne' },
-    { key: 'serviceHours', label: 'Heures de service', placeholder: 'Ex. : Lun–Ven 7h–19h' },
+    { key: 'serviceHours', label: 'Heures de service (libellé)', placeholder: 'Ex. : Lun–Ven 7h–19h' },
+    // SLM-14 : heures de service structurées ; tout vide = 24 h/24, 7 j/7. Les délais SLA s'y comptent.
+    { key: 'workingDays', label: 'Jours ouvrés', placeholder: '1,2,3,4,5 (1 = lundi … 7 = dimanche) ; vide : tous' },
+    { key: 'openingTime', label: 'Ouverture', type: 'time' },
+    { key: 'closingTime', label: 'Fermeture', type: 'time' },
+    { key: 'timeZone', label: 'Fuseau horaire', placeholder: 'Europe/Paris, Indian/Antananarivo… (UTC par défaut)' },
+    { key: 'holidays', label: 'Jours fériés', type: 'textarea', rows: 2, placeholder: 'AAAA-MM-JJ, un par ligne ou séparés par des espaces' },
     ownerField('Responsable du service'),
     descriptionField('Description', 'Ce que le service apporte aux utilisateurs', 3),
   ],

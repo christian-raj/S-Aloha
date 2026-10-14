@@ -37,7 +37,8 @@ public class DatedEvents(AppDbContext db, Notifier notify)
         // INC-18 : SLA dépassé, ou incident P1 ouvert → responsable et gestionnaires.
         foreach (var i in await db.Incidents.AsNoTracking().Where(i => !Incident.Done.Contains(i.Status)).ToListAsync())
         {
-            if (i.ResolutionDueAt is { } due)
+            // INC-22 : horloge arrêtée En attente : ni risque ni dépassement relevés pendant l'attente.
+            if (i.Status != "En attente" && i.ResolutionDueAt is { } due)
             {
                 if (now > due && Fresh("incident", i.Id, "SLA dépassé"))
                 {

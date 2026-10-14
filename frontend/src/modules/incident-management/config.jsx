@@ -27,6 +27,9 @@ export const incidentConfig = {
       placeholder: 'Obligatoire pour passer à Résolu ou Clos.' },
     { key: 'resolutionCode', label: 'Code de résolution', type: 'select', create: false,
       options: ['Correctif appliqué', 'Contournement', 'Résolu sans action', 'Non reproductible', 'Doublon'] },
+    // INC-07 : motif obligatoire pour passer En attente ; l'horloge SLA s'arrête pendant l'attente (INC-22).
+    { key: 'onHoldReason', label: 'Motif d\'attente', type: 'select', create: false,
+      options: ['Attente utilisateur', 'Attente fournisseur', 'Attente changement'] },
     { key: 'reopenReason', label: 'Motif de réouverture', type: 'textarea', create: false, rows: 2,
       placeholder: 'Obligatoire pour rouvrir un incident résolu.' },
   ],
@@ -44,7 +47,9 @@ export const incidentConfig = {
     r.firstResponseAt && `Pris en charge le ${dateTimeFr(r.firstResponseAt)}`,
     !r.resolvedAt && r.resolutionDueAt && `Résolution attendue avant le ${dateTimeFr(r.resolutionDueAt)}`,
     r.resolvedAt && `Résolu le ${dateTimeFr(r.resolvedAt)}`,
-    r.reopenCount > 0 && `Rouvert ${r.reopenCount} fois`],
-  help: 'Prise en charge (En cours) : un responsable. Résolution : description et code ; un doublon est relié à l\'incident conservé (onglet Liens). Réouverture : un motif, dans les 10 jours ouvrés. Incident majeur : déclaré par un gestionnaire.',
+    r.reopenCount > 0 && `Rouvert ${r.reopenCount} fois`,
+    r.status === 'En attente' && r.onHoldSince && `En attente depuis le ${dateTimeFr(r.onHoldSince)} (horloge SLA suspendue)`,
+    r.heldMinutes > 0 && `Attente cumulée : ${Math.round(r.heldMinutes / 6) / 10} h de service`],
+  help: 'Prise en charge (En cours) : un responsable. Attente : un motif ; l\'horloge SLA s\'arrête et reprend au retour En cours. Résolution : description et code ; un doublon est relié à l\'incident conservé (onglet Liens). Réouverture : un motif, dans les 10 jours ouvrés. Incident majeur : déclaré par un gestionnaire.',
   linkHint: 'Problème sous-jacent, CI touchés, article de connaissance appliqué…',
 }

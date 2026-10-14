@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Heures de service** : chaque service porte ses jours ouvrés, sa plage horaire, ses jours
+  fériés et son fuseau ; les échéances SLA des incidents s'y comptent (SLM-14, INC-22).
+  **Attente motivée** : passer un incident En attente exige un motif (utilisateur,
+  fournisseur, changement) ; l'horloge SLA s'arrête pendant l'attente et les échéances en
+  sont prolongées à la reprise (INC-07, INC-22). Migration `ServiceHoursOnHold`.
+
 - **Service du catalogue** sur les incidents, problèmes et demandes : choisi dans une liste au
   lieu d'un texte libre, son nom recopié pour l'affichage et le reporting ; l'échéance SLA de
   l'incident suit ce service (SLM-10, INC-20) ; un service retiré ne se choisit plus pour un

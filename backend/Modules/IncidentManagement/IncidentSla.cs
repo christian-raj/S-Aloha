@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
+using SAloha.Api.Core.Itil;
 
 namespace SAloha.Api.Modules.IncidentManagement;
 
@@ -8,8 +9,7 @@ namespace SAloha.Api.Modules.IncidentManagement;
 /// résolution de sa priorité dans le SLA En vigueur de son service.
 /// Le service est celui du catalogue (INC-20, `ServiceId`) ; un libellé inconnu du
 /// catalogue n'a pas de SLA. Délais en heures
-/// calendaires : heures de service et suspension En attente viendront avec
-/// INC-22. Sans SLA applicable : pas d'échéance.
+/// de service du service (SLM-14), hors temps En attente (INC-22). Sans SLA applicable : pas d'échéance.
 /// </summary>
 public static class IncidentSla
 {
@@ -32,8 +32,16 @@ public static class IncidentSla
             : await agreements.Select(a => e.Priority == "P1" ? a.ResolutionHoursP1 : e.Priority == "P2" ? a.ResolutionHoursP2
                        : e.Priority == "P3" ? a.ResolutionHoursP3 : a.ResolutionHoursP4)
                 .Where(h => h != null).MinAsync(h => (int?)h);
-        return hours is null ? null : at.AddHours(hours.Value);
+        if (hours is null) return null;
+        // INC-22 : délai compté en heures de service (SLM-14), prolongé du temps passé En attente.
+        var calendar = await CalendarAsync(db, serviceId);
+        return calendar.Add(at, TimeSpan.FromHours(hours.Value) + TimeSpan.FromMinutes(e.HeldMinutes));
     }
+
+    /// <summary>SLM-14 : heures de service du service ; 24 h/24 sans service ni calendrier.</summary>
+    public static async Task<ServiceCalendar> CalendarAsync(AppDbContext db, int? serviceId) =>
+        serviceId is null ? ServiceCalendar.AlwaysOpen
+            : (await db.Services.AsNoTracking().FirstOrDefaultAsync(s => s.Id == serviceId))?.Calendar() ?? ServiceCalendar.AlwaysOpen;
 
     /// <summary>Au démarrage : échéance des incidents antérieurs à INC-21 (ou dont le SLA est apparu depuis).</summary>
     public static async Task BackfillAsync(AppDbContext db)
