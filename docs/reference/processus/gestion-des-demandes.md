@@ -33,7 +33,8 @@ une modification non standard du SI (→ [changement](habilitation-des-changemen
 | Soumettre, modifier, traiter une demande approuvée | ✔ | ✔ | ✔ | ✅ |
 | Approuver / rejeter | ✘ | ✔ | ✔ | ✅ |
 | Annuler sa propre demande avant traitement | Demandeur | ✔ | ✔ | ✅ REQ-09 |
-| Tenir le catalogue de demandes | ✘ | ✔ | ✔ | 🔜 REQ-20 |
+| Tenir le catalogue de demandes | ✘ | ✔ | ✔ | ✅ REQ-20 |
+| Modifier l'échéance d'une demande issue d'un modèle | ✘ | ✔ | ✔ | ✅ REQ-22 |
 | Supprimer | ✘ | ✘ | ✔ | ✅ |
 
 ## 3. Données
@@ -43,19 +44,20 @@ créateur = demandeur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 
 | Champ | Type | Oblig. | Valeurs / règle | Statut |
 |---|---|---|---|---|
-| `RequestedItem` | texte 200 | ✔ | Objet demandé ; repris du modèle (🔜) | ✅ |
+| `RequestedItem` | texte 200 | ✔ | Objet demandé ; repris du modèle s'il est vide | ✅ |
 | `ServiceId`, `AffectedService` | lien, texte 150 | | Service du catalogue concerné et son nom recopié ([SLM-10](gestion-des-niveaux-de-service.md)) | ✅ |
 | `RequestedFor`, `RequestedForDisplayName` | AD | | Bénéficiaire ; par défaut le demandeur (🔜) | ✅ |
-| `DueDate` | date | | Échéance souhaitée ; calculée depuis le modèle (🔜 REQ-22) | ✅ |
+| `DueDate` | date | | Échéance : calculée depuis le modèle à l'approbation (REQ-22) ; souhaitée, sans modèle à délai cible | ✅ |
 | `ApprovedBy`, `ApprovedAt` | texte, date | auto | Approbation (SOC-08) | ✅ |
 | `FulfilledAt`, `ClosedAt` | date UTC | auto | Satisfaction, clôture | ✅ |
-| `CatalogItemId` | lien | ✔ (🔜) | Modèle du catalogue de demandes | 🔜 REQ-20 |
+| `CatalogItemId` | lien | | Modèle du catalogue de demandes, choisi à la création ; sans modèle, demande libre (objet demandé obligatoire) | ✅ REQ-20 |
 | `RejectionReason` | texte | au rejet | Motif communiqué au demandeur | ✅ |
 | `CancelledAt` | date UTC | auto | Annulation | ✅ REQ-09 |
 
-**Modèle de demande** (`RequestCatalogItems`, 🔜 REQ-20) : nom, description, service du
-catalogue, approbation requise (oui/non), délai cible (heures de service), groupe
-d'exécution (AD), tâches prédéfinies, actif/inactif.
+**Modèle de demande** (`RequestCatalogItems`, ✅ REQ-20) : nom (objet demandé), description,
+service du catalogue, approbation requise (oui/non), délai cible (heures de service), groupe
+d'exécution (AD), actif/inactif ; tâches prédéfinies 🔜 REQ-24. Un modèle se désactive plutôt
+que de se supprimer (suppression refusée tant qu'une demande en vient).
 
 **Tâche d'exécution** (`RequestTasks`, 🔜 REQ-24) : titre, responsable AD, statut (À faire,
 En cours, Terminée, Annulée), ordre.
@@ -89,7 +91,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | De → Vers | Qui | Conditions (400 sinon) | Effets | Statut |
 |---|---|---|---|---|
 | — → Soumise | Tous | Titre, objet demandé | Référence | ✅ |
-| — → Approuvée | Auto | Modèle sans approbation | `ApprovedBy` = « Modèle pré-approuvé » | 🔜 REQ-21 |
+| — → Approuvée | Auto | Modèle sans approbation | `ApprovedBy` = « Modèle pré-approuvé » | ✅ REQ-21 |
 | Soumise → Approuvée | Manager | | `ApprovedAt`, `ApprovedBy` | ✅ |
 | Soumise → Rejetée | Manager | Motif de rejet | | ✅ (motif) |
 | Soumise, Approuvée → Annulée | Demandeur, Manager | Pas encore En cours | `CancelledAt` | ✅ REQ-09 |
@@ -120,10 +122,10 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| REQ-20 | **Catalogue de demandes** tenu par les gestionnaires : chaque demande se crée depuis un **modèle actif** ; l'objet demandé et le service en sont repris | 🔜 | 2 |
-| REQ-21 | Un modèle **sans approbation** crée la demande directement **Approuvée** (« Modèle pré-approuvé »), comme un changement standard | 🔜 | 2 |
-| REQ-22 | **Échéance** = soumission (ou approbation si requise) + délai cible du modèle, en heures de service (SLM-14) ; modifiable par un Manager seulement | 🔜 | 2 |
-| REQ-23 | Le **groupe d'exécution** du modèle devient le responsable de la demande approuvée | 🔜 | 2 |
+| REQ-20 | **Catalogue de demandes** tenu par les gestionnaires : chaque demande se crée depuis un **modèle actif** ; l'objet demandé et le service en sont repris | ✅ (page « Catalogue de demandes » ; modèle choisi à la création, objet et service repris ; sans modèle, demande libre) | |
+| REQ-21 | Un modèle **sans approbation** crée la demande directement **Approuvée** (« Modèle pré-approuvé »), comme un changement standard | ✅ | |
+| REQ-22 | **Échéance** = soumission (ou approbation si requise) + délai cible du modèle, en heures de service (SLM-14) ; modifiable par un Manager seulement | ✅ (calculée à l'approbation, ou à la création pré-approuvée, dans le calendrier du service du modèle) | |
+| REQ-23 | Le **groupe d'exécution** du modèle devient le responsable de la demande approuvée | ✅ (si la demande n'a pas encore de responsable) | |
 | REQ-24 | **Tâches d'exécution** : les tâches prédéfinies du modèle sont créées à l'approbation, chacune avec son responsable ; on peut en ajouter | 🔜 | 3 |
 | REQ-25 | **Satisfaite** exige que toutes les tâches soient Terminée ou Annulée | 🔜 | 3 |
 
@@ -131,7 +133,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| REQ-30 | Une demande est **en retard** si son échéance est passée et qu'elle n'est ni Satisfaite, ni Close, ni Rejetée, ni Annulée ; même règle de date que PRB-19 (en retard le lendemain) | 🔜 | 2 |
+| REQ-30 | Une demande est **en retard** si son échéance est passée et qu'elle n'est ni Satisfaite, ni Close, ni Rejetée, ni Annulée ; même règle de date que PRB-19 (en retard le lendemain) | ✅ (`overdue` sur la fiche et le registre ; console, Relances des gestionnaires ; notification au responsable et aux gestionnaires, une fois) | |
 | REQ-31 | Notifications (SOC-21) : soumission → approbateurs ; approbation ou rejet → demandeur ; affectation → responsable ; satisfaction → demandeur et bénéficiaire | ✅ | |
 | REQ-32 | **Enquête de satisfaction** à la clôture (note 1 à 5, commentaire), facultative | 🔜 | 3 |
 
@@ -139,15 +141,15 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
-| Demande → Service | Service du catalogue concerné | REQ-20 | 🔜 |
+| Demande → Service | Service du catalogue concerné | REQ-20, SLM-10 | ✅ |
 | Demande → Changement | Besoin non standard | REQ-12 | ✅ (lien manuel) / 🔜 |
 | Demande → CI | Matériel ou logiciel fourni | Lien manuel | ✅ |
 | Demande → Article | Procédure d'exécution | Lien manuel | ✅ |
 
 ## 8. Console et indicateurs
 
-Console ✅ : demandes Soumise dans « Décisions » (gestionnaires) ; mes demandes ouvertes
-(Mon travail). À venir : demandes en retard (Relances, REQ-30), demandes approuvées non
+Console ✅ : demandes Soumise dans « Décisions » (gestionnaires) ; demandes en retard
+(Relances, gestionnaires, REQ-30) ; mes demandes ouvertes (Mon travail). À venir : demandes approuvées non
 prises en charge depuis plus d'un jour ouvré (Relances, lot 2).
 
 | Indicateur | Calcul | Statut |
@@ -165,7 +167,9 @@ prises en charge depuis plus d'un jour ouvré (Relances, lot 2).
 | `GET /api/requests` (filtres `status`, `q`, `owner`), `GET /api/requests/{id}` | User | Registre, fiche |
 | `POST /api/requests`, `PUT /api/requests/{id}` | User (Approuvée/Rejetée : Manager) | Création, modification, transitions |
 | `DELETE /api/requests/{id}` | Admin | Suppression |
-| `GET/POST/PUT /api/request-catalog[/{id}]` | User (lecture), Manager (écriture) | Catalogue de demandes — 🔜 REQ-20 |
+| `GET /api/request-catalog` (`?all=true` : désactivés compris), `GET /api/request-catalog/{id}` | User | Catalogue de demandes (REQ-20) |
+| `POST/PUT /api/request-catalog[/{id}]` | Manager | Tenue du catalogue |
+| `DELETE /api/request-catalog/{id}` | Admin | Suppression d'un modèle dont aucune demande ne vient |
 
 ## 10. Scénarios d'acceptation
 

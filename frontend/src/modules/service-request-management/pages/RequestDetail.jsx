@@ -1,9 +1,8 @@
 import React from 'react'
 import RecordDetail from '../../../core/components/RecordDetail'
-import { requestConfig } from '../config'
-import { useServiceConfig } from '../../../core/useServices'
+import useRequestConfig from '../useRequestConfig'
 
 export default function RequestDetail() {
-  const config = useServiceConfig(requestConfig, 'requestedItem')
+  const config = useRequestConfig()
   return config ? <RecordDetail config={config} /> : <p>Chargement…</p>
 }

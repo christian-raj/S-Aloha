@@ -16,9 +16,10 @@ export const requestConfig = {
   ],
   fields: [
     titleField('Titre', 'Ex. : Accès VPN pour un nouvel arrivant'),
-    { key: 'requestedItem', label: 'Objet demandé', required: true, placeholder: 'Accès VPN, poste portable, licence…' },
+    { key: 'requestedItem', label: 'Objet demandé', placeholder: 'Repris du modèle s\'il est vide ; sinon : accès VPN, poste portable…' },
     { key: 'requestedFor', nameKey: 'requestedForDisplayName', label: 'Bénéficiaire', type: 'person' },
-    { key: 'dueDate', label: 'Échéance souhaitée', type: 'date' },
+    // REQ-22 : calculée depuis le modèle à l'approbation ; ensuite, un gestionnaire seulement la modifie.
+    { key: 'dueDate', label: 'Échéance', type: 'date' },
     ownerField('Traitée par'),
     descriptionField('Précisions'),
     { key: 'rejectionReason', label: 'Motif de rejet', type: 'textarea', rows: 2, create: false,
@@ -27,9 +28,17 @@ export const requestConfig = {
   columns: [
     { h: 'Objet demandé', v: r => r.requestedItem },
     { h: 'Bénéficiaire', v: r => r.requestedForDisplayName || '—' },
-    { h: 'Échéance', v: r => dateFr(r.dueDate) },
+    // REQ-30 : en retard le lendemain de l'échéance.
+    { h: 'Échéance', v: r => <span style={r.overdue ? { color: 'var(--danger)', fontWeight: 700 } : {}}>{dateFr(r.dueDate)}{r.overdue && ' ⚠'}</span> },
   ],
-  meta: r => [r.approvedAt && `Approuvée par ${r.approvedBy} le ${dateTimeFr(r.approvedAt)}`],
-  help: 'Une demande est approuvée (ou rejetée) par un gestionnaire avant d\'être traitée.',
+  meta: r => [r.approvedAt && `Approuvée par ${r.approvedBy} le ${dateTimeFr(r.approvedAt)}`,
+    r.overdue && `En retard : échéance du ${dateFr(r.dueDate)} dépassée`],
+  help: 'Une demande se crée depuis un modèle du catalogue, qui en donne l\'objet, le service, le délai et le groupe qui la traite. Elle est approuvée (ou rejetée) par un gestionnaire avant d\'être traitée, sauf modèle pré-approuvé.',
   linkHint: 'Service du catalogue concerné, changement standard déclenché…',
 }
+
+/** REQ-20 : choix du modèle à la création (modèles actifs du catalogue). */
+export const catalogField = items => ({
+  key: 'catalogItemId', label: 'Modèle du catalogue', type: 'select', numeric: true, onlyCreate: true,
+  options: items.map(i => ({ value: i.id, label: i.requiresApproval ? i.name : `${i.name} (pré-approuvé)` })),
+})

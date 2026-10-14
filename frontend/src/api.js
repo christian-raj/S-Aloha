@@ -78,6 +78,13 @@ export const api = {
     removeRelation: (relId) => request('/configuration-items/relations/' + relId, { method: 'DELETE' })
   },
   services: records('/services'),
+  // REQ-20 : catalogue de demandes (modèles).
+  requestCatalog: {
+    list: (all = false) => request('/request-catalog' + (all ? '?all=true' : '')),
+    create: dto => request('/request-catalog', { method: 'POST', body: JSON.stringify(dto) }),
+    update: (id, dto) => request('/request-catalog/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+    remove: id => request('/request-catalog/' + id, { method: 'DELETE' })
+  },
   agreements: {
     ...records('/agreements'),
     review: (id, dto) => request(`/agreements/${id}/reviews`, { method: 'POST', body: JSON.stringify(dto) }),

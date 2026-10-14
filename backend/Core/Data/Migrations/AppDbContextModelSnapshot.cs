@@ -2307,6 +2307,58 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.ToTable("Agreements");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.RequestCatalogItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("FulfillmentGroup")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("RequiresApproval")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TargetHours")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("RequestCatalogItems");
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.ServiceRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -2329,6 +2381,9 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.Property<DateTime?>("CancelledAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CatalogItemId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("ClosedAt")
                         .HasColumnType("timestamp with time zone");
@@ -2409,6 +2464,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CatalogItemId");
 
                     b.HasIndex("PerimeterId");
 
@@ -2720,8 +2777,21 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.RequestCatalogItem", b =>
+                {
+                    b.HasOne("SAloha.Api.Modules.ServiceLevelManagement.ItService", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.ServiceRequest", b =>
                 {
+                    b.HasOne("SAloha.Api.Modules.ServiceRequestManagement.RequestCatalogItem", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
                         .WithMany()
                         .HasForeignKey("PerimeterId")

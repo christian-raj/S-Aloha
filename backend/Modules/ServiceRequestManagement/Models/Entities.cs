@@ -36,10 +36,38 @@ public class ServiceRequest : Record, IServiceBound
     public DateTime? FulfilledAt { get; set; }
     public DateTime? ClosedAt { get; set; }
     public DateTime? CancelledAt { get; set; }                            // REQ-09 : annulation par le demandeur
+    public int? CatalogItemId { get; set; }                               // REQ-20 : modèle du catalogue de demandes
+
+    /// <summary>REQ-30 : en retard le lendemain de l'échéance, tant qu'elle n'est ni satisfaite, ni close, ni rejetée, ni annulée.</summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public bool Overdue => DueDate is { } due && due.Date < DateTime.UtcNow.Date && !Done.Contains(Status);
 }
 
 public record ServiceRequestDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? RequestedItem, string? RequestedFor, string? RequestedForDisplayName,
     DateTime? DueDate, string? RejectionReason = null, int? PerimeterId = null,
-    int? ServiceId = null, string? AffectedService = null) : IRecordDto;
+    int? ServiceId = null, string? AffectedService = null, int? CatalogItemId = null) : IRecordDto;
+
+/// <summary>
+/// REQ-20 : modèle du catalogue de demandes, tenu par les gestionnaires — objet demandé,
+/// service du catalogue, approbation requise (REQ-21), délai cible en heures de service
+/// (REQ-22), groupe d'exécution AD (REQ-23), actif ou non.
+/// </summary>
+public class RequestCatalogItem
+{
+    public int Id { get; set; }
+    [MaxLength(200)] public string Name { get; set; } = "";
+    [MaxLength(2000)] public string Description { get; set; } = "";
+    public int? ServiceId { get; set; }
+    public bool RequiresApproval { get; set; } = true;
+    public int? TargetHours { get; set; }
+    [MaxLength(200)] public string? FulfillmentGroup { get; set; }
+    public bool Active { get; set; } = true;
+    [MaxLength(200)] public string CreatedBy { get; set; } = "";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+public record RequestCatalogItemDto(string Name, string? Description, int? ServiceId, bool RequiresApproval,
+    int? TargetHours, string? FulfillmentGroup, bool Active = true);

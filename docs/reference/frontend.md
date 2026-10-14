@@ -98,7 +98,7 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/problems/:id` | `modules/problem-management/pages/ProblemDetail` | Pratiques › Problèmes |
 | `/actions` | `modules/problem-management/pages/Actions` | Pratiques › Problèmes |
 | `/incidents`, `/incidents/:id` | `modules/incident-management/pages/*` | Pratiques › Incidents |
-| `/requests`, `/requests/:id` | `modules/service-request-management/pages/*` | Pratiques › Demandes |
+| `/requests`, `/requests/:id`, `/requests/catalog` | `modules/service-request-management/pages/*` (registre, fiche, catalogue de demandes) | Pratiques › Demandes |
 | `/changes`, `/changes/schedule`, `/changes/:id` | `modules/change-enablement/pages/*` | Pratiques › Changements |
 | `/configuration`, `/configuration/:id` | `modules/service-configuration-management/pages/*` | Pratiques › Configuration |
 | `/services`, `/services/:id`, `/agreements`, `/agreements/:id` | `modules/service-level-management/pages/*` | Pratiques › Niveaux de service |
@@ -221,7 +221,8 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | [Incidents](processus/gestion-des-incidents.md) | Registre des incidents | Tous | INC-01 | ✅ |
 | | Filtres prédéfinis du registre : mes incidents, non pris en charge, SLA en risque, majeurs | Tous | INC-06, INC-24, INC-12 | ✅ (filtres de base) / 🔜 |
 | [Demandes](processus/gestion-des-demandes.md) | Registre des demandes | Tous | REQ-01 | ✅ |
-| | Nouvelle demande **depuis le catalogue** (choix d'un modèle) | Tous | REQ-20 | 🔜 |
+| | Nouvelle demande **depuis le catalogue** (choix d'un modèle) | Tous | REQ-20 | ✅ |
+| | Catalogue de demandes (modèles) | Tous ; écriture Manager | REQ-20 | ✅ |
 | [Problèmes](processus/gestion-des-problemes.md) | Registre des problèmes | Tous | PRB-01 | ✅ |
 | | Actions correctives (suivi transverse) | Tous | PRB-15 | ✅ |
 | | Erreurs connues : sous-entrée `/problems?status=Erreur+connue` | Tous | PRB-11 | ✅ |

@@ -40,6 +40,10 @@ export const MODULES = [
   {
     id: 'request', label: 'Demandes', description: 'Demandes de service utilisateurs', status: 'active',
     href: '/requests', routes: ['/requests'],
+    pages: [
+      { href: '/requests', label: 'Registre des demandes' },
+      { href: '/requests/catalog', label: 'Catalogue de demandes' },
+    ],
   },
   {
     id: 'problem', label: 'Problèmes', description: 'Causes racines et erreurs connues', status: 'active',

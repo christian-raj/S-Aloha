@@ -14,6 +14,7 @@ import Actions from './modules/problem-management/pages/Actions'
 import Incidents from './modules/incident-management/pages/Incidents'
 import IncidentDetail from './modules/incident-management/pages/IncidentDetail'
 import Requests from './modules/service-request-management/pages/Requests'
+import RequestCatalog from './modules/service-request-management/pages/RequestCatalog'
 import RequestDetail from './modules/service-request-management/pages/RequestDetail'
 import Changes from './modules/change-enablement/pages/Changes'
 import ChangeDetail from './modules/change-enablement/pages/ChangeDetail'
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="incidents/:id" element={<IncidentDetail />} />
         {/* Pratique — Gestion des demandes de service */}
         <Route path="requests" element={<Requests />} />
+        <Route path="requests/catalog" element={<RequestCatalog />} />
         <Route path="requests/:id" element={<RequestDetail />} />
         {/* Pratique — Gestion des problèmes */}
         <Route path="problems" element={<Problems />} />

@@ -54,6 +54,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AssessmentResponse> AssessmentResponses => Set<AssessmentResponse>();
     public DbSet<AssessmentEvidence> AssessmentEvidences => Set<AssessmentEvidence>();
     public DbSet<AgreementReview> AgreementReviews => Set<AgreementReview>();
+    public DbSet<RequestCatalogItem> RequestCatalogItems => Set<RequestCatalogItem>();
     // Gestion de projet
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectPhase> ProjectPhases => Set<ProjectPhase>();
@@ -121,6 +122,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<Incident>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
         b.Entity<Problem>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
         b.Entity<ServiceRequest>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
+        // REQ-20 : modèle de la demande ; un service supprimé ne supprime pas le modèle.
+        b.Entity<ServiceRequest>().HasOne<RequestCatalogItem>().WithMany().HasForeignKey(x => x.CatalogItemId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<RequestCatalogItem>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
 
         // Index de recherche (ADR-0013) : plein texte « french » généré par
         // PostgreSQL sur le titre et le passage, index GIN.
