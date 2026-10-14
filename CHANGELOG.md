@@ -14,6 +14,14 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Catalogue de demandes** (REQ-20) : les gestionnaires tiennent des modèles (objet, service,
+  approbation requise, délai cible, groupe d'exécution) ; une demande se crée depuis un modèle,
+  qui en donne l'objet et le service. Un modèle **pré-approuvé** crée la demande Approuvée
+  (REQ-21) ; l'**échéance** est calculée à l'approbation en heures de service et seul un
+  gestionnaire la modifie (REQ-22) ; le **groupe d'exécution** devient responsable (REQ-23).
+  **Demandes en retard** marquées, relancées et listées dans la console (REQ-30). Migration
+  `RequestCatalog`.
+
 - **Incidents sort du MVP** : toutes les règles listées pour sa sortie sont en place (INC-07,
   INC-11, INC-13, INC-20 à INC-22, INC-24, INC-25) ; la mention **(MVP)** disparaît du README
   et de la cartographie.

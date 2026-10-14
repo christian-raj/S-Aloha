@@ -138,6 +138,12 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                 .Where(a => a.Status == "Publié" && a.ArchiveRequestedAt != null && (all || managed.Contains(a.PerimeterId))).OrderBy(a => a.ArchiveRequestedAt)
                 .Select(a => new Item("article", a.Id, a.Reference, a.Title, "Archivage demandé")).ToListAsync());
 
+            // REQ-30 : demandes en retard (le lendemain de l'échéance).
+            var overdueRequests = await db.ServiceRequests.AsNoTracking()
+                .Where(r => r.DueDate != null && r.DueDate < today && !ServiceRequest.Done.Contains(r.Status) && (all || managed.Contains(r.PerimeterId)))
+                .OrderBy(r => r.DueDate)
+                .Select(r => new Item("request", r.Id, r.Reference, r.Title, r.Status)).ToListAsync();
+
             // Revues échues : articles publiés et SLA en vigueur dont la date de revue est passée.
             var reviewsDue = new List<Item>();
             reviewsDue.AddRange(await db.KnowledgeArticles.AsNoTracking()
@@ -161,6 +167,7 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
             management = new { ToQualify = toQualify, InAnalysisNoRootCause = inAnalysisNoRootCause,
                                KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue,
                                MajorIncidents = majorIncidents, Decisions = decisions, ReviewsDue = reviewsDue,
+                               OverdueRequests = overdueRequests,
                                // INC-24 : incidents en risque ou hors délai des périmètres gérés.
                                SlaIncidents = slaOpen.Where(x => all || managed.Contains(x.i.PerimeterId))
                                    .Select(x => new Item("incident", x.i.Id, x.i.Reference, x.i.Title, x.State)).ToList() };

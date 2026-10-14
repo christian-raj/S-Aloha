@@ -4,6 +4,7 @@ using SAloha.Api.Modules.ChangeEnablement;
 using SAloha.Api.Modules.IncidentManagement;
 using SAloha.Api.Modules.ProblemManagement;
 using SAloha.Api.Modules.ServiceLevelManagement;
+using SAloha.Api.Modules.ServiceRequestManagement;
 
 namespace SAloha.Api.Core.Notifications;
 
@@ -110,6 +111,16 @@ public class DatedEvents(AppDbContext db, Notifier notify)
         {
             var ev = $"Évaluation à renouveler (échéance : {Day(a.NextAssessmentDate!.Value)})";
             if (Fresh("assessment", a.Id, ev)) notify.ToOwner(a, "assessment", ev);
+        }
+
+        // REQ-30 : demande en retard (le lendemain de l'échéance) → responsable et gestionnaires.
+        foreach (var r in await db.ServiceRequests.AsNoTracking()
+                     .Where(r => r.DueDate != null && r.DueDate < today && !ServiceRequest.Done.Contains(r.Status)).ToListAsync())
+        {
+            var ev = $"Demande en retard (échéance : {Day(r.DueDate!.Value)})";
+            if (!Fresh("request", r.Id, ev)) continue;
+            notify.ToOwner(r, "request", ev);
+            notify.ToManagers(r, "request", ev);
         }
 
         // SLM-04 : un SLA En vigueur passe Expiré le lendemain de sa fin de validité → gestionnaires.

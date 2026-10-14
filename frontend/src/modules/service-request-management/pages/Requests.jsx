@@ -1,9 +1,8 @@
 import React from 'react'
 import RecordList from '../../../core/components/RecordList'
-import { requestConfig } from '../config'
-import { useServiceConfig } from '../../../core/useServices'
+import useRequestConfig from '../useRequestConfig'
 
 export default function Requests() {
-  const config = useServiceConfig(requestConfig, 'requestedItem')
+  const config = useRequestConfig()
   return config ? <RecordList config={config} /> : <p>Chargement…</p>
 }
