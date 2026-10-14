@@ -77,7 +77,7 @@ AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
 |---|---|
 | **Gestion des problèmes** — cause racine, erreurs connues, actions correctives, gestionnaire du problème | ✅ Disponible |
 | **Incidents** — priorité P1–P4, incidents majeurs, échéances en heures de service et SLA en risque, ouverture d'un problème lié | ✅ Disponible |
-| **Demandes** — objet demandé, bénéficiaire, approbation avant traitement | ✅ Disponible (MVP) |
+| **Demandes** — catalogue de demandes et modèles pré-approuvés, bénéficiaire, approbation, échéance et groupe d'exécution | ✅ Disponible |
 | **Changements** — standard pré-autorisé, autorisation, retour arrière, calendrier | ✅ Disponible (MVP) |
 | **Configuration (CMDB)** — éléments de configuration, relations et impact, rattachement aux services, vérification | ✅ Disponible |
 | **Niveaux de service** — catalogue des services, SLA en heures de service, respect mesuré et alerte sous la cible, revues | ✅ Disponible |
