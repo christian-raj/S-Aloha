@@ -1,3 +1,4 @@
+using SAloha.Api.Core.Itil;
 using System.ComponentModel.DataAnnotations;
 using SAloha.Api.Core.Records;
 
@@ -7,7 +8,7 @@ namespace SAloha.Api.Modules.IncidentManagement;
 /// Incident (ITIL 4, gestion des incidents) : interruption ou dégradation
 /// d'un service, à rétablir au plus vite.
 /// </summary>
-public class Incident : Record
+public class Incident : Record, IServiceBound
 {
     public static readonly string[] Statuses = ["Nouveau", "En cours", "En attente", "Résolu", "Clos"];
     /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
@@ -29,6 +30,7 @@ public class Incident : Record
     [MaxLength(10)] public string Priority { get; set; } = "P3";     // P1..P4 (dérivée impact x urgence)
     [MaxLength(100)] public string Category { get; set; } = "";
     [MaxLength(150)] public string AffectedService { get; set; } = "";
+    public int? ServiceId { get; set; }                                  // SLM-10, INC-20 : service du catalogue
     public bool IsMajor { get; set; }                                // incident majeur
     public string? Resolution { get; set; }
     [MaxLength(30)] public string? ResolutionCode { get; set; }         // INC-08
@@ -52,4 +54,4 @@ public record IncidentDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? Impact, string? Urgency, string? Category, string? AffectedService,
     bool IsMajor, string? Resolution, string? ResolutionCode = null,
-    string? ReopenReason = null, DateTime? OccurredAt = null, int? PerimeterId = null) : IRecordDto;
+    string? ReopenReason = null, DateTime? OccurredAt = null, int? PerimeterId = null, int? ServiceId = null) : IRecordDto;

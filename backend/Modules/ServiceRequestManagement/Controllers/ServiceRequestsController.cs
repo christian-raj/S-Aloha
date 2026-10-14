@@ -1,3 +1,4 @@
+using SAloha.Api.Core.Itil;
 using Microsoft.AspNetCore.Mvc;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
@@ -22,8 +23,13 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         e.RequestedForDisplayName = hasBeneficiary ? dto.RequestedForDisplayName ?? dto.RequestedFor : null;
         e.DueDate = Dates.Utc(dto.DueDate);
         e.RejectionReason = string.IsNullOrWhiteSpace(dto.RejectionReason) ? null : dto.RejectionReason.Trim();
+        e.ServiceId = dto.ServiceId; e.AffectedService = dto.AffectedService ?? "";
         return null;
     }
+
+    // SLM-10 : service du catalogue (vérifié ici, recopié sur l'enregistrement juste avant l'écriture).
+    protected override Task<string?> ValidateAsync(ServiceRequest e) => ServiceCatalog.ResolveAsync(Db, e);
+    protected override Task BeforeSaveAsync(ServiceRequest e, bool creating) => ServiceCatalog.ResolveAsync(Db, e);
 
     protected override bool RequiresManager(string status) => status is "Approuvée" or "Rejetée";
 

@@ -1,3 +1,4 @@
+using SAloha.Api.Core.Itil;
 using System.ComponentModel.DataAnnotations;
 using SAloha.Api.Core.Records;
 
@@ -7,7 +8,7 @@ namespace SAloha.Api.Modules.ServiceRequestManagement;
 /// Demande de service (ITIL 4, gestion des demandes de service) : demande
 /// prédéfinie initiée par un utilisateur (accès, matériel, information…).
 /// </summary>
-public class ServiceRequest : Record
+public class ServiceRequest : Record, IServiceBound
 {
     public static readonly string[] Statuses = ["Soumise", "Approuvée", "Rejetée", "Annulée", "En cours", "Satisfaite", "Close"];
     /// <summary>Transitions permises (SOC-05, § 4 de la pratique) ; liste vide : statut final.</summary>
@@ -24,6 +25,8 @@ public class ServiceRequest : Record
     public static readonly string[] Done = ["Rejetée", "Annulée", "Satisfaite", "Close"];
 
     [MaxLength(200)] public string RequestedItem { get; set; } = "";          // objet demandé
+    [MaxLength(150)] public string AffectedService { get; set; } = "";        // SLM-10 : nom du service, recopié du catalogue
+    public int? ServiceId { get; set; }                                       // SLM-10 : service du catalogue
     [MaxLength(200)] public string? RequestedFor { get; set; }                // bénéficiaire (sAMAccountName)
     [MaxLength(250)] public string? RequestedForDisplayName { get; set; }
     public DateTime? DueDate { get; set; }
@@ -38,4 +41,5 @@ public class ServiceRequest : Record
 public record ServiceRequestDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? RequestedItem, string? RequestedFor, string? RequestedForDisplayName,
-    DateTime? DueDate, string? RejectionReason = null, int? PerimeterId = null) : IRecordDto;
+    DateTime? DueDate, string? RejectionReason = null, int? PerimeterId = null,
+    int? ServiceId = null, string? AffectedService = null) : IRecordDto;

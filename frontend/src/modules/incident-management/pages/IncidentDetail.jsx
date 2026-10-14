@@ -4,6 +4,7 @@ import { api } from '../../../api'
 import RecordDetail from '../../../core/components/RecordDetail'
 import SimilarCases from '../../../core/components/SimilarCases'
 import { incidentConfig } from '../config'
+import { useServiceConfig } from '../../../core/useServices'
 
 /** Un incident récurrent ou de cause inconnue ouvre un problème, relié à l'incident. */
 function OpenProblem({ incident }) {
@@ -13,7 +14,8 @@ function OpenProblem({ incident }) {
     try {
       const p = await api.problems.create({
         title: incident.title, description: incident.description, impact: incident.impact,
-        urgency: incident.urgency, category: incident.category, affectedService: incident.affectedService
+        urgency: incident.urgency, category: incident.category, affectedService: incident.affectedService,
+        serviceId: incident.serviceId
       })
       await api.links.create({ fromType: 'incident', fromId: incident.id, toReference: p.reference })
       nav('/problems/' + p.id)
@@ -31,5 +33,7 @@ function OpenProblem({ incident }) {
 }
 
 export default function IncidentDetail() {
-  return <RecordDetail config={incidentConfig}>{r => <><OpenProblem incident={r} /><SimilarCases type="incident" id={r.id} /></>}</RecordDetail>
+  const config = useServiceConfig(incidentConfig)
+  if (!config) return <p>Chargement…</p>
+  return <RecordDetail config={config}>{r => <><OpenProblem incident={r} /><SimilarCases type="incident" id={r.id} /></>}</RecordDetail>
 }

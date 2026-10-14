@@ -116,6 +116,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<ItService>().HasMany(s => s.Agreements).WithOne(a => a.Service!)
             .HasForeignKey(a => a.ServiceId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<ServiceLevelAgreement>().Property(a => a.AvailabilityTarget).HasPrecision(5, 2);
+        // SLM-10 : service du catalogue ; supprimer un service garde le libellé recopié.
+        b.Entity<Incident>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
+        b.Entity<Problem>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
+        b.Entity<ServiceRequest>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
 
         // Index de recherche (ADR-0013) : plein texte « french » généré par
         // PostgreSQL sur le titre et le passage, index GIN.

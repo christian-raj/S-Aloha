@@ -1004,6 +1004,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<DateTime?>("ResponseDueAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -1028,6 +1031,8 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.HasIndex("Reference")
                         .IsUnique();
+
+                    b.HasIndex("ServiceId");
 
                     b.ToTable("Incidents");
                 });
@@ -1293,6 +1298,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("RootCause")
                         .HasColumnType("text");
 
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -1317,6 +1325,8 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.HasIndex("Reference")
                         .IsUnique();
+
+                    b.HasIndex("ServiceId");
 
                     b.ToTable("Problems");
                 });
@@ -2269,6 +2279,11 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AffectedService")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
                     b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2341,6 +2356,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -2360,6 +2378,8 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.HasIndex("Reference")
                         .IsUnique();
+
+                    b.HasIndex("ServiceId");
 
                     b.ToTable("ServiceRequests");
                 });
@@ -2450,6 +2470,11 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasForeignKey("PerimeterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("SAloha.Api.Modules.ServiceLevelManagement.ItService", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.KnowledgeManagement.KnowledgeArticle", b =>
@@ -2479,6 +2504,11 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasForeignKey("PerimeterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("SAloha.Api.Modules.ServiceLevelManagement.ItService", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ProblemManagement.RaciAssignment", b =>
@@ -2661,6 +2691,11 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasForeignKey("PerimeterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("SAloha.Api.Modules.ServiceLevelManagement.ItService", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ComplianceAssessment.Assessment", b =>

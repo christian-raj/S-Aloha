@@ -35,7 +35,7 @@ public class ProblemsController(AppDbContext db) : RecordController<Problem, Pro
         if (error is not null) return error;
         e.Impact = dto.Impact; e.Urgency = dto.Urgency;
         e.Priority = Priority.Compute(dto.Impact, dto.Urgency);
-        e.Category = dto.Category ?? ""; e.AffectedService = dto.AffectedService ?? "";
+        e.Category = dto.Category ?? ""; e.AffectedService = dto.AffectedService ?? ""; e.ServiceId = dto.ServiceId;
         // La déclaration ne qualifie pas : contournement, cause et clôture viennent ensuite.
         if (creating) return null;
         // PRB-21 : sans gestionnaire désigné, le gestionnaire qui qualifie le devient.
@@ -85,6 +85,10 @@ public class ProblemsController(AppDbContext db) : RecordController<Problem, Pro
                 return null;
         }
     }
+
+    // SLM-10 : service du catalogue (vérifié ici, recopié sur l'enregistrement juste avant l'écriture).
+    protected override Task<string?> ValidateAsync(Problem e) => ServiceCatalog.ResolveAsync(Db, e);
+    protected override Task BeforeSaveAsync(Problem e, bool creating) => ServiceCatalog.ResolveAsync(Db, e);
 
     // PRB-31 : problème qualifié ou clos → déclarant.
     protected override void OnNotify(Problem p, string? from, Notifier n)

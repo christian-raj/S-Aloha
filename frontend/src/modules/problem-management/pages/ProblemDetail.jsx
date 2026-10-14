@@ -14,6 +14,8 @@ import Comments from '../../../core/components/Comments'
 import RecordForm from '../../../core/components/RecordForm'
 import { ownerField } from '../../../core/fields'
 import usePerimeters, { perimeterName } from '../../../core/usePerimeters'
+import useServices from '../../../core/useServices'
+import ServiceSelect from '../../../core/components/ServiceSelect'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
 /** Codes de clôture (PRB-13) selon le statut d'origine ; une transition forcée les admet tous. */
@@ -124,10 +126,11 @@ export default function ProblemDetail() {
 
 function Infos({ p, isManager, onSaved }) {
   const graph = useTransitions(api.problems.transitions)
+  const services = useServices() ?? []
   const [reason, setReason] = useState('')
   const [f, setF] = useState({
     title: p.title, description: p.description, status: p.status, impact: p.impact,
-    urgency: p.urgency, category: p.category, affectedService: p.affectedService,
+    urgency: p.urgency, category: p.category, affectedService: p.affectedService, serviceId: p.serviceId ?? '',
     knownErrorWorkaround: p.knownErrorWorkaround || '', rootCause: p.rootCause || '',
     closureCode: p.closureCode || '', reopenReason: p.reopenReason || '',
     ownerType: p.ownerType || '', ownerId: p.ownerId || '', ownerDisplayName: p.ownerDisplayName || ''
@@ -137,7 +140,7 @@ function Infos({ p, isManager, onSaved }) {
   const force = forceOptions(graph, p.status, f.status, reason)
   // PRB-21 : le gestionnaire du problème est le responsable du socle ; vide, l'API
   // désigne le gestionnaire qui enregistre.
-  const save = () => api.problems.update(p.id, { ...f, ownerType: f.ownerType || null, ownerId: f.ownerId || null,
+  const save = () => api.problems.update(p.id, { ...f, serviceId: f.serviceId ? Number(f.serviceId) : null, ownerType: f.ownerType || null, ownerId: f.ownerId || null,
     ownerDisplayName: f.ownerDisplayName || null }, force)
     .then(() => { setMsg('Modifications enregistrées.'); onSaved() })
     .catch(e => setMsg(e.message))
@@ -164,7 +167,8 @@ function Infos({ p, isManager, onSaved }) {
         <div className="field"><label>Catégorie</label>
           <input value={f.category} onChange={set('category')} disabled={!isManager} /></div>
         <div className="field"><label>Service affecté</label>
-          <input value={f.affectedService} onChange={set('affectedService')} disabled={!isManager} /></div>
+          <ServiceSelect services={services} value={f.serviceId} onChange={set('serviceId')} disabled={!isManager}
+            legacy={!p.serviceId && p.affectedService} /></div>
       </div>
       <RecordForm fields={[OWNER]} form={f} onChange={patch => setF(prev => ({ ...prev, ...patch }))} disabled={!isManager} />
       <div className="field"><label>Contournement (erreur connue)</label>
