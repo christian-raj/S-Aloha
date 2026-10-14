@@ -14,6 +14,10 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Incidents sort du MVP** : toutes les règles listées pour sa sortie sont en place (INC-07,
+  INC-11, INC-13, INC-20 à INC-22, INC-24, INC-25) ; la mention **(MVP)** disparaît du README
+  et de la cartographie.
+
 - **Incidents** : le responsable d'un incident majeur doit être gestionnaire du périmètre de
   l'incident, vérifié dans l'annuaire (INC-13) ; **état SLA** de chaque incident (en risque,
   dépassé, suspendu, respecté…) sur la fiche et dans le registre, et incidents en risque ou
@@ -204,6 +208,10 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
     (PRB-24 — résout M7).
 
 ### Modifié
+
+- **Recherche d'un compte dans l'annuaire** : les renvois (*referrals*) d'Active Directory sont
+  ignorés ; un compte inconnu est refusé comme responsable d'un incident majeur, et la
+  connexion ne journalise plus de faux échec LDAP.
 
 - **Sous-titres des pages** : le numéro de version d'ITIL est retiré (« (ITIL) ») ; la page
   Problèmes affichait « ITIL v3 » alors que l'application suit les pratiques ITIL 4.
