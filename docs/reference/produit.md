@@ -40,9 +40,9 @@ où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-
 | **Problèmes** | Causes racines et erreurs connues | Actif | `Modules/ProblemManagement`, `modules/problem-management` |
 | **Changements** | Changements et mises en production | Actif (MVP) | `Modules/ChangeEnablement`, `modules/change-enablement` |
 | **Configuration** | Actifs et dépendances (CMDB) | Actif | `Modules/ServiceConfigurationManagement`, `modules/service-configuration-management` |
-| **Niveaux de service** | Catalogue, SLA et engagements | Actif (MVP) | `Modules/ServiceLevelManagement`, `modules/service-level-management` |
+| **Niveaux de service** | Catalogue, SLA et engagements | Actif | `Modules/ServiceLevelManagement`, `modules/service-level-management` |
 | **Connaissances** | Capitalisation et formation | Actif | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
-| **Amélioration (CSI)** | Amélioration continue des services | Actif (MVP) | `Modules/ContinualImprovement`, `modules/continual-improvement` |
+| **Amélioration (CSI)** | Amélioration continue des services | Actif | `Modules/ContinualImprovement`, `modules/continual-improvement` |
 | **Conformité NIS 2** | Évaluer la conformité au Référentiel Cyber France (ANSSI) | Actif | `Modules/ComplianceAssessment`, `modules/compliance-assessment` |
 | **Projets** | Conduire les projets de la DSI : Scrum, Kanban, Cycle en V, PRINCE2, hybride | Actif (MVP) | `Modules/ProjectManagement`, `modules/project-management` |
 

@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Niveaux de service et Amélioration continue sortent du MVP** : toutes les règles listées
+  pour leur sortie sont en place (SLM-04, SLM-10, SLM-13, SLM-14, SLM-20, SLM-22 à SLM-24 ;
+  CSI-10, CSI-12, CSI-20, CSI-21, CSI-23) ; la mention **(MVP)** disparaît du README et de
+  la cartographie. Le respect d'un SLA est mesuré ; sans cible de conformité renseignée, il
+  ne déclenche pas d'alerte. La disponibilité mesurée (SLM-21) reste au lot 3.
+
 - **Respect des SLA mesuré** (SLM-20) : part mensuelle des incidents du service résolus dans
   le délai, par priorité, sur la fiche du SLA et par `GET /api/agreements/{id}/compliance` ;
   **cible de respect** facultative sur le SLA. Un mois achevé sous la cible **alerte** les
