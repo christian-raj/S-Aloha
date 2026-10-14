@@ -53,6 +53,10 @@ public class Incident : Record, IServiceBound
     [MaxLength(30)] public string? OnHoldReason { get; set; }            // INC-07
     public DateTime? OnHoldSince { get; set; }                           // INC-22 : début de l'attente en cours
     public int HeldMinutes { get; set; }                                 // INC-22 : attente cumulée, en minutes de service
+
+    /// <summary>INC-24 : état SLA calculé à la lecture (fiche, registre, console, reporting).</summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string SlaState => IncidentSla.State(this, DateTime.UtcNow);
 }
 
 public record IncidentDto(string Title, string? Description, string? Status,

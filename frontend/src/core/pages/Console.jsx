@@ -89,10 +89,10 @@ export default function Console() {
 
   const myOverdue = c.myActions.filter(a => a.overdue)
   const myTodo = c.myActions.filter(a => !a.overdue)
-  const L = k => (m ? m[k].length : 0)
+  const L = k => m?.[k]?.length ?? 0
 
   // Les quatre temps de la console, dans l'ordre où l'on doit les traiter.
-  const urgent = myOverdue.length + L('majorIncidents')
+  const urgent = myOverdue.length + L('majorIncidents') + (c.mySlaIncidents?.length ?? 0) + L('slaIncidents')
   const decide = L('decisions') + L('toQualify')
   const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue')
   const work = myTodo.length + c.myAssignments.length
@@ -151,6 +151,11 @@ export default function Console() {
           hint="Échéance dépassée : à traiter ou à replanifier."
           render={r => <Row reference={r.problem.reference} title={r.title}
             meta={<><Roles roles={r.myRoles} /><span className="row-date is-late">{dateFr(r.dueDate)}</span></>} />} />
+        {/* INC-24 : SLA en risque (moins de 25 % du délai) ou dépassé. */}
+        <List title="Mes incidents : SLA en risque ou dépassé" tone="red" rows={c.mySlaIncidents ?? []} onRow={goItem}
+          hint="Échéance de résolution proche ou passée : à traiter en priorité." render={itemRow} />
+        {m && <List title="Incidents : SLA en risque ou dépassé" tone="red" rows={m.slaIncidents ?? []} onRow={goItem}
+          hint="Périmètres que vous gérez : relancer le responsable, escalader." render={itemRow} />}
         {m && <List title="Incidents majeurs en cours" tone="red" rows={m.majorIncidents} onRow={goItem}
           hint="Coordonner le rétablissement et la communication." render={itemRow} />}
       </Group>

@@ -166,13 +166,7 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
         var resolved = all.Where(i => i.ResolvedAt >= f.From && i.ResolvedAt < f.To).ToList();
         var open = all.Where(i => !Incident.Done.Contains(i.Status)).ToList();
         var days = Enumerable.Range(0, (int)(f.To - f.From).TotalDays).Select(n => f.From.AddDays(n)).ToList();
-        string Sla(Incident i)
-        {
-            if (i.ResolutionDueAt is not { } due) return "Sans SLA";
-            if (now > due) return "SLA dépassé";
-            var window = (due - i.CreatedAt).TotalMinutes;
-            return window > 0 && (due - now).TotalMinutes < window * 0.25 ? "SLA en risque" : "Dans le SLA";   // INC-24
-        }
+        string Sla(Incident i) => IncidentSla.State(i, now);   // INC-24
         return Ok(new
         {
             Kpis = new

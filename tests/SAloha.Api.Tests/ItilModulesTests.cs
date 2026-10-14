@@ -212,7 +212,9 @@ public class ItilModulesTests(ApiFixture api)
     public async Task Console_assignations_et_decisions_en_attente()
     {
         var user = api.Client("User", "Fara.Rasoa");
-        var inc = await Create(api.Client(), "/api/incidents", Incident("Pour Fara", owner: "fara.rasoa", major: true));
+        var inc = await Create(api.Client(), "/api/incidents", Incident("Pour Fara", owner: "fara.rasoa"));
+        // Un incident majeur a un gestionnaire pour responsable (INC-13) : Fara, simple User, ne l'est pas.
+        var major = await Create(api.Client(), "/api/incidents", Incident("Majeur à coordonner", major: true));
         var mine = await Json(await user.GetAsync("/api/console"));
         Assert.Contains(mine.GetProperty("myAssignments").EnumerateArray(), a => Id(a) == Id(inc) && Str(a, "type") == "incident");
 
@@ -220,7 +222,7 @@ public class ItilModulesTests(ApiFixture api)
         var manager = await Json(await api.Client("Manager").GetAsync("/api/console"));
         var m = manager.GetProperty("management");
         Assert.Contains(m.GetProperty("decisions").EnumerateArray(), d => Id(d) == Id(req) && Str(d, "type") == "request");
-        Assert.Contains(m.GetProperty("majorIncidents").EnumerateArray(), d => Id(d) == Id(inc));
+        Assert.Contains(m.GetProperty("majorIncidents").EnumerateArray(), d => Id(d) == Id(major));
     }
 
     // --- Revue de code du 2026-10-06 ---

@@ -58,7 +58,33 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
     }
 
     // SLM-10, INC-20 : service du catalogue (vérifié ici, recopié avant l'écriture).
-    protected override Task<string?> ValidateAsync(Incident e) => ServiceCatalog.ResolveAsync(Db, e);
+    protected override async Task<string?> ValidateAsync(Incident e) =>
+        await ServiceCatalog.ResolveAsync(Db, e) ?? await MajorOwnerAsync(e);
+
+    /// <summary>
+    /// INC-13 : le responsable d'un incident majeur est gestionnaire du périmètre de l'incident
+    /// (rôle par périmètre, PER-03 ; Admin partout). Vérifié quand il est désigné ou que
+    /// l'incident devient majeur. Annuaire injoignable : la désignation passe (tracée au
+    /// journal) pour ne pas bloquer la gestion d'une crise.
+    /// </summary>
+    private async Task<string?> MajorOwnerAsync(Incident e)
+    {
+        if (!e.IsMajor || e.OwnerType != "User" || string.IsNullOrWhiteSpace(e.OwnerId)) return null;
+        var creating = e.Id == 0;
+        var entry = Db.Entry(e);
+        if (!creating && entry.Property(x => x.IsMajor).OriginalValue && OriginalOwner(e, false) == e.OwnerId) return null;
+        var directory = HttpContext.RequestServices.GetRequiredService<SAloha.Api.Core.Auth.IUserDirectory>();
+        bool? manager;
+        try { manager = await SAloha.Api.Core.Perimeters.PerimeterAccess.IsManagerAsync(Db, directory, e.OwnerId, e.PerimeterId); }
+        catch (Exception ex)
+        {
+            HttpContext.RequestServices.GetRequiredService<ILogger<IncidentsController>>()
+                .LogWarning(ex, "Annuaire injoignable : rôle du responsable {Owner} de l'incident majeur non vérifié", e.OwnerId.Replace("\n", ""));
+            return null;
+        }
+        return manager == true ? null
+            : $"Le responsable d'un incident majeur doit être gestionnaire du périmètre de l'incident : {e.OwnerDisplayName ?? e.OwnerId} ne l'est pas.";
+    }
 
     /// <summary>Responsable avant la modification (aucun à la création).</summary>
     private string? OriginalOwner(Incident e, bool creating) =>

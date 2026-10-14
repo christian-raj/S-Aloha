@@ -77,6 +77,19 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
         myAssignments.AddRange(await Mine(db.Changes, "change", meKey, groups, Change.Done, all, seen));
         myAssignments.AddRange(await Mine(db.Improvements, "improvement", meKey, groups, Improvement.Done, all, seen));
 
+        // INC-24 : incidents ouverts en risque ou hors délai — les miens (Urgent du responsable).
+        var now = DateTime.UtcNow;
+        var slaOpen = (await db.Incidents.AsNoTracking()
+                .Where(i => !Incident.Done.Contains(i.Status) && i.Status != "En attente" && i.ResolutionDueAt != null
+                            && (all || seen.Contains(i.PerimeterId)))
+                .ToListAsync())
+            .Select(i => new { i, State = IncidentSla.State(i, now) })
+            .Where(x => x.State is IncidentSla.AtRisk or IncidentSla.Breached)
+            .OrderBy(x => x.i.ResolutionDueAt).ToList();
+        var mySla = slaOpen.Where(x => x.i.OwnerId != null && (x.i.OwnerType == "Group"
+                ? groups.Contains(x.i.OwnerId.ToLower()) : x.i.OwnerId.ToLower() == meKey))
+            .Select(x => new Item("incident", x.i.Id, x.i.Reference, x.i.Title, x.State)).ToList();
+
         object? management = null;
         // ADR-0014 D4 : le pilotage revient à qui est gestionnaire d'au moins un périmètre.
         if (all || managed.Count > 0)
@@ -147,11 +160,14 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
 
             management = new { ToQualify = toQualify, InAnalysisNoRootCause = inAnalysisNoRootCause,
                                KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue,
-                               MajorIncidents = majorIncidents, Decisions = decisions, ReviewsDue = reviewsDue };
+                               MajorIncidents = majorIncidents, Decisions = decisions, ReviewsDue = reviewsDue,
+                               // INC-24 : incidents en risque ou hors délai des périmètres gérés.
+                               SlaIncidents = slaOpen.Where(x => all || managed.Contains(x.i.PerimeterId))
+                                   .Select(x => new Item("incident", x.i.Id, x.i.Reference, x.i.Title, x.State)).ToList() };
         }
 
         return Ok(new { Role = role, Username = me, MyProblems = myProblems, MyActions = myActions,
-                        MyAssignments = myAssignments, Management = management });
+                        MyAssignments = myAssignments, MySlaIncidents = mySla, Management = management });
     }
 
     /// <summary>Ligne de console désignant un enregistrement d'un processus.</summary>

@@ -37,7 +37,7 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
 ├── Program.cs                        # DI, JWT, policies, CORS, migrations au démarrage
 ├── Core/                             # socle — ne dépend d'aucun module
 │   ├── Audit/                        # AuditEntry, AuditInterceptor (journal SOC-20), AuditController, ForcedTransition
-│   ├── Auth/                         # AuthController, LdapService, TokenService, AuthDtos
+│   ├── Auth/                         # AuthController, LdapService (aussi IUserDirectory : rôle d'un autre compte, INC-13), TokenService, AuthDtos
 │   ├── Data/                         # AppDbContext, References (XXX-AAAA-NNNN), DatabaseSchema + Migrations/
 │   ├── Comments/                     # Comment, CommentsController (fil de commentaires, SOC-24)
 │   ├── Directory/                    # DirectoryController, DirectoryEntry (recherche AD)

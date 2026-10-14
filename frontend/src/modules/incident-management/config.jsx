@@ -4,6 +4,11 @@ import { titleField, descriptionField, ownerField, dateTimeFr } from '../../core
 
 // Gestion des incidents (ITIL 4) : minimiser l'impact négatif des incidents
 // en rétablissant le service normal au plus vite.
+/** INC-24 : tonalité de l'état SLA (dépassé, en risque, suspendu En attente…). */
+export const SLA_TONE = { 'SLA dépassé': 't-bad', 'SLA en risque': 't-wait', 'SLA suspendu': 't-closed', 'Dans le SLA': 't-done',
+  'SLA respecté': 't-done', 'SLA non respecté': 't-bad' }
+export const SlaBadge = ({ state }) => (state && state !== 'Sans SLA' ? <span className={'badge ' + (SLA_TONE[state] ?? '')}>{state}</span> : null)
+
 export const incidentConfig = {
   title: 'Incidents',
   sub: 'Rétablir le service normal au plus vite et limiter l\'impact des interruptions (ITIL).',
@@ -36,11 +41,13 @@ export const incidentConfig = {
   columns: [
     { h: 'Priorité', v: r => <span className={'badge ' + r.priority}>{r.priority}</span> },
     { h: 'Service', v: r => r.affectedService || '—' },
+    { h: 'SLA', v: r => <SlaBadge state={r.slaState} /> },
     { h: 'Assigné à', v: r => r.ownerDisplayName || '—' },
   ],
   badges: r => <>
     <span className={'badge ' + r.priority}>{r.priority}</span>{' '}
-    {r.isMajor && <span className="badge t-bad">Majeur</span>}
+    {r.isMajor && <span className="badge t-bad">Majeur</span>}{' '}
+    <SlaBadge state={r.slaState} />
   </>,
   // SLM-13, INC-21 : échéances tirées du SLA en vigueur du service.
   meta: r => [!r.firstResponseAt && r.responseDueAt && `Prise en charge attendue avant le ${dateTimeFr(r.responseDueAt)}`,

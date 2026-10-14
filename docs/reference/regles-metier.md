@@ -60,6 +60,7 @@ Chaque rôle dispose de sa propre console (page d'accueil « Ma console »), **o
 |---|---|---|
 | **Urgent** | Mes actions en retard (échéance dépassée) | Tous |
 | | Incidents majeurs en cours (ni Résolu ni Clos) | Manager, Admin |
+| | Incidents dont le SLA est en risque ou dépassé (INC-24) : les miens ; ceux des périmètres gérés | Tous ; Manager, Admin |
 | **Décisions** | Décisions en attente : changements Demandé/Évalué, demandes Soumise, améliorations Proposée | Manager, Admin |
 | | Problèmes à qualifier (statut Nouveau) | Manager, Admin |
 | **Relances** | Actions en retard toutes équipes (à relancer) | Manager, Admin |
