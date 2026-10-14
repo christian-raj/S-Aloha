@@ -26,7 +26,13 @@ export const changeConfig = {
     descriptionField('Justification et périmètre'),
     { key: 'implementationPlan', label: 'Plan de mise en œuvre', type: 'textarea', rows: 3 },
     { key: 'backoutPlan', label: 'Plan de retour arrière', type: 'textarea', rows: 3 },
+    // CHG-14 : dates réelles (début exigé pour Mis en œuvre, fin pour Clos).
+    { key: 'actualStart', label: 'Début réel', type: 'datetime', create: false },
+    { key: 'actualEnd', label: 'Fin réelle', type: 'datetime', create: false },
     { key: 'outcome', label: 'Résultat', type: 'select', options: ['Réussi', 'Échoué'], create: false },
+    // CHG-15 : exigée avant de clore un changement urgent ou échoué.
+    { key: 'pirNotes', label: 'Revue post-implémentation', type: 'textarea', rows: 3, create: false,
+      placeholder: 'Ce qui s\'est passé, causes, enseignements. Obligatoire pour clore un changement urgent ou échoué.' },
     { key: 'rejectionReason', label: 'Motif de rejet', type: 'textarea', rows: 2, create: false,
       placeholder: 'Obligatoire pour rejeter : communiqué au demandeur.' },
   ],
@@ -35,7 +41,8 @@ export const changeConfig = {
     { h: 'Risque', v: r => r.risk },
     { h: 'Début planifié', v: r => dateTimeFr(r.plannedStart) },
   ],
-  meta: r => [r.authorizedAt && `Autorisé par ${r.authorizedBy} le ${dateTimeFr(r.authorizedAt)}`],
-  help: 'Standard : pré-autorisé. Normal et urgent : plans de mise en œuvre et de retour arrière pour l\'évaluation, puis autorisation par un gestionnaire. Planifié : début et fin. Un rejet se motive. Modifier le type, le risque, les plans ou le créneau d\'un changement autorisé redemande une autorisation. Le résultat est requis pour clore.',
+  meta: r => [r.authorizedAt && `Autorisé par ${r.authorizedBy} le ${dateTimeFr(r.authorizedAt)}`,
+    r.overrun && `Dépassement : fin planifiée le ${dateTimeFr(r.plannedEnd)}${r.actualEnd ? `, fin réelle le ${dateTimeFr(r.actualEnd)}` : ''}`],
+  help: 'Standard : pré-autorisé. Normal et urgent : plans de mise en œuvre et de retour arrière pour l\'évaluation, puis autorisation par un gestionnaire. Planifié : début et fin. Un rejet se motive. Modifier le type, le risque, les plans ou le créneau d\'un changement autorisé redemande une autorisation. Normal et urgent : au moins un CI relié (onglet Liens) pour l\'évaluation ; le demandeur n\'autorise pas son propre changement. Mis en œuvre : début réel ; Clos : fin réelle et résultat, revue post-implémentation pour un changement urgent ou échoué.',
   linkHint: 'Problème ou demande à l\'origine, CI modifiés…',
 }

@@ -50,6 +50,8 @@ public class PerimeterRightsTests(ApiFixture api)
         var admin = api.Client();
         var cs = await Json(await admin.PostAsJsonAsync("/api/changes", Change("Change Siège", siege)));
         var cu = await Json(await admin.PostAsJsonAsync("/api/changes", Change("Change Usine", usine)));
+        await ChangeTestData.LinkCiAsync(admin, Id(cs));   // CHG-16
+        await ChangeTestData.LinkCiAsync(admin, Id(cu));
         await Json(await admin.PutAsJsonAsync($"/api/changes/{Id(cs)}", Change("Change Siège", siege, "Évalué")));
         await Json(await admin.PutAsJsonAsync($"/api/changes/{Id(cu)}", Change("Change Usine", usine, "Évalué")));
 

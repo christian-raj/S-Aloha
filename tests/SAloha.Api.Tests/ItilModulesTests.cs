@@ -46,7 +46,8 @@ public class ItilModulesTests(ApiFixture api)
         string risk = "Moyen") => new
     {
         title, status, changeType = type, risk, outcome, plannedStart = Slot, plannedEnd = Slot.AddHours(2),
-        implementationPlan = "Appliquer", backoutPlan = "Restaurer", rejectionReason = "Hors périmètre"
+        implementationPlan = "Appliquer", backoutPlan = "Restaurer", rejectionReason = "Hors périmètre",
+        actualStart = Slot, actualEnd = Slot.AddHours(1)   // CHG-14
     };
 
     public static TheoryData<string, string, object> Modules => new()
@@ -136,10 +137,11 @@ public class ItilModulesTests(ApiFixture api)
         var normal = await Create(user, "/api/changes", Change("Normal", "Normal"));
         Assert.Equal("Demandé", Str(normal, "status"));
         Assert.Equal(HttpStatusCode.BadRequest, (await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Planifié"))).StatusCode);
+        await ChangeTestData.LinkCiAsync(user, Id(normal));   // CHG-16
         await Json(await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Évalué")));
         Assert.Equal(HttpStatusCode.Forbidden, (await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Autorisé"))).StatusCode);
 
-        await Json(await Put(api.Client("Manager"), "/api/changes", Id(normal), Change("Normal", "Normal", "Autorisé")));
+        await Json(await Put(api.Client("Manager", "chef.itil"), "/api/changes", Id(normal), Change("Normal", "Normal", "Autorisé")));   // CHG-21 : un autre que le demandeur
         await Json(await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Planifié")));
         await Json(await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Mis en œuvre")));
         Assert.Equal(HttpStatusCode.BadRequest, (await Put(user, "/api/changes", Id(normal), Change("Normal", "Normal", "Clos"))).StatusCode);
@@ -232,6 +234,7 @@ public class ItilModulesTests(ApiFixture api)
     {
         var user = api.Client("User");
         var c = await Create(user, "/api/changes", Change("Rejeté", "Normal"));
+        await ChangeTestData.LinkCiAsync(user, Id(c));
         await Json(await Put(user, "/api/changes", Id(c), Change("Rejeté", "Normal", "Évalué")));
         await Json(await Put(api.Client("Manager"), "/api/changes", Id(c), Change("Rejeté", "Normal", "Rejeté")));
 
@@ -251,8 +254,9 @@ public class ItilModulesTests(ApiFixture api)
         Assert.Equal(HttpStatusCode.BadRequest,
             (await Put(user, "/api/changes", Id(standard), Change("Standard détourné", "Urgent", "Planifié"))).StatusCode);
 
-        var manager = api.Client("Manager");
+        var manager = api.Client("Manager", "chef.itil");   // CHG-21 : un autre que le demandeur
         var normal = await Create(user, "/api/changes", Change("Risque revu", "Normal"));
+        await ChangeTestData.LinkCiAsync(user, Id(normal));
         await Json(await Put(user, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Évalué")));
         await Json(await Put(manager, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Autorisé")));
         await Json(await Put(user, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Planifié")));
