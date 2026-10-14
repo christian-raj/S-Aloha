@@ -49,6 +49,8 @@ export const agreementConfig = (services) => ({
       options: services.map(s => ({ value: s.id, label: `${s.title} (${s.reference})` })) },
     { key: 'customer', label: 'Client', placeholder: 'Direction, entité, métier…' },
     { key: 'availabilityTarget', label: 'Disponibilité cible (%)', type: 'number' },
+    // SLM-20, SLM-23 : sans cible, le respect est mesuré mais aucune alerte n'est émise.
+    { key: 'complianceTarget', label: 'Cible de respect (% d\'incidents résolus dans le délai)', type: 'number' },
     hours('P1'), hours('P2'), hours('P3'), hours('P4'),
     response('P1'), response('P2'), response('P3'), response('P4'),
     { key: 'validFrom', label: 'Valide du', type: 'date' },

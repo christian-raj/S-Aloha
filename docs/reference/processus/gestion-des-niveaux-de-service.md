@@ -57,6 +57,7 @@ Champs communs (référence, titre, description, statut, responsable AD, créate
 | `Customer` | texte 200 | | Client de l'accord | ✅ |
 | `Status` | texte 30 | auto | Brouillon, En vigueur, Expiré | ✅ |
 | `AvailabilityTarget` | décimal | | Disponibilité cible en % (ex. 99,5) | ✅ |
+| `ComplianceTarget` | décimal | | Cible de respect : part des incidents résolus dans le délai, en % (ex. 95) ; sans cible, le respect est mesuré sans alerte (SLM-20, SLM-23) | ✅ |
 | `ResolutionHoursP1` … `P4` | entier | | Délai de résolution par priorité, en heures de service | ✅ |
 | `ResponseHoursP1` … `P4` | entier | | Délai de prise en charge par priorité ; facultatifs, complets et croissants s'ils sont donnés, chacun au plus égal au délai de résolution de sa priorité | ✅ SLM-13 |
 | Revues (`AgreementReviews`) | liste | | Date, auteur, constats, décisions, prochaine revue (SLM-22) | ✅ |
@@ -117,10 +118,10 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| SLM-20 | **Mesure du respect** (F1) : pour chaque SLA En vigueur, chaque mois, part des incidents du service (et de sa priorité) résolus dans le délai — échéances calculées par INC-21, hors temps En attente (INC-22) | 🔜 | 2 |
+| SLM-20 | **Mesure du respect** (F1) : pour chaque SLA En vigueur, chaque mois, part des incidents du service (et de sa priorité) résolus dans le délai — échéances calculées par INC-21, hors temps En attente (INC-22) | ✅ (`Core/Itil/SlaCompliance.cs` ; mois UTC ; incidents du service créés pendant la validité du SLA et dotés d'une échéance : comptés au mois de leur résolution, ou, encore ouverts, au mois où l'échéance est passée ; les incidents ne portant pas de client, un SLA mesure tout son service ; encadré « Respect du SLA » de la fiche) | |
 | SLM-21 | **Disponibilité mesurée** : 100 % moins la durée cumulée des incidents **majeurs** du service (création → résolution, dans les heures de service), rapportée aux heures de service du mois ; comparée à `AvailabilityTarget` | 🔜 | 3 |
 | SLM-22 | **Revue de SLA** : le gestionnaire enregistre la revue (date, constats, décisions) ; la prochaine date de revue est reportée de 12 mois par défaut | ✅ (encadré « Revues du SLA » de la fiche ; refusée sur un SLA expiré) | |
-| SLM-23 | Un mois sous la cible (SLM-20 ou SLM-21) crée une **alerte** pour le gestionnaire et propose une **amélioration** reliée (CSI-20) | 🔜 | 2 |
+| SLM-23 | Un mois sous la cible (SLM-20 ou SLM-21) crée une **alerte** pour le gestionnaire et propose une **amélioration** reliée (CSI-20) | ✅ (pour SLM-20 : au relevé périodique, mois précédent d'un SLA En vigueur doté d'une `ComplianceTarget` ; alerte « SLA sous la cible » aux gestionnaires et amélioration Proposée, source « SLA », reliée au SLA, une fois par mois) / 🔜 (SLM-21, lot 3) | |
 | SLM-24 | Notifications (SOC-21) : SLA expirant dans 30 jours → gestionnaires ; revue échue → propriétaire du service | ✅ | |
 
 ## 7. Liens avec les autres pratiques
@@ -131,17 +132,18 @@ lot 1)** : seules les transitions ci-dessous (SOC-05).
 | Incident → Service | Mesure du respect | SLM-10, SLM-20 | ✅ (service) / 🔜 (mesure) |
 | CI → Service | Services supportés | CFG-21 | 🔜 |
 | Demande → Service | Modèles de demande par service | REQ-20 | 🔜 |
-| SLA → Amélioration | Écart à la cible | SLM-23, CSI-20 | 🔜 |
+| SLA → Amélioration | Écart à la cible | SLM-23, CSI-20 | ✅ |
 
 ## 8. Console et indicateurs
 
-Console ✅ : SLA à revoir (Relances, gestionnaires). À venir : SLA sous la cible ce mois
-(Urgent, gestionnaires, SLM-23), SLA expirant dans 30 jours (Relances, SLM-24).
+Console ✅ : SLA à revoir (Relances, gestionnaires). Un mois sous la cible est notifié aux
+gestionnaires (SLM-23). À venir : SLA sous la cible ce mois (Urgent, gestionnaires), SLA
+expirant dans 30 jours (Relances, SLM-24 : notifié aujourd'hui).
 
 | Indicateur | Calcul | Statut |
 |---|---|---|
 | Volumétrie (services, SLA par statut) | | ✅ |
-| Respect des SLA | SLM-20, par SLA et par mois | 🔜 SLM-30 (lot 2) |
+| Respect des SLA | SLM-20, par SLA et par mois | ✅ (fiche du SLA) / 🔜 SLM-30 (reporting, lot 2) |
 | Disponibilité mesurée | SLM-21 | 🔜 SLM-31 (lot 3) |
 | SLA à revoir, expirant | SLM-05, SLM-24 | ✅ / 🔜 |
 
@@ -155,7 +157,7 @@ Console ✅ : SLA à revoir (Relances, gestionnaires). À venir : SLA sous la ci
 | `POST/PUT /api/agreements[/{id}]` | Manager | Tenue des SLA |
 | `DELETE /api/services/{id}`, `/api/agreements/{id}` | Admin | Suppression |
 | `POST /api/agreements/{id}/reviews` (`{ findings, decisions, nextReviewDate }`) | Manager du périmètre | Revue du SLA (SLM-22) ; la fiche (`GET /api/agreements/{id}`) liste les revues, la plus récente d'abord |
-| `GET /api/agreements/{id}/compliance?from=&to=` | User | Respect mesuré — 🔜 SLM-20 |
+| `GET /api/agreements/{id}/compliance?from=&to=` (mois AAAA-MM ; six derniers mois par défaut, 24 au plus) | User | Respect mesuré par mois : total, dans le délai, %, cible, atteinte, détail par priorité (SLM-20) |
 
 ## 10. Scénarios d'acceptation
 

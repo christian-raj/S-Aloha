@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { api, getUser } from '../../../api'
 import RecordDetail from '../../../core/components/RecordDetail'
 import { dateFr, dateTimeFr } from '../../../core/fields'
@@ -51,9 +51,41 @@ export function AgreementReviews({ agreement, onSaved }) {
   )
 }
 
+const monthFr = p => new Date(p + '-01T00:00:00Z').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+
+/**
+ * SLM-20 : respect mesuré du SLA sur les six derniers mois — part des incidents du service
+ * résolus dans le délai, par priorité ; un mois sous la cible est signalé (SLM-23).
+ */
+export function AgreementCompliance({ agreement }) {
+  const [data, setData] = useState(null)
+  const [error, setError] = useState('')
+  useEffect(() => { api.agreements.compliance(agreement.id).then(setData).catch(e => setError(e.message)) }, [agreement.id, agreement.updatedAt])
+  if (error) return <div className="error">{error}</div>
+  if (!data) return null
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <h3 style={{ color: 'var(--navy)', marginBottom: 4 }}>Respect du SLA</h3>
+      <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 10 }}>
+        Part des incidents du service résolus dans le délai, par mois
+        {data.complianceTarget != null ? ` ; cible : ${data.complianceTarget} %. Un mois achevé sous la cible alerte les gestionnaires et propose une amélioration.` : ' ; aucune cible fixée : pas d\'alerte.'}</p>
+      <table>
+        <thead><tr><th>Mois</th><th>Incidents</th><th>Dans le délai</th><th>Respect</th><th>Par priorité</th></tr></thead>
+        <tbody>{data.months.slice().reverse().map(m => (
+          <tr key={m.period}>
+            <td>{monthFr(m.period)}</td><td>{m.total}</td><td>{m.onTime}</td>
+            <td style={m.met === false ? { color: 'var(--danger)', fontWeight: 700 } : {}}>
+              {m.percent == null ? '—' : `${m.percent.toLocaleString('fr-FR')} %`}{m.met === false && ' ⚠'}</td>
+            <td className="small">{m.byPriority.map(p => `${p.priority} : ${p.onTime}/${p.total}`).join(' · ') || '—'}</td>
+          </tr>))}</tbody>
+      </table>
+    </div>
+  )
+}
+
 export default function AgreementDetail() {
   const config = useAgreementConfig()
   return config
-    ? <RecordDetail config={config}>{(r, reload) => <AgreementReviews agreement={r} onSaved={reload} />}</RecordDetail>
+    ? <RecordDetail config={config}>{(r, reload) => <><AgreementCompliance agreement={r} /><AgreementReviews agreement={r} onSaved={reload} /></>}</RecordDetail>
     : <p>Chargement…</p>
 }

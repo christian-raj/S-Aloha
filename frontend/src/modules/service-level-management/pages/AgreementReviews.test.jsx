@@ -1,13 +1,16 @@
 import React from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { AgreementReviews } from './AgreementDetail'
+import { AgreementCompliance, AgreementReviews } from './AgreementDetail'
 
 const review = vi.fn(() => Promise.resolve({}))
 let role = 'Manager'
 vi.mock('../../../api', () => ({
   getUser: () => ({ username: 'lova.rabe', role }),
-  api: { agreements: { review: (...a) => review(...a) }, perimeters: { mine: () => Promise.resolve([]) } }
+  api: { agreements: { review: (...a) => review(...a), compliance: () => Promise.resolve({ complianceTarget: 90, months: [
+    { period: '2026-09', total: 3, onTime: 1, percent: 33.3, target: 90, met: false, byPriority: [{ priority: 'P4', total: 3, onTime: 1, percent: 33.3 }] },
+    { period: '2026-10', total: 0, onTime: 0, percent: null, target: 90, met: null, byPriority: [] }] }) },
+    perimeters: { mine: () => Promise.resolve([]) } }
 }))
 vi.mock('../../../core/usePerimeters', () => ({ default: () => [] }))
 
@@ -35,5 +38,14 @@ describe('Revues du SLA (SLM-22)', () => {
     render(<AgreementReviews agreement={agreement} onSaved={() => {}} />)
     expect(screen.getByText(/Délais P3 tenus à 92 %/)).toBeTruthy()
     expect(screen.queryByText('Enregistrer la revue')).toBeNull()
+  })
+})
+
+describe('Respect du SLA (SLM-20)', () => {
+  it('affiche le respect mensuel et signale un mois sous la cible', async () => {
+    render(<AgreementCompliance agreement={agreement} />)
+    expect(await screen.findByText(/cible : 90 %/)).toBeTruthy()
+    expect(screen.getByText(/33,3 %/).textContent).toContain('⚠')
+    expect(screen.getByText('P4 : 1/3')).toBeTruthy()
   })
 })

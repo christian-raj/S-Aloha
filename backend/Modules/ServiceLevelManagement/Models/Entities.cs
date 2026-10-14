@@ -50,6 +50,8 @@ public class ServiceLevelAgreement : Record
     public ItService? Service { get; set; }
     [MaxLength(200)] public string Customer { get; set; } = "";
     public decimal? AvailabilityTarget { get; set; }                  // en %, ex. 99.5
+    /// <summary>SLM-20, SLM-23 : part cible des incidents résolus dans le délai, en % ; sans cible, pas d'alerte.</summary>
+    public decimal? ComplianceTarget { get; set; }
     public int? ResolutionHoursP1 { get; set; }
     public int? ResolutionHoursP2 { get; set; }
     public int? ResolutionHoursP3 { get; set; }
@@ -88,6 +90,7 @@ public record ServiceLevelAgreementDto(string Title, string? Description, string
     int ServiceId, string? Customer, decimal? AvailabilityTarget,
     int? ResolutionHoursP1, int? ResolutionHoursP2, int? ResolutionHoursP3, int? ResolutionHoursP4,
     DateTime? ValidFrom, DateTime? ValidTo, DateTime? ReviewDate, int? PerimeterId = null,
-    int? ResponseHoursP1 = null, int? ResponseHoursP2 = null, int? ResponseHoursP3 = null, int? ResponseHoursP4 = null) : IRecordDto;
+    int? ResponseHoursP1 = null, int? ResponseHoursP2 = null, int? ResponseHoursP3 = null, int? ResponseHoursP4 = null,
+    decimal? ComplianceTarget = null) : IRecordDto;
 
 public record AgreementReviewDto(string? Findings, string? Decisions, DateTime? NextReviewDate);

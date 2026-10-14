@@ -2200,6 +2200,10 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)");
 
+                    b.Property<decimal?>("ComplianceTarget")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
