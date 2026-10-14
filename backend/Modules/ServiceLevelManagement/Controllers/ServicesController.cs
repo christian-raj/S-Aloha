@@ -50,6 +50,8 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
         if (dto.AvailabilityTarget is < 0 or > 100) return "La disponibilité cible est un pourcentage (0 à 100).";
         int?[] hours = [dto.ResolutionHoursP1, dto.ResolutionHoursP2, dto.ResolutionHoursP3, dto.ResolutionHoursP4];
         if (hours.Any(h => h is <= 0)) return "Les délais de résolution sont des nombres d'heures positifs.";
+        int?[] response = [dto.ResponseHoursP1, dto.ResponseHoursP2, dto.ResponseHoursP3, dto.ResponseHoursP4];
+        if (response.Any(h => h is <= 0)) return "Les délais de prise en charge sont des nombres d'heures positifs.";
         if (dto.ValidFrom is not null && dto.ValidTo is not null && dto.ValidTo < dto.ValidFrom)
             return "La fin de validité précède son début.";
         e.ServiceId = dto.ServiceId;
@@ -57,6 +59,8 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
         e.AvailabilityTarget = dto.AvailabilityTarget;
         e.ResolutionHoursP1 = dto.ResolutionHoursP1; e.ResolutionHoursP2 = dto.ResolutionHoursP2;
         e.ResolutionHoursP3 = dto.ResolutionHoursP3; e.ResolutionHoursP4 = dto.ResolutionHoursP4;
+        e.ResponseHoursP1 = dto.ResponseHoursP1; e.ResponseHoursP2 = dto.ResponseHoursP2;
+        e.ResponseHoursP3 = dto.ResponseHoursP3; e.ResponseHoursP4 = dto.ResponseHoursP4;
         e.ValidFrom = Dates.Utc(dto.ValidFrom); e.ValidTo = Dates.Utc(dto.ValidTo);
         e.ReviewDate = Dates.Utc(dto.ReviewDate);
         return null;
@@ -79,6 +83,21 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
         for (var i = 1; i < hours.Length; i++)
             if (hours[i] < hours[i - 1])
                 return $"Les délais de résolution doivent croître de P1 à P4 (P{i} : {hours[i - 1]} h, P{i + 1} : {hours[i]} h).";
+        // SLM-13 : délais de prise en charge facultatifs ; donnés, ils sont complets, croissants
+        // et ne dépassent pas le délai de résolution de la même priorité.
+        int?[] response = [e.ResponseHoursP1, e.ResponseHoursP2, e.ResponseHoursP3, e.ResponseHoursP4];
+        if (response.Any(h => h is not null))
+        {
+            if (response.Any(h => h is null))
+                return "Renseigner les délais de prise en charge P1 à P4, ou aucun.";
+            for (var i = 0; i < response.Length; i++)
+            {
+                if (i > 0 && response[i] < response[i - 1])
+                    return $"Les délais de prise en charge doivent croître de P1 à P4 (P{i} : {response[i - 1]} h, P{i + 1} : {response[i]} h).";
+                if (response[i] > hours[i])
+                    return $"Le délai de prise en charge P{i + 1} ({response[i]} h) dépasse son délai de résolution ({hours[i]} h).";
+            }
+        }
         if (e.ValidFrom is null) return "Renseigner la date de début de validité.";
         if (!await Db.Services.AnyAsync(s => s.Id == e.ServiceId && s.Status == "En service"))
             return "Le service de l'accord doit être en service.";
@@ -93,5 +112,34 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
         q.Include(a => a.Service);
 
     protected override IQueryable<ServiceLevelAgreement> WithDetails(IQueryable<ServiceLevelAgreement> q) =>
-        q.Include(a => a.Service);
+        q.Include(a => a.Service).Include(a => a.Reviews.OrderByDescending(r => r.ReviewedAt));
+
+    /// <summary>
+    /// SLM-22 : le gestionnaire enregistre la revue du SLA (constats, décisions) ; la
+    /// prochaine revue est reportée de 12 mois, sauf date donnée.
+    /// </summary>
+    [HttpPost("{id:int}/reviews")]
+    public async Task<IActionResult> Review(int id, AgreementReviewDto dto)
+    {
+        var e = await Db.Agreements.FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        ActOn(e.PerimeterId);
+        if (!IsManager) return Forbid();
+        if (e.Status == "Expiré") return BadRequest(new { message = "Un SLA expiré ne se revoit plus : créer un nouvel accord." });
+        if (string.IsNullOrWhiteSpace(dto.Findings) && string.IsNullOrWhiteSpace(dto.Decisions))
+            return BadRequest(new { message = "Renseigner les constats ou les décisions de la revue." });
+        var next = Dates.Utc(dto.NextReviewDate) ?? DateTime.UtcNow.Date.AddMonths(12);
+        if (next <= DateTime.UtcNow.Date) return BadRequest(new { message = "La prochaine revue doit être dans le futur." });
+        var review = new AgreementReview
+        {
+            AgreementId = id, ReviewedBy = MyDisplay, NextReviewDate = next,
+            Findings = dto.Findings?.Trim() ?? "", Decisions = dto.Decisions?.Trim() ?? ""
+        };
+        var error = Lengths.Check(review);
+        if (error is not null) return BadRequest(new { message = error });
+        Db.AgreementReviews.Add(review);
+        e.ReviewDate = next; e.UpdatedAt = DateTime.UtcNow;
+        await Db.SaveChangesAsync();
+        return Ok(review);
+    }
 }

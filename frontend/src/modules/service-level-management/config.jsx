@@ -26,11 +26,13 @@ export const serviceConfig = {
 }
 
 const hours = (p) => ({ key: 'resolutionHours' + p, label: `Résolution ${p} (heures)`, type: 'number' })
+// SLM-13 : délais de prise en charge, facultatifs ; donnés, ils sont complets et ne dépassent pas la résolution.
+const response = (p) => ({ key: 'responseHours' + p, label: `Prise en charge ${p} (heures)`, type: 'number' })
 
 /** Configuration des SLA : la liste des services du catalogue alimente le choix du service. */
 export const agreementConfig = (services) => ({
   title: 'Accords de niveau de service',
-  sub: 'Cibles convenues avec les clients (disponibilité, délais de résolution par priorité) et dates de revue (ITIL).',
+  sub: 'Cibles convenues avec les clients (disponibilité, délais de prise en charge et de résolution par priorité) et revues (ITIL).',
   api: api.agreements, basePath: '/agreements', linkType: 'agreement', managerOnly: true,
   createLabel: '+ Nouveau SLA', createTitle: 'Nouvel accord de niveau de service',
   empty: 'Aucun SLA enregistré.',
@@ -42,6 +44,7 @@ export const agreementConfig = (services) => ({
     { key: 'customer', label: 'Client', placeholder: 'Direction, entité, métier…' },
     { key: 'availabilityTarget', label: 'Disponibilité cible (%)', type: 'number' },
     hours('P1'), hours('P2'), hours('P3'), hours('P4'),
+    response('P1'), response('P2'), response('P3'), response('P4'),
     { key: 'validFrom', label: 'Valide du', type: 'date' },
     { key: 'validTo', label: 'au', type: 'date' },
     { key: 'reviewDate', label: 'Prochaine revue', type: 'date' },

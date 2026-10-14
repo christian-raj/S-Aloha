@@ -40,6 +40,7 @@ public class Incident : Record
     public DateTime? OccurredAt { get; set; }
     /// <summary>INC-21 : échéance de résolution tirée du SLA en vigueur du service ; null sans SLA.</summary>
     public DateTime? ResolutionDueAt { get; set; }
+    public DateTime? ResponseDueAt { get; set; }                         // SLM-13 : échéance de prise en charge
     /// <summary>Le responsable a changé depuis la création (INC-23).</summary>
     public bool OwnerChanged { get; set; }
     /// <summary>INC-23 : résolu sans passer par En cours ni changer de responsable ; null tant que non résolu.</summary>

@@ -55,7 +55,7 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `ResolutionCode` | texte 30 | à la résolution | Correctif appliqué, Contournement, Résolu sans action, Non reproductible, Doublon | ✅ |
 | `FirstResponseAt` | date UTC | auto | Première prise en charge (passage à En cours) | ✅ |
 | `ResolutionDueAt` | date UTC | calculé | Échéance de résolution tirée du SLA (§ 6) | ✅ INC-21 (partiel) |
-| `ResponseDueAt` | date UTC | calculé | Échéance de prise en charge (SLM-13) | 🔜 INC-21 |
+| `ResponseDueAt` | date UTC | calculé | Échéance de prise en charge (SLM-13) | ✅ INC-21 (partiel, comme `ResolutionDueAt`) |
 | `OccurredAt` | date UTC | | Début constaté de l'interruption, jamais postérieur à la déclaration (MTTD) ; saisi par l'API, pas encore dans le formulaire | ✅ INC-27 |
 | `FirstContactResolution` | booléen | auto | Résolu au premier contact ; vide tant que non résolu | ✅ INC-23 |
 | `OwnerChanged` | booléen | auto | Le responsable a changé depuis la création (INC-23) | ✅ |
@@ -145,7 +145,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | INC-20 | Le service affecté est choisi dans le **catalogue** (`ServiceId`) ; l'ancien texte libre est repris à la migration | 🔜 | 2 |
-| INC-21 | **Échéances** calculées à la création et au changement de priorité : `ResolutionDueAt` = création + délai de résolution de la priorité (SLA du service) ; `ResponseDueAt` = création + délai de prise en charge (SLM-13). Sans SLA : pas d'échéance | ✅ (partiel : `ResolutionDueAt`, SLA En vigueur du service retrouvé par son nom en attendant INC-20, recalculée quand la priorité ou le service change, reprise au démarrage de l'API ; heures calendaires en attendant INC-22) / 🔜 (`ResponseDueAt`) | 2 |
+| INC-21 | **Échéances** calculées à la création et au changement de priorité : `ResolutionDueAt` = création + délai de résolution de la priorité (SLA du service) ; `ResponseDueAt` = création + délai de prise en charge (SLM-13). Sans SLA : pas d'échéance | ✅ (partiel : `ResolutionDueAt`, SLA En vigueur du service retrouvé par son nom en attendant INC-20, recalculée quand la priorité ou le service change, reprise au démarrage de l'API ; heures calendaires en attendant INC-22) ; `ResponseDueAt` de même, si le SLA a des délais de prise en charge) | 2 |
 | INC-22 | Les délais se comptent en **heures de service** du service (SLM-14) et excluent le temps En attente | 🔜 | 2 |
 | INC-23 | **Résolu au premier contact** : résolu sans passer par En cours, sans changement de responsable ni réouverture ; fixé à la première résolution, une réouverture le met à faux | ✅ | |
 | INC-24 | **SLA en risque** : moins de 25 % du délai de résolution restant ⇒ bloc « Urgent » de la console du responsable et des gestionnaires ; **SLA dépassé** ⇒ marqué sur la fiche et le registre | 🔜 | 2 |

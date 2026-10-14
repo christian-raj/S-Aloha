@@ -44,9 +44,28 @@ public class ServiceLevelAgreement : Record
     public int? ResolutionHoursP2 { get; set; }
     public int? ResolutionHoursP3 { get; set; }
     public int? ResolutionHoursP4 { get; set; }
+    /// <summary>SLM-13 : délais de prise en charge par priorité (heures), mesurés sur FirstResponseAt.</summary>
+    public int? ResponseHoursP1 { get; set; }
+    public int? ResponseHoursP2 { get; set; }
+    public int? ResponseHoursP3 { get; set; }
+    public int? ResponseHoursP4 { get; set; }
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidTo { get; set; }
     public DateTime? ReviewDate { get; set; }
+    public List<AgreementReview> Reviews { get; set; } = new();
+}
+
+/// <summary>SLM-22 : revue d'un SLA — constats et décisions ; reporte la prochaine revue.</summary>
+public class AgreementReview
+{
+    public int Id { get; set; }
+    public int AgreementId { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore] public ServiceLevelAgreement? Agreement { get; set; }
+    public DateTime ReviewedAt { get; set; } = DateTime.UtcNow;
+    [MaxLength(200)] public string ReviewedBy { get; set; } = "";
+    [MaxLength(4000)] public string Findings { get; set; } = "";
+    [MaxLength(4000)] public string Decisions { get; set; } = "";
+    public DateTime? NextReviewDate { get; set; }
 }
 
 public record ItServiceDto(string Title, string? Description, string? Status,
@@ -57,4 +76,7 @@ public record ServiceLevelAgreementDto(string Title, string? Description, string
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     int ServiceId, string? Customer, decimal? AvailabilityTarget,
     int? ResolutionHoursP1, int? ResolutionHoursP2, int? ResolutionHoursP3, int? ResolutionHoursP4,
-    DateTime? ValidFrom, DateTime? ValidTo, DateTime? ReviewDate, int? PerimeterId = null) : IRecordDto;
+    DateTime? ValidFrom, DateTime? ValidTo, DateTime? ReviewDate, int? PerimeterId = null,
+    int? ResponseHoursP1 = null, int? ResponseHoursP2 = null, int? ResponseHoursP3 = null, int? ResponseHoursP4 = null) : IRecordDto;
+
+public record AgreementReviewDto(string? Findings, string? Decisions, DateTime? NextReviewDate);

@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Niveaux de service** : un SLA dont la validité est passée **expire** de lui-même, les
+  gestionnaires sont prévenus (SLM-04) ; **délais de prise en charge** P1 à P4 dans le SLA et
+  échéance de prise en charge sur l'incident (SLM-13) ; **revue de SLA** : constats et
+  décisions enregistrés, prochaine revue reportée de 12 mois (SLM-22). Migration
+  `AgreementReviewResponse`.
+
 - **Conformité NIS 2 sort du MVP** : toutes les règles listées pour sa sortie sont en place
   (NIS-08, NIS-09, NIS-14, NIS-16, NIS-17, NIS-18) ; la mention **(MVP)** disparaît du README
   et de la cartographie. Les preuves se relient aux enregistrements ; les pièces jointes

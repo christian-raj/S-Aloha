@@ -78,7 +78,10 @@ export const api = {
     removeRelation: (relId) => request('/configuration-items/relations/' + relId, { method: 'DELETE' })
   },
   services: records('/services'),
-  agreements: records('/agreements'),
+  agreements: {
+    ...records('/agreements'),
+    review: (id, dto) => request(`/agreements/${id}/reviews`, { method: 'POST', body: JSON.stringify(dto) })
+  },
   knowledge: {
     ...records('/knowledge'),
     submit: (id) => request(`/knowledge/${id}/submit`, { method: 'POST' }),

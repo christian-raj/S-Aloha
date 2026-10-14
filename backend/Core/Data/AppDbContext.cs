@@ -53,6 +53,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<AssessmentResponse> AssessmentResponses => Set<AssessmentResponse>();
     public DbSet<AssessmentEvidence> AssessmentEvidences => Set<AssessmentEvidence>();
+    public DbSet<AgreementReview> AgreementReviews => Set<AgreementReview>();
     // Gestion de projet
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectPhase> ProjectPhases => Set<ProjectPhase>();

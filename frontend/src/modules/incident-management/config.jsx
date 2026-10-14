@@ -39,7 +39,10 @@ export const incidentConfig = {
     <span className={'badge ' + r.priority}>{r.priority}</span>{' '}
     {r.isMajor && <span className="badge t-bad">Majeur</span>}
   </>,
-  meta: r => [r.firstResponseAt && `Pris en charge le ${dateTimeFr(r.firstResponseAt)}`,
+  // SLM-13, INC-21 : échéances tirées du SLA en vigueur du service.
+  meta: r => [!r.firstResponseAt && r.responseDueAt && `Prise en charge attendue avant le ${dateTimeFr(r.responseDueAt)}`,
+    r.firstResponseAt && `Pris en charge le ${dateTimeFr(r.firstResponseAt)}`,
+    !r.resolvedAt && r.resolutionDueAt && `Résolution attendue avant le ${dateTimeFr(r.resolutionDueAt)}`,
     r.resolvedAt && `Résolu le ${dateTimeFr(r.resolvedAt)}`,
     r.reopenCount > 0 && `Rouvert ${r.reopenCount} fois`],
   help: 'Prise en charge (En cours) : un responsable. Résolution : description et code ; un doublon est relié à l\'incident conservé (onglet Liens). Réouverture : un motif, dans les 10 jours ouvrés. Incident majeur : déclaré par un gestionnaire.',
