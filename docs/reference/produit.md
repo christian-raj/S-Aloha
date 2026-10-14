@@ -35,7 +35,7 @@ où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-
 
 | Processus | Objet | État | Module (API, interface) |
 |---|---|---|---|
-| **Incidents** | Rétablir le service au plus vite | Actif (MVP) | `Modules/IncidentManagement`, `modules/incident-management` |
+| **Incidents** | Rétablir le service au plus vite | Actif | `Modules/IncidentManagement`, `modules/incident-management` |
 | **Demandes** | Demandes de service utilisateurs | Actif (MVP) | `Modules/ServiceRequestManagement`, `modules/service-request-management` |
 | **Problèmes** | Causes racines et erreurs connues | Actif | `Modules/ProblemManagement`, `modules/problem-management` |
 | **Changements** | Changements et mises en production | Actif (MVP) | `Modules/ChangeEnablement`, `modules/change-enablement` |
