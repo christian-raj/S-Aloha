@@ -248,6 +248,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Modifié
 
+- **Passage à .NET 10 (LTS)** : API en `net10.0`, EF Core 10, Npgsql EF 10, JwtBearer 10,
+  Swashbuckle 10 (OpenAPI 3), client LDAP 4 (asynchrone) ; images Docker `sdk:10.0` et
+  `aspnet:10.0`. Frontend en **React 19**, Vite 8, Vitest 5. .NET 11 n'est encore qu'en
+  version candidate : il sera adopté à sa sortie stable.
+
 - **Recherche d'un compte dans l'annuaire** : les renvois (*referrals*) d'Active Directory sont
   ignorés ; un compte inconnu est refusé comme responsable d'un incident majeur, et la
   connexion ne journalise plus de faux échec LDAP.
@@ -281,6 +286,9 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Mise à jour
 
+- **.NET 10** : reconstruire les images (`docker compose build`) ; aucune migration de base
+  n'accompagne ce passage. En développement : SDK .NET 10 et `dotnet-ef` 10
+  (`dotnet tool update -g dotnet-ef --version 10.*`) ; `DOTNET_ROLL_FORWARD` n'est plus utile.
 - `docker compose up` démarre désormais le service `embeddings` et télécharge le modèle
   `bge-m3` (environ 1,2 Go) au premier démarrage ; pour s'en passer :
   `docker compose up -d db api web` et `Embeddings__Url` vide

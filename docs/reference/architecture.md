@@ -9,7 +9,7 @@
 ```mermaid
 flowchart LR
     U(["Navigateur<br/>React"]) -- HTTP --> W["web<br/>nginx"]
-    W -- "/api/" --> A["api<br/>ASP.NET Core 8"]
+    W -- "/api/" --> A["api<br/>ASP.NET Core 10"]
     A -- "EF Core" --> D[("db<br/>PostgreSQL 16")]
     A -- "LDAP(S) 389/636" --> AD[["Active Directory<br/>on-prem"]]
     A -. "HTTP 11434, facultatif" .-> E["embeddings<br/>Ollama · bge-m3"]
@@ -21,12 +21,12 @@ Quatre containers orchestrés par `docker-compose.yml` : **web** (nginx sert le 
 
 | Couche | Choix | Notes |
 |---|---|---|
-| Frontend | React 18 + Vite, react-router | Build statique servi par nginx ; aucune dépendance UI lourde (CSS natif à jetons, voir [frontend.md](frontend.md)) |
-| Backend | ASP.NET Core 8 Web API | Controllers REST, Swagger exposé sur `/swagger` |
-| ORM | Entity Framework Core 8 (8.0.31) | Provider Npgsql ; schéma par migrations EF, appliquées au démarrage ([ADR-0008](../decisions/adr-0008-migrations-ef.md)) |
-| Base | PostgreSQL 16 (provider Npgsql EF 8.0.11) | Remplaçable par SQL Server (provider EF + image du compose) |
-| Annuaire | Novell.Directory.Ldap.NETStandard | Bind de service pour la recherche, bind utilisateur pour l'authentification |
-| Auth API | JWT Bearer (HS256, JwtBearer 8.0.31) | Claims : name, displayName, role, `adgroup` (un par groupe AD direct, SOC-10) ; expiration paramétrable |
+| Frontend | React 19 + Vite 8, react-router 7 | Build statique servi par nginx ; aucune dépendance UI lourde (CSS natif à jetons, voir [frontend.md](frontend.md)) |
+| Backend | ASP.NET Core 10 Web API (.NET 10 LTS) | Controllers REST, Swagger exposé sur `/swagger` (Swashbuckle 10, OpenAPI 3) |
+| ORM | Entity Framework Core 10 (10.0.13) | Provider Npgsql ; schéma par migrations EF, appliquées au démarrage ([ADR-0008](../decisions/adr-0008-migrations-ef.md)) |
+| Base | PostgreSQL 16 (provider Npgsql EF 10.0.3) | Remplaçable par SQL Server (provider EF + image du compose) |
+| Annuaire | Novell.Directory.Ldap.NETStandard 4 (API asynchrone) | Bind de service pour la recherche, bind utilisateur pour l'authentification ; référents AD ignorés |
+| Auth API | JWT Bearer (HS256, JwtBearer 10.0.13) | Claims : name, displayName, role, `adgroup` (un par groupe AD direct, SOC-10) ; expiration paramétrable |
 
 ## 3. Organisation du code : socle et modules
 
@@ -209,11 +209,11 @@ Détails (registre des modules, thème, design) : [frontend.md](frontend.md).
 
 | Suite | Commande | Outillage |
 |---|---|---|
-| API (intégration) | `TESTCONTAINERS_RYUK_DISABLED=true dotnet test tests/SAloha.Api.Tests` | xUnit + `WebApplicationFactory` sur un PostgreSQL jetable (Testcontainers 4.15, image `postgres:18-alpine`) ; **Docker requis** |
+| API (intégration) | `TESTCONTAINERS_RYUK_DISABLED=true dotnet test tests/SAloha.Api.Tests` | xUnit + `WebApplicationFactory` sur un PostgreSQL jetable (Testcontainers 4.16, image `postgres:18-alpine`) ; **Docker requis** |
 | Frontend | `cd frontend && npm test` | Vitest + Testing Library (jsdom) |
 
-- Le projet de tests cible **net10.0** alors que l'API reste en **net8.0** : un hôte de
-  test 8.0 exécuté sur le runtime 10 répond 500 à toute écriture JSON.
+- L'API et le projet de tests ciblent **net10.0** (LTS) ; un seul SDK suffit, en local comme
+  en CI.
 - Les jetons sont signés par la fixture (`ApiFixture`) avec la clé de configuration :
   l'Active Directory n'est pas sollicité.
 - Couverture actuelle : bloquants B1 à B3 et majeurs M1, M2, M4, M5, M6 de la
