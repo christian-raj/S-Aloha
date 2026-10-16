@@ -41,7 +41,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         ValidateIssuer = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidateAudience = false,
+        // S8 : jeton émis pour S-Aloha seulement (Jwt:Audience, l'émetteur par défaut).
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"] ?? builder.Configuration["Jwt:Issuer"],
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
@@ -64,6 +66,9 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
     p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
+
+// S7 : pas de démarrage hors développement avec les secrets d'exemple.
+SampleSecrets.Check(app.Configuration, app.Environment, app.Logger);
 
 // Schéma par migrations EF ; une base créée par l'ancien EnsureCreated est reprise telle quelle.
 // Puis structure du référentiel NIS 2 embarquée (ADR-0012), alignée à chaque démarrage.

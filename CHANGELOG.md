@@ -284,6 +284,15 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 - Page de connexion : titre « Piloter le service IT, de l'incident à l'amélioration. » ;
   sous-titre de marque « Plateforme ITIL ».
 
+### Sécurité
+
+- **Secrets d'exemple refusés** (S7) : hors développement, l'API refuse de démarrer avec la
+  clé JWT, le mot de passe du compte de service ou celui de la base livrés en exemple, ou avec
+  une clé JWT de moins de 64 caractères ; le mode démonstration l'accepte explicitement
+  (`Security:AllowSampleSecrets`) et le journalise.
+- **Audience du jeton** (S8) : les jetons portent et doivent porter l'audience `S-Aloha`
+  (`Jwt:Audience`).
+
 ### Corrigé
 
 - **Annuaire injoignable** (R6) : la connexion répond « Annuaire injoignable » (503) au lieu
@@ -293,6 +302,10 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Mise à jour
 
+- **Secrets** : une installation hors démonstration qui garde la clé JWT, le mot de passe
+  de base ou celui du compte de service d'exemple ne démarre plus (S7) : les remplacer avant de
+  mettre à jour. Les jetons émis avant la mise à jour n'ont pas d'audience : chacun se reconnecte
+  une fois (S8).
 - **.NET 10** : reconstruire les images (`docker compose build`) ; aucune migration de base
   n'accompagne ce passage. En développement : SDK .NET 10 et `dotnet-ef` 10
   (`dotnet tool update -g dotnet-ef --version 10.*`) ; `DOTNET_ROLL_FORWARD` n'est plus utile.

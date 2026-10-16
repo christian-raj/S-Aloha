@@ -16,6 +16,7 @@ public class TokenService(IConfiguration config)
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
         var token = new JwtSecurityToken(
             issuer: config["Jwt:Issuer"],
+            audience: config["Jwt:Audience"] ?? config["Jwt:Issuer"],   // S8
             claims: new[]
             {
                 new Claim(ClaimTypes.Name, username),
