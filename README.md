@@ -140,12 +140,12 @@ dépendance à un éditeur.
     <td><img src="docs/screenshots/08-reporting.png" alt="Reporting" /><br/><b>Reporting</b> — tableau de bord à onglets : santé, incidents, problèmes, changements et projets, conformité</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/10-incident-majeur.png" alt="Incident majeur" /><br/><b>Incidents</b> — priorité P1–P4, incident majeur, problème lié</td>
+    <td><img src="docs/screenshots/10-incident-majeur.png" alt="Incident majeur" /><br/><b>Incident majeur</b> — priorité P1–P4, état du SLA, échéance de résolution</td>
     <td><img src="docs/screenshots/11-calendrier-changements.png" alt="Calendrier des changements" /><br/><b>Changements</b> — autorisation et calendrier des mises en production</td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/12-configuration-relations.png" alt="CI et relations" /><br/><b>Configuration</b> — éléments de configuration et leurs dépendances</td>
-    <td><img src="docs/screenshots/13-niveaux-de-service.png" alt="Accords de niveau de service" /><br/><b>Niveaux de service</b> — SLA par service, cibles et revues</td>
+    <td><img src="docs/screenshots/13-niveaux-de-service.png" alt="Accords de niveau de service" /><br/><b>Niveaux de service</b> — SLA par service, disponibilité, revues</td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/14-connaissances.png" alt="Base de connaissances" /><br/><b>Connaissances</b> — solutions, procédures, erreurs connues</td>
@@ -154,6 +154,10 @@ dépendance à un éditeur.
   <tr>
     <td><img src="docs/screenshots/17-projet-scrum.png" alt="Projet Scrum" /><br/><b>Projets</b> — Scrum, cycle en V, PRINCE2 : backlog, sprints, tableau</td>
     <td><img src="docs/screenshots/18-conformite-nis2.png" alt="Conformité NIS 2" /><br/><b>Conformité NIS 2</b> — évaluation, score, maturité et écarts par objectif</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/19-notifications.png" alt="Notifications" /><br/><b>Notifications</b> — demandes en retard, actions en retard, SLA dépassés, incidents P1</td>
+    <td><img src="docs/screenshots/09-incidents.png" alt="Registre des incidents" /><br/><b>Registre des incidents</b> — priorité, service, état du SLA</td>
   </tr>
 </table>
 
