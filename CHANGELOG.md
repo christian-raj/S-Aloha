@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Changements sort du MVP** : toutes les règles listées pour sa sortie sont en place
+  (CHG-14 à CHG-16, CHG-20, CHG-21, CHG-24 à CHG-26) ; la mention **(MVP)** disparaît du
+  README et de la cartographie. Un changement Standard exige un modèle standard ; les CI
+  concernés d'un modèle restent à venir.
+
 - **Gouvernance des changements** : un changement normal à risque élevé est autorisé par le
   **CAB** — deux gestionnaires distincts approuvent, un rejet motivé suffit (CHG-20) ; **périodes
   de gel** sur le calendrier, où seul un changement urgent se planifie (CHG-25) ; **modèles de
