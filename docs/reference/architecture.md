@@ -30,7 +30,7 @@ Quatre containers orchestrés par `docker-compose.yml` : **web** (nginx sert le 
 
 ## 3. Organisation du code : socle et modules
 
-S-Aloha est une **plateforme modulaire** : un **socle** (*Core*) transverse à tous les processus ITIL, et un **module** par processus. Les huit processus du registre sont implémentés ; tous sauf *Gestion des problèmes* en MVP, tous sur un socle commun d'enregistrement (`Record`, `RecordController` ; les problèmes y sont passés le 2026-10-12, leurs analyses et actions restent des contrôleurs propres) (voir [produit.md](produit.md) et [ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)).
+S-Aloha est une **plateforme modulaire** : un **socle** (*Core*) transverse à tous les processus ITIL, et un **module** par processus. Les dix modules du registre sont implémentés (huit pratiques ITIL, Projets, Conformité NIS 2), tous sur un socle commun d'enregistrement (`Record`, `RecordController` ; les problèmes y sont passés le 2026-10-12, leurs analyses et actions restent des contrôleurs propres) (voir [produit.md](produit.md) et [ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)).
 
 ```
 backend/                              # projet SAloha.Api (namespace SAloha.Api.*)

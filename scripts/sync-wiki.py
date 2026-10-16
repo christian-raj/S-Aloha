@@ -24,7 +24,7 @@ RAW = 'https://raw.githubusercontent.com/christian-raj/S-Aloha/main'
 # Pages du wiki : nom de page → fichier source. L'ordre est celui de la barre latérale.
 # Troisième champ : ce que le lecteur vient y chercher (page d'accueil).
 REFERENCE = [
-    ('Produit', 'docs/reference/produit.md', 'Comprendre la vision, les processus couverts et la feuille de route'),
+    ('Produit', 'docs/reference/produit.md', 'Comprendre la vision, les publics visés et les pratiques couvertes'),
     ('Règles-métier', 'docs/reference/regles-metier.md', 'Connaître les rôles, la console, les cycles de vie, la priorité, le RACI'),
     ('Architecture', 'docs/reference/architecture.md', 'Voir comment tout s’assemble : containers, socle, modules, API'),
     ('Base-de-données', 'docs/reference/base-de-donnees.md', 'Lire le modèle de données et les migrations'),
@@ -34,7 +34,7 @@ REFERENCE = [
     ('Périmètres', 'docs/reference/perimetres.md', 'Droits scopés par direction, site ou entité'),
     ('Sécurité', 'docs/reference/securite.md', 'Préparer une mise en production'),
     ('Glossaire', 'docs/reference/glossaire.md', 'Retrouver un terme ITIL, technique ou malgache'),
-    ('Pratiques-ITIL', 'docs/reference/processus/readme.md', 'Spécifier ou implémenter une pratique : règles numérotées, statut, lot'),
+    ('Pratiques-ITIL', 'docs/reference/processus/readme.md', 'Spécifier ou implémenter une pratique : règles numérotées, statut, lot ; choisir une règle à prendre'),
     ('Pratique-Problèmes', 'docs/reference/processus/gestion-des-problemes.md', 'Gestion des problèmes'),
     ('Pratique-Incidents', 'docs/reference/processus/gestion-des-incidents.md', 'Gestion des incidents'),
     ('Pratique-Demandes', 'docs/reference/processus/gestion-des-demandes.md', 'Gestion des demandes de service'),
@@ -47,10 +47,10 @@ REFERENCE = [
     ('Pratique-Déclarations-réglementaires', 'docs/reference/processus/declarations-reglementaires.md', 'Déclarations réglementaires'),
 ]
 PILOTAGE = [
-    ('Plan-d’action', 'docs/plan-action.md', 'Les chantiers ouverts et leur priorité'),
+    ('Plan-d’action', 'docs/plan-action.md', 'Les chantiers ouverts, la feuille de route et leur priorité'),
     ('Décisions', 'docs/decisions/readme.md', 'Les choix structurants et pourquoi (ADR)'),
     ('Protocole-documentaire', 'docs/protocole-documentation.md', 'La routine qui tient la documentation à jour'),
-    ('Soutenir', 'docs/soutenir.md', 'Financer la feuille de route : sponsoring, services'),
+    ('Soutenir', 'docs/soutenir.md', 'Financer la feuille de route : sponsoring, chantiers à sponsoriser, services'),
 ]
 
 
@@ -127,6 +127,21 @@ Plateforme ITIL libre (AGPLv3), branchée sur votre Active Directory.
 
 > 📄 Ce wiki est **généré** depuis le dossier [`docs/`]({GITHUB}/tree/main/docs) du dépôt,
 > qui fait foi ([ADR-0002](ADR-0002)). Pour corriger une page, modifiez le document source.
+
+## En bref
+
+**10 pratiques ITIL 4** reliées entre elles — incidents, demandes, problèmes, changements,
+configuration, niveaux de service, connaissances, amélioration continue, conformité NIS 2,
+projets — sur un socle commun : connexion par l'Active Directory, console qui dit à chacun
+quoi faire, notifications, commentaires et historique sur chaque fiche, recherche hybride,
+reporting. **Plus de 250 règles de gestion** en place, on-prem, libre sous AGPLv3.
+
+- **Découvrir** : [fonctionnalités et captures]({GITHUB}#fonctionnalités), [Produit](Produit).
+- **Essayer** : le [mode démonstration]({GITHUB}#essayer-en-5-minutes) démarre sans Active
+  Directory, en une commande.
+- **Contribuer** : chaque pratique est spécifiée règle par règle ; une soixantaine de règles
+  🔜 attendent leur implémentation ([pratiques ITIL](Pratiques-ITIL),
+  [guide de contribution]({BLOB}/CONTRIBUTING.md)).
 
 ## Référence
 

@@ -8,7 +8,7 @@
 
 <sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
 
-**Pour un agent de code** : lire d'abord le § 3 (conventions), puis le document de la
+**Pour implémenter une règle** (contributeur ou agent de code) : lire d'abord le § 3 (conventions), puis le document de la
 pratique concernée. Une règle **🔜 à implémenter** s'implémente avec son test, et passe en
 **✅** dans la même pull request ; une règle **✅** décrit le comportement actuel : ne pas
 le « corriger » sans modifier d'abord la règle.
@@ -92,7 +92,7 @@ pratique ; ils rejoignent le groupe indiqué.
 
 ### Statut des règles
 
-| Marque | Sens | Ce que fait un agent de code |
+| Marque | Sens | Ce que fait le contributeur |
 |---|---|---|
 | ✅ | **Implémentée** : comportement actuel de la plateforme | La respecter ; la modifier seulement si la règle elle-même change |
 | 🔜 | **À implémenter** : comportement cible | L'implémenter avec un test d'API (et d'interface si visible), puis passer la marque à ✅ dans la même PR |
@@ -126,7 +126,7 @@ Les règles 🔜 sont rangées par **lot**, qui donne l'ordre d'implémentation 
 | Lot | Contenu | Pourquoi d'abord |
 |---|---|---|
 | **1** | Robustesse et cohérence : validations, transitions contraintes, écarts connus | Ce que la plateforme affiche doit être juste avant d'en faire plus |
-| **2** | Pratique ITIL complète : délais et SLA mesurés, escalade, revues, catalogue | Ce qui fait passer chaque pratique du MVP à l'usage réel |
+| **2** | Pratique ITIL complète : délais et SLA mesurés, escalade, revues, catalogue | Ce qui donne à chaque pratique sa profondeur ITIL ; le cœur en est fait (2026-10-16) |
 | **3** | Confort et industrialisation : automatismes, import, enquêtes, tableaux avancés | Utile, non bloquant |
 
 Le [plan d'action](../plan-action.md) reste la liste des chantiers ; il renvoie aux
@@ -145,15 +145,16 @@ Référentiel : les **pratiques ITIL 4** ([ADR-0007](../decisions/adr-0007-prati
 
 | Pratique | Document | Objet | Maturité |
 |---|---|---|---|
-| Gestion des incidents | [gestion-des-incidents](processus/gestion-des-incidents.md) | Rétablir le service au plus vite | MVP |
-| Gestion des demandes de service | [gestion-des-demandes](processus/gestion-des-demandes.md) | Traiter les demandes prédéfinies des utilisateurs | MVP |
+| Gestion des incidents | [gestion-des-incidents](processus/gestion-des-incidents.md) | Rétablir le service au plus vite | Complète |
+| Gestion des demandes de service | [gestion-des-demandes](processus/gestion-des-demandes.md) | Traiter les demandes prédéfinies des utilisateurs | Complète |
 | Gestion des problèmes | [gestion-des-problemes](processus/gestion-des-problemes.md) | Supprimer les causes des incidents | Complète |
-| Habilitation des changements | [habilitation-des-changements](processus/habilitation-des-changements.md) | Faire réussir les changements | MVP avancé |
-| Gestion de la configuration | [gestion-de-la-configuration](processus/gestion-de-la-configuration.md) | Connaître les CI et leurs dépendances | MVP avancé |
-| Gestion des niveaux de service | [gestion-des-niveaux-de-service](processus/gestion-des-niveaux-de-service.md) | Fixer et mesurer les engagements | MVP |
-| Gestion des connaissances | [gestion-des-connaissances](processus/gestion-des-connaissances.md) | Capitaliser et réutiliser | MVP |
-| Amélioration continue | [amelioration-continue](processus/amelioration-continue.md) | Améliorer en continu | MVP |
-| Conformité NIS 2 (sécurité de l'information) | [conformite-nis2](processus/conformite-nis2.md) | Évaluer la conformité au Référentiel Cyber France | MVP |
+| Habilitation des changements | [habilitation-des-changements](processus/habilitation-des-changements.md) | Faire réussir les changements | Complète |
+| Gestion de la configuration | [gestion-de-la-configuration](processus/gestion-de-la-configuration.md) | Connaître les CI et leurs dépendances | Complète |
+| Gestion des niveaux de service | [gestion-des-niveaux-de-service](processus/gestion-des-niveaux-de-service.md) | Fixer et mesurer les engagements | Complète |
+| Gestion des connaissances | [gestion-des-connaissances](processus/gestion-des-connaissances.md) | Capitaliser et réutiliser | Complète |
+| Amélioration continue | [amelioration-continue](processus/amelioration-continue.md) | Améliorer en continu | Complète |
+| Conformité NIS 2 (sécurité de l'information) | [conformite-nis2](processus/conformite-nis2.md) | Évaluer la conformité au Référentiel Cyber France | Complète |
+| Gestion de projet | [gestion-de-projet](processus/gestion-de-projet.md) | Faire aboutir les projets de la DSI | Complète |
 | Déclarations réglementaires (sécurité de l'information) | [declarations-reglementaires](processus/declarations-reglementaires.md) | Déclarer les incidents cyber aux autorités dans les délais (NIS 2, RGPD) | Spécifiée |
 
 ```mermaid
