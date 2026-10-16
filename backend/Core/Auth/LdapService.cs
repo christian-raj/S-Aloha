@@ -9,16 +9,36 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
     private int Port => int.Parse(config["Ldap:Port"] ?? "389");
     private bool UseSsl => bool.Parse(config["Ldap:UseSsl"] ?? "false");
     private string BaseDn => config["Ldap:BaseDn"]!;
+    /// <summary>R7 : délai maximal de connexion et de chaque opération (5 s par défaut).</summary>
+    private int TimeoutMs => (int.TryParse(config["Ldap:TimeoutSeconds"], out var s) && s > 0 ? s : 5) * 1000;
 
     // Novell.Directory.Ldap 4 : API asynchrone (connexion, liaison, recherche).
-    private async Task<LdapConnection> ConnectAsync(string dn, string password)
+    // R6 : serveur absent ou injoignable, ou compte de service refusé → DirectoryUnavailableException ;
+    // seule la liaison d'un utilisateur avec un mauvais mot de passe reste une LdapException.
+    private async Task<LdapConnection> ConnectAsync(string dn, string password, bool service = false)
     {
-        var conn = new LdapConnection { SecureSocketLayer = UseSsl };
+        var conn = new LdapConnection { SecureSocketLayer = UseSsl, ConnectionTimeout = TimeoutMs };
+        var constraints = conn.Constraints;
+        constraints.TimeLimit = TimeoutMs;   // liaison et recherches bornées (R7)
+        conn.Constraints = constraints;
         try
         {
             await conn.ConnectAsync(Host, Port);
+        }
+        catch (Exception ex)
+        {
+            conn.Dispose();
+            throw new DirectoryUnavailableException($"Annuaire injoignable ({Host}:{Port}).", ex);
+        }
+        try
+        {
             await conn.BindAsync(dn, password);
             return conn;
+        }
+        catch (LdapException ex) when (service || Unavailable(ex))
+        {
+            conn.Dispose();
+            throw new DirectoryUnavailableException(service ? "Compte de service de l'annuaire refusé." : "Annuaire injoignable.", ex);
         }
         catch
         {
@@ -27,8 +47,12 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
         }
     }
 
+    /// <summary>Codes LDAP d'un serveur injoignable ou indisponible (et non d'un refus).</summary>
+    private static bool Unavailable(LdapException ex) => ex.ResultCode is LdapException.ServerDown or LdapException.ConnectError
+        or LdapException.Unavailable or LdapException.Busy or LdapException.LdapTimeout;
+
     private Task<LdapConnection> ServiceConnectAsync() =>
-        ConnectAsync(config["Ldap:BindUser"]!, config["Ldap:BindPassword"]!);
+        ConnectAsync(config["Ldap:BindUser"]!, config["Ldap:BindPassword"]!, service: true);
 
     /// <summary>Première entrée d'une recherche ; les référents d'un AD (Configuration, DomainDnsZones…) ne sont pas des comptes.</summary>
     private static async Task<LdapEntry?> FirstEntryAsync(ILdapSearchResults search)
@@ -70,6 +94,10 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
             var account = GetAttr(entry, "sAMAccountName") ?? username;
             var role = ResolveRole(groups);
             return role is null ? null : (account, display, role, groups);
+        }
+        catch (LdapException ex) when (Unavailable(ex))
+        {
+            throw new DirectoryUnavailableException("Annuaire injoignable.", ex);
         }
         catch (LdapException ex)
         {

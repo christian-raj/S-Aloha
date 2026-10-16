@@ -25,7 +25,7 @@ Quatre containers orchestrés par `docker-compose.yml` : **web** (nginx sert le 
 | Backend | ASP.NET Core 10 Web API (.NET 10 LTS) | Controllers REST, Swagger exposé sur `/swagger` (Swashbuckle 10, OpenAPI 3) |
 | ORM | Entity Framework Core 10 (10.0.13) | Provider Npgsql ; schéma par migrations EF, appliquées au démarrage ([ADR-0008](../decisions/adr-0008-migrations-ef.md)) |
 | Base | PostgreSQL 16 (provider Npgsql EF 10.0.3) | Remplaçable par SQL Server (provider EF + image du compose) |
-| Annuaire | Novell.Directory.Ldap.NETStandard 4 (API asynchrone) | Bind de service pour la recherche, bind utilisateur pour l'authentification ; référents AD ignorés |
+| Annuaire | Novell.Directory.Ldap.NETStandard 4 (API asynchrone) | Bind de service pour la recherche, bind utilisateur pour l'authentification ; référents AD ignorés ; annuaire injoignable (serveur absent, compte de service refusé, délai `Ldap:TimeoutSeconds` dépassé) : 503 « Annuaire injoignable » à la connexion et à la recherche, jamais « identifiants invalides » (R6, R7) |
 | Auth API | JWT Bearer (HS256, JwtBearer 10.0.13) | Claims : name, displayName, role, `adgroup` (un par groupe AD direct, SOC-10) ; expiration paramétrable |
 
 ## 3. Organisation du code : socle et modules

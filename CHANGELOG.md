@@ -284,6 +284,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 - Page de connexion : titre « Piloter le service IT, de l'incident à l'amélioration. » ;
   sous-titre de marque « Plateforme ITIL ».
 
+### Corrigé
+
+- **Annuaire injoignable** (R6) : la connexion répond « Annuaire injoignable » (503) au lieu
+  de « identifiants invalides », et la recherche de personnes et de groupes répond 503 au lieu
+  d'une erreur 500. Un contrôleur de domaine qui ne répond pas est abandonné après
+  `Ldap:TimeoutSeconds` (5 s par défaut) au lieu du délai TCP du système (R7).
+
 ### Mise à jour
 
 - **.NET 10** : reconstruire les images (`docker compose build`) ; aucune migration de base
