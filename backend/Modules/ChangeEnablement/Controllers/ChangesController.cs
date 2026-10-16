@@ -35,7 +35,40 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
             return "La fin réelle précède le début réel.";
         e.ActualStart = Dates.Utc(dto.ActualStart); e.ActualEnd = Dates.Utc(dto.ActualEnd);
         e.PirNotes = string.IsNullOrWhiteSpace(dto.PirNotes) ? null : dto.PirNotes.Trim();
+        if (creating) e.StandardModelId = dto.StandardModelId;   // CHG-26 : choisi à la création
         return null;
+    }
+
+    /// <summary>
+    /// CHG-26 : un changement Standard se crée depuis un modèle actif, dont il reprend les plans et
+    /// le risque (son autorisation vient du modèle). Vérifié à la création, ou quand le type devient Standard.
+    /// </summary>
+    protected override async Task<string?> ValidateAsync(Change e)
+    {
+        var becameStandard = e.ChangeType == "Standard"
+            && (e.Id == 0 || Db.Entry(e).Property(x => x.ChangeType).OriginalValue != "Standard");
+        if (!becameStandard) return null;
+        var model = e.StandardModelId is int id ? await Db.StandardChangeModels.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id) : null;
+        if (model is null) return "Un changement Standard se crée depuis un modèle standard du catalogue ; sinon, créer un changement Normal.";
+        if (!model.Active) return $"Le modèle standard « {model.Name} » n'est plus proposé.";
+        FromModel(e, model);
+        return null;
+    }
+
+    private static void FromModel(Change e, StandardChangeModel model)
+    {
+        e.ImplementationPlan = model.ImplementationPlan; e.BackoutPlan = model.BackoutPlan; e.Risk = model.Risk;
+    }
+
+    protected override async Task BeforeSaveAsync(Change e, bool creating)
+    {
+        // CHG-26 : l'enregistrement réel reprend aussi les plans du modèle.
+        if (creating && e.ChangeType == "Standard" && e.StandardModelId is int id
+            && await Db.StandardChangeModels.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id) is { } model)
+            FromModel(e, model);
+        // CHG-20 : une nouvelle évaluation repart sans décision du CAB.
+        if (!creating && e.Status == "Évalué" && Db.Entry(e).Property(x => x.Status).OriginalValue != "Évalué")
+            Db.ChangeApprovals.RemoveRange(await Db.ChangeApprovals.Where(a => a.ChangeId == e.Id).ToListAsync());
     }
 
     /// <summary>
@@ -79,6 +112,18 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         if (entering && status == "Évalué" && e.Status == "Demandé" && e.ChangeType != "Standard"
             && (e.Id == 0 || !await ItemLinks.IsLinkedToAsync(Db, LinkType, e.Id, "ci")))
             return "Relier au moins un CI au changement (onglet Liens) pour l'évaluer : l'analyse d'impact en part.";
+        // CHG-20 : Normal à risque Élevé → le CAB autorise (deux gestionnaires, POST /approvals).
+        if (entering && status == "Autorisé" && e.Id != 0 && e.RequiresCab)
+            return "Changement normal à risque élevé : il est autorisé par le CAB, deux gestionnaires distincts approuvent (Approbations du CAB).";
+        // CHG-25 : pas de créneau dans une période de gel, sauf changement Urgent.
+        if (status == "Planifié" && e.ChangeType != "Urgent" && e.PlannedStart is { } start && e.PlannedEnd is { } end)
+        {
+            var moved = entering || e.Id == 0
+                || Db.Entry(e).Property(x => x.PlannedStart).OriginalValue != start || Db.Entry(e).Property(x => x.PlannedEnd).OriginalValue != end;
+            var freeze = moved ? await Db.ChangeFreezes.AsNoTracking().Where(f => f.Start < end && f.End > start).OrderBy(f => f.Start).FirstOrDefaultAsync() : null;
+            if (freeze is not null)
+                return $"Créneau dans une période de gel ({freeze.Reason}, du {freeze.Start:dd/MM/yyyy HH:mm} au {freeze.End:dd/MM/yyyy HH:mm} UTC) : seul un changement urgent s'y planifie.";
+        }
         // CHG-21 : séparation des tâches — le demandeur n'autorise pas son propre changement (sauf Admin).
         if (entering && status == "Autorisé" && e.Id != 0 && !User.IsInRole("Admin")
             && string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase))
@@ -141,6 +186,68 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
             c.ActualEnd, c.OwnerId, c.OwnerDisplayName, c.CreatedAt,
             Overrun = new Change { PlannedEnd = c.PlannedEnd, ActualEnd = c.ActualEnd, Status = c.Status }.Overrun
         });
+
+    /// <summary>CHG-20 : décisions du CAB sur un changement (les plus récentes d'abord).</summary>
+    [HttpGet("{id:int}/approvals")]
+    public async Task<IActionResult> Approvals(int id) =>
+        await VisibleAsync(id)
+            ? Ok(await Db.ChangeApprovals.AsNoTracking().Where(a => a.ChangeId == id).OrderByDescending(a => a.At).ToListAsync())
+            : NotFound();
+
+    /// <summary>
+    /// CHG-20 : un gestionnaire du périmètre, autre que le demandeur (CHG-21), approuve ou rejette
+    /// un changement Normal à risque Élevé Évalué. Deux approbations distinctes l'autorisent ; un
+    /// seul rejet, motivé, le rejette. Une décision par gestionnaire.
+    /// </summary>
+    [HttpPost("{id:int}/approvals")]
+    public async Task<IActionResult> Decide(int id, ApprovalDto dto)
+    {
+        var e = await Db.Changes.FirstOrDefaultAsync(c => c.Id == id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        ActOn(e.PerimeterId);
+        if (!IsManager) return Forbid();
+        if (!e.RequiresCab) return BadRequest(new { message = "Seul un changement normal à risque élevé passe par le CAB." });
+        if (e.Status != "Évalué") return BadRequest(new { message = "Le CAB décide sur un changement Évalué." });
+        if (string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Le demandeur ne siège pas au CAB pour son propre changement." });
+        var comment = dto.Comment?.Trim() ?? "";
+        if (!dto.Approve && comment == "") return BadRequest(new { message = "Motiver le rejet : le motif est communiqué au demandeur." });
+        if (await Db.ChangeApprovals.AnyAsync(a => a.ChangeId == id && a.Approver == Me))
+            return Conflict(new { message = "Vous avez déjà donné votre décision sur ce changement." });
+        var decision = new ChangeApproval { ChangeId = id, Approver = Me, ApproverDisplayName = MyDisplay, Approved = dto.Approve, Comment = comment };
+        var error = Lengths.Check(decision);
+        if (error is not null) return BadRequest(new { message = error });
+        Db.ChangeApprovals.Add(decision);
+
+        string? ev = null;
+        if (!dto.Approve)
+        {
+            e.Status = "Rejeté"; e.RejectionReason = $"Rejeté par le CAB ({MyDisplay}) : {comment}";
+            ev = "Changement rejeté";
+        }
+        else
+        {
+            var approvers = await Db.ChangeApprovals.Where(a => a.ChangeId == id && a.Approved)
+                .Select(a => a.ApproverDisplayName).ToListAsync();
+            approvers.Add(MyDisplay);
+            if (approvers.Distinct().Count() >= 2)
+            {
+                e.Status = "Autorisé"; e.AuthorizedAt = DateTime.UtcNow;
+                var by = $"CAB : {string.Join(", ", approvers.Distinct())}";
+                e.AuthorizedBy = by.Length > 200 ? by[..200] : by;
+                ev = "Changement autorisé";
+            }
+        }
+        e.UpdatedAt = DateTime.UtcNow;
+        await Db.SaveChangesAsync();
+        if (ev is not null)
+        {
+            var n = Notify;
+            n.ToCreator(e, LinkType, ev); n.ToOwner(e, LinkType, ev);
+            await n.SaveAsync();
+        }
+        return Ok(new { e.Status, e.AuthorizedBy, Decision = decision });
+    }
 
     /// <summary>Calendrier des changements : changements planifiés non rejetés, à partir d'une date.</summary>
     [HttpGet("schedule")]

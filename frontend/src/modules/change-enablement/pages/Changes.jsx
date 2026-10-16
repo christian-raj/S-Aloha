@@ -1,7 +1,8 @@
 import React from 'react'
 import RecordList from '../../../core/components/RecordList'
-import { changeConfig } from '../config'
+import useChangeConfig from '../useChangeConfig'
 
 export default function Changes() {
-  return <RecordList config={changeConfig} />
+  const config = useChangeConfig()
+  return config ? <RecordList config={config} /> : <p>Chargement…</p>
 }

@@ -67,7 +67,22 @@ export const api = {
   changes: {
     ...records('/changes'),
     schedule: () => request('/changes/schedule'),
-    conflicts: (id) => request(`/changes/${id}/conflicts`)
+    conflicts: (id) => request(`/changes/${id}/conflicts`),
+    // CHG-20 : décisions du CAB.
+    approvals: (id) => request(`/changes/${id}/approvals`),
+    decide: (id, dto) => request(`/changes/${id}/approvals`, { method: 'POST', body: JSON.stringify(dto) })
+  },
+  // CHG-25 : périodes de gel.
+  changeFreezes: {
+    list: () => request('/change-freezes'),
+    create: dto => request('/change-freezes', { method: 'POST', body: JSON.stringify(dto) }),
+    remove: id => request('/change-freezes/' + id, { method: 'DELETE' })
+  },
+  // CHG-26 : modèles de changement standard.
+  standardChanges: {
+    list: (all = false) => request('/standard-changes' + (all ? '?all=true' : '')),
+    create: dto => request('/standard-changes', { method: 'POST', body: JSON.stringify(dto) }),
+    update: (id, dto) => request('/standard-changes/' + id, { method: 'PUT', body: JSON.stringify(dto) })
   },
   configurationItems: {
     impact: (id) => request(`/configuration-items/${id}/impact`),

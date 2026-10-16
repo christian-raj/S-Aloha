@@ -60,6 +60,7 @@ export const MODULES = [
     pages: [
       { href: '/changes', label: 'Registre des changements' },
       { href: '/changes/schedule', label: 'Calendrier des changements' },
+      { href: '/changes/models', label: 'Modèles standard' },
     ],
   },
   {

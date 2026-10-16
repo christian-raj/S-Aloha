@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../../../api'
+import { api, getUser } from '../../../api'
 import RecordDetail from '../../../core/components/RecordDetail'
-import { changeConfig } from '../config'
+import { dateTimeFr } from '../../../core/fields'
+import usePerimeters from '../../../core/usePerimeters'
+import useChangeConfig from '../useChangeConfig'
 
 /** Conflits de calendrier : autres changements sur le même CI, créneaux qui se chevauchent. */
 function Conflicts({ change }) {
@@ -63,9 +65,52 @@ export function ChangeImpact({ change }) {
   )
 }
 
+/**
+ * CHG-20 : CAB d'un changement Normal à risque Élevé — décisions des gestionnaires ; deux
+ * approbations distinctes l'autorisent, un rejet motivé le rejette. Le demandeur ne siège pas.
+ */
+export function CabCard({ change, onDecided }) {
+  const [approvals, setApprovals] = useState([])
+  const [comment, setComment] = useState('')
+  const [error, setError] = useState('')
+  const perimeters = usePerimeters()
+  useEffect(() => { api.changes.approvals(change.id).then(setApprovals).catch(() => setApprovals([])) }, [change.id, change.updatedAt])
+  if (!change.requiresCab && approvals.length === 0) return null
+  const user = getUser()
+  const here = perimeters.find(p => p.id === change.perimeterId)?.role
+  const isManager = ['Admin', 'Manager'].includes(here ?? user?.role)
+  const mine = approvals.some(a => a.approver?.toLowerCase() === user?.username?.toLowerCase())
+  const canDecide = change.requiresCab && change.status === 'Évalué' && isManager && !mine
+    && change.createdBy?.toLowerCase() !== user?.username?.toLowerCase()
+  const decide = approve => api.changes.decide(change.id, { approve, comment })
+    .then(() => { setComment(''); setError(''); onDecided() }).catch(e => setError(e.message))
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <h3 style={{ color: 'var(--navy)', marginBottom: 4 }}>Comité consultatif des changements (CAB)</h3>
+      <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 8 }}>
+        Risque élevé : deux gestionnaires distincts approuvent ; un seul rejet, motivé, suffit à rejeter. Le demandeur ne siège pas.</p>
+      {approvals.length === 0 && <p className="muted small">Aucune décision pour l'instant.</p>}
+      {approvals.map(a => (
+        <p key={a.id} style={{ fontSize: 13, margin: '4px 0' }}>
+          <span className={'badge ' + (a.approved ? 't-done' : 't-bad')}>{a.approved ? 'Approuvé' : 'Rejeté'}</span>{' '}
+          <b>{a.approverDisplayName}</b> le {dateTimeFr(a.at)}{a.comment && <> — {a.comment}</>}</p>))}
+      {canDecide && (
+        <div style={{ marginTop: 8 }}>
+          {error && <div className="error">{error}</div>}
+          <div className="field"><label htmlFor="cab-comment">Commentaire (obligatoire pour rejeter)</label>
+            <textarea id="cab-comment" rows={2} value={comment} onChange={e => setComment(e.target.value)} /></div>
+          <button className="btn" onClick={() => decide(true)}>Approuver</button>{' '}
+          <button className="btn ghost" onClick={() => decide(false)} disabled={!comment.trim()}>Rejeter</button>
+        </div>)}
+    </div>
+  )
+}
+
 export default function ChangeDetail() {
-  return <RecordDetail config={changeConfig} tab={[
+  const config = useChangeConfig()
+  if (!config) return <p>Chargement…</p>
+  return <RecordDetail config={config} tab={[
     { label: 'Conflits', render: r => <Conflicts change={r} /> },
     { label: 'Impact', render: r => <ChangeImpact change={r} /> },
-  ]} />
+  ]}>{(r, reload) => <CabCard change={r} onDecided={reload} />}</RecordDetail>
 }

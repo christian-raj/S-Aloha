@@ -32,8 +32,8 @@ réaliser techniquement le changement (outils de déploiement).
 |---|---|---|---|---|
 | Créer, évaluer, planifier, mettre en œuvre, clore | ✔ | ✔ | ✔ | ✅ |
 | Autoriser / rejeter | ✘ | ✔ | ✔ | ✅ |
-| Définir les périodes de gel | ✘ | ✔ | ✔ | 🔜 CHG-25 |
-| Tenir les modèles de changement standard | ✘ | ✔ | ✔ | 🔜 CHG-26 |
+| Définir les périodes de gel | ✘ | ✔ | ✔ | ✅ CHG-25 |
+| Tenir les modèles de changement standard | ✘ | ✔ | ✔ | ✅ CHG-26 |
 | Supprimer | ✘ | ✘ | ✔ | ✅ |
 
 ## 3. Données
@@ -53,8 +53,8 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `ClosedAt` | date UTC | auto | | ✅ |
 | `ActualStart`, `ActualEnd` | date UTC | à la mise en œuvre | Dates réelles ; `overrun` (calculé) signale un dépassement de la fin planifiée | ✅ CHG-14 |
 | `PirNotes` | texte | selon CHG-15 | Revue post-implémentation (sa date est celle de l'historique) | ✅ CHG-15 |
-| `ModelId` | lien | si Standard (🔜) | Modèle de changement standard | 🔜 CHG-26 |
-| `Approvals` | liste | si CAB | Approbateur, décision, date, commentaire | 🔜 CHG-20 |
+| `StandardModelId` | lien | si Standard | Modèle de changement standard, choisi à la création ; plans et risque en sont repris | ✅ CHG-26 |
+| Décisions du CAB (`ChangeApprovals`) | liste | si CAB | Approbateur, décision, date, commentaire ; une par gestionnaire ; effacées à une nouvelle évaluation | ✅ CHG-20 |
 
 ## 4. Cycle de vie
 
@@ -87,9 +87,9 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 | — → Demandé | Tous | Type Normal ou Urgent | | ✅ |
 | — → Autorisé | Auto | Type Standard | `AuthorizedBy` = « Modèle standard (pré-autorisé) » | ✅ |
 | Demandé → Évalué | Tous | Risque, plan de mise en œuvre, plan de retour arrière ; au moins un CI relié (Normal, Urgent) | | ✅ (CI : CHG-16) |
-| Évalué → Autorisé | Manager (CAB si Normal à risque Élevé) | | `AuthorizedAt`, `AuthorizedBy` | ✅ / 🔜 CHG-20 |
+| Évalué → Autorisé | Manager (CAB si Normal à risque Élevé) ; pas le demandeur (CHG-21) | | `AuthorizedAt`, `AuthorizedBy` (« CAB : … ») | ✅ |
 | Évalué → Rejeté | Manager | Motif | | ✅ |
-| Autorisé → Planifié | Tous | Début et fin planifiés ; hors période de gel (sauf Urgent) | Inscrit au calendrier | ✅ / 🔜 CHG-25 (gel) |
+| Autorisé → Planifié | Tous | Début et fin planifiés ; hors période de gel (sauf Urgent) | Inscrit au calendrier | ✅ |
 | Autorisé, Planifié → Évalué | Auto | Modification d'un champ d'évaluation par un User (CHG-07) | Autorisation effacée | ✅ |
 | Planifié → Mis en œuvre | Responsable, Manager | Début réel | `ActualStart` | ✅ CHG-14 |
 | Mis en œuvre → Clos | Responsable, Manager | Résultat ; fin réelle ; revue si requise (CHG-15) | `ClosedAt` | ✅ |
@@ -121,7 +121,7 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| CHG-20 | **Autorité selon le risque** : Normal à risque Faible ou Moyen → un Manager ; Normal à risque **Élevé** → **CAB** : deux Managers distincts approuvent (`Approvals`), un seul rejet suffit à rejeter ; Urgent → un Manager (autorisation accélérée), revue obligatoire (CHG-15) | 🔜 | 2 |
+| CHG-20 | **Autorité selon le risque** : Normal à risque Faible ou Moyen → un Manager ; Normal à risque **Élevé** → **CAB** : deux Managers distincts approuvent (`Approvals`), un seul rejet suffit à rejeter ; Urgent → un Manager (autorisation accélérée), revue obligatoire (CHG-15) | ✅ (`POST /api/changes/{id}/approvals` ; autorisation directe refusée à risque Élevé ; Urgent : un Manager, revue CHG-15 ; encadré « CAB » de la fiche) | |
 | CHG-21 | Le demandeur d'un changement ne peut pas l'autoriser lui-même (séparation des tâches), sauf Admin | ✅ (le demandeur est le créateur du changement) | |
 | CHG-22 | **Conflit non résolu** : autoriser un changement en conflit de calendrier (CHG-09) exige un commentaire de l'autorité | 🔜 | 2 |
 | CHG-23 | Un changement peut être **créé depuis un problème ou une action corrective** (PRB-27) : titre, description et lien repris | ✅ (depuis une action) / 🔜 (depuis le problème : lien manuel) | 2 |
@@ -131,8 +131,8 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| CHG-25 | **Périodes de gel** (début, fin, motif) définies par les gestionnaires : planifier un créneau qui les chevauche est refusé, sauf changement **Urgent** ; elles apparaissent sur le calendrier | 🔜 | 2 |
-| CHG-26 | **Modèles de changement standard** (F4) : nom, plan de mise en œuvre et de retour arrière types, risque, CI concernés ; un changement Standard se crée depuis un modèle actif dont il reprend les plans | 🔜 | 2 |
+| CHG-25 | **Périodes de gel** (début, fin, motif) définies par les gestionnaires : planifier un créneau qui les chevauche est refusé, sauf changement **Urgent** ; elles apparaissent sur le calendrier | ✅ (périodes communes à l'organisation ; vérifiées à la planification et à tout déplacement d'un changement planifié ; affichées sur le calendrier) | |
+| CHG-26 | **Modèles de changement standard** (F4) : nom, plan de mise en œuvre et de retour arrière types, risque, CI concernés ; un changement Standard se crée depuis un modèle actif dont il reprend les plans | ✅ (modèle obligatoire pour un Standard — décision du 2026-10-16 ; page « Modèles standard » ; désactivé plutôt que supprimé) / 🔜 (CI concernés du modèle) | |
 | CHG-27 | Un modèle standard dont un changement a échoué est **suspendu** jusqu'à revue par un Manager | 🔜 | 3 |
 
 ## 6. Délais, calculs et alertes
@@ -175,7 +175,9 @@ relances CHG-30 et CHG-31, changements Urgent sans revue (Relances).
 | `GET /api/changes/schedule` | User | Calendrier (avec conflits) |
 | `POST /api/changes`, `PUT /api/changes/{id}` | User (Autorisé/Rejeté : Manager) | Création, modification, transitions |
 | `DELETE /api/changes/{id}` | Admin | Suppression |
-| `GET/POST/PUT /api/change-models`, `/api/change-freezes` | User (lecture), Manager (écriture) | Modèles standard, périodes de gel — 🔜 CHG-26, CHG-25 |
+| `GET /api/changes/{id}/approvals`, `POST /api/changes/{id}/approvals` (`{ approve, comment }`) | User ; décision : Manager du périmètre, pas le demandeur | Décisions du CAB (CHG-20) |
+| `GET /api/change-freezes`, `POST`, `DELETE /api/change-freezes/{id}` | User (lecture), Manager (écriture) | Périodes de gel (CHG-25), communes à l'organisation |
+| `GET /api/standard-changes` (`?all=true`), `POST/PUT /api/standard-changes[/{id}]`, `DELETE` | User (lecture), Manager (écriture), Admin (suppression d'un modèle inutilisé) | Modèles de changement standard (CHG-26) |
 
 ## 10. Scénarios d'acceptation
 
