@@ -14,6 +14,10 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Projets sort du MVP**, dernière pratique : PRJ-22 (prévision de la date de fin) et PRJ-34
+  (console) sont en place. **Toutes les pratiques ont quitté le stade MVP** ; la mention
+  disparaît du README et de la cartographie.
+
 - **Projets** : **date de fin prévue** (vélocité des sprints, phases planifiées ou avancement),
   comparée à la tolérance de délai (PRJ-22) ; **console** : projets à valider, projets hors
   tolérance ou à jalons en retard à relancer, mes projets (PRJ-34). La console affiche aussi

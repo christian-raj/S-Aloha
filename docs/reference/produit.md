@@ -44,10 +44,9 @@ où son interface existe ([ADR-0003](../decisions/adr-0003-plateforme-modulaire-
 | **Connaissances** | Capitalisation et formation | Actif | `Modules/KnowledgeManagement`, `modules/knowledge-management` |
 | **Amélioration (CSI)** | Amélioration continue des services | Actif | `Modules/ContinualImprovement`, `modules/continual-improvement` |
 | **Conformité NIS 2** | Évaluer la conformité au Référentiel Cyber France (ANSSI) | Actif | `Modules/ComplianceAssessment`, `modules/compliance-assessment` |
-| **Projets** | Conduire les projets de la DSI : Scrum, Kanban, Cycle en V, PRINCE2, hybride | Actif (MVP) | `Modules/ProjectManagement`, `modules/project-management` |
+| **Projets** | Conduire les projets de la DSI : Scrum, Kanban, Cycle en V, PRINCE2, hybride | Actif | `Modules/ProjectManagement`, `modules/project-management` |
 
-**MVP** : enregistrer, suivre un cycle de vie simple, porter les décisions des
-gestionnaires et relier les processus entre eux. Une pratique **sort du MVP** selon des
+**Sortie du MVP** : toutes les pratiques ont quitté le stade MVP le 2026-10-16, selon des
 critères vérifiables, règle par règle ([plan d'action § Sortie du MVP](../plan-action.md#sortie-du-mvp)). Référentiel : les **pratiques ITIL 4**
 publiées par PeopleCert/Axelos ([ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)) ;
 l'enrichissement de chaque pratique viendra ensuite ([plan d'action](../plan-action.md)).
@@ -72,7 +71,7 @@ Indépendants des processus, accessibles à tous les rôles :
 Chaque processus reprend l'objectif de la pratique ITIL 4 correspondante. Règles
 détaillées, pratique par pratique : [`processus/`](processus/readme.md).
 
-| Processus | Objectif ITIL 4 | Ce que fait le MVP |
+| Processus | Objectif ITIL 4 | Ce que fait le module |
 |---|---|---|
 | Incidents | Minimiser l'impact négatif des incidents en rétablissant le service normal au plus vite | Déclaration, priorité P1–P4, assignation AD, incident majeur, résolution ; ouverture d'un problème lié |
 | Demandes | Délivrer la qualité de service convenue en traitant les demandes prédéfinies des utilisateurs, de façon efficace et conviviale | Objet demandé, bénéficiaire, échéance ; approbation par un gestionnaire avant traitement |
