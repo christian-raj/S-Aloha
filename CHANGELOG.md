@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Gouvernance des changements** : un changement normal à risque élevé est autorisé par le
+  **CAB** — deux gestionnaires distincts approuvent, un rejet motivé suffit (CHG-20) ; **périodes
+  de gel** sur le calendrier, où seul un changement urgent se planifie (CHG-25) ; **modèles de
+  changement standard** : un changement Standard se crée depuis un modèle actif, dont il reprend
+  les plans et le risque (CHG-26). Migration `ChangeCabFreezeModels`.
+
 - **Changements** : dates réelles exigées pour la mise en œuvre et la clôture, dépassement de
   la fin planifiée signalé (CHG-14) ; revue post-implémentation exigée pour clore un changement
   urgent ou échoué (CHG-15) ; un changement normal ou urgent s'évalue avec au moins un CI

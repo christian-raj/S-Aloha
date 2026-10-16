@@ -50,6 +50,13 @@ public class ItilModulesTests(ApiFixture api)
         actualStart = Slot, actualEnd = Slot.AddHours(1)   // CHG-14
     };
 
+    /// <summary>CHG-26 : un changement Standard se crée depuis un modèle.</summary>
+    private static object StandardChange(string title, int model) => new
+    {
+        title, changeType = "Standard", risk = "Faible", standardModelId = model, plannedStart = Slot, plannedEnd = Slot.AddHours(2),
+        implementationPlan = "Appliquer", backoutPlan = "Restaurer", actualStart = Slot, actualEnd = Slot.AddHours(1)
+    };
+
     public static TheoryData<string, string, object> Modules => new()
     {
         { "/api/incidents", "INC", Incident("Smoke incident") },
@@ -131,7 +138,7 @@ public class ItilModulesTests(ApiFixture api)
     public async Task Changement_standard_pre_autorise_normal_autorise_puis_clos_avec_resultat()
     {
         var user = api.Client("User");
-        var standard = await Create(user, "/api/changes", Change("Standard", "Standard"));
+        var standard = await Create(user, "/api/changes", StandardChange("Standard", await ChangeTestData.StandardModelIdAsync(api)));
         Assert.Equal("Autorisé", Str(standard, "status"));
 
         var normal = await Create(user, "/api/changes", Change("Normal", "Normal"));
@@ -247,7 +254,7 @@ public class ItilModulesTests(ApiFixture api)
     public async Task F10_changement_autorise_modifie_par_un_utilisateur_redemande_une_autorisation()
     {
         var user = api.Client("User");
-        var standard = await Create(user, "/api/changes", Change("Standard détourné", "Standard"));
+        var standard = await Create(user, "/api/changes", StandardChange("Standard détourné", await ChangeTestData.StandardModelIdAsync(api)));
         var edited = await Json(await Put(user, "/api/changes", Id(standard), Change("Standard détourné", "Urgent", "Autorisé")));
         Assert.Equal("Évalué", Str(edited, "status"));
         Assert.Equal(JsonValueKind.Null, edited.GetProperty("authorizedAt").ValueKind);
@@ -263,8 +270,9 @@ public class ItilModulesTests(ApiFixture api)
         var riskier = await Json(await Put(user, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Planifié", risk: "Élevé")));
         Assert.Equal("Évalué", Str(riskier, "status"));
 
-        // Le gestionnaire est l'autorité de changement : sa modification vaut autorisation.
-        await Json(await Put(manager, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Autorisé", risk: "Élevé")));
+        // Le gestionnaire est l'autorité de changement : sa modification vaut autorisation…
+        // … sauf à risque Élevé, que le CAB autorise (CHG-20).
+        Assert.Equal(HttpStatusCode.BadRequest, (await Put(manager, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Autorisé", risk: "Élevé"))).StatusCode);
         var byManager = await Json(await Put(manager, "/api/changes", Id(normal), Change("Risque revu", "Normal", "Autorisé", risk: "Faible")));
         Assert.Equal("Autorisé", Str(byManager, "status"));
 
@@ -316,12 +324,12 @@ public class ItilModulesTests(ApiFixture api)
         Assert.Equal(HttpStatusCode.BadRequest,
             (await Put(user, "/api/incidents", Id(i), Incident("Invariant", "Résolu", ""))).StatusCode);
 
-        var c = await Create(user, "/api/changes", Change("Invariant", "Standard"));
-        await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Planifié")));
-        await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Mis en œuvre")));
-        await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos", "Réussi")));
+        var c = await Create(user, "/api/changes", StandardChange("Invariant", await ChangeTestData.StandardModelIdAsync(api)));
+        await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Planifié", null, risk: "Faible")));
+        await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Mis en œuvre", null, risk: "Faible")));
+        await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos", "Réussi", risk: "Faible")));
         Assert.Equal(HttpStatusCode.BadRequest,
-            (await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos"))).StatusCode);
+            (await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos", null, risk: "Faible"))).StatusCode);
     }
 
     [Theory]

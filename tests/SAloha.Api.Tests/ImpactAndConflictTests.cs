@@ -79,12 +79,13 @@ public class ImpactAndConflictTests(ApiFixture api)
 
     private static readonly DateTime Day = DateTime.UtcNow.Date.AddDays(30);
 
-    private static async Task<JsonElement> Change(HttpClient c, string title, int startHour, int? endHour, JsonElement ci,
+    private async Task<JsonElement> Change(HttpClient c, string title, int startHour, int? endHour, JsonElement ci,
         string type = "Standard")
     {
+        int? model = type == "Standard" ? await ChangeTestData.StandardModelIdAsync(api) : null;   // CHG-26
         var chg = await Json(await c.PostAsJsonAsync("/api/changes", new
         {
-            title, changeType = type, risk = "Faible", implementationPlan = "p", backoutPlan = "b",
+            title, changeType = type, standardModelId = model, risk = "Faible", implementationPlan = "p", backoutPlan = "b",
             plannedStart = Day.AddHours(startHour), plannedEnd = endHour is null ? (DateTime?)null : Day.AddHours(endHour.Value)
         }));
         await Json(await c.PostAsJsonAsync("/api/links", new { fromType = "change", fromId = Id(chg), toReference = Ref(ci) }));

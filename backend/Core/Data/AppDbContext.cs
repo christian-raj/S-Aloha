@@ -55,6 +55,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AssessmentEvidence> AssessmentEvidences => Set<AssessmentEvidence>();
     public DbSet<AgreementReview> AgreementReviews => Set<AgreementReview>();
     public DbSet<RequestCatalogItem> RequestCatalogItems => Set<RequestCatalogItem>();
+    public DbSet<ChangeApproval> ChangeApprovals => Set<ChangeApproval>();
+    public DbSet<ChangeFreeze> ChangeFreezes => Set<ChangeFreeze>();
+    public DbSet<StandardChangeModel> StandardChangeModels => Set<StandardChangeModel>();
     // Gestion de projet
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectPhase> ProjectPhases => Set<ProjectPhase>();
@@ -124,6 +127,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<ServiceRequest>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
         // REQ-20 : modèle de la demande ; un service supprimé ne supprime pas le modèle.
         b.Entity<ServiceRequest>().HasOne<RequestCatalogItem>().WithMany().HasForeignKey(x => x.CatalogItemId).OnDelete(DeleteBehavior.Restrict);
+        // CHG-20, CHG-26 : décisions du CAB supprimées avec le changement ; un modèle utilisé ne se supprime pas.
+        b.Entity<ChangeApproval>().HasOne<Change>().WithMany().HasForeignKey(x => x.ChangeId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<ChangeApproval>().HasIndex(x => new { x.ChangeId, x.Approver }).IsUnique();
+        b.Entity<Change>().HasOne<StandardChangeModel>().WithMany().HasForeignKey(x => x.StandardModelId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<RequestCatalogItem>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
 
         // Index de recherche (ADR-0013) : plein texte « french » généré par

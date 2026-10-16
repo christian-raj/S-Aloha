@@ -42,6 +42,12 @@ public class Change : Record
     public DateTime? ActualEnd { get; set; }
     /// <summary>CHG-15 : revue post-implémentation (ce qui s'est passé, causes, enseignements).</summary>
     public string? PirNotes { get; set; }
+    /// <summary>CHG-26 : modèle standard dont un changement Standard reprend les plans.</summary>
+    public int? StandardModelId { get; set; }
+
+    /// <summary>CHG-20 : un changement Normal à risque Élevé est autorisé par le CAB (deux gestionnaires).</summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public bool RequiresCab => ChangeType == "Normal" && Risk == "Élevé";
 
     /// <summary>CHG-14 : la mise en œuvre a dépassé la fin planifiée (terminée après, ou toujours en cours après).</summary>
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
@@ -53,4 +59,47 @@ public record ChangeDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? ChangeType, string? Risk, DateTime? PlannedStart, DateTime? PlannedEnd,
     string? ImplementationPlan, string? BackoutPlan, string? Outcome, string? RejectionReason = null, int? PerimeterId = null,
-    DateTime? ActualStart = null, DateTime? ActualEnd = null, string? PirNotes = null) : IRecordDto;
+    DateTime? ActualStart = null, DateTime? ActualEnd = null, string? PirNotes = null, int? StandardModelId = null) : IRecordDto;
+
+/// <summary>CHG-20 : décision d'un membre du CAB sur un changement Normal à risque Élevé.</summary>
+public class ChangeApproval
+{
+    public int Id { get; set; }
+    public int ChangeId { get; set; }
+    [MaxLength(200)] public string Approver { get; set; } = "";
+    [MaxLength(250)] public string ApproverDisplayName { get; set; } = "";
+    public bool Approved { get; set; }
+    [MaxLength(2000)] public string Comment { get; set; } = "";
+    public DateTime At { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>CHG-25 : période de gel — aucun changement (sauf Urgent) ne se planifie dessus.</summary>
+public class ChangeFreeze
+{
+    public int Id { get; set; }
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+    [MaxLength(500)] public string Reason { get; set; } = "";
+    [MaxLength(200)] public string CreatedBy { get; set; } = "";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>CHG-26 : modèle de changement standard — plans types et risque, déjà évalués.</summary>
+public class StandardChangeModel
+{
+    public int Id { get; set; }
+    [MaxLength(200)] public string Name { get; set; } = "";
+    [MaxLength(2000)] public string Description { get; set; } = "";
+    public string ImplementationPlan { get; set; } = "";
+    public string BackoutPlan { get; set; } = "";
+    [MaxLength(10)] public string Risk { get; set; } = "Faible";
+    public bool Active { get; set; } = true;
+    [MaxLength(200)] public string CreatedBy { get; set; } = "";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+public record ApprovalDto(bool Approve, string? Comment);
+public record FreezeDto(DateTime Start, DateTime End, string? Reason);
+public record StandardChangeModelDto(string Name, string? Description, string? ImplementationPlan, string? BackoutPlan,
+    string? Risk, bool Active = true);

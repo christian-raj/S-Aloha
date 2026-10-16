@@ -43,6 +43,12 @@ export const changeConfig = {
   ],
   meta: r => [r.authorizedAt && `Autorisé par ${r.authorizedBy} le ${dateTimeFr(r.authorizedAt)}`,
     r.overrun && `Dépassement : fin planifiée le ${dateTimeFr(r.plannedEnd)}${r.actualEnd ? `, fin réelle le ${dateTimeFr(r.actualEnd)}` : ''}`],
-  help: 'Standard : pré-autorisé. Normal et urgent : plans de mise en œuvre et de retour arrière pour l\'évaluation, puis autorisation par un gestionnaire. Planifié : début et fin. Un rejet se motive. Modifier le type, le risque, les plans ou le créneau d\'un changement autorisé redemande une autorisation. Normal et urgent : au moins un CI relié (onglet Liens) pour l\'évaluation ; le demandeur n\'autorise pas son propre changement. Mis en œuvre : début réel ; Clos : fin réelle et résultat, revue post-implémentation pour un changement urgent ou échoué.',
+  help: 'Standard : pré-autorisé. Normal et urgent : plans de mise en œuvre et de retour arrière pour l\'évaluation, puis autorisation par un gestionnaire. Planifié : début et fin. Un rejet se motive. Modifier le type, le risque, les plans ou le créneau d\'un changement autorisé redemande une autorisation. Standard : créé depuis un modèle standard, dont il reprend les plans et le risque. Normal à risque élevé : autorisé par le CAB (deux gestionnaires). Planification refusée dans une période de gel, sauf urgent. Normal et urgent : au moins un CI relié (onglet Liens) pour l\'évaluation ; le demandeur n\'autorise pas son propre changement. Mis en œuvre : début réel ; Clos : fin réelle et résultat, revue post-implémentation pour un changement urgent ou échoué.',
   linkHint: 'Problème ou demande à l\'origine, CI modifiés…',
 }
+
+/** CHG-26 : choix du modèle standard à la création (obligatoire pour un changement Standard). */
+export const standardModelField = models => ({
+  key: 'standardModelId', label: 'Modèle standard (changement Standard)', type: 'select', numeric: true, onlyCreate: true,
+  options: models.map(m => ({ value: m.id, label: `${m.name} (risque ${m.risk.toLowerCase()})` })),
+})

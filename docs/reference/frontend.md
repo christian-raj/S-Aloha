@@ -227,7 +227,8 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | | Actions correctives (suivi transverse) | Tous | PRB-15 | ✅ |
 | | Erreurs connues : sous-entrée `/problems?status=Erreur+connue` | Tous | PRB-11 | ✅ |
 | [Changements](processus/habilitation-des-changements.md) | Registre des changements | Tous | CHG-01 | ✅ |
-| | Calendrier des changements (conflits, **périodes de gel**) | Tous | CHG-08, CHG-09, CHG-25 | ✅ / 🔜 (gel) |
+| | Calendrier des changements (conflits, **périodes de gel**) | Tous | CHG-08, CHG-09, CHG-25 | ✅ |
+| | Modèles de changement standard | Tous ; écriture Manager | CHG-26 | ✅ |
 | [Configuration](processus/gestion-de-la-configuration.md) | Registre des CI (filtre par type) | Tous | CFG-01, CFG-07 | ✅ |
 | | CI à vérifier | Tous (propriétaires), Manager | CFG-15 | 🔜 |
 | [Niveaux de service](processus/gestion-des-niveaux-de-service.md) | Catalogue des services | Tous | SLM-01 | ✅ |

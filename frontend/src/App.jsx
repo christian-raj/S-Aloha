@@ -19,6 +19,7 @@ import RequestDetail from './modules/service-request-management/pages/RequestDet
 import Changes from './modules/change-enablement/pages/Changes'
 import ChangeDetail from './modules/change-enablement/pages/ChangeDetail'
 import ChangeSchedule from './modules/change-enablement/pages/ChangeSchedule'
+import StandardChanges from './modules/change-enablement/pages/StandardChanges'
 import ConfigurationItems from './modules/service-configuration-management/pages/ConfigurationItems'
 import ConfigurationItemDetail from './modules/service-configuration-management/pages/ConfigurationItemDetail'
 import Services from './modules/service-level-management/pages/Services'
@@ -65,6 +66,7 @@ export default function App() {
         {/* Pratique — Habilitation des changements */}
         <Route path="changes" element={<Changes />} />
         <Route path="changes/schedule" element={<ChangeSchedule />} />
+        <Route path="changes/models" element={<StandardChanges />} />
         <Route path="changes/:id" element={<ChangeDetail />} />
         {/* Pratique — Gestion de la configuration des services */}
         <Route path="configuration" element={<ConfigurationItems />} />

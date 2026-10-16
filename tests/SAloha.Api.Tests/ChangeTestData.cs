@@ -6,6 +6,27 @@ namespace SAloha.Api.Tests;
 /// <summary>Données communes des tests de changements.</summary>
 public static class ChangeTestData
 {
+    private static int? _standardModel;
+    private static readonly SemaphoreSlim Gate = new(1, 1);
+
+    /// <summary>CHG-26 : un modèle standard actif, créé une fois pour la base de test.</summary>
+    public static async Task<int> StandardModelIdAsync(ApiFixture api)
+    {
+        await Gate.WaitAsync();
+        try
+        {
+            if (_standardModel is int id) return id;
+            var res = await api.Client().PostAsJsonAsync("/api/standard-changes", new
+            {
+                name = "Modèle standard de test", description = "Tests", implementationPlan = "Appliquer", backoutPlan = "Restaurer", risk = "Faible"
+            });
+            var body = await res.Content.ReadAsStringAsync();
+            if (!res.IsSuccessStatusCode) throw new InvalidOperationException($"Modèle standard : {(int)res.StatusCode} {body}");
+            return (_standardModel = JsonDocument.Parse(body).RootElement.GetProperty("id").GetInt32()).Value;
+        }
+        finally { Gate.Release(); }
+    }
+
     /// <summary>CHG-16 : relie au changement un CI créé pour l'occasion, condition pour l'évaluer.</summary>
     public static async Task LinkCiAsync(HttpClient client, int changeId)
     {
