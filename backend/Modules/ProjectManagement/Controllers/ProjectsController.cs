@@ -112,7 +112,7 @@ public class ProjectsController(AppDbContext db) : RecordController<Project, Pro
     }
 
     /// <summary>
-    /// Synthèse (PRJ-30 à PRJ-33) : avancement par composant et tolérances
+    /// Synthèse (PRJ-22, PRJ-30 à PRJ-33) : avancement par composant, tolérances et prévision
     /// (délai, coût) — « À surveiller » au-delà de la cible, « Hors tolérance »
     /// au-delà de la tolérance.
     /// </summary>
@@ -128,25 +128,14 @@ public class ProjectsController(AppDbContext db) : RecordController<Project, Pro
         var risks = await Db.ProjectRisks.AsNoTracking().Where(x => x.ProjectId == id && x.Status == "Ouvert").ToListAsync();
         var issues = await Db.ProjectIssues.AsNoTracking().CountAsync(x => x.ProjectId == id && x.Status != "Clos");
         var today = DateTime.UtcNow.Date;
-        var open = !Project.Done.Contains(p.Status);
-
-        string Time()
-        {
-            if (p.TargetEndDate is null || !open) return "Sans objet";
-            if (today <= p.TargetEndDate.Value.Date) return "Dans la cible";
-            return p.ToleranceDays is { } d && today <= p.TargetEndDate.Value.Date.AddDays(d) ? "À surveiller" : "Hors tolérance";
-        }
-        string Cost()
-        {
-            if (p.Budget is not { } b || p.ActualCost is not { } c) return "Sans objet";
-            if (c <= b) return "Dans la cible";
-            return p.ToleranceCostPercent is { } t && c <= b * (1 + t / 100) ? "À surveiller" : "Hors tolérance";
-        }
+        var sprints = await Db.Sprints.AsNoTracking().Where(x => x.ProjectId == id).ToListAsync();
 
         return Ok(new
         {
             Components = p.Components.Split(',', StringSplitOptions.RemoveEmptyEntries),
-            Tolerances = new { Time = Time(), Cost = Cost() },
+            Tolerances = new { Time = ProjectHealth.TimeTolerance(p, today), Cost = ProjectHealth.CostTolerance(p) },
+            // PRJ-22 : date de fin prévue, et sa position par rapport à la tolérance de délai.
+            Forecast = ProjectHealth.ForecastEnd(p, items, sprints, phases, today),
             WorkItems = new { Total = items.Count, Done = items.Count(w => w.Status == "Terminé"),
                 Points = items.Sum(w => w.Points ?? 0), PointsDone = items.Where(w => w.Status == "Terminé").Sum(w => w.Points ?? 0) },
             Phases = new { Total = phases.Count, Done = phases.Count(x => x.Status == "Terminée"),

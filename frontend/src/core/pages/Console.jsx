@@ -94,8 +94,8 @@ export default function Console() {
   // Les quatre temps de la console, dans l'ordre où l'on doit les traiter.
   const urgent = myOverdue.length + L('majorIncidents') + (c.mySlaIncidents?.length ?? 0) + L('slaIncidents')
   const decide = L('decisions') + L('toQualify')
-  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue')
-  const work = myTodo.length + c.myAssignments.length
+  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts')
+  const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0)
   const follow = c.myProblems.length + L('inAnalysisNoRootCause')
 
   const tiles = [
@@ -180,6 +180,12 @@ export default function Console() {
             meta={<span className={'badge ' + r.priority}>{r.priority}</span>} />} />
         <List title="Revues échues" tone="amber" rows={m.reviewsDue} onRow={goItem}
           hint="Articles publiés et SLA en vigueur dont la date de revue est passée, évaluations NIS 2 à renouveler." render={itemRow} />
+        {/* REQ-30 */}
+        <List title="Demandes en retard" tone="amber" rows={m.overdueRequests ?? []} onRow={goItem}
+          hint="Échéance dépassée : relancer le responsable." render={itemRow} />
+        {/* PRJ-34 */}
+        <List title="Projets à relancer" tone="amber" rows={m.projectAlerts ?? []} onRow={goItem}
+          hint="Hors tolérance (délai, coût, fin prévue) ou jalons en retard." render={itemRow} />
       </Group>}
 
       <Group id="travail" title="Mon travail" total={work}>
@@ -187,7 +193,10 @@ export default function Console() {
           render={r => <Row reference={r.problem.reference} title={r.title}
             meta={<><Roles roles={r.myRoles} /><span className="row-status">{r.status}</span>{r.dueDate && <span className="row-date">{dateFr(r.dueDate)}</span>}</>} />} />
         <List title="Mes dossiers ouverts" tone="emerald" rows={c.myAssignments} onRow={goItem}
-          hint="Incidents, demandes, changements et améliorations dont vous êtes responsable." render={itemRow} />
+          hint="Incidents, demandes, changements, améliorations et projets dont vous êtes responsable." render={itemRow} />
+        {/* PRJ-34 : relances du chef de projet. */}
+        <List title="Mes projets à relancer" tone="amber" rows={c.myProjectAlerts ?? []} onRow={goItem}
+          hint="Vos projets hors tolérance ou à jalons en retard." render={itemRow} />
       </Group>
 
       <Group id="suivi" title="À suivre" total={follow}>

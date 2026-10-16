@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Projets** : **date de fin prévue** (vélocité des sprints, phases planifiées ou avancement),
+  comparée à la tolérance de délai (PRJ-22) ; **console** : projets à valider, projets hors
+  tolérance ou à jalons en retard à relancer, mes projets (PRJ-34). La console affiche aussi
+  les demandes en retard, que l'API fournissait déjà (REQ-30).
+
 - **Changements sort du MVP** : toutes les règles listées pour sa sortie sont en place
   (CHG-14 à CHG-16, CHG-20, CHG-21, CHG-24 à CHG-26) ; la mention **(MVP)** disparaît du
   README et de la cartographie. Un changement Standard exige un modèle standard ; les CI
