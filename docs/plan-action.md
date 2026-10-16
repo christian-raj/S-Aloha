@@ -93,6 +93,9 @@ Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 
 ### Sortie du MVP
 
+**Toutes les pratiques sont sorties du MVP le 2026-10-16** (Projets en dernier). Le tableau
+ci-dessous reste comme trace des critères retenus.
+
 Une pratique perd la mention **(MVP)** — dans le README et la [cartographie](reference/produit.md#cartographie-des-processus-itil-et-état) —
 quand les **prérequis communs** sont en place et que **toutes ses règles listées** ci-dessous
 sont à ✅. La mention disparaît pratique par pratique, dans la PR qui passe la dernière
@@ -114,7 +117,7 @@ en attente, sans effet sur la sortie du MVP (décision du 2026-10-13) ;
 | [Connaissances](reference/processus/gestion-des-connaissances.md) | ~~KB-10, KB-11, KB-12, KB-17, KB-21~~ faits le 2026-10-12 (avec KB-14, KB-18) ; ~~KB-20~~ (2026-10-13) : **sortie du MVP le 2026-10-13** |
 | [Amélioration continue](reference/processus/amelioration-continue.md) | ~~CSI-10, CSI-12 (source, priorisation)~~, ~~CSI-21, CSI-23~~ (2026-10-13) ; ~~CSI-20~~ (problèmes récurrents le 2026-10-13, SLA sous la cible le 2026-10-14) : **sortie du MVP le 2026-10-14** |
 | [Conformité NIS 2](reference/processus/conformite-nis2.md) | ~~NIS-18~~, ~~NIS-14, NIS-16 (revue périodique), NIS-17 (export), NIS-08 (preuves), NIS-09 (comparaison)~~ (2026-10-13) : **sortie du MVP le 2026-10-13** ; les pièces jointes de NIS-08 suivront SOC-25, sans conditionner la sortie (décision du 2026-10-13) |
-| [Projets](reference/processus/gestion-de-projet.md) | ~~PRJ-22 (prévision de la date de fin), PRJ-34 (console : hors tolérance, jalons en retard, projets à valider, mes projets)~~ (2026-10-16) : toutes les règles de sortie sont faites |
+| [Projets](reference/processus/gestion-de-projet.md) | ~~PRJ-22 (prévision de la date de fin), PRJ-34 (console : hors tolérance, jalons en retard, projets à valider, mes projets)~~ (2026-10-16) : **sortie du MVP le 2026-10-16** |
 
 Les règles du lot 3 (enquêtes, versions d'articles, import en masse…) ne conditionnent pas la
 sortie du MVP.
