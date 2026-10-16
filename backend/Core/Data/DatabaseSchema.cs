@@ -19,14 +19,18 @@ public static class DatabaseSchema
     public static void Migrate(AppDbContext db, ILogger logger)
     {
         var history = db.GetService<IHistoryRepository>();
-        if (!history.Exists() && TableExists(db, "Problems"))
+        // Table d'historique vérifiée en SQL : avec EF Core 10, IHistoryRepository.Exists() répond
+        // vrai même quand elle manque. Une base sans migration inscrite mais dont les tables
+        // existent est une base créée par EnsureCreated (qui peut laisser un historique vide).
+        var exists = TableExists(db, "__EFMigrationsHistory");
+        if ((!exists || !history.GetAppliedMigrations().Any()) && TableExists(db, "Problems"))
         {
             var baseline = db.Database.GetMigrations()
                 .Where(m => m.EndsWith("_Initial") || (m.EndsWith("_ItilModules") && TableExists(db, "Incidents")))
                 .ToList();
             logger.LogWarning("Base créée sans migrations : inscription de {Migrations} comme déjà appliquées.",
                 string.Join(", ", baseline));
-            db.Database.ExecuteSqlRaw(history.GetCreateScript());
+            if (!exists) db.Database.ExecuteSqlRaw(history.GetCreateScript());
             foreach (var id in baseline)
                 db.Database.ExecuteSqlRaw(history.GetInsertScript(new HistoryRow(id, ProductInfo.GetVersion())));
         }

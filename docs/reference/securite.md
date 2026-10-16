@@ -74,6 +74,10 @@ par pollution de prototype). Passage à Vite 6.4, Vitest 4.1 et react-router 7.1
 dépendances transitives (postcss, esbuild, browserslist, source-map-js) suivent.
 `npm audit` : 0 vulnérabilité.
 
+Mise à niveau du 2026-10-16 : .NET 10 (LTS) — EF Core et JwtBearer 10.0.13, Npgsql EF 10.0.3,
+Swashbuckle 10.3, Novell LDAP 4.0 — et React 19, Vite 8, Vitest 5. `dotnet list package
+--vulnerable --include-transitive` et `npm audit` : 0 vulnérabilité.
+
 ## Contrôles du dépôt
 
 Réglages du dépôt GitHub public, en place depuis le 2026-10-06 :

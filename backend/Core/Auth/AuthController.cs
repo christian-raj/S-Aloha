@@ -7,12 +7,12 @@ namespace SAloha.Api.Core.Auth;
 public class AuthController(LdapService ldap, TokenService tokens) : ControllerBase
 {
     [HttpPost("login")]
-    public ActionResult<LoginResponse> Login(LoginRequest req)
+    public async Task<ActionResult<LoginResponse>> Login(LoginRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Username) || string.IsNullOrWhiteSpace(req.Password))
             return BadRequest(new { message = "Identifiant et mot de passe requis." });
 
-        var result = ldap.Authenticate(req.Username.Trim(), req.Password);
+        var result = await ldap.AuthenticateAsync(req.Username.Trim(), req.Password);
         if (result is null)
             return Unauthorized(new { message = "Identifiants invalides ou compte hors des groupes autorisés." });
 

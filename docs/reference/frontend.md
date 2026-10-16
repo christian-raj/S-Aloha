@@ -1,6 +1,6 @@
 # 🖥️ Frontend
 
-> React 18 + Vite + react-router, servi par nginx. Aucune bibliothèque de composants : CSS natif à jetons ([ADR-0004](../decisions/adr-0004-conserver-le-stack-dotnet-react.md), [ADR-0005](../decisions/adr-0005-langage-visuel-a-jetons-en-css-natif.md)).
+> React 19 + Vite 8 + react-router 7, servi par nginx. Aucune bibliothèque de composants : CSS natif à jetons ([ADR-0004](../decisions/adr-0004-conserver-le-stack-dotnet-react.md), [ADR-0005](../decisions/adr-0005-langage-visuel-a-jetons-en-css-natif.md)).
 
 <sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
 

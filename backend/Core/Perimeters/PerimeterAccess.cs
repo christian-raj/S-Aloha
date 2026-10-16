@@ -64,7 +64,7 @@ public class PerimeterAccess(AppDbContext db, IHttpContextAccessor http)
     /// </summary>
     public static async Task<bool?> IsManagerAsync(AppDbContext db, IUserDirectory directory, string username, int perimeterId)
     {
-        var account = directory.Find(username);
+        var account = await directory.FindAsync(username);
         if (account is null) return null;
         if (account.Role == "Admin") return true;
         var groups = account.Groups.Select(g => g.ToLowerInvariant()).ToList();

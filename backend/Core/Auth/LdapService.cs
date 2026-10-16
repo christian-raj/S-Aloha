@@ -10,16 +10,36 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
     private bool UseSsl => bool.Parse(config["Ldap:UseSsl"] ?? "false");
     private string BaseDn => config["Ldap:BaseDn"]!;
 
-    private LdapConnection Connect(string dn, string password)
+    // Novell.Directory.Ldap 4 : API asynchrone (connexion, liaison, recherche).
+    private async Task<LdapConnection> ConnectAsync(string dn, string password)
     {
         var conn = new LdapConnection { SecureSocketLayer = UseSsl };
-        conn.Connect(Host, Port);
-        conn.Bind(dn, password);
-        return conn;
+        try
+        {
+            await conn.ConnectAsync(Host, Port);
+            await conn.BindAsync(dn, password);
+            return conn;
+        }
+        catch
+        {
+            conn.Dispose();
+            throw;
+        }
     }
 
-    private LdapConnection ServiceConnect() =>
-        Connect(config["Ldap:BindUser"]!, config["Ldap:BindPassword"]!);
+    private Task<LdapConnection> ServiceConnectAsync() =>
+        ConnectAsync(config["Ldap:BindUser"]!, config["Ldap:BindPassword"]!);
+
+    /// <summary>Première entrée d'une recherche ; les référents d'un AD (Configuration, DomainDnsZones…) ne sont pas des comptes.</summary>
+    private static async Task<LdapEntry?> FirstEntryAsync(ILdapSearchResults search)
+    {
+        while (await search.HasMoreAsync())
+        {
+            try { return await search.NextAsync(); }
+            catch (LdapReferralException) { }
+        }
+        return null;
+    }
 
     /// <summary>
     /// Authentifie l'utilisateur et retourne (sAMAccountName de l'annuaire,
@@ -28,25 +48,19 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
     /// des chaînes (M2, revue du 2026-10-06). Les groupes AD directs de
     /// l'utilisateur (CN) sont renvoyés pour le jeton (SOC-10).
     /// </summary>
-    public (string Username, string DisplayName, string Role, IReadOnlyCollection<string> Groups)? Authenticate(string username, string password)
+    public async Task<(string Username, string DisplayName, string Role, IReadOnlyCollection<string> Groups)?> AuthenticateAsync(string username, string password)
     {
         try
         {
-            using var svc = ServiceConnect();
+            using var svc = await ServiceConnectAsync();
             var filter = string.Format(config["Ldap:UserFilter"] ?? "(sAMAccountName={0})", EscapeFilter(username));
-            var search = svc.Search(BaseDn, LdapConnection.ScopeSub, filter,
+            var search = await svc.SearchAsync(BaseDn, LdapConnection.ScopeSub, filter,
                 new[] { "distinguishedName", "sAMAccountName", "displayName", "memberOf" }, false);
-            // Les référents d'un AD (Configuration, DomainDnsZones…) ne sont pas des comptes.
-            LdapEntry? entry = null;
-            while (entry is null && search.HasMore())
-            {
-                try { entry = search.Next(); }
-                catch (LdapReferralException) { }
-            }
+            var entry = await FirstEntryAsync(search);
             if (entry is null) return null;
 
             // vérifie le mot de passe par un bind avec le DN de l'utilisateur
-            using (var userConn = Connect(entry.Dn, password)) { }
+            using (var userConn = await ConnectAsync(entry.Dn, password)) { }
 
             var display = GetAttr(entry, "displayName") ?? username;
             var groups = GetAttrValues(entry, "memberOf")
@@ -68,25 +82,20 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
     }
 
     /// <summary>INC-13 : rôle et groupes d'un compte, lus par le compte de service (sans mot de passe de l'utilisateur).</summary>
-    public DirectoryAccount? Find(string username)
+    public async Task<DirectoryAccount?> FindAsync(string username)
     {
-        using var svc = ServiceConnect();
+        using var svc = await ServiceConnectAsync();
         var filter = string.Format(config["Ldap:UserFilter"] ?? "(sAMAccountName={0})", EscapeFilter(username));
-        var search = svc.Search(BaseDn, LdapConnection.ScopeSub, filter, new[] { "memberOf" }, false);
-        while (search.HasMore())
-        {
-            LdapEntry entry;
-            // Un AD renvoie des référents (DomainDnsZones…) : les ignorer, comme Search. Sans
-            // cela, un compte inexistant levait une exception, prise pour un annuaire injoignable.
-            try { entry = search.Next(); }
-            catch (LdapReferralException) { continue; }
-            var groups = GetAttrValues(entry, "memberOf")
-                .Select(dn => dn.Split(',')[0].Replace("CN=", "", StringComparison.OrdinalIgnoreCase))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var role = ResolveRole(groups);
-            return role is null ? null : new DirectoryAccount(role, groups);
-        }
-        return null;
+        var search = await svc.SearchAsync(BaseDn, LdapConnection.ScopeSub, filter, new[] { "memberOf" }, false);
+        // Un AD renvoie des référents (DomainDnsZones…) : ils sont ignorés. Sans cela, un compte
+        // inexistant levait une exception, prise pour un annuaire injoignable.
+        var entry = await FirstEntryAsync(search);
+        if (entry is null) return null;
+        var groups = GetAttrValues(entry, "memberOf")
+            .Select(dn => dn.Split(',')[0].Replace("CN=", "", StringComparison.OrdinalIgnoreCase))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var role = ResolveRole(groups);
+        return role is null ? null : new DirectoryAccount(role, groups);
     }
 
     private string? ResolveRole(HashSet<string> groups)
@@ -101,19 +110,19 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
     }
 
     /// <summary>Recherche d'utilisateurs et de groupes pour l'affectation RACI.</summary>
-    public List<DirectoryEntry> Search(string query, int max = 15)
+    public async Task<List<DirectoryEntry>> SearchAsync(string query, int max = 15)
     {
         var results = new List<DirectoryEntry>();
-        using var svc = ServiceConnect();
+        using var svc = await ServiceConnectAsync();
         var q = EscapeFilter(query);
         var filter = $"(|(&(objectClass=user)(|(sAMAccountName=*{q}*)(displayName=*{q}*)))(&(objectClass=group)(cn=*{q}*)))";
-        var search = svc.Search(BaseDn, LdapConnection.ScopeSub, filter,
+        var search = await svc.SearchAsync(BaseDn, LdapConnection.ScopeSub, filter,
             new[] { "sAMAccountName", "displayName", "cn", "objectClass" }, false);
-        while (search.HasMore() && results.Count < max)
+        while (results.Count < max && await search.HasMoreAsync())
         {
             try
             {
-                var e = search.Next();
+                var e = await search.NextAsync();
                 var classes = GetAttrValues(e, "objectClass");
                 bool isGroup = classes.Contains("group");
                 var id = GetAttr(e, isGroup ? "cn" : "sAMAccountName") ?? "";
@@ -127,13 +136,13 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
 
     private static string? GetAttr(LdapEntry e, string attr)
     {
-        try { return e.GetAttribute(attr)?.StringValue; }
+        try { return e.GetOrDefault(attr, null!)?.StringValue; }
         catch { return null; }
     }
 
     private static IEnumerable<string> GetAttrValues(LdapEntry e, string attr)
     {
-        try { return e.GetAttribute(attr)?.StringValueArray ?? Array.Empty<string>(); }
+        try { return e.GetOrDefault(attr, null!)?.StringValueArray ?? Array.Empty<string>(); }
         catch { return Array.Empty<string>(); }
     }
 

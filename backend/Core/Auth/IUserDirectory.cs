@@ -7,5 +7,5 @@ public record DirectoryAccount(string Role, IReadOnlyCollection<string> Groups);
 public interface IUserDirectory
 {
     /// <summary>Le compte, ou null s'il n'existe pas ou n'est dans aucun groupe autorisé ; lève une exception si l'annuaire est injoignable.</summary>
-    DirectoryAccount? Find(string username);
+    Task<DirectoryAccount?> FindAsync(string username);
 }

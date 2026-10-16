@@ -11,8 +11,8 @@ et montre à chacun **ce qui requiert son intervention, maintenant**.
 
 [![Version](https://img.shields.io/github/v/release/christian-raj/S-Aloha?label=version)](https://github.com/christian-raj/S-Aloha/releases)
 [![CI](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml/badge.svg)](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml)
-![.NET 8](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)
-![React 18](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
+![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![Active Directory](https://img.shields.io/badge/Auth-Active%20Directory-0078D4)
@@ -215,8 +215,8 @@ pour tous ([Soutenir S-Aloha](docs/soutenir.md)).
 
 | | |
 |---|---|
-| **Frontend** | React 18 + Vite, CSS natif à jetons, servi par nginx |
-| **API** | ASP.NET Core 8 + Entity Framework Core, Swagger sur `/swagger` |
+| **Frontend** | React 19 + Vite, CSS natif à jetons, servi par nginx |
+| **API** | ASP.NET Core 10 (LTS) + Entity Framework Core, Swagger sur `/swagger` |
 | **Données** | PostgreSQL 16 ; migrations EF appliquées au démarrage |
 | **Recherche** | Plein texte PostgreSQL + embeddings `bge-m3` dans un service séparé, facultatif |
 | **Identité** | Active Directory (LDAP) → JWT, rôles Admin / Manager / User |
@@ -295,7 +295,7 @@ place, NIS 2 built in.**
   links between records, hybrid search (keywords + semantic, local `bge-m3` model).
 - **Roadmap**: regulatory incident notifications (NIS 2, GDPR), attachments, e-mail
   notifications, imported compliance frameworks, CMDB bulk import.
-- **Stack**: ASP.NET Core 8, EF Core, PostgreSQL 16, React 18 + Vite, Docker Compose.
+- **Stack**: ASP.NET Core 10 (LTS), EF Core, PostgreSQL 16, React 19 + Vite, Docker Compose.
 - **Try it**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`,
   then sign in at http://localhost as `demo.admin` / `Demo-Admin-2026` (a demo directory
   is started for you).
