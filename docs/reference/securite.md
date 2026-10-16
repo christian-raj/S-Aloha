@@ -12,6 +12,8 @@
   l'AD qui valide le mot de passe.
 - Rôle déterminé par l'appartenance (`memberOf`) aux groupes configurés ; aucun groupe ⇒
   connexion refusée.
+- Annuaire injoignable (serveur absent, compte de service refusé) : 503 « Annuaire
+  injoignable », distinct d'un refus d'identifiants (401) ; l'erreur est journalisée (R6).
 - Jeton **JWT HS256** signé avec `Jwt:Key`, vérifié sur l'issuer et la signature (pas
   d'audience), durée `Jwt:ExpiryHours` (8 h par défaut). Pas de révocation : un jeton
   reste valide jusqu'à expiration, même si l'utilisateur est retiré du groupe AD.
