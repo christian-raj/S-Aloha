@@ -10,6 +10,7 @@
 
 | Date | Document | Objet |
 |---|---|---|
+| 2026-10-16 | [Audit de code](audit-code-2026-10-16.md) | Rapport d'audit reçu, analysé point par point : secrets, JWT, LDAP, démarrage, surface de l'API, observabilité ; suites reportées au plan d'action |
 | 2026-10-06 | [Revue fonctionnelle](revue-fonctionnelle-2026-10-06.md) | Module Gestion des problèmes et console : 3 bloquants, 8 majeurs, 6 règles non tenues, console d'administration absente |
 | 2026-10-06 | [État initial](etat-initial-2026-10-06.md) | État du dépôt au passage à S-Aloha : sécurité, données, qualité, documentation |
 

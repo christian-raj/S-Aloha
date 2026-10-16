@@ -35,6 +35,7 @@ code qui doit s'y conformer.
 | # | Écart | Qui |
 |---|---|---|
 | R4 | Réouverture d'un problème sans motif : transitions (2026-10-10) et conditions de clôture (PRB-11 à PRB-14) en place ; reste le motif de réouverture ([PRB-10](reference/processus/gestion-des-problemes.md#4-cycle-de-vie)), avec les commentaires (SOC-24) | code |
+| R7 | Annuaire : aucun délai de connexion explicite (délai TCP du système si le contrôleur ne répond pas) — `Ldap:TimeoutSeconds` ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 3) | code |
 | R6 | AD injoignable : 500 sur l'annuaire, « identifiants invalides » au login | code |
 
 ## 4. Chantiers à arbitrer
@@ -42,6 +43,8 @@ code qui doit s'y conformer.
 | # | Chantier | Décision à prendre |
 |---|---|---|
 | M8 | Aucune suppression dans l'interface | Qui supprime quoi, avec quelle confirmation |
+| A2 | Réponses de l'API : entités EF exposées ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 5) | DTO de réponse par pratique, à l'occasion des évolutions, ou statu quo avec les champs internes masqués |
+| O2 | Observabilité : ni journal structuré, ni traces, ni métriques ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 10) | Journal JSON et OpenTelemetry, selon la plateforme d'exploitation |
 | A1 | **Console d'administration inexistante** (Admin = console Manager) | Décidé le 2026-10-07 : section de menu **Administration** (Admin : utilisateurs et rôles, santé, journal d'audit, nettoyage — [SOC-26](reference/regles-metier.md#9-traçabilité-commentaires-administration)) et section **Paramétrage** (Manager, Admin : référentiels — SOC-27 — et paramétrage des pratiques) ; voir [frontend § Navigation cible](reference/frontend.md#navigation-cible) |
 
 ## 5. Avant une mise en production
@@ -54,6 +57,9 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 | S2 | **LDAPS** et **HTTPS** | action |
 | S3 | **CORS** restreint ; API et Swagger non publiés hors de nginx | code |
 | S5 | Stockage du jeton côté navigateur (`sessionStorage` ou cookie `HttpOnly`) | décision |
+| S7 | Refus de démarrer hors développement avec les valeurs d'exemple (`Jwt:Key`, `BindPassword`, mot de passe de base) ou une clé de moins de 64 caractères ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 1) | code |
+| S8 | Audience du jeton JWT (`Jwt:Audience`), émise et vérifiée ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 2) | code |
+| O1 | Démarrage : sondes `/health/live` et `/health/ready`, rattrapage des échéances SLA dans un service de fond, migrations pilotables (`Database:MigrateOnStartup`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 4) | code |
 
 ## 6. Qualité
 
@@ -62,6 +68,8 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 | Q1 | **Tests** : socle en place (API : xUnit + Testcontainers ; frontend : Vitest), B1–B3 et M1, M2, M4–M6 couverts ; étendre aux scénarios R1–R6 | code |
 | Q2 | **CI** : build backend et frontend, `python3 scripts/check-docs.py` | code |
 | Q4 | Créer les issues GitHub des sections 1 à 7 et les lier ici | action |
+| Q5 | Mesure de la couverture de tests (coverlet) publiée en CI, sans seuil bloquant ; `dotnet format` ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 8) | code |
+| Q6 | `.dockerignore` pour `backend` et `frontend` ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 9) | code |
 
 ## 7. Feuille de route fonctionnelle
 
