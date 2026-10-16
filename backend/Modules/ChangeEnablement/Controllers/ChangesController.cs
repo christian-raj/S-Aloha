@@ -30,6 +30,11 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         e.ImplementationPlan = dto.ImplementationPlan ?? ""; e.BackoutPlan = dto.BackoutPlan ?? "";
         e.Outcome = string.IsNullOrEmpty(dto.Outcome) ? null : dto.Outcome;
         e.RejectionReason = string.IsNullOrWhiteSpace(dto.RejectionReason) ? null : dto.RejectionReason.Trim();
+        // CHG-14, CHG-15 : dates réelles et revue post-implémentation.
+        if (dto.ActualStart is not null && dto.ActualEnd is not null && dto.ActualEnd < dto.ActualStart)
+            return "La fin réelle précède le début réel.";
+        e.ActualStart = Dates.Utc(dto.ActualStart); e.ActualEnd = Dates.Utc(dto.ActualEnd);
+        e.PirNotes = string.IsNullOrWhiteSpace(dto.PirNotes) ? null : dto.PirNotes.Trim();
         return null;
     }
 
@@ -56,7 +61,32 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
     protected override bool RequiresManager(string status) => status is "Autorisé" or "Rejeté";
 
     // Un changement rejeté est terminé : il n'est ni planifié, ni mis en œuvre, ni clos.
-    protected override string? CheckStatus(Change e, string status)
+    protected override async Task<string?> CheckStatusAsync(Change e, string status)
+    {
+        // Règles vérifiées à l'entrée du statut : un changement déjà dans ce statut avant elles reste modifiable.
+        var entering = e.Status != status;
+        // CHG-14 : dates réelles.
+        if (entering && status == "Mis en œuvre" && e.ActualStart is null)
+            return "Renseigner le début réel de la mise en œuvre.";
+        if (entering && status == "Clos" && e.ActualEnd is null)
+            return "Renseigner la fin réelle de la mise en œuvre avant de clore le changement.";
+        // CHG-15 : revue post-implémentation d'un changement urgent ou échoué.
+        if (entering && status == "Clos" && (e.ChangeType == "Urgent" || e.Outcome == "Échoué") && e.PirNotes is null)
+            return "Rédiger la revue post-implémentation (ce qui s'est passé, causes, enseignements) : elle est exigée pour un changement urgent ou échoué.";
+        // CHG-16 : un changement normal ou urgent s'évalue sur les CI qu'il touche (analyse d'impact, CFG-20).
+        // À l'évaluation seulement (Demandé → Évalué) : le retour automatique à Évalué d'un
+        // changement autorisé puis modifié (StatusAfterEdit) n'est pas bloqué.
+        if (entering && status == "Évalué" && e.Status == "Demandé" && e.ChangeType != "Standard"
+            && (e.Id == 0 || !await ItemLinks.IsLinkedToAsync(Db, LinkType, e.Id, "ci")))
+            return "Relier au moins un CI au changement (onglet Liens) pour l'évaluer : l'analyse d'impact en part.";
+        // CHG-21 : séparation des tâches — le demandeur n'autorise pas son propre changement (sauf Admin).
+        if (entering && status == "Autorisé" && e.Id != 0 && !User.IsInRole("Admin")
+            && string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase))
+            return "Le demandeur d'un changement ne peut pas l'autoriser lui-même : un autre gestionnaire décide.";
+        return CheckBase(e, status);
+    }
+
+    private static string? CheckBase(Change e, string status)
     {
         if (status is "Planifié" or "Mis en œuvre" or "Clos" && e.AuthorizedAt is null)
             return "Le changement doit d'abord être autorisé par un gestionnaire.";
@@ -99,11 +129,18 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
 
     // Le registre n'affiche pas les plans : ils restent dans la fiche.
     protected override async Task<IEnumerable<object>> ListItems(IQueryable<Change> q) =>
-        await q.Select(c => new
+        (await q.Select(c => new
         {
             c.Id, c.Reference, c.Title, c.Status, c.ChangeType, c.Risk, c.PlannedStart, c.PlannedEnd,
-            c.OwnerId, c.OwnerDisplayName, c.CreatedAt
-        }).ToListAsync();
+            c.ActualEnd, c.OwnerId, c.OwnerDisplayName, c.CreatedAt
+        }).ToListAsync())
+        // CHG-14 : dépassement de la fin planifiée, aussi au registre (calculé après lecture).
+        .Select(c => new
+        {
+            c.Id, c.Reference, c.Title, c.Status, c.ChangeType, c.Risk, c.PlannedStart, c.PlannedEnd,
+            c.ActualEnd, c.OwnerId, c.OwnerDisplayName, c.CreatedAt,
+            Overrun = new Change { PlannedEnd = c.PlannedEnd, ActualEnd = c.ActualEnd, Status = c.Status }.Overrun
+        });
 
     /// <summary>Calendrier des changements : changements planifiés non rejetés, à partir d'une date.</summary>
     [HttpGet("schedule")]

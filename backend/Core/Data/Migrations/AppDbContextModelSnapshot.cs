@@ -426,6 +426,12 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ActualEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ActualStart")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("AuthorizedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -484,6 +490,9 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.Property<int>("PerimeterId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("PirNotes")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("PlannedEnd")
                         .HasColumnType("timestamp with time zone");

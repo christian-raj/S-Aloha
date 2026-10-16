@@ -102,15 +102,17 @@ public class ValidationRulesTests(ApiFixture api)
         var m = api.Client("Manager");
         var c = await Json(await m.PostAsJsonAsync("/api/changes", Change(null)));
         var url = $"/api/changes/{Id(c)}";
+        await ChangeTestData.LinkCiAsync(m, Id(c));   // CHG-16
         Assert.Contains("plan de mise en œuvre", await Refused(await m.PutAsJsonAsync(url, Change("Évalué"))));
         await Json(await m.PutAsJsonAsync(url, Change("Évalué", "Procédure")));
         Assert.Contains("Motiver le rejet", await Refused(await m.PutAsJsonAsync(url, Change("Rejeté", "Procédure"))));
 
-        await Json(await m.PutAsJsonAsync(url, Change("Autorisé", "Procédure")));
+        await Json(await api.Client("Manager", "chef.chg12").PutAsJsonAsync(url, Change("Autorisé", "Procédure")));   // CHG-21
         Assert.Contains("fin planifiés", await Refused(await m.PutAsJsonAsync(url, Change("Planifié", "Procédure", end: false))));
         await Json(await m.PutAsJsonAsync(url, Change("Planifié", "Procédure")));
 
         var other = await Json(await m.PostAsJsonAsync("/api/changes", Change(null, "Procédure")));
+        await ChangeTestData.LinkCiAsync(m, Id(other));
         await Json(await m.PutAsJsonAsync($"/api/changes/{Id(other)}", Change("Évalué", "Procédure")));
         await Json(await m.PutAsJsonAsync($"/api/changes/{Id(other)}", Change("Rejeté", "Procédure", "Créneau de gel")));
     }

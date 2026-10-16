@@ -51,8 +51,8 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `Outcome` | texte 10 | à la clôture | Réussi, Échoué | ✅ |
 | `AuthorizedBy`, `AuthorizedAt` | texte, date | auto | Autorisation (SOC-08) | ✅ |
 | `ClosedAt` | date UTC | auto | | ✅ |
-| `ActualStart`, `ActualEnd` | date UTC | à la mise en œuvre | Dates réelles | 🔜 CHG-14 |
-| `PirNotes`, `PirAt` | texte, date | selon CHG-15 | Revue post-implémentation | 🔜 CHG-15 |
+| `ActualStart`, `ActualEnd` | date UTC | à la mise en œuvre | Dates réelles ; `overrun` (calculé) signale un dépassement de la fin planifiée | ✅ CHG-14 |
+| `PirNotes` | texte | selon CHG-15 | Revue post-implémentation (sa date est celle de l'historique) | ✅ CHG-15 |
 | `ModelId` | lien | si Standard (🔜) | Modèle de changement standard | 🔜 CHG-26 |
 | `Approvals` | liste | si CAB | Approbateur, décision, date, commentaire | 🔜 CHG-20 |
 
@@ -86,13 +86,13 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 |---|---|---|---|---|
 | — → Demandé | Tous | Type Normal ou Urgent | | ✅ |
 | — → Autorisé | Auto | Type Standard | `AuthorizedBy` = « Modèle standard (pré-autorisé) » | ✅ |
-| Demandé → Évalué | Tous | Risque, plan de mise en œuvre, plan de retour arrière | | ✅ |
+| Demandé → Évalué | Tous | Risque, plan de mise en œuvre, plan de retour arrière ; au moins un CI relié (Normal, Urgent) | | ✅ (CI : CHG-16) |
 | Évalué → Autorisé | Manager (CAB si Normal à risque Élevé) | | `AuthorizedAt`, `AuthorizedBy` | ✅ / 🔜 CHG-20 |
 | Évalué → Rejeté | Manager | Motif | | ✅ |
 | Autorisé → Planifié | Tous | Début et fin planifiés ; hors période de gel (sauf Urgent) | Inscrit au calendrier | ✅ / 🔜 CHG-25 (gel) |
 | Autorisé, Planifié → Évalué | Auto | Modification d'un champ d'évaluation par un User (CHG-07) | Autorisation effacée | ✅ |
-| Planifié → Mis en œuvre | Responsable, Manager | Début réel | `ActualStart` | ✅ (autorisation exigée) / 🔜 CHG-14 |
-| Mis en œuvre → Clos | Responsable, Manager | Résultat ; fin réelle ; revue si requise (CHG-15) | `ClosedAt` | ✅ (résultat) / 🔜 |
+| Planifié → Mis en œuvre | Responsable, Manager | Début réel | `ActualStart` | ✅ CHG-14 |
+| Mis en œuvre → Clos | Responsable, Manager | Résultat ; fin réelle ; revue si requise (CHG-15) | `ClosedAt` | ✅ |
 | Rejeté, Clos → … | — | Statuts finaux | | 🔜 CHG-11 |
 
 ## 5. Règles de gestion
@@ -112,9 +112,9 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 | CHG-11 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejeté et Clos sont finaux | ✅ | 1 |
 | CHG-12 | Passer à **Évalué** exige un plan de mise en œuvre et un plan de retour arrière renseignés (Normal et Urgent) | ✅ | 1 |
 | CHG-13 | **Planifié** exige aussi une fin planifiée | ✅ | 1 |
-| CHG-14 | **Dates réelles** : `ActualStart` exigé à Mis en œuvre, `ActualEnd` à Clos ; un dépassement de la fin planifiée est signalé | 🔜 | 2 |
-| CHG-15 | **Revue post-implémentation** exigée avant Clos pour tout changement **Urgent** ou de résultat **Échoué** (`PirNotes` : ce qui s'est passé, causes, enseignements) | 🔜 | 2 |
-| CHG-16 | Un changement **Normal** ou **Urgent** doit être relié à au moins un **CI** avant d'être Évalué (analyse d'impact, CFG-20) | 🔜 | 2 |
+| CHG-14 | **Dates réelles** : `ActualStart` exigé à Mis en œuvre, `ActualEnd` à Clos ; un dépassement de la fin planifiée est signalé | ✅ (vérifiés à l'entrée du statut ; dépassement affiché sur la fiche) | |
+| CHG-15 | **Revue post-implémentation** exigée avant Clos pour tout changement **Urgent** ou de résultat **Échoué** (`PirNotes` : ce qui s'est passé, causes, enseignements) | ✅ | |
+| CHG-16 | Un changement **Normal** ou **Urgent** doit être relié à au moins un **CI** avant d'être Évalué (analyse d'impact, CFG-20) | ✅ (à l'évaluation, Demandé → Évalué ; le retour automatique à Évalué d'un changement autorisé puis modifié n'est pas bloqué) | |
 | CHG-17 | Un **rejet** exige un motif, communiqué au demandeur | ✅ | 1 |
 
 ### Autorité de changement
@@ -122,7 +122,7 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | CHG-20 | **Autorité selon le risque** : Normal à risque Faible ou Moyen → un Manager ; Normal à risque **Élevé** → **CAB** : deux Managers distincts approuvent (`Approvals`), un seul rejet suffit à rejeter ; Urgent → un Manager (autorisation accélérée), revue obligatoire (CHG-15) | 🔜 | 2 |
-| CHG-21 | Le demandeur d'un changement ne peut pas l'autoriser lui-même (séparation des tâches), sauf Admin | 🔜 | 2 |
+| CHG-21 | Le demandeur d'un changement ne peut pas l'autoriser lui-même (séparation des tâches), sauf Admin | ✅ (le demandeur est le créateur du changement) | |
 | CHG-22 | **Conflit non résolu** : autoriser un changement en conflit de calendrier (CHG-09) exige un commentaire de l'autorité | 🔜 | 2 |
 | CHG-23 | Un changement peut être **créé depuis un problème ou une action corrective** (PRB-27) : titre, description et lien repris | ✅ (depuis une action) / 🔜 (depuis le problème : lien manuel) | 2 |
 | CHG-24 | Notifications (SOC-21) : changement Évalué → autorité (ou CAB) ; autorisation ou rejet → demandeur et responsable ; J-1 de la mise en œuvre → responsable | ✅ | |
@@ -146,7 +146,7 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
-| Changement → CI | CI modifiés | CHG-09, CHG-16 ; onglet « Impact » de la fiche : CI reliés, CI touchés en aval, services touchés (CFG-20) | ✅ (lien, impact) / 🔜 (CHG-16) |
+| Changement → CI | CI modifiés | CHG-09, CHG-16 ; onglet « Impact » de la fiche : CI reliés, CI touchés en aval, services touchés (CFG-20) | ✅ |
 | Problème → Changement | Correctif | CHG-23 | ✅ (lien) / 🔜 |
 | Demande → Changement | Besoin non standard | REQ-12 | ✅ (lien) / 🔜 |
 | Changement → Incident | Incident causé par le changement | CHG-33 | ✅ (lien) / 🔜 |

@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Changements** : dates réelles exigées pour la mise en œuvre et la clôture, dépassement de
+  la fin planifiée signalé (CHG-14) ; revue post-implémentation exigée pour clore un changement
+  urgent ou échoué (CHG-15) ; un changement normal ou urgent s'évalue avec au moins un CI
+  relié (CHG-16) ; le demandeur n'autorise pas son propre changement, sauf l'Admin (CHG-21).
+  Migration `ChangeActualDatesReview`.
+
 - **Demandes sort du MVP** : toutes les règles listées pour sa sortie sont en place (REQ-09,
   REQ-20 à REQ-23, REQ-30, REQ-31) ; la mention **(MVP)** disparaît du README et de la
   cartographie. Le modèle reste facultatif (demande libre possible) ; les tâches (REQ-24,

@@ -59,8 +59,10 @@ public class TransitionsTests(ApiFixture api)
             implementationPlan = "p", backoutPlan = "b" };
         var c = await Json(await m.PostAsJsonAsync("/api/changes", dto));
         await Refused(await m.PutAsJsonAsync($"/api/changes/{Id(c)}", dto with { status = "Autorisé" }));
+        await ChangeTestData.LinkCiAsync(m, Id(c));   // CHG-16
         await Json(await m.PutAsJsonAsync($"/api/changes/{Id(c)}", dto with { status = "Évalué" }));
-        await Json(await m.PutAsJsonAsync($"/api/changes/{Id(c)}", dto with { status = "Autorisé" }));
+        // CHG-21 : un autre gestionnaire que le demandeur autorise.
+        await Json(await api.Client("Manager", "chef.transitions").PutAsJsonAsync($"/api/changes/{Id(c)}", dto with { status = "Autorisé" }));
     }
 
     [Fact]

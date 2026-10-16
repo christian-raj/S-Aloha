@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `Notifications` | Tables `Notifications` (destinataire : `RecipientType` User, Group ou Managers et `RecipientId` ; `PerimeterId`, cible, référence, titre, événement, auteur, date ; index sur destinataire et date) et `NotificationReads` (clé : notification et compte) — SOC-21 |
+| `ChangeActualDatesReview` | `Changes.ActualStart`, `ActualEnd` (CHG-14), `PirNotes` (CHG-15), nulles pour l'existant |
 | `RequestCatalog` | Table `RequestCatalogItems` (nom, description, service — mise à null à sa suppression —, approbation requise, délai cible, groupe d'exécution, actif, auteur, dates) ; `ServiceRequests.CatalogItemId` (FK, suppression du modèle refusée tant qu'une demande en vient) — REQ-20 à REQ-23 |
 | `AgreementComplianceTarget` | `Agreements.ComplianceTarget` (numeric(5,2), nul pour l'existant : pas d'alerte) — SLM-20, SLM-23 |
 | `ServiceHoursOnHold` | `Services.WorkingDays`, `OpeningTime`, `ClosingTime`, `Holidays`, `TimeZone` (SLM-14) ; `Incidents.OnHoldReason` (INC-07), `OnHoldSince`, `HeldMinutes` (INC-22, 0 pour l'existant) |

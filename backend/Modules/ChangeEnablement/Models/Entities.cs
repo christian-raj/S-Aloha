@@ -37,9 +37,20 @@ public class Change : Record
     [MaxLength(200)] public string? AuthorizedBy { get; set; }
     public DateTime? AuthorizedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
+    /// <summary>CHG-14 : dates réelles de mise en œuvre.</summary>
+    public DateTime? ActualStart { get; set; }
+    public DateTime? ActualEnd { get; set; }
+    /// <summary>CHG-15 : revue post-implémentation (ce qui s'est passé, causes, enseignements).</summary>
+    public string? PirNotes { get; set; }
+
+    /// <summary>CHG-14 : la mise en œuvre a dépassé la fin planifiée (terminée après, ou toujours en cours après).</summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public bool Overrun => PlannedEnd is { } end
+        && (ActualEnd is { } actual ? actual > end : Status == "Mis en œuvre" && DateTime.UtcNow > end);
 }
 
 public record ChangeDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? ChangeType, string? Risk, DateTime? PlannedStart, DateTime? PlannedEnd,
-    string? ImplementationPlan, string? BackoutPlan, string? Outcome, string? RejectionReason = null, int? PerimeterId = null) : IRecordDto;
+    string? ImplementationPlan, string? BackoutPlan, string? Outcome, string? RejectionReason = null, int? PerimeterId = null,
+    DateTime? ActualStart = null, DateTime? ActualEnd = null, string? PirNotes = null) : IRecordDto;
