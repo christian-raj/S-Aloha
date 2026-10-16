@@ -36,6 +36,11 @@ export default function Overview({ project, onChanged }) {
           <div className="kpi-row">
             <div className="kpi"><div className="l">Délai</div><span className={'badge t-' + TOLERANCE_TONE[s.tolerances.time]}>{s.tolerances.time}</span></div>
             <div className="kpi"><div className="l">Coût</div><span className={'badge t-' + TOLERANCE_TONE[s.tolerances.cost]}>{s.tolerances.cost}</span></div>
+            {/* PRJ-22 : date de fin prévue et sa position par rapport à la tolérance de délai. */}
+            {s.forecast && <div className="kpi" title={s.forecast.basis}>
+              <div className="n">{s.forecast.date ? new Date(s.forecast.date).toLocaleDateString('fr-FR') : '—'}</div>
+              <div className="l">Fin prévue ({s.forecast.method.toLowerCase()}){' '}
+                {s.forecast.date && <span className={'badge t-' + TOLERANCE_TONE[s.forecast.tolerance]}>{s.forecast.tolerance}</span>}</div></div>}
             {(comps.includes('phases') || comps.includes('stages')) &&
               <div className="kpi"><div className="n">{s.phases.done}/{s.phases.total}</div><div className="l">{comps.includes('stages') ? 'Étapes' : 'Phases'} terminées{s.phases.current && ` · en cours : ${s.phases.current}`}</div></div>}
             {comps.includes('backlog') &&

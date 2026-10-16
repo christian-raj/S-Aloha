@@ -155,7 +155,7 @@ stateDiagram-v2
 | PRJ-15 | **Registre des risques** (criticité = probabilité × impact, critique à 15 et plus) et **registre des incidents projet** (clôture avec résolution), ouverts à tous | ✅ | |
 | PRJ-20 | Projet **PRINCE2** : étapes Démarrage, Initialisation, Livraison 1, Clôture proposées à la création | ✅ | |
 | PRJ-21 | Une **étape** ne passe à Terminée que par la **validation de fin d'étape** (chef de projet ou gestionnaire), qui pose `ApprovedBy`, `ApprovedAt` et ouvre l'étape suivante | ✅ | |
-| PRJ-22 | **Prévision** de la date de fin (vélocité, avancement des phases) pour la tolérance de délai | 🔜 | 2 |
+| PRJ-22 | **Prévision** de la date de fin (vélocité, avancement des phases) pour la tolérance de délai | ✅ (`ProjectHealth.ForecastEnd` : vélocité des sprints clos, sinon fin planifiée de la dernière phase non terminée décalée du retard de la phase en cours, sinon avancement depuis le début ; comparée à la fin cible et à la tolérance de délai ; indicateur « Fin prévue » de la synthèse) | |
 
 ## 6. Synthèse, calculs et alertes
 
@@ -167,7 +167,7 @@ Synthèse du projet : `GET /api/projects/{id}/summary`.
 | PRJ-31 | **Tolérance de délai**, à la date du jour : *Dans la cible* jusqu'à la fin cible, *À surveiller* jusqu'à fin cible + tolérance en jours, puis *Hors tolérance* ; *Sans objet* si une donnée manque ou si le projet est clos | ✅ | |
 | PRJ-32 | **Tolérance de coût** : *Dans la cible* si coût réel ≤ budget, *À surveiller* jusqu'à budget × (1 + tolérance %), puis *Hors tolérance* ; *Sans objet* comme PRJ-31 | ✅ | |
 | PRJ-33 | Risques ouverts, risques **critiques**, incidents projet ouverts | ✅ | |
-| PRJ-34 | Console : projets hors tolérance et jalons en retard (Relances, chef de projet et gestionnaires) ; projets à valider (Décisions) ; mes projets (Mon travail) | 🔜 | 2 |
+| PRJ-34 | Console : projets hors tolérance et jalons en retard (Relances, chef de projet et gestionnaires) ; projets à valider (Décisions) ; mes projets (Mon travail) | ✅ | |
 
 ## 7. Liens avec les autres pratiques
 
@@ -180,7 +180,10 @@ Synthèse du projet : `GET /api/projects/{id}/summary`.
 
 ## 8. Console et indicateurs
 
-Console (🔜 PRJ-34). Indicateurs du projet : synthèse PRJ-30 à PRJ-33.
+Console ✅ (PRJ-34) : projets en cadrage à valider (Décisions, gestionnaires) ; projets hors
+tolérance — délai, coût ou fin prévue — ou à jalons en retard (Relances : gestionnaires ; le
+chef de projet dans Mon travail) ; mes projets (Mon travail). Indicateurs du projet : synthèse
+PRJ-22, PRJ-30 à PRJ-33.
 
 | Indicateur | Calcul | Statut |
 |---|---|---|
@@ -195,7 +198,7 @@ Console (🔜 PRJ-34). Indicateurs du projet : synthèse PRJ-30 à PRJ-33.
 | `POST /api/projects` | User | Création (PRJ-01) |
 | `PUT /api/projects/{id}` | Chef de projet, Manager ; Cadrage → En cours : Manager | En-tête, méthode, composants, business case, tolérances, transitions |
 | `DELETE /api/projects/{id}` | Admin | Suppression |
-| `GET /api/projects/{id}/summary` | User | Synthèse (PRJ-30 à PRJ-33) |
+| `GET /api/projects/{id}/summary` | User | Synthèse (PRJ-30 à PRJ-33) et prévision de fin (`forecast` : date, méthode, base, tolérance — PRJ-22) |
 | `…/{id}/phases`, `…/milestones`, `…/sprints` (GET, POST, PUT, DELETE) | Lecture : User ; écriture : chef de projet, Manager | Phases ou étapes, jalons, sprints |
 | `POST …/{id}/phases/{phaseId}/approve` | Chef de projet, Manager | Validation de fin d'étape (PRJ-21) |
 | `GET …/{id}/sprints/{sprintId}/burndown` | User | Burndown : total, puis par jour la ligne idéale et les points restants (PRJ-13) |

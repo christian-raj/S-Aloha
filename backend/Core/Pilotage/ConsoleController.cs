@@ -10,6 +10,7 @@ using SAloha.Api.Modules.ContinualImprovement;
 using SAloha.Api.Modules.IncidentManagement;
 using SAloha.Api.Modules.KnowledgeManagement;
 using SAloha.Api.Modules.ProblemManagement;
+using SAloha.Api.Modules.ProjectManagement;
 using SAloha.Api.Modules.ServiceLevelManagement;
 using SAloha.Api.Modules.ServiceRequestManagement;
 
@@ -76,6 +77,36 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
         myAssignments.AddRange(await Mine(db.ServiceRequests, "request", meKey, groups, ServiceRequest.Done, all, seen));
         myAssignments.AddRange(await Mine(db.Changes, "change", meKey, groups, Change.Done, all, seen));
         myAssignments.AddRange(await Mine(db.Improvements, "improvement", meKey, groups, Improvement.Done, all, seen));
+        // PRJ-34 : mes projets (chef de projet) dans Mon travail.
+        myAssignments.AddRange(await Mine(db.Projects, "project", meKey, groups, Project.Done, all, seen));
+
+        // PRJ-34 : projets hors tolérance (délai, coût, prévision de fin) ou à jalons en retard.
+        var todayDate = DateTime.UtcNow.Date;
+        var openProjects = await db.Projects.AsNoTracking()
+            .Where(p => !Project.Done.Contains(p.Status) && (all || seen.Contains(p.PerimeterId))).ToListAsync();
+        var projectIds = openProjects.Select(p => p.Id).ToList();
+        var lateMilestones = (await db.Milestones.AsNoTracking()
+                .Where(m => projectIds.Contains(m.ProjectId) && m.AchievedAt == null && m.DueDate != null && m.DueDate < todayDate)
+                .Select(m => m.ProjectId).ToListAsync())
+            .GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
+        var projectItems = (await db.WorkItems.AsNoTracking().Where(w => projectIds.Contains(w.ProjectId)).ToListAsync()).ToLookup(w => w.ProjectId);
+        var projectSprints = (await db.Sprints.AsNoTracking().Where(x => projectIds.Contains(x.ProjectId)).ToListAsync()).ToLookup(x => x.ProjectId);
+        var projectPhases = (await db.ProjectPhases.AsNoTracking().Where(x => projectIds.Contains(x.ProjectId)).ToListAsync()).ToLookup(x => x.ProjectId);
+        var projectAlerts = openProjects.Select(p =>
+        {
+            var reasons = new List<string>();
+            if (ProjectHealth.TimeTolerance(p, todayDate) == ProjectHealth.Out) reasons.Add("délai hors tolérance");
+            if (ProjectHealth.CostTolerance(p) == ProjectHealth.Out) reasons.Add("coût hors tolérance");
+            if (ProjectHealth.ForecastEnd(p, projectItems[p.Id].ToList(), projectSprints[p.Id].ToList(), projectPhases[p.Id].ToList(), todayDate).Tolerance == ProjectHealth.Out)
+                reasons.Add("fin prévue hors tolérance");
+            if (lateMilestones.GetValueOrDefault(p.Id) is var late and > 0) reasons.Add($"{late} jalon(s) en retard");
+            return (Project: p, Reasons: reasons);
+        }).Where(x => x.Reasons.Count > 0).ToList();
+        Item AlertItem((Project Project, List<string> Reasons) x) =>
+            new("project", x.Project.Id, x.Project.Reference, x.Project.Title, string.Join(", ", x.Reasons));
+        var myProjectAlerts = projectAlerts.Where(x => x.Project.OwnerId != null && (x.Project.OwnerType == "Group"
+                ? groups.Contains(x.Project.OwnerId.ToLower()) : x.Project.OwnerId.ToLower() == meKey))
+            .Select(AlertItem).ToList();
 
         // INC-24 : incidents ouverts en risque ou hors délai — les miens (Urgent du responsable).
         var now = DateTime.UtcNow;
@@ -144,6 +175,11 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                 .OrderBy(r => r.DueDate)
                 .Select(r => new Item("request", r.Id, r.Reference, r.Title, r.Status)).ToListAsync();
 
+            // PRJ-34 : projets en cadrage, à valider par un gestionnaire.
+            decisions.AddRange(await db.Projects.AsNoTracking()
+                .Where(p => p.Status == "Cadrage" && (all || managed.Contains(p.PerimeterId))).OrderBy(p => p.CreatedAt)
+                .Select(p => new Item("project", p.Id, p.Reference, p.Title, "À valider")).ToListAsync());
+
             // Revues échues : articles publiés et SLA en vigueur dont la date de revue est passée.
             var reviewsDue = new List<Item>();
             reviewsDue.AddRange(await db.KnowledgeArticles.AsNoTracking()
@@ -168,13 +204,15 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                                KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue,
                                MajorIncidents = majorIncidents, Decisions = decisions, ReviewsDue = reviewsDue,
                                OverdueRequests = overdueRequests,
+                               // PRJ-34 : projets des périmètres gérés hors tolérance ou à jalons en retard.
+                               ProjectAlerts = projectAlerts.Where(x => all || managed.Contains(x.Project.PerimeterId)).Select(AlertItem).ToList(),
                                // INC-24 : incidents en risque ou hors délai des périmètres gérés.
                                SlaIncidents = slaOpen.Where(x => all || managed.Contains(x.i.PerimeterId))
                                    .Select(x => new Item("incident", x.i.Id, x.i.Reference, x.i.Title, x.State)).ToList() };
         }
 
         return Ok(new { Role = role, Username = me, MyProblems = myProblems, MyActions = myActions,
-                        MyAssignments = myAssignments, MySlaIncidents = mySla, Management = management });
+                        MyAssignments = myAssignments, MySlaIncidents = mySla, MyProjectAlerts = myProjectAlerts, Management = management });
     }
 
     /// <summary>Ligne de console désignant un enregistrement d'un processus.</summary>
