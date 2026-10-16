@@ -22,8 +22,12 @@ contribution est publiée sous la même licence.
   puis connectez-vous sur http://localhost avec `demo.admin` / `Demo-Admin-2026`
   (autres comptes : [README](README.md#essayer-en-5-minutes)).
 - Pour savoir **quoi** implémenter : chaque pratique ITIL a sa spécification dans
-  [`docs/reference/processus/`](docs/reference/processus/readme.md) ; une règle 🔜 « à
-  implémenter » porte un identifiant (`INC-06`) à citer dans votre pull request.
+  [`docs/reference/processus/`](docs/reference/processus/readme.md), dont le tableau
+  d'accueil compte les règles 🔜 « à implémenter » par pratique et par lot (le lot 2 d'abord).
+  Chaque règle porte un identifiant (`INC-15`) à citer dans votre pull request et des
+  scénarios d'acceptation qui servent de tests ; le
+  [mode d'emploi](docs/reference/processus/readme.md#mode-demploi-pour-implémenter-une-règle)
+  dit quoi mettre à jour dans la même pull request.
 - Pour comprendre le code : [architecture](docs/reference/architecture.md), et pour
   ajouter un écran ou un module : [frontend](docs/reference/frontend.md).
 - Issues, pull requests et commits sont acceptés **en français ou en anglais**.

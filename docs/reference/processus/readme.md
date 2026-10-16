@@ -2,8 +2,9 @@
 
 > Un document par pratique ITIL 4, sur le même gabarit. Socle commun (rôles, console,
 > conventions, règles `SOC`) : [règles métier](../regles-metier.md). Ce référentiel sert
-> de **spécification** aux agents de code : chaque règle a un identifiant, un statut
-> (✅ implémentée / 🔜 à implémenter) et un lot.
+> de **spécification** à qui implémente, contributeur ou agent de code : chaque règle a un
+> identifiant, un statut (✅ implémentée / 🔜 à implémenter), un lot et ses scénarios
+> d'acceptation.
 
 <sub>[← Règles métier](../regles-metier.md) · [← Documentation](../../readme.md)</sub>
 
@@ -11,20 +12,26 @@
 
 | Pratique | Préfixe | ✅ | 🔜 lot 1 | 🔜 lot 2 | 🔜 lot 3 |
 |---|---|---|---|---|---|
-| [Socle commun](../regles-metier.md) | SOC | 18 | 0 | 7 | 2 |
-| [Gestion des problèmes](gestion-des-problemes.md) | PRB | 22 | 0 | 7 | 1 |
-| [Gestion des incidents](gestion-des-incidents.md) | INC | 14 | 0 | 16 | 2 |
-| [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 8 | 0 | 9 | 4 |
-| [Habilitation des changements](habilitation-des-changements.md) | CHG | 14 | 0 | 12 | 1 |
-| [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 13 | 0 | 5 | 2 |
-| [Gestion des niveaux de service](gestion-des-niveaux-de-service.md) | SLM | 6 | 0 | 9 | 1 |
-| [Gestion des connaissances](gestion-des-connaissances.md) | KB | 12 | 0 | 1 | 3 |
-| [Amélioration continue](amelioration-continue.md) | CSI | 9 | 0 | 6 | 1 |
-| [Conformité NIS 2](conformite-nis2.md) | NIS | 15 | 1 | 6 | 1 |
+| [Socle commun](../regles-metier.md) | SOC | 21 | 0 | 4 | 2 |
+| [Gestion des problèmes](gestion-des-problemes.md) | PRB | 26 | 0 | 3 | 1 |
+| [Gestion des incidents](gestion-des-incidents.md) | INC | 20 | 0 | 10 | 2 |
+| [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 14 | 0 | 3 | 4 |
+| [Habilitation des changements](habilitation-des-changements.md) | CHG | 23 | 0 | 3 | 1 |
+| [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 17 | 0 | 1 | 2 |
+| [Gestion des niveaux de service](gestion-des-niveaux-de-service.md) | SLM | 15 | 0 | 0 | 1 |
+| [Gestion des connaissances](gestion-des-connaissances.md) | KB | 13 | 0 | 0 | 3 |
+| [Amélioration continue](amelioration-continue.md) | CSI | 14 | 0 | 1 | 1 |
+| [Conformité NIS 2](conformite-nis2.md) | NIS | 22 | 0 | 1 | 0 |
 | [Déclarations réglementaires](declarations-reglementaires.md) | DRG | 0 | 0 | 11 | 1 |
-| [Gestion de projet](gestion-de-projet.md) | PRJ | 21 | 0 | 2 | 0 |
+| [Gestion de projet](gestion-de-projet.md) | PRJ | 23 | 0 | 0 | 0 |
+| [Périmètres](../perimetres.md) | PER | 12 | 0 | 0 | 0 |
+| [Recherche](../recherche.md) | RAG | 9 | 1 | 2 | 1 |
+| [Reporting](../reporting.md) | REP | 29 | 0 | 1 | 0 |
+| **Total** | | **258** | **1** | **40** | **19** |
 
-*Comptes au 2026-10-12 (main `558d91b`), sur les tableaux de règles (hors indicateurs). Reste en lot 1 : NIS-18.*
+*Comptes au 2026-10-16 (main `af38031`), sur les tableaux de règles (hors indicateurs). Une
+règle faite en partie compte ✅ (7 règles, la part restante est décrite dans son statut).
+Seule règle de lot 1 restante : RAG-10, en attente d'un jeu de requêtes réelles.*
 
 ## Interface et navigation
 
@@ -33,7 +40,7 @@ onglets des fiches, boutons de transition) dérive de ce référentiel :
 [frontend § Navigation cible](../frontend.md#navigation-cible). Une règle implémentée qui
 ajoute une page ou un onglet met cette section à jour dans la même PR.
 
-## Mode d'emploi pour un agent de code
+## Mode d'emploi pour implémenter une règle
 
 1. **Lire** le [socle](../regles-metier.md) (§ 3 : conventions) puis le document de la
    pratique visée.
@@ -128,12 +135,14 @@ PER-01, PER-02, PER-10 à PER-12), **droits et visibilité des enregistrements**
 PER-07, 2026-10-12), **liens, console, reporting et recherche** (PER-08, PER-09,
 2026-10-13) et **écran d'administration** (2026-10-13). **Étape 6 terminée le 2026-10-13.**
 
-### Itération suivante
+### Et après le lot 1
 
-Étapes 4 à 6 terminées (2026-10-11 à 2026-10-13), NIS-18 aussi (2026-10-13). Le lot 1 est
+Étapes 4 à 6 terminées (2026-10-11 à 2026-10-13), NIS-18 aussi (2026-10-13) ; le lot 1 est
 terminé, sauf [RAG-10](../recherche.md) (calibrage de la recherche), **en attente** d'un jeu
-de requêtes réelles de l'organisation (décision du 2026-10-13). Itération en cours : les prérequis communs de la sortie du MVP : commentaires
-(SOC-24) et notifications (SOC-21) — [plan d'action](../../plan-action.md#sortie-du-mvp).
+de requêtes réelles de l'organisation (décision du 2026-10-13). Le cœur du lot 2 a suivi :
+toutes les pratiques ont quitté le stade MVP le 2026-10-16
+([plan d'action](../../plan-action.md#sortie-du-mvp)). Restent les règles 🔜 des lots 2 et 3
+du tableau ci-dessus, et les [déclarations réglementaires](declarations-reglementaires.md).
 
 ### Hors étapes
 

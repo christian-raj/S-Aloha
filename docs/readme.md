@@ -9,9 +9,9 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 
 | | Document | Pour |
 |---|---|---|
-| 🧭 | [Produit](reference/produit.md) | Comprendre la vision, les processus couverts et la feuille de route |
+| 🧭 | [Produit](reference/produit.md) | Comprendre la vision, les publics visés et les pratiques couvertes |
 | 📐 | [Règles métier](reference/regles-metier.md) | Connaître les rôles, la console et les règles communes à toutes les pratiques |
-| 🗂️ | [Pratiques ITIL](reference/processus/readme.md) | **Spécifier ou implémenter** une pratique : une règle numérotée, un statut ✅ / 🔜, un lot |
+| 🗂️ | [Pratiques ITIL](reference/processus/readme.md) | **Spécifier ou implémenter** une pratique : une règle numérotée, un statut ✅ / 🔜, un lot ; choisir une règle à prendre |
 | 🏗️ | [Architecture](reference/architecture.md) | Voir comment tout s'assemble : containers, socle, modules, API |
 | 🗄️ | [Base de données](reference/base-de-donnees.md) | Lire le modèle de données et les formats d'analyse |
 | 🖥️ | [Frontend](reference/frontend.md) | Ajouter un écran ou un module, respecter le design |
@@ -27,7 +27,7 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 | | | Durée de vie |
 |---|---|---|
 | ⚖️ [Décisions (ADR)](decisions/readme.md) | Les choix structurants et **pourquoi** | Définitif : remplacé, jamais réécrit |
-| 🗺️ [Plan d'action](plan-action.md) | Les chantiers ouverts | Vivant : se vide en avançant |
+| 🗺️ [Plan d'action](plan-action.md) | Les chantiers ouverts et la feuille de route | Vivant : se vide en avançant |
 | 🗃️ [Archives](archives/readme.md) | Constats datés et journaux des sujets traités | Figé |
 | 🔄 [Protocole](protocole-documentation.md) | La routine qui tient tout cela à jour | Vivant |
 | 💛 [Soutenir S-Aloha](soutenir.md) | Financer la feuille de route : sponsoring, services | Vivant |

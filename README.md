@@ -7,6 +7,8 @@
 La plateforme ITIL qui se branche sur votre Active Directory<br/>
 et montre à chacun **ce qui requiert son intervention, maintenant**.
 
+**10 pratiques ITIL 4** reliées entre elles · **plus de 250 règles de gestion** · **NIS 2** intégré · **on-prem** et libre
+
 [![Version](https://img.shields.io/github/v/release/christian-raj/S-Aloha?label=version)](https://github.com/christian-raj/S-Aloha/releases)
 [![CI](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml/badge.svg)](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml)
 ![.NET 8](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)
@@ -16,7 +18,7 @@ et montre à chacun **ce qui requiert son intervention, maintenant**.
 ![Active Directory](https://img.shields.io/badge/Auth-Active%20Directory-0078D4)
 [![Licence AGPLv3](https://img.shields.io/badge/Licence-AGPLv3-A42E2B)](LICENSE)
 
-[Fonctionnalités](#pourquoi-s-aloha) · [Aperçu](#aperçu) · [Essayer](#essayer-en-5-minutes) · [Contribuer](#contribuer-et-soutenir) · [Documentation](#documentation) · [English](#english)
+[Fonctionnalités](#fonctionnalités) · [Aperçu](#aperçu) · [Essayer](#essayer-en-5-minutes) · [Feuille de route](#feuille-de-route) · [Contribuer](#contribuer-et-soutenir) · [English](#english)
 
 <br/>
 
@@ -30,73 +32,97 @@ et montre à chacun **ce qui requiert son intervention, maintenant**.
 
 **🔐 Branché sur votre annuaire, dès le premier jour**
 Vos utilisateurs se connectent avec leur compte Windows. Les droits suivent vos groupes
-Active Directory : aucun compte à créer, aucun mot de passe stocké. Les décisions et la
-visibilité peuvent se limiter au **périmètre** de chacun : direction, site ou entité.
+Active Directory : aucun compte à créer, aucun mot de passe stocké. Décisions et visibilité
+se limitent au **périmètre** de chacun : direction, site ou entité.
 
 **🎯 Une console qui dit quoi faire**
-Chaque utilisateur arrive sur ce qui l'attend, classé par criticité : actions en retard,
-incidents majeurs, changements à autoriser, demandes à approuver, problèmes à qualifier,
-revues échues. L'informatif passe après.
+Chacun arrive sur ce qui l'attend, classé par criticité : incidents majeurs, SLA en risque,
+changements à autoriser, demandes à approuver, actions en retard, revues échues. Une
+**cloche** prévient des affectations, des décisions et des échéances.
 
-**🔍 L'analyse de cause racine, outillée**
-Trois méthodes intégrées : **5 Pourquoi**, **Ishikawa 6M** et **arbre des défaillances**
-avec portes ET/OU. Plusieurs analyses par problème, la conclusion alimente la cause racine.
-
-**✅ Des actions qui aboutissent**
-Chaque action corrective porte une échéance et une matrice **RACI** affectée à des
-personnes ou des groupes de l'annuaire. Les retards remontent tout seuls.
+**🔗 Des pratiques qui se parlent**
+Un incident ouvre un problème, un problème appelle un changement, un changement touche des
+CI et des services, une erreur connue devient un article, un SLA sous la cible propose une
+amélioration. Tout se relie par référence, sur un socle commun.
 
 **🧾 Un cycle de vie tenu, une trace de tout**
-Chaque pratique suit son cycle de vie ITIL : un changement s'évalue avant d'être autorisé,
-une demande s'approuve avant d'être traitée, un incident se résout avec un code et une
-description. Chaque fiche garde son **historique** : qui a changé quoi, quand, avec
-l'ancienne et la nouvelle valeur.
+Chaque pratique suit son cycle de vie ITIL, avec ses garde-fous : un changement s'évalue
+avant d'être autorisé, une demande s'approuve avant d'être traitée, un incident se résout
+avec un code. Chaque fiche garde ses **commentaires** et son **historique** complet.
 
 **🔎 La bonne solution avant le ticket**
 Recherche **hybride** (mots et sens) dans la connaissance, les problèmes et les incidents
 résolus : « Chercher d'abord » avant d'ouvrir un ticket, « Cas similaires » sur chaque
-incident et problème. Le modèle tourne chez vous ; sans lui, la recherche reste plein texte.
-
-**🛡️ La conformité NIS 2 au même endroit**
-Évaluation au Référentiel Cyber France de l'ANSSI : questionnaire noté, scores par
-thématique, maturité, écarts et actions d'amélioration reliées au registre.
-
-**📊 Le pilotage sans export Excel**
-Un tableau de bord à onglets : **score de santé** des services, incidents (MTTR, MTTD,
-résolution au premier contact, respect des SLA), problèmes, changements et projets,
-conformité. Filtres par période et par service, exports CSV et PDF.
+fiche. Le modèle tourne chez vous ; sans lui, la recherche reste plein texte.
 
 **🏠 Chez vous, en une commande, et libre**
-On-prem, quatre containers (dont le service de recherche sémantique, facultatif), vos
-données restent dans votre SI. Logiciel libre sous
-AGPLv3 : pas de licence par utilisateur, pas de dépendance à un éditeur.
+On-prem, quatre containers (dont la recherche sémantique, facultative) : vos données restent
+dans votre SI. Logiciel libre sous AGPLv3 : pas de licence par utilisateur, pas de
+dépendance à un éditeur.
 
-## Une plateforme, tous vos processus ITIL
+## Pour qui
 
-| Processus | |
-|---|---|
-| **Gestion des problèmes** — cause racine, erreurs connues, actions correctives, gestionnaire du problème | ✅ Disponible |
-| **Incidents** — priorité P1–P4, incidents majeurs, échéances en heures de service et SLA en risque, ouverture d'un problème lié | ✅ Disponible |
-| **Demandes** — catalogue de demandes et modèles pré-approuvés, bénéficiaire, approbation, échéance et groupe d'exécution | ✅ Disponible |
-| **Changements** — modèles standard pré-autorisés, autorité selon le risque et CAB, périodes de gel, retour arrière, calendrier, revue post-implémentation | ✅ Disponible |
-| **Configuration (CMDB)** — éléments de configuration, relations et impact, rattachement aux services, vérification | ✅ Disponible |
-| **Niveaux de service** — catalogue des services, SLA en heures de service, respect mesuré et alerte sous la cible, revues | ✅ Disponible |
-| **Connaissances** — articles en Markdown, soumission et publication validée, revue périodique, articles d'erreur connue issus des problèmes, notifications | ✅ Disponible |
-| **Amélioration continue** — registre priorisé, modèle ITIL 4 en 7 étapes, propositions sur problèmes récurrents et SLA sous la cible | ✅ Disponible |
-| **Conformité NIS 2** — évaluation au Référentiel Cyber France (ANSSI), écarts et actions, preuves liées, comparaison, export CSV, revue annuelle | ✅ Disponible |
-| **Projets** — Scrum, Kanban, Cycle en V, PRINCE2 ou hybride : la méthode active backlog, sprints, phases, jalons, risques ; prévision de la date de fin | ✅ Disponible |
-| **Périmètres** — droits et visibilité par direction, site ou entité, affectations d'utilisateurs et de groupes AD, écran d'administration | ✅ [Disponible](docs/reference/perimetres.md) |
-| **Déclarations réglementaires** — NIS 2 et RGPD, échéances 24 h / 72 h depuis l'incident | 🔜 [Spécifié](docs/reference/processus/declarations-reglementaires.md) |
+- Les **DSI d'organisations sous Active Directory** — PME, ETI, collectivités,
+  établissements publics — qui veulent des pratiques ITIL 4 sans outil propriétaire.
+- Les **entités soumises à NIS 2**, qui évaluent leur conformité et suivent leurs écarts au
+  même endroit que leurs incidents et leurs changements.
+- Les **équipes support et exploitation**, les **gestionnaires de processus** et les
+  **chefs de projet** de la DSI : un rôle applicatif chacun, tiré des groupes AD.
 
-Toutes les pratiques ont quitté le stade MVP le 2026-10-16, selon des
-[critères publiés](docs/plan-action.md#sortie-du-mvp), règle par règle.
+## Fonctionnalités
 
-Chaque processus est un module, aligné sur la pratique **ITIL 4** correspondante, sur un
-socle commun : même connexion, même console, même reporting. Les enregistrements se
-relient entre eux par leur référence : un incident ouvre un problème, un problème appelle
-un changement, un changement touche des CI. Sur chaque fiche : **commentaires** publics ou
-notes de travail, **historique** complet ; une **cloche** signale ce qui vous attend
-(affectations, décisions, échéances).
+### 🛟 Support aux utilisateurs
+
+- **[Incidents](docs/reference/processus/gestion-des-incidents.md)** — priorité P1–P4 par
+  impact × urgence, incident majeur piloté par un gestionnaire, échéances de prise en charge
+  et de résolution en heures de service, SLA en risque signalé, mise en attente motivée,
+  réouverture encadrée, problème lié en un clic.
+- **[Demandes](docs/reference/processus/gestion-des-demandes.md)** — catalogue de demandes
+  et modèles pré-approuvés, bénéficiaire, approbation, échéance et groupe d'exécution,
+  demandes en retard en relance, annulation par le demandeur.
+- **[Connaissances](docs/reference/processus/gestion-des-connaissances.md)** — articles en
+  Markdown, soumission puis publication validée, revue périodique, articles d'erreur connue
+  créés depuis les problèmes, compteur d'utilisation.
+
+### 🔧 Maîtrise du SI
+
+- **[Problèmes](docs/reference/processus/gestion-des-problemes.md)** — trois analyses de
+  cause racine intégrées (**5 Pourquoi**, **Ishikawa 6M**, **arbre des défaillances**),
+  erreurs connues et contournements, actions correctives avec échéance et matrice **RACI**
+  sur des personnes ou des groupes AD, gestionnaire du problème, problèmes récurrents détectés.
+- **[Changements](docs/reference/processus/habilitation-des-changements.md)** — Standard,
+  Normal, Urgent ; modèles standard pré-autorisés, autorité selon le risque et **CAB**,
+  séparation des tâches, périodes de **gel**, plans de mise en œuvre et de retour arrière,
+  calendrier et conflits, revue post-implémentation.
+- **[Configuration (CMDB)](docs/reference/processus/gestion-de-la-configuration.md)** —
+  éléments de configuration par type et environnement, relations et **impact** en amont et
+  en aval, rattachement aux services, vérification périodique, retrait encadré.
+
+### 📈 Qualité de service et pilotage
+
+- **[Niveaux de service](docs/reference/processus/gestion-des-niveaux-de-service.md)** —
+  catalogue des services, SLA en heures de service (délais de prise en charge et de
+  résolution P1–P4), **respect mesuré** et alerte sous la cible, expiration et revues.
+- **[Amélioration continue](docs/reference/processus/amelioration-continue.md)** — registre
+  priorisé, modèle ITIL 4 en 7 étapes, mesures de départ et cible, propositions automatiques
+  sur problèmes récurrents et SLA sous la cible.
+- **[Reporting](docs/reference/reporting.md)** — **score de santé** des services, MTTR, MTTD,
+  résolution au premier contact, respect des SLA, problèmes, changements, projets,
+  conformité ; filtres par période, service et périmètre, exports CSV et PDF.
+- **[Projets](docs/reference/processus/gestion-de-projet.md)** — Scrum, Kanban, Cycle en V,
+  PRINCE2 ou hybride : la méthode active backlog, sprints et burndown, tableau, phases,
+  jalons, livrables, risques, tolérances, prévision de la date de fin.
+
+### 🛡️ Sécurité et conformité
+
+- **[Conformité NIS 2](docs/reference/processus/conformite-nis2.md)** — évaluation au
+  Référentiel Cyber France de l'ANSSI : questionnaire noté, scores et maturité, écarts reliés
+  à des actions d'amélioration, preuves liées aux enregistrements, comparaison entre deux
+  évaluations, export CSV pour l'auditeur, revue annuelle.
+- **[Périmètres](docs/reference/perimetres.md)** — droits et visibilité par direction, site
+  ou entité ; utilisateurs et groupes AD affectés depuis l'écran d'administration.
+- **Traçabilité** — journal d'audit sur chaque fiche : qui a changé quoi, quand, avec
+  l'ancienne et la nouvelle valeur ; transitions forcées motivées.
 
 ## Aperçu
 
@@ -162,6 +188,25 @@ appartenir à l'un des groupes `GRP-SALOHA-ADMINS`, `GRP-SALOHA-MANAGERS` ou
 > publics, ni LDAPS ni HTTPS. Avant une mise en production, suivez
 > [la liste de durcissement](docs/reference/securite.md#points-de-durcissement-avant-production).
 
+## Feuille de route
+
+La plupart des évolutions sont déjà **spécifiées règle par règle**, avec leurs scénarios
+d'acceptation ([pratiques ITIL](docs/reference/processus/readme.md)). Les prochains chantiers :
+
+- 🚨 **Déclarations réglementaires** des incidents cyber : NIS 2 (alerte 24 h, notification
+  72 h, rapport final) et RGPD (72 h), rattachées à l'incident, avec échéances et alertes.
+- 📎 **Pièces jointes** sur chaque fiche, et **notifications par courriel** (immédiates ou
+  en résumé quotidien).
+- 📋 **Référentiels de conformité importés** par l'organisation (ISO 27002, CR-CMM…), à côté
+  de NIS 2.
+- 🗃️ **Import en masse** de la CMDB, attributs par type de CI, service signalé « dégradé ».
+- 🙋 **Tâches d'exécution** des demandes, contestation, **enquête de satisfaction**.
+- 🔎 **Suggestions à la saisie** : les cas similaires dès le titre d'un incident.
+
+Le détail et l'ordre : [plan d'action](docs/plan-action.md#7-feuille-de-route-fonctionnelle).
+Une organisation peut **sponsoriser** un chantier pour l'accélérer : le résultat est publié
+pour tous ([Soutenir S-Aloha](docs/soutenir.md)).
+
 ## Sous le capot
 
 | | |
@@ -183,26 +228,31 @@ cd frontend && npm test                                                # interfa
 
 ## Contribuer et soutenir
 
-S-Aloha est un projet ouvert : toutes les contributions sont bienvenues, du code à la
-documentation en passant par les retours d'usage.
+S-Aloha est un projet ouvert : code, documentation, retours d'usage, tout compte.
 
+- 📐 **Une spécification prête à coder.** Chaque pratique a son document : rôles, données,
+  cycle de vie, règles numérotées, scénarios d'acceptation. Une soixantaine de règles 🔜
+  attendent leur implémentation ; chacune est une pull request bien délimitée, citée par son
+  identifiant (`INC-15`, `REQ-24`…). Commencer par le
+  [mode d'emploi](docs/reference/processus/readme.md#mode-demploi-pour-implémenter-une-règle).
 - 🧩 **Première contribution ?** Les issues
   [`good first issue`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-  sont prêtes à prendre : contexte, fichiers concernés, critère de fin.
-- 🛠️ **Envie d'un chantier plus large ?** Voir
-  [`help wanted`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-  et le [plan d'action](docs/plan-action.md).
+  sont prêtes à prendre : contexte, fichiers concernés, critère de fin. Plus large :
+  [`help wanted`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
+- 🧪 **Un terrain sûr.** Le mode démonstration démarre sans Active Directory ; tests d'API
+  sur une vraie base PostgreSQL (Testcontainers), tests d'interface, CI à chaque pull request.
 - 📝 Le [guide de contribution](CONTRIBUTING.md) explique comment proposer une
   modification. Chaque commit est signé (`git commit -s`, *Developer Certificate of Origin*).
-- 💛 **Votre organisation utilise S-Aloha ?** Le soutien financier permet d'aller plus
-  vite sur la feuille de route : voir [Soutenir S-Aloha](docs/soutenir.md).
+- 💛 **Votre organisation utilise S-Aloha ?** Le soutien financier fait avancer la feuille
+  de route plus vite : voir [Soutenir S-Aloha](docs/soutenir.md).
 
 ## Documentation
 
 | | |
 |---|---|
-| 🧭 [Produit](docs/reference/produit.md) | Vision, processus ITIL couverts, feuille de route |
+| 🧭 [Produit](docs/reference/produit.md) | Vision, publics, pratiques couvertes |
 | 📐 [Règles métier](docs/reference/regles-metier.md) | Rôles, console, cycle de vie et transitions, priorité, historique |
+| 🗂️ [Pratiques ITIL](docs/reference/processus/readme.md) | Une spécification par pratique : règles numérotées ✅ / 🔜, scénarios d'acceptation |
 | 🏗️ [Architecture](docs/reference/architecture.md) | Containers, socle et modules, API, tests |
 | ⚙️ [Exploitation](docs/reference/exploitation.md) | Installation, Active Directory, mise à jour |
 | 🛡️ [Sécurité](docs/reference/securite.md) | Modèle d'autorisation, durcissement |
@@ -219,31 +269,36 @@ documentation en passant par les retours d'usage.
 **S-Aloha** is a free (AGPLv3), self-hosted **ITIL 4 service-management platform** for
 IT departments that run **Active Directory**. Users sign in with their Windows account;
 roles follow AD groups. Each user lands on an action-oriented console showing what needs
-their attention, ranked by severity.
+their attention, ranked by severity. **10 linked ITIL 4 practices, 250+ business rules in
+place, NIS 2 built in.**
 
-- **Processes**: problem management with root-cause analysis (5 Whys, Ishikawa, fault
-  tree), RACI-based corrective actions, plus full modules for incidents, service requests,
-  change enablement (with schedule), configuration items (CMDB), service levels,
-  knowledge and continual improvement — all linked to each other — and a **NIS 2**
-  self-assessment against the French ANSSI reference framework.
-- **Built-in governance**: lifecycle transitions enforced per practice, mandatory fields
-  (resolution codes, rejection reasons, plans before approval…), and a full **audit trail**
-  (history tab), **comments** (public or work notes) and in-app **notifications** on every
-  record.
-- **Hybrid search** (keywords + semantic, local `bge-m3` model) to find similar incidents,
-  problems and knowledge articles.
-- **Project management** (Scrum, Kanban, V-model, PRINCE2 or hybrid) and a tabbed
-  **reporting dashboard** (service health score, incident/problem/change/project KPIs,
-  CSV and PDF exports).
-- **Perimeter-scoped permissions** (by department, site or entity): rights, visibility
-  and an administration screen.
-- **Coming next**: regulatory incident notifications (NIS 2, GDPR).
+- **User support**: incidents (P1–P4, major incidents, response and resolution targets in
+  service hours, SLA-at-risk warnings), service requests (catalogue, pre-approved
+  templates, approval, fulfilment group), knowledge base (Markdown, review cycle,
+  known-error articles).
+- **Control of the IT estate**: problem management with root-cause analysis (5 Whys,
+  Ishikawa, fault tree) and RACI corrective actions; change enablement (standard models,
+  risk-based authority and CAB, freeze periods, schedule, post-implementation review);
+  CMDB with relationships, impact analysis and service mapping.
+- **Service quality and steering**: service catalogue and SLAs with measured compliance,
+  continual improvement (ITIL 7-step model, automatic proposals), a reporting dashboard
+  (health score, MTTR/MTTD, FCR, SLA, CSV/PDF exports) and project management (Scrum,
+  Kanban, V-model, PRINCE2 or hybrid).
+- **Security and compliance**: **NIS 2** self-assessment against the French ANSSI
+  framework (scores, gaps, evidence, comparison, auditor export), perimeter-scoped
+  permissions (department, site, entity), full audit trail.
+- **On every record**: comments (public or work notes), history, in-app notifications,
+  links between records, hybrid search (keywords + semantic, local `bge-m3` model).
+- **Roadmap**: regulatory incident notifications (NIS 2, GDPR), attachments, e-mail
+  notifications, imported compliance frameworks, CMDB bulk import.
 - **Stack**: ASP.NET Core 8, EF Core, PostgreSQL 16, React 18 + Vite, Docker Compose.
 - **Try it**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`,
   then sign in at http://localhost as `demo.admin` / `Demo-Admin-2026` (a demo directory
   is started for you).
-- **Contribute**: documentation is in French, code in English; issues and pull requests
-  are welcome in **English or French**. Start with a
+- **Contribute**: every practice is specified rule by rule, with acceptance scenarios;
+  about sixty specified rules are waiting for an implementation, each a well-scoped pull
+  request. Documentation is in French, code in English; issues and pull requests are
+  welcome in **English or French**. Start with a
   [`good first issue`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
   and read [CONTRIBUTING.md](CONTRIBUTING.md). Commits are signed off (DCO).
 

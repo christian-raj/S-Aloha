@@ -65,62 +65,47 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 
 ## 7. Feuille de route fonctionnelle
 
-Les sept processus sont livrés en **MVP** ([cartographie](reference/produit.md#cartographie-des-processus-itil-et-état),
-[ADR-0007](decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)). Leurs enrichissements
-sont spécifiés règle par règle dans [`reference/processus/`](reference/processus/readme.md).
+Les dix pratiques tiennent leur cycle de vie complet ; toutes ont quitté le stade MVP le
+2026-10-16 ([§ Sortie du MVP](#sortie-du-mvp), [cartographie](reference/produit.md#cartographie-des-processus-itil-et-état),
+[ADR-0007](decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)). Les évolutions
+restantes sont spécifiées règle par règle dans [`reference/processus/`](reference/processus/readme.md)
+(règles 🔜 des lots 2 et 3).
 
 | # | Processus | Enrichissement | Règles |
 |---|---|---|---|
-| F1 | Niveaux de service | ~~**Mesure de l'atteinte des SLA** : échéances sur l'incident, respect mesuré~~ (2026-10-14) | [INC-20 à INC-22](reference/processus/gestion-des-incidents.md), [SLM-10, SLM-13, SLM-14, SLM-20](reference/processus/gestion-des-niveaux-de-service.md) |
 | F2 | Incidents, Problèmes | Service et catégorie tirés du catalogue et d'un référentiel | [SOC-27](reference/regles-metier.md#9-traçabilité-commentaires-administration), [SLM-10](reference/processus/gestion-des-niveaux-de-service.md) |
-| F3 | Demandes | ~~Catalogue de demandes, approbation facultative~~ (2026-10-14), tâches | [REQ-20 à REQ-25](reference/processus/gestion-des-demandes.md) |
-| F4 | Changements | ~~Modèles standard, revue post-implémentation, gel, CAB~~ (2026-10-16) | [CHG-15, CHG-20, CHG-25, CHG-26](reference/processus/habilitation-des-changements.md) |
-| F5 | Configuration | ~~Rattachement CI ↔ service~~ (2026-10-13), import en masse | [CFG-21, CFG-30](reference/processus/gestion-de-la-configuration.md) |
-| F6 | Tous | Transitions contraintes, journal d'audit | [SOC-05, SOC-20](reference/regles-metier.md#5-règles-communes-aux-processus) et § 4 de chaque pratique |
-| F7 | Tous | Notifications, commentaires, pièces jointes | [SOC-21 à SOC-25](reference/regles-metier.md#8-notifications) |
-| F8 | Connaissances | Rendu Markdown, suggestion d'articles | [KB-10](reference/processus/gestion-des-connaissances.md), [INC-19](reference/processus/gestion-des-incidents.md) |
+| F3 | Demandes | Tâches d'exécution créées depuis le modèle (catalogue et modèles faits le 2026-10-14) | [REQ-24, REQ-25](reference/processus/gestion-des-demandes.md) |
+| F5 | Configuration | Import en masse, attributs par type de CI, service signalé « dégradé » (rattachement CI ↔ service fait le 2026-10-13) | [CFG-16, CFG-18, CFG-30](reference/processus/gestion-de-la-configuration.md) |
+| F7 | Tous | Pièces jointes, notifications par courriel (notifications dans l'application et commentaires faits le 2026-10-13) | [SOC-22, SOC-25](reference/regles-metier.md#8-notifications) |
+| F8 | Connaissances, Incidents | Suggestion d'articles et cas similaires dès la saisie, relier en un clic (rendu Markdown fait le 2026-10-12) | [INC-19](reference/processus/gestion-des-incidents.md), [RAG-09, RAG-11](reference/recherche.md) |
 | F11 | Incidents, sécurité | **Déclarations réglementaires** des incidents cyber (NIS 2 : alerte précoce 24 h, notification 72 h, rapport final ; RGPD : 72 h) associées à l'incident, échéances et alertes | [INC-40 à INC-44](reference/processus/gestion-des-incidents.md), [DRG-01 à DRG-13](reference/processus/declarations-reglementaires.md) |
 | F12 | Conformité | 🔜 **Évaluations sur référentiels définis par l'Admin** (ex. CR-CMM, ISO 27002) : l'Admin importe un référentiel en CSV depuis sa console en choisissant les colonnes (domaine ou pratique, niveau, identifiant, question, preuve attendue) et règle l'échelle (ex. Implémenté = 1, Partiel = 0,5, Non = 0 ; un niveau n'est atteint que si tous ses points de contrôle et ceux des niveaux inférieurs sont implémentés). Le contenu est importé par l'organisation et **jamais versionné** dans le dépôt, même logique que l'[ADR-0012](decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md) : CR-CMM est sous licence CC BY-NC 4.0, usage interne libre, œuvre dérivée ou revente soumises à l'accord écrit de ses auteurs (vérifié le 2026-10-12). Place : section Conformité & réglementation | À spécifier |
 
 Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 ([plan d'implémentation du lot 1](reference/processus/readme.md#plan-dimplémentation-conseillé--lot-1)).
 
-**Lot 1** : étapes 4 (2026-10-11), 5 (2026-10-12) et 6 (**périmètres**,
-[PER-01 à PER-12](reference/perimetres.md), [ADR-0014](decisions/adr-0014-perimetres-droits-scopes.md),
-2026-10-13) terminées, NIS-18 aussi. RAG-10 (calibrage de la recherche) est **en attente**
-(décision du 2026-10-13) jusqu'à ce qu'un jeu de requêtes réelles soit disponible. **Itération en cours** : prérequis communs de la sortie du MVP — commentaires
-(SOC-24) et notifications (SOC-21), faits le 2026-10-13 : les prérequis communs sont remplis. **Itération suivante** : les règles de chaque pratique listées pour sa sortie du MVP (§ Sortie du MVP).
+**Lot 1** : terminé le 2026-10-13 (étapes 1 à 6, périmètres compris, NIS-18), sauf RAG-10
+(calibrage de la recherche), **en attente** d'un jeu de requêtes réelles (décision du
+2026-10-13). **Itération en cours** : règles 🔜 du lot 2, et
+[déclarations réglementaires](reference/processus/declarations-reglementaires.md) (F11).
 
 ### Sortie du MVP
 
-**Toutes les pratiques sont sorties du MVP le 2026-10-16** (Projets en dernier). Le tableau
-ci-dessous reste comme trace des critères retenus.
+**Toutes les pratiques sont sorties du MVP le 2026-10-16.** Une pratique perdait la mention
+**(MVP)** quand les prérequis communs étaient en place — lot 1, commentaires (SOC-24) et
+notifications (SOC-21), tous faits le 2026-10-13 — et que toutes ses règles de sortie
+(cœur de métier du lot 2) étaient à ✅ :
 
-Une pratique perd la mention **(MVP)** — dans le README et la [cartographie](reference/produit.md#cartographie-des-processus-itil-et-état) —
-quand les **prérequis communs** sont en place et que **toutes ses règles listées** ci-dessous
-sont à ✅. La mention disparaît pratique par pratique, dans la PR qui passe la dernière
-règle à ✅ (README, produit, CHANGELOG dans la même PR).
+| Date | Pratiques | Réserves acceptées |
+|---|---|---|
+| — | Problèmes (pratique de référence, jamais en MVP ; dernières règles PRB-10, PRB-25, PRB-27 le 2026-10-13) | |
+| 2026-10-13 | Connaissances, Configuration, Conformité NIS 2 | RAG-10 en attente ; pièces jointes de NIS-08 avec SOC-25 |
+| 2026-10-14 | Niveaux de service, Amélioration continue, Incidents, Demandes | SLM-21 et tâches (REQ-24, REQ-25) au lot 3 ; modèle de demande facultatif ; cible de conformité d'un SLA facultative |
+| 2026-10-16 | Changements, Projets | CI concernés d'un modèle standard à venir |
 
-**Prérequis communs** : lot 1 terminé (étapes 4 à 6, périmètres compris) ✅ 2026-10-13, RAG-10
-en attente, sans effet sur la sortie du MVP (décision du 2026-10-13) ;
-[SOC-24](reference/regles-metier.md#9-traçabilité-commentaires-administration) commentaires ✅ 2026-10-13 ;
-[SOC-21](reference/regles-metier.md#8-notifications) notifications ✅ 2026-10-13 (événements déclenchés et datés).
-
-| Pratique | Règles à ✅ (lot 1 restant, puis cœur de métier du lot 2) |
-|---|---|
-| [Incidents](reference/processus/gestion-des-incidents.md) | ~~INC-11, INC-25~~ ; ~~INC-07 (attente motivée, hors délais), INC-20 (service du catalogue), INC-21, INC-22 (échéances en heures de service), INC-13 (rôle du responsable), INC-24 (SLA en risque)~~ (2026-10-14) : **sortie du MVP le 2026-10-14** |
-| [Demandes](reference/processus/gestion-des-demandes.md) | ~~REQ-09, REQ-31~~ ; ~~REQ-20 à REQ-23 (catalogue de demandes, modèles, échéance, groupe d'exécution), REQ-30 (retard)~~ (2026-10-14) : **sortie du MVP le 2026-10-14** ; REQ-24, REQ-25 (tâches) au lot 3 |
-| [Problèmes](reference/processus/gestion-des-problemes.md) | ~~PRB-24, PRB-26, PRB-30, PRB-31~~ ; ~~PRB-10 (motif de réouverture), PRB-25 (approbation par l'A), PRB-27 (changement depuis une action)~~ (2026-10-13) : toutes les règles de sortie sont faites |
-| [Changements](reference/processus/habilitation-des-changements.md) | ~~CHG-24~~ ; ~~CHG-14, CHG-15 (dates réelles, revue post-implémentation), CHG-16 (CI reliés), CHG-21 (séparation des tâches)~~ (2026-10-14) ; ~~CHG-20 (autorité selon le risque, CAB), CHG-25 (gel), CHG-26 (modèles standard)~~ (2026-10-16) : **sortie du MVP le 2026-10-16** |
-| [Configuration](reference/processus/gestion-de-la-configuration.md) | ~~CFG-12 à CFG-14~~ ; ~~CFG-15 (vérification), CFG-20 (impact d'un changement), CFG-21 (CI ↔ service), CFG-22~~ (2026-10-13) : **sortie du MVP le 2026-10-13** |
-| [Niveaux de service](reference/processus/gestion-des-niveaux-de-service.md) | ~~SLM-24~~ ; ~~SLM-04 (expiration), SLM-13 (délais de prise en charge), SLM-22 (revue), SLM-10 (service du catalogue), SLM-14 (heures de service), SLM-20 (mesure du respect, F1), SLM-23 (alerte sous la cible)~~ (2026-10-14) : **sortie du MVP le 2026-10-14** (SLM-21, disponibilité mesurée, reste au lot 3) |
-| [Connaissances](reference/processus/gestion-des-connaissances.md) | ~~KB-10, KB-11, KB-12, KB-17, KB-21~~ faits le 2026-10-12 (avec KB-14, KB-18) ; ~~KB-20~~ (2026-10-13) : **sortie du MVP le 2026-10-13** |
-| [Amélioration continue](reference/processus/amelioration-continue.md) | ~~CSI-10, CSI-12 (source, priorisation)~~, ~~CSI-21, CSI-23~~ (2026-10-13) ; ~~CSI-20~~ (problèmes récurrents le 2026-10-13, SLA sous la cible le 2026-10-14) : **sortie du MVP le 2026-10-14** |
-| [Conformité NIS 2](reference/processus/conformite-nis2.md) | ~~NIS-18~~, ~~NIS-14, NIS-16 (revue périodique), NIS-17 (export), NIS-08 (preuves), NIS-09 (comparaison)~~ (2026-10-13) : **sortie du MVP le 2026-10-13** ; les pièces jointes de NIS-08 suivront SOC-25, sans conditionner la sortie (décision du 2026-10-13) |
-| [Projets](reference/processus/gestion-de-projet.md) | ~~PRJ-22 (prévision de la date de fin), PRJ-34 (console : hors tolérance, jalons en retard, projets à valider, mes projets)~~ (2026-10-16) : **sortie du MVP le 2026-10-16** |
-
-Les règles du lot 3 (enquêtes, versions d'articles, import en masse…) ne conditionnent pas la
-sortie du MVP.
+Le détail règle par règle est dans les journaux du
+[2026-10-13](archives/journal-2026-10-13.md), du [2026-10-14](archives/journal-2026-10-14.md)
+et du [2026-10-16](archives/journal-2026-10-16.md).
 
 ## 8. Communauté et financement
 
