@@ -121,11 +121,11 @@ public class DiscoveryJobsController(AppDbContext db, PerimeterAccess access, Di
             if (credential is null || credential.PerimeterId != job.PerimeterId)
                 return "Choisir un identifiant du coffre du même périmètre que la tâche.";
         }
-        var expected = dto.ScanType switch { "Snmp" => "SnmpV2c", "ActiveDirectory" => "WindowsDomain", _ => null };
-        if (dto.ScanType == "Snmp" && credential is null) return "Un scan SNMP exige une communauté SNMP v2c du coffre.";
-        if (credential is not null && credential.CredentialType != expected)
-            return expected is null ? "Un balayage IP n'utilise pas d'identifiant."
-                : $"Un scan {dto.ScanType} attend un identifiant {expected}, pas {credential.CredentialType}.";
+        string[] expected = dto.ScanType switch { "Snmp" => ["SnmpV2c", "SnmpV3"], "ActiveDirectory" => ["WindowsDomain"], _ => [] };
+        if (dto.ScanType == "Snmp" && credential is null) return "Un scan SNMP exige une communauté v2c ou un utilisateur v3 du coffre.";
+        if (credential is not null && !expected.Contains(credential.CredentialType))
+            return expected.Length == 0 ? "Un balayage IP n'utilise pas d'identifiant."
+                : $"Un scan {dto.ScanType} attend un identifiant {string.Join(" ou ", expected)}, pas {credential.CredentialType}.";
 
         job.Name = dto.Name.Trim();
         job.ScanType = dto.ScanType;

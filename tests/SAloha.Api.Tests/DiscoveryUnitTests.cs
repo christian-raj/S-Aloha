@@ -45,33 +45,26 @@ public class DiscoveryUnitTests
         Assert.False(ScanWindow.IsDue(new DiscoveryJob(), now.Date.AddHours(12), TimeZoneInfo.Utc));   // hors de 20:00–06:00
     }
 
-    private static byte[] Tlv(byte tag, params byte[][] parts)
+    [Fact]
+    public void CFG_51_interfaces_ifTable_nature_et_adresse()
     {
-        var value = parts.SelectMany(p => p).ToArray();
-        return [tag, (byte)value.Length, .. value];
+        Assert.Equal(("ethernet", "boucle locale", "agrégat", "autre"),
+            (SnmpCollector.Kind("6"), SnmpCollector.Kind("24"), SnmpCollector.Kind("161"), SnmpCollector.Kind(null)));
+        Assert.Equal("00:1A:2B:3C:4D:5E", SnmpCollector.Mac(new Lextm.SharpSnmpLib.OctetString([0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E])));
+        Assert.Null(SnmpCollector.Mac(new Lextm.SharpSnmpLib.OctetString(new byte[6])));
+        Assert.Null(SnmpCollector.Mac(new Lextm.SharpSnmpLib.OctetString("")));
+        Assert.Equal("Gi0/1 · ethernet · active · 1000 Mb/s · 00:1A:2B:3C:4D:5E",
+            new SnmpInterface(1, "Gi0/1", "ethernet", true, 1000, "00:1A:2B:3C:4D:5E").ToString());
     }
 
     [Fact]
-    public void SNMP_requete_GET_v2c_et_lecture_de_la_reponse()
+    public void CFG_51_secret_SNMP_v3_les_deux_phrases_ensemble()
     {
-        var request = Ber.GetRequest("public", 1234, [SnmpCollector.SysName]);
-        Assert.Equal(0x30, request[0]);
-        Assert.Contains("public", Encoding.ASCII.GetString(request));
-        // En-tête (2) + version v2c (3) + communauté (2 + 6) : vient le PDU GetRequest.
-        Assert.Equal(0xA0, request[13]);
-        Assert.Equal("1.3.6.1.2.1.47.1.1.1.1.11.1", Ber.DecodeOid(Ber.EncodeOid(SnmpCollector.EntSerial)));
-
-        // Réponse : sysName = "sw-coeur", sysLocation absent (noSuchObject).
-        var response = Tlv(0x30, Tlv(0x02, [1]), Tlv(0x04, Encoding.ASCII.GetBytes("public")),
-            Tlv(0xA2, Tlv(0x02, [0x04, 0xD2]), Tlv(0x02, [0]), Tlv(0x02, [0]),
-                Tlv(0x30,
-                    Tlv(0x30, Tlv(0x06, Ber.EncodeOid(SnmpCollector.SysName)), Tlv(0x04, Encoding.ASCII.GetBytes("sw-coeur"))),
-                    Tlv(0x30, Tlv(0x06, Ber.EncodeOid(SnmpCollector.SysLocation)), Tlv(0x80)))));
-        var values = Ber.ParseResponse(response, 1234);
-        Assert.Equal("sw-coeur", values[SnmpCollector.SysName]);
-        Assert.False(values.ContainsKey(SnmpCollector.SysLocation));
-        Assert.Throws<FormatException>(() => Ber.ParseResponse(response, 999));
-        Assert.Throws<FormatException>(() => Ber.ParseResponse(response[..10], 1234));
+        var s = new SnmpV3Secret("phrase-auth", "phrase-chiffrement");
+        Assert.Equal(s, SnmpV3Secret.Parse(s.Serialize()));
+        Assert.Throws<InvalidOperationException>(() => SnmpAccess.From(null, "x"));
+        Assert.DoesNotContain("MD5", SnmpAccess.AuthProtocols);
+        Assert.DoesNotContain("DES", SnmpAccess.PrivProtocols);
     }
 
     [Theory]

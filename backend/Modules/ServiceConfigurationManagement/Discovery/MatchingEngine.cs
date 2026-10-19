@@ -172,6 +172,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         a.Location = o.Location ?? a.Location;
         a.OpenPorts = o.OpenPorts ?? a.OpenPorts;
         a.Banners = o.Banners ?? a.Banners;
+        a.Interfaces = o.Interfaces ?? a.Interfaces;
         a.InDirectory |= o.InDirectory;
         a.RawData = o.Raw ?? a.RawData;
         var sources = a.Sources.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -188,7 +189,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         static string? Cut(string? v, int max) => v is null || v.Length <= max ? v : v[..max];
         a.Hostname = Cut(a.Hostname, 200); a.SerialNumber = Cut(a.SerialNumber, 100);
         a.Vendor = Cut(a.Vendor, 100); a.Model = Cut(a.Model, 100); a.DetectedOs = Cut(a.DetectedOs, 150);
-        a.Location = Cut(a.Location, 150); a.OpenPorts = Cut(a.OpenPorts, 250); a.Banners = Cut(a.Banners, 500);
+        a.Location = Cut(a.Location, 150); a.OpenPorts = Cut(a.OpenPorts, 250); a.Banners = Cut(a.Banners, 500); a.Interfaces = Cut(a.Interfaces, 8000);
     }
 
     /// <summary>

@@ -9,7 +9,7 @@ public record Observation(
     string? IpAddress = null, string? MacAddress = null, string? Hostname = null,
     string? SerialNumber = null, string? Vendor = null, string? Model = null, string? Os = null,
     string Type = "Autre", string? OpenPorts = null, string? Location = null,
-    bool InDirectory = false, string? Raw = null, string? Banners = null);
+    bool InDirectory = false, string? Raw = null, string? Banners = null, string? Interfaces = null);
 
 /// <summary>Tâche à exécuter, avec le secret déchiffré de son identifiant (jamais journalisé).</summary>
 public record CollectContext(DiscoveryJob Job, DiscoveryCredential? Credential, string? Secret, int MaxConcurrency);

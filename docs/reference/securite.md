@@ -51,7 +51,7 @@ côté serveur : un client ne reçoit jamais un bloc non autorisé pour son rôl
 complète : [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).
 
 **Coffre d'identifiants de la découverte** ([CFG-45](processus/gestion-de-la-configuration.md)) :
-communautés SNMP et comptes de domaine chiffrés en AES-256-GCM (chiffrement authentifié : une
+communautés SNMP v2c, phrases des utilisateurs SNMP v3 (MD5 et DES refusés, CFG-51) et comptes de domaine chiffrés en AES-256-GCM (chiffrement authentifié : une
 valeur altérée en base est refusée), clé dérivée de `Discovery:VaultKey`, tenue hors de la
 base ; l'API n'en renvoie jamais la valeur, et un échec de scan n'en cite pas. Écriture
 réservée à l'Admin.

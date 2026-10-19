@@ -24,6 +24,7 @@ function Seen({ asset }) {
         ['Modèle', asset.model], ['Numéro de série', asset.serialNumber], ['Emplacement', asset.location],
         ['Ports ouverts', asset.openPorts],
         ['Bannières', asset.banners && <pre className="banners">{asset.banners}</pre>],
+        ['Interfaces', asset.interfaces && <pre className="banners">{asset.interfaces}</pre>],
         ['Sources', <Sources value={asset.sources} />],
         ['Annuaire', asset.inDirectory ? 'Compte d’ordinateur présent' : 'Absent de l’annuaire'],
         ['Première détection', dateTimeFr(asset.firstSeenAt)], ['Dernière détection', dateTimeFr(asset.lastSeenAt)],

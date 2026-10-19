@@ -2400,6 +2400,10 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<bool>("InDirectory")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Interfaces")
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)");
+
                     b.Property<string>("IpAddress")
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
@@ -2510,6 +2514,10 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AuthProtocol")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2538,6 +2546,10 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.Property<int>("PerimeterId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("PrivProtocol")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<DateTime?>("SecretChangedAt")
                         .HasColumnType("timestamp with time zone");

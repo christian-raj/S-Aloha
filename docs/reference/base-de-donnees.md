@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `DuplicateDismissals` | Table `DuplicateDismissals` : paires écartées (« pas un doublon », ADM-42) — type, identifiants dans l'ordre croissant (unique), auteur, date |
+| `SnmpV3Interfaces` | Colonnes `DiscoveryCredentials.AuthProtocol`, `PrivProtocol` (SNMP v3) et `DiscoveredAssets.Interfaces` (table des interfaces lue par SNMP) (CFG-51) |
 | `PassiveFingerprint` | Colonne `DiscoveredAssets.Banners` (bannières SSH et HTTP, CFG-49) ; table `MacVendors` : préfixe OUI (clé), constructeur, date d'import — vide tant que l'Admin n'a pas importé le registre de l'IEEE (CFG-50) |
 | `Categories` | Table `Categories` : catégories d'incident et de problème (ADM-50) — pratique, nom (unique par pratique), active, auteur, date ; reprise des catégories déjà saisies (ADM-52) |
 | `LastLogins` | Table `LastLogins` : compte (clé, minuscules) et date de dernière connexion, rien d'autre ; purge quotidienne après 13 mois sans connexion (ADM-12) |

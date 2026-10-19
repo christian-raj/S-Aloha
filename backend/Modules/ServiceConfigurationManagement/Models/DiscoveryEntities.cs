@@ -34,6 +34,8 @@ public class DiscoveredAsset : IHasPerimeter
     [MaxLength(250)] public string? OpenPorts { get; set; }
     /// <summary>CFG-49 : bannières lues sur les ports ouverts, une par ligne (« 22 SSH-2.0-OpenSSH_9.6 »).</summary>
     [MaxLength(500)] public string? Banners { get; set; }
+    /// <summary>CFG-51 : interfaces lues par SNMP (<c>ifTable</c>), une par ligne.</summary>
+    [MaxLength(8000)] public string? Interfaces { get; set; }
     /// <summary>Sources qui l'ont vu, séparées par des virgules (IpSweep, Snmp, ActiveDirectory).</summary>
     [MaxLength(100)] public string Sources { get; set; } = "";
     /// <summary>Compte d'ordinateur présent dans l'annuaire (CFG-42).</summary>
@@ -111,8 +113,8 @@ public class DiscoveryJob : IHasPerimeter
 /// </summary>
 public class DiscoveryCredential : IHasPerimeter
 {
-    /// <summary>Types utilisables par les collecteurs actuels ; SNMP v3, clés SSH et API cloud viendront avec leurs collecteurs.</summary>
-    public static readonly string[] Types = ["SnmpV2c", "WindowsDomain"];
+    /// <summary>Types utilisables par les collecteurs actuels ; clés SSH et API cloud viendront avec leurs collecteurs.</summary>
+    public static readonly string[] Types = ["SnmpV2c", "SnmpV3", "WindowsDomain"];
 
     public int Id { get; set; }
     public int PerimeterId { get; set; } = Perimeter.DefaultId;
@@ -121,6 +123,10 @@ public class DiscoveryCredential : IHasPerimeter
     [MaxLength(30)] public string CredentialType { get; set; } = "SnmpV2c";
     [MaxLength(150)] public string? Username { get; set; }
     [MaxLength(150)] public string? Domain { get; set; }
+    /// <summary>SNMP v3 (CFG-51) : protocole d'authentification (<see cref="Discovery.SnmpAccess.AuthProtocols"/>).</summary>
+    [MaxLength(10)] public string? AuthProtocol { get; set; }
+    /// <summary>SNMP v3 : protocole de chiffrement (<see cref="Discovery.SnmpAccess.PrivProtocols"/>) ; None : authentification seule.</summary>
+    [MaxLength(10)] public string? PrivProtocol { get; set; }
     public string EncryptedSecret { get; set; } = "";
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -150,7 +156,12 @@ public record DiscoveryJobDto(
     int FrequencyHours = 24, string? WindowStart = "20:00", string? WindowEnd = "06:00",
     bool IsActive = true, int? PerimeterId = null);
 
+/// <summary>
+/// Identifiant du coffre ; en SNMP v3, <see cref="Secret"/> est la phrase d'authentification et
+/// <see cref="PrivacySecret"/> celle du chiffrement.
+/// </summary>
 public record DiscoveryCredentialDto(
-    string Name, string CredentialType, string? Username, string? Domain, string? Secret, int? PerimeterId = null);
+    string Name, string CredentialType, string? Username, string? Domain, string? Secret, int? PerimeterId = null,
+    string? AuthProtocol = null, string? PrivProtocol = null, string? PrivacySecret = null);
 
 public record EndOfLifeRuleDto(string Product, DateTime? EndOfSupport, string? Notes);

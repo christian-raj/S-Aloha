@@ -6,19 +6,25 @@ import PerimeterSelect from '../../../core/components/PerimeterSelect'
 import usePerimeters, { perimeterName } from '../../../core/usePerimeters'
 import { JOB_TONES, SOURCE_LABELS } from '../config'
 
-/** Types de scan : cible attendue et identifiant du coffre requis. */
+/** Types de scan : cible attendue et types d'identifiant du coffre utilisables. */
 const SCAN_TYPES = {
-  IpSweep: { label: 'Balayage IP', target: 'Réseau CIDR (/24 au plus) ou adresse, ex. 192.168.1.0/24', credential: null,
+  IpSweep: { label: 'Balayage IP', target: 'Réseau CIDR (/24 au plus) ou adresse, ex. 192.168.1.0/24', credentials: [],
     help: 'Ping et sondage TCP des ports témoins, nom par DNS inverse, bannières SSH et HTTP des ports ouverts. Sans identifiant.' },
-  Snmp: { label: 'SNMP v2c', target: 'Réseau CIDR (/24 au plus) ou adresse', credential: 'SnmpV2c',
-    help: 'Lecture seule (sysDescr, sysName, sysLocation, n° de série) avec une communauté du coffre.' },
-  ActiveDirectory: { label: 'Active Directory', target: 'BaseDN facultatif (sinon celle de l’annuaire configuré)', credential: 'WindowsDomain',
+  Snmp: { label: 'SNMP v2c ou v3', target: 'Réseau CIDR (/24 au plus) ou adresse', credentials: ['SnmpV3', 'SnmpV2c'],
+    help: 'Lecture seule (sysDescr, sysName, sysLocation, n° de série, interfaces) avec une communauté v2c ou un utilisateur v3 du coffre.' },
+  ActiveDirectory: { label: 'Active Directory', target: 'BaseDN facultatif (sinon celle de l’annuaire configuré)', credentials: ['WindowsDomain'],
     help: 'Comptes d’ordinateur actifs. Compte de domaine du coffre facultatif (sinon le compte de service de l’API).' },
 }
 const CREDENTIAL_TYPES = {
+  SnmpV3: { label: 'Utilisateur SNMP v3', secret: 'Phrase d’authentification' },
   SnmpV2c: { label: 'Communauté SNMP v2c', secret: 'Communauté' },
   WindowsDomain: { label: 'Compte de domaine Windows', secret: 'Mot de passe' },
 }
+// SNMP v3 (CFG-51) : MD5 et DES, cassés, ne sont pas proposés.
+const V3_AUTH = [{ value: 'SHA256', label: 'SHA-256 (recommandé)' }, { value: 'SHA384', label: 'SHA-384' },
+  { value: 'SHA512', label: 'SHA-512' }, { value: 'SHA1', label: 'SHA-1 (équipements anciens)' }]
+const V3_PRIV = [{ value: 'AES', label: 'AES-128 (recommandé)' }, { value: 'AES192', label: 'AES-192' },
+  { value: 'AES256', label: 'AES-256' }, { value: 'None', label: 'Aucun (authentification seule)' }]
 const BUSY = ['En file', 'En cours']
 const blankJob = { name: '', scanType: 'IpSweep', targetRange: '', portList: '', credentialId: '', frequencyHours: 24,
   windowStart: '20:00', windowEnd: '06:00', isActive: true }
@@ -33,7 +39,7 @@ function JobForm({ job, credentials, onSaved, onCancel }) {
   useEffect(() => { if (!job && perimeterId === null && perimeters.length === 1) setPerimeterId(perimeters[0].id) }, [perimeters.length])
   const set = patch => setF(prev => ({ ...prev, ...patch }))
   const type = SCAN_TYPES[f.scanType]
-  const usable = credentials.filter(c => c.credentialType === type.credential && (!perimeterId || c.perimeterId === perimeterId))
+  const usable = credentials.filter(c => type.credentials.includes(c.credentialType) && (!perimeterId || c.perimeterId === perimeterId))
   const save = () => {
     const dto = { ...f, credentialId: f.credentialId ? Number(f.credentialId) : null, frequencyHours: Number(f.frequencyHours) || 0,
       windowStart: f.windowStart || null, windowEnd: f.windowEnd || null, perimeterId }
@@ -57,12 +63,12 @@ function JobForm({ job, credentials, onSaved, onCancel }) {
         {f.scanType === 'IpSweep' && <div className="field full"><label>Ports TCP sondés</label>
           <input value={f.portList} onChange={e => set({ portList: e.target.value })} placeholder="Par défaut : 22,80,443,135,445,3389,5985,9100" />
           <small className="field-hint">Séparés par des virgules, 50 au plus.</small></div>}
-        {type.credential && <div className="field"><label>Identifiant du coffre{f.scanType === 'Snmp' && ' *'}</label>
+        {type.credentials.length > 0 && <div className="field"><label>Identifiant du coffre{f.scanType === 'Snmp' && ' *'}</label>
           <select value={f.credentialId} onChange={e => set({ credentialId: e.target.value })}>
             <option value="">{f.scanType === 'Snmp' ? '— Choisir —' : 'Compte de service de l’API'}</option>
             {usable.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          {usable.length === 0 && <small className="field-hint">Aucun identifiant « {CREDENTIAL_TYPES[type.credential].label} » : l’Admin l’ajoute dans l’onglet Identifiants.</small>}
+          {usable.length === 0 && <small className="field-hint">Aucun identifiant « {type.credentials.map(t => CREDENTIAL_TYPES[t].label).join(' » ou « ')} » : l’Admin l’ajoute dans l’onglet Identifiants.</small>}
         </div>}
         <div className="field"><label>Fréquence (heures)</label>
           <input type="number" min="0" value={f.frequencyHours} onChange={e => set({ frequencyHours: e.target.value })} />
@@ -154,7 +160,8 @@ function Jobs({ isAdmin }) {
 function CredentialForm({ credential, onSaved, onCancel }) {
   const perimeters = usePerimeters()
   const [f, setF] = useState({ name: credential?.name ?? '', credentialType: credential?.credentialType ?? 'SnmpV2c',
-    username: credential?.username ?? '', domain: credential?.domain ?? '', secret: '' })
+    username: credential?.username ?? '', domain: credential?.domain ?? '', secret: '',
+    authProtocol: credential?.authProtocol ?? 'SHA256', privProtocol: credential?.privProtocol ?? 'AES', privacySecret: '' })
   const [perimeterId, setPerimeterId] = useState(null)
   const [error, setError] = useState('')
   const set = patch => setF(prev => ({ ...prev, ...patch }))
@@ -179,10 +186,28 @@ function CredentialForm({ credential, onSaved, onCancel }) {
           <div className="field"><label>Domaine</label>
             <input value={f.domain} onChange={e => set({ domain: e.target.value })} placeholder="MONDOMAINE" autoComplete="off" /></div>
         </>}
+        {f.credentialType === 'SnmpV3' && <>
+          <div className="field"><label>Utilisateur (securityName) *</label>
+            <input value={f.username} onChange={e => set({ username: e.target.value })} placeholder="svc-snmp" autoComplete="off" /></div>
+          <div className="field"><label>Authentification</label>
+            <select value={f.authProtocol} onChange={e => set({ authProtocol: e.target.value })}>
+              {V3_AUTH.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+            </select></div>
+          <div className="field"><label>Chiffrement</label>
+            <select value={f.privProtocol} onChange={e => set({ privProtocol: e.target.value })}>
+              {V3_PRIV.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+            </select></div>
+        </>}
         <div className="field"><label>{kind.secret}{!credential && ' *'}</label>
           <input type="password" value={f.secret} onChange={e => set({ secret: e.target.value })} autoComplete="new-password"
             placeholder={credential ? 'Laisser vide pour conserver l’actuel' : ''} />
-          <small className="field-hint">Chiffré dès l’enregistrement ; jamais réaffiché.</small></div>
+          <small className="field-hint">Chiffré dès l’enregistrement ; jamais réaffiché.{f.credentialType === 'SnmpV3' && ' 8 caractères au moins.'}</small></div>
+        {f.credentialType === 'SnmpV3' && f.privProtocol !== 'None' && (
+          <div className="field"><label>Phrase de chiffrement{!credential && ' *'}</label>
+            <input type="password" value={f.privacySecret} onChange={e => set({ privacySecret: e.target.value })} autoComplete="new-password"
+              placeholder={credential ? 'Laisser vide pour conserver l’actuelle' : ''} />
+            <small className="field-hint">8 caractères au moins.</small></div>
+        )}
       </div>
       <div className="actions">
         <button className="btn" onClick={save} disabled={!f.name.trim() || (!credential && !f.secret)}>Enregistrer</button>
@@ -192,7 +217,7 @@ function CredentialForm({ credential, onSaved, onCancel }) {
   )
 }
 
-/** Coffre d'identifiants (CFG-45), Admin : communautés SNMP, comptes de domaine. */
+/** Coffre d'identifiants (CFG-45), Admin : communautés SNMP v2c, utilisateurs SNMP v3, comptes de domaine. */
 function Credentials() {
   const [data, setData] = useState(null)
   const [editing, setEditing] = useState(null)
@@ -218,7 +243,7 @@ function Credentials() {
             {data.items.map(c => (
               <tr key={c.id}>
                 <td><b>{c.name}</b></td>
-                <td>{CREDENTIAL_TYPES[c.credentialType]?.label ?? c.credentialType}</td>
+                <td>{CREDENTIAL_TYPES[c.credentialType]?.label ?? c.credentialType}{c.credentialType === 'SnmpV3' && <div className="muted small">{c.authProtocol} · {c.privProtocol === 'None' ? 'sans chiffrement' : c.privProtocol}</div>}</td>
                 <td>{c.username ? `${c.domain ? c.domain + '\\' : ''}${c.username}` : '—'}</td>
                 <td className="small">{c.hasSecret ? <>Enregistré, chiffré{c.secretChangedAt && <div className="muted">changé le {dateFr(c.secretChangedAt)}</div>}</> : 'Absent'}</td>
                 <td>{c.usedBy ? `${c.usedBy} tâche(s)` : '—'}</td>
@@ -228,7 +253,7 @@ function Credentials() {
                     title={c.usedBy > 0 ? 'Utilisé par des tâches de scan' : undefined}>Supprimer</button>
                 </td>
               </tr>))}
-            {data.items.length === 0 && <tr><td colSpan={6} className="muted">Aucun identifiant. Un scan SNMP exige une communauté ; un scan de l’annuaire peut utiliser un compte de domaine dédié.</td></tr>}
+            {data.items.length === 0 && <tr><td colSpan={6} className="muted">Aucun identifiant. Un scan SNMP exige une communauté v2c ou un utilisateur v3 ; un scan de l’annuaire peut utiliser un compte de domaine dédié.</td></tr>}
           </tbody>
         </table>
       </div>
