@@ -19,6 +19,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `KnowledgeLifecycle` | Colonnes du cycle des articles : `KnowledgeArticles.SubmittedAt`, `SubmittedBy` (KB-21), `LastReviewedAt`, `LastReviewedBy`, `ArchiveRequestedAt`, `ArchiveRequestedBy`, `ArchiveRequestReason` (KB-17) |
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
+| `CmdbDiscovery` | `ConfigurationItems` : identification technique (`IpAddress`, `MacAddress`, `OperatingSystem`), portefeuille applicatif (`AppCode`, `BusinessUnit`, `BusinessOwner…`, `TechnicalOwner…`, `Criticality`, `RtoHours`, `RpoHours`, `GdprSensitive`, `Nis2Scope`, `AppLifecycle`), actifs matériels (`Vendor`, `Model`, `SerialNumber`, `PurchaseDate`, `WarrantyExpiry`, `EndOfSupport`), nulles (booléens faux) pour l'existant ; index sur `SerialNumber`, `MacAddress`, `AppCode`. Tables `DiscoveredAssets`, `DiscoveryJobs`, `DiscoveryCredentials` (avec `PerimeterId`) et `EndOfLifeRules` (CFG-39 à CFG-48) |
 | `Notifications` | Tables `Notifications` (destinataire : `RecipientType` User, Group ou Managers et `RecipientId` ; `PerimeterId`, cible, référence, titre, événement, auteur, date ; index sur destinataire et date) et `NotificationReads` (clé : notification et compte) — SOC-21 |
 | `ChangeCabFreezeModels` | Tables `ChangeApprovals` (CHG-20 : changement — FK cascade —, approbateur, décision, commentaire, date ; unique par changement et approbateur), `ChangeFreezes` (CHG-25 : début, fin, motif, auteur), `StandardChangeModels` (CHG-26 : nom, description, plans, risque, actif, auteur, dates) ; `Changes.StandardModelId` (FK, suppression du modèle refusée tant qu'un changement en vient) |
 | `ChangeActualDatesReview` | `Changes.ActualStart`, `ActualEnd` (CHG-14), `PirNotes` (CHG-15), nulles pour l'existant |
@@ -154,7 +155,7 @@ classe non mappée) : chaque processus a sa table, avec ces colonnes communes.
 | `Incidents` (`Incident`) | INC | `ResolutionCode`, `FirstResponseAt`, `ReopenCount`, `ReopenReason`, `ResolutionDueAt`, `OccurredAt`, `FirstContactResolution`, `OwnerChanged`, `Impact`, `Urgency`, `Priority` (dérivée), `Category`, `AffectedService`, `IsMajor`, `Resolution`, `ResolvedAt`, `ClosedAt` |
 | `ServiceRequests` (`ServiceRequest`) | REQ | `RejectionReason`, `RequestedItem`, `RequestedFor`, `RequestedForDisplayName`, `DueDate`, `ApprovedBy`, `ApprovedAt`, `FulfilledAt`, `ClosedAt`, `CancelledAt` |
 | `Changes` (`Change`) | CHG | `RejectionReason`, `ChangeType`, `Risk`, `PlannedStart`, `PlannedEnd`, `ImplementationPlan`, `BackoutPlan`, `Outcome`, `AuthorizedBy`, `AuthorizedAt`, `ClosedAt` |
-| `ConfigurationItems` (`ConfigurationItem`) | CI | `CiType`, `Environment`, `Location` |
+| `ConfigurationItems` (`ConfigurationItem`) | CI | `CiType`, `Environment`, `Location`, `LastVerifiedAt`, `LastVerifiedBy`, `IpAddress`, `MacAddress`, `OperatingSystem` ; portefeuille applicatif (`AppCode`…`AppLifecycle`) et actifs matériels (`Vendor`…`EndOfSupport`) : [§ 3 de la pratique](processus/gestion-de-la-configuration.md#3-données) |
 | `Services` (`ItService`) | SVC | `Criticality`, `ServiceHours` |
 | `Agreements` (`ServiceLevelAgreement`) | SLA | `ServiceId` (FK → `Services`, cascade), `Customer`, `AvailabilityTarget` (décimal 5,2), `ResolutionHoursP1`…`P4`, `ValidFrom`, `ValidTo`, `ReviewDate` |
 | `KnowledgeArticles` (`KnowledgeArticle`) | KB | `ArticleType`, `Content` (Markdown), `Keywords`, `ReviewDate`, `PublishedBy`, `PublishedAt`, `SubmittedAt`, `SubmittedBy`, `LastReviewedAt`, `LastReviewedBy`, `ArchiveRequestedAt`, `ArchiveRequestedBy`, `ArchiveRequestReason` |
@@ -194,6 +195,13 @@ erDiagram
   `Severity`, `Status`, `Resolution`, `ClosedAt`).
 - **`CiRelationships`** : `SourceId`, `TargetId` (FK → `ConfigurationItems`, cascade des deux
   côtés), `Type` (`Dépend de`, `Héberge`, `Fait partie de`, `Se connecte à`).
+- **Découverte** (migration `CmdbDiscovery`, [§ 3.5 de la pratique](processus/gestion-de-la-configuration.md#35-découverte-et-sas-de-staging)) :
+  `DiscoveredAssets` (`MatchedCiId` FK → `ConfigurationItems` mise à null à sa suppression,
+  `JobId` FK → `DiscoveryJobs` mise à null ; index sur périmètre et statut),
+  `DiscoveryJobs` (`CredentialId` FK → `DiscoveryCredentials`, suppression refusée tant
+  qu'une tâche l'utilise), `DiscoveryCredentials` (`EncryptedSecret` : `v1:` puis nonce,
+  étiquette et chiffré AES-256-GCM en base64, jamais exposé), `EndOfLifeRules` (`Product`
+  unique, `EndOfSupport`, `Notes`).
 - **`SearchPassages`** (socle, `backend/Core/Search/SearchPassage.cs`, migration `SearchIndex`) :
   index **dérivé** de la recherche hybride, reconstructible, jamais saisi. `SourceType`,
   `SourceId`, `Reference`, `Title`, `Status`, `Ordinal`, `Text` (passage de 800 caractères

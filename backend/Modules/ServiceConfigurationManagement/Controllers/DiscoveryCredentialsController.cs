@@ -11,11 +11,12 @@ namespace SAloha.Api.Modules.ServiceConfigurationManagement.Controllers;
 /// <summary>
 /// Coffre d'identifiants (CFG-45), tenu par l'Admin : le secret s'écrit (création, rotation), ne
 /// se relit jamais ; l'API indique seulement s'il est présent et quand il a changé. Les
-/// gestionnaires lisent la liste (noms, types) pour choisir l'identifiant d'une tâche de scan.
+/// gestionnaires lisent la liste de leurs périmètres (noms, types) pour choisir l'identifiant
+/// d'une tâche de scan (PER-06).
 /// </summary>
 [ApiController]
 [Route("api/discovery/credentials")]
-[Authorize(Policy = "Manager")]
+[Authorize(Policy = "User")]
 public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess access, CredentialVault vault) : ControllerBase
 {
     private static object View(DiscoveryCredential c, int usedBy) => new
@@ -30,8 +31,12 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
     [HttpGet]
     public async Task<IActionResult> List()
     {
+        var scope = await access.GetAsync();
+        var managed = scope.ManagedIds.ToList();
+        if (!scope.Global && managed.Count == 0) return Forbid();
         var usage = await UsageAsync();
-        var list = await db.Set<DiscoveryCredential>().AsNoTracking().OrderBy(c => c.Name).ToListAsync();
+        var list = await db.Set<DiscoveryCredential>().AsNoTracking()
+            .Where(c => scope.Global || managed.Contains(c.PerimeterId)).OrderBy(c => c.Name).ToListAsync();
         return Ok(new { VaultConfigured = vault.Configured, Items = list.Select(c => View(c, usage.GetValueOrDefault(c.Id))) });
     }
 

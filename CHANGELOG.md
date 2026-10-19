@@ -14,6 +14,18 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **CMDB augmentée et découverte automatique** (chantier F13) : la fiche d'un CI porte son
+  identification technique (IP, MAC, système), le **portefeuille applicatif** (code,
+  direction, propriétaire métier, responsable DSI, criticité, RTO / RPO, RGPD, NIS 2, cycle
+  applicatif) et les **actifs matériels** (constructeur, modèle, numéro de série, garantie,
+  fin de support). **Découverte** par balayage IP, SNMP v2c et annuaire Active Directory,
+  planifiée par tâche (fréquence, fenêtre horaire) ; les équipements trouvés attendent dans
+  un **sas de staging** où ils sont rapprochés des CI (numéro de série, MAC, nom d'hôte, IP),
+  créés en CI ou ignorés ; actifs inconnus (Shadow IT) signalés. **Coffre d'identifiants**
+  chiffré (communautés SNMP, comptes de domaine), **référentiel des fins de support**,
+  **rapport d'inventaire** exportable, onglet **Configuration & inventaire** du tableau de
+  bord, bloc du sas dans la console des gestionnaires (CFG-39 à CFG-48, REP-50 à REP-53).
+
 - **Projets sort du MVP**, dernière pratique : PRJ-22 (prévision de la date de fin) et PRJ-34
   (console) sont en place. **Toutes les pratiques ont quitté le stade MVP** ; la mention
   disparaît du README et de la cartographie.
@@ -300,6 +312,17 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
   `bge-m3` (environ 1,2 Go) au premier démarrage ; pour s'en passer :
   `docker compose up -d db api web` et `Embeddings__Url` vide
   ([exploitation § Recherche](docs/reference/exploitation.md#recherche)).
+- **Découverte (CFG-45)** : définir `Discovery__VaultKey` (32 caractères au moins, hors du
+  dépôt) **avant** d'enregistrer un premier identifiant, puis ne plus la changer : les
+  secrets déjà chiffrés deviendraient illisibles. La migration `CmdbDiscovery` s'applique au
+  démarrage. Le balayage IP a besoin que l'API joigne les réseaux visés (ping et ports TCP ;
+  un conteneur sans ICMP s'en tient aux ports).
+- **Portefeuille applicatif et actifs matériels (CFG-43, CFG-44)** : une application En
+  service ou Hors service doit désormais porter son code, sa direction, son duo de
+  gouvernance et sa criticité ; un équipement réseau, de stockage ou un poste, son
+  constructeur, son numéro de série et son emplacement. Les CI existants restent lisibles,
+  mais leur prochaine modification exigera ces champs : les compléter depuis l'inventaire
+  (filtre « Gouvernance incomplète »).
 
 ## [0.1.0] — 2026-10-06
 

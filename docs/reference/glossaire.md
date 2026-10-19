@@ -33,6 +33,7 @@
 | **CMDB** | Base de données de configuration : CI et leurs relations (processus Configuration). |
 | **Portefeuille applicatif** (*application portfolio*) | Inventaire des applications, de leur gouvernance (propriétaire métier, responsable DSI, criticité) et de leur cycle de vie ; volet applications de la pratique ITIL 4 *Portfolio management*, tenu dans la CMDB ([configuration](processus/gestion-de-la-configuration.md), CFG-43). |
 | **Actifs matériels** (*IT asset management*) | Inventaire du matériel physique (constructeur, numéro de série, emplacement, garantie, fin de support) ; volet matériel de la pratique ITIL 4 *IT asset management*, tenu dans la CMDB, sans le volet financier ([configuration](processus/gestion-de-la-configuration.md), CFG-44). |
+| **Actif inconnu** (*Shadow IT*) | Équipement vu sur le réseau par la découverte, sans compte d'ordinateur dans l'annuaire ni CI rapproché (CFG-42). |
 | **Sas de staging** | Zone d'attente des actifs découverts automatiquement, rapprochés des CI existants avant toute entrée dans la CMDB (CFG-40, CFG-41). |
 | **Catalogue des services** | Liste des services délivrés aux métiers, avec leur criticité et leurs heures de service. |
 | **SLA** | *Service Level Agreement* : accord de niveau de service entre le fournisseur et un client, avec des cibles (disponibilité, délais de résolution). |
