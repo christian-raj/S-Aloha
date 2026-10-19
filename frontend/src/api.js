@@ -37,6 +37,8 @@ const records = (path) => ({
   create: (dto) => request(path, { method: 'POST', body: JSON.stringify(dto) }),
   update: (id, dto, opts) => request(`${path}/${id}${forced(opts)}`, { method: 'PUT', body: JSON.stringify(dto) }),
   remove: (id) => request(`${path}/${id}`, { method: 'DELETE' }),
+  // SOC-14 : ce que la suppression emporterait (Admin).
+  deletion: (id) => request(`${path}/${id}/deletion`),
   transitions: () => request(`${path}/transitions`)
 })
 
@@ -49,16 +51,20 @@ export const api = {
     get: (id) => request('/problems/' + id),
     create: (dto) => request('/problems', { method: 'POST', body: JSON.stringify(dto) }),
     update: (id, dto, opts) => request('/problems/' + id + forced(opts), { method: 'PUT', body: JSON.stringify(dto) }),
+    remove: (id) => request('/problems/' + id, { method: 'DELETE' }),
+    deletion: (id) => request(`/problems/${id}/deletion`),
     transitions: () => request('/problems/transitions')
   },
   analyses: {
     create: (pid, dto) => request(`/problems/${pid}/analyses`, { method: 'POST', body: JSON.stringify(dto) }),
-    update: (pid, id, dto) => request(`/problems/${pid}/analyses/${id}`, { method: 'PUT', body: JSON.stringify(dto) })
+    update: (pid, id, dto) => request(`/problems/${pid}/analyses/${id}`, { method: 'PUT', body: JSON.stringify(dto) }),
+    remove: (pid, id) => request(`/problems/${pid}/analyses/${id}`, { method: 'DELETE' })
   },
   actions: {
     all: (params = {}) => request('/actions?' + new URLSearchParams(params)),
     create: (pid, dto) => request(`/problems/${pid}/actions`, { method: 'POST', body: JSON.stringify(dto) }),
     update: (id, dto) => request('/actions/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+    remove: (id) => request('/actions/' + id, { method: 'DELETE' }),
     requestApproval: id => request(`/actions/${id}/request-approval`, { method: 'POST' }),
     setChange: (id, reference) => request(`/actions/${id}/change`, { method: 'PUT', body: JSON.stringify({ reference }) })
   },

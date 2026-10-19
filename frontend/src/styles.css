@@ -882,3 +882,15 @@ tr.warn-row td:first-child { box-shadow: inset 3px 0 0 var(--accent-amber); }
   .row2.stack-mobile { grid-template-columns: 1fr; }
   .row-actions { white-space: normal; }
 }
+
+/* Boîte de dialogue modale (confirmation de suppression, SOC-14). */
+.modal-backdrop { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: var(--bg-overlay); }
+.modal { width: min(520px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; background: var(--bg-surface-raised); border: 1px solid var(--border-default); border-top: 3px solid var(--accent-red); box-shadow: var(--shadow-lg); padding: 24px; }
+.modal h2 { font-size: var(--fs-lg); font-weight: 600; margin-bottom: 8px; }
+.modal-subject { font-weight: 500; margin-bottom: 12px; }
+.modal-impacts { margin: 6px 0 12px; }
+.modal-actions { justify-content: flex-end; margin-top: 16px; }
+@media (max-width: 640px) {
+  .modal-backdrop { align-items: flex-end; padding: 0; }
+  .modal { width: 100%; max-height: 90vh; }
+}

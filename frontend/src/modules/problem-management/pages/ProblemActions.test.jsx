@@ -12,9 +12,11 @@ const action = {
 const changesCreate = vi.fn(() => Promise.resolve({ id: 42, reference: 'CHG-2026-0042' }))
 const setChange = vi.fn(() => Promise.resolve({}))
 const requestApproval = vi.fn(() => Promise.resolve({}))
+const removeAction = vi.fn(() => Promise.resolve(null))
+let role = 'User'
 
 vi.mock('../../../api', () => ({
-  getUser: () => ({ username: 'hery.rakoto', displayName: 'Hery Rakoto', role: 'User' }),
+  getUser: () => ({ username: 'hery.rakoto', displayName: 'Hery Rakoto', role }),
   api: {
     problems: {
       get: () => Promise.resolve({
@@ -23,7 +25,8 @@ vi.mock('../../../api', () => ({
         createdByDisplayName: 'Hery Rakoto', createdAt: '2026-10-06T08:00:00Z', analyses: [], actions: [action]
       })
     },
-    actions: { requestApproval: (...a) => requestApproval(...a), setChange: (...a) => setChange(...a), update: vi.fn() },
+    actions: { requestApproval: (...a) => requestApproval(...a), setChange: (...a) => setChange(...a), update: vi.fn(),
+      remove: (...a) => removeAction(...a) },
     changes: { create: (...a) => changesCreate(...a) },
     links: { list: () => Promise.resolve([]), create: vi.fn(), remove: vi.fn() },
     search: { similar: () => Promise.resolve([]) }
@@ -42,7 +45,7 @@ const renderActions = async () => {
   fireEvent.click(await screen.findByText('Actions correctives (1)'))
 }
 
-afterEach(cleanup)
+afterEach(() => { cleanup(); role = 'User'; removeAction.mockClear() })
 
 describe('Actions correctives', () => {
   it('PRB-25 : le R demande l\'approbation de l\'action en cours', async () => {
@@ -58,5 +61,21 @@ describe('Actions correctives', () => {
     expect(changesCreate.mock.calls[0][0]).toMatchObject({ title: 'Corriger la fuite', changeType: 'Normal' })
     expect(changesCreate.mock.calls[0][0].description).toContain('PRB-2026-0001')
     expect(setChange).toHaveBeenCalledWith(7, 'CHG-2026-0042')
+  })
+})
+
+// SOC-14 : supprimer une action corrective revient au gestionnaire, après confirmation.
+describe('Suppression d\'une action (SOC-14)', () => {
+  it('un utilisateur ne voit pas le bouton', async () => {
+    await renderActions()
+    expect(screen.queryByRole('button', { name: 'Supprimer l\'action Corriger la fuite' })).toBeNull()
+  })
+  it('un gestionnaire supprime après confirmation, RACI annoncé', async () => {
+    role = 'Manager'
+    await renderActions()
+    fireEvent.click(await screen.findByRole('button', { name: 'Supprimer l\'action Corriger la fuite' }))
+    expect((await screen.findByRole('alertdialog')).textContent).toContain('1 affectations RACI')
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer définitivement' }))
+    await waitFor(() => expect(removeAction).toHaveBeenCalledWith(7))
   })
 })

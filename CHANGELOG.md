@@ -12,6 +12,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ## [Non publié]
 
+### Ajouté
+
+- **Suppressions dans l'interface** (SOC-14, M8) : un Admin supprime un enregistrement, un
+  problème compris, et un gestionnaire une analyse ou une action corrective, après une
+  confirmation qui rappelle la référence et compte ce qui part avec (liens, commentaires,
+  analyses, relations, accords…).
+
 ## [0.2.0] — 2026-10-19
 
 Toutes les pratiques sortent du stade MVP ; la configuration gagne le portefeuille

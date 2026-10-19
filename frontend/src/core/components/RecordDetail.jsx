@@ -9,6 +9,7 @@ import useTransitions from '../useTransitions'
 import StatusField, { forceOptions } from './StatusField'
 import History, { labelsOf } from './History'
 import Comments from './Comments'
+import DeleteDialog from './DeleteDialog'
 import PerimeterSelect from './PerimeterSelect'
 import usePerimeters, { perimeterName } from '../usePerimeters'
 
@@ -29,6 +30,7 @@ function Editor({ config, record, onSaved }) {
   const nav = useNavigate()
   const graph = useTransitions(config.api.transitions)
   const [reason, setReason] = useState('')
+  const [deleting, setDeleting] = useState(null)   // aperçu SOC-14 de la suppression
   const merge = patch => setF(prev => ({ ...prev, ...patch }))
   const force = forceOptions(graph, record.status, f.status, reason)
 
@@ -44,8 +46,9 @@ function Editor({ config, record, onSaved }) {
       onSaved()
     })
     .catch(e => setMsg({ ok: false, text: e.message }))
-  const remove = () => window.confirm(`Supprimer définitivement ${record.reference} ?`)
-    && config.api.remove(record.id).then(() => nav(config.basePath)).catch(e => setMsg({ ok: false, text: e.message }))
+  // SOC-14 : la confirmation rappelle la référence et ce qui part avec la suppression.
+  const askRemove = () => config.api.deletion(record.id).then(setDeleting).catch(e => setMsg({ ok: false, text: e.message }))
+  const remove = () => config.api.remove(record.id).then(() => nav(config.basePath))
 
   return (
     <div className="card">
@@ -58,8 +61,10 @@ function Editor({ config, record, onSaved }) {
       <RecordForm fields={config.fields} form={f} onChange={merge} disabled={readOnly} />
       <div style={{ display: 'flex', gap: 10 }}>
         {!readOnly && <button className="btn" onClick={save} disabled={!f.title || (force && !reason.trim())}>Enregistrer</button>}
-        {role === 'Admin' && <button className="btn danger" style={{ marginLeft: 'auto' }} onClick={remove}>Supprimer</button>}
+        {role === 'Admin' && <button className="btn danger" style={{ marginLeft: 'auto' }} onClick={askRemove}>Supprimer</button>}
       </div>
+      {deleting && <DeleteDialog reference={deleting.reference} title={deleting.title} impacts={deleting.impacts}
+        onConfirm={remove} onClose={() => setDeleting(null)} />}
     </div>
   )
 }

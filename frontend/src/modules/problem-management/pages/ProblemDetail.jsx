@@ -11,6 +11,7 @@ import useTransitions from '../../../core/useTransitions'
 import StatusField, { forceOptions } from '../../../core/components/StatusField'
 import History from '../../../core/components/History'
 import Comments from '../../../core/components/Comments'
+import DeleteDialog from '../../../core/components/DeleteDialog'
 import RecordForm from '../../../core/components/RecordForm'
 import { ownerField } from '../../../core/fields'
 import usePerimeters, { perimeterName } from '../../../core/usePerimeters'
@@ -114,8 +115,8 @@ export default function ProblemDetail() {
       </div>
 
       {tab === 'infos' && <><Infos p={p} isManager={isManager} onSaved={load} /><KnownErrorArticle p={p} /><SimilarCases type="problem" id={p.id} /></>}
-      {tab === 'rca' && <Rca p={p} onSaved={load} />}
-      {tab === 'actions' && <ActionsTab p={p} onSaved={load} />}
+      {tab === 'rca' && <Rca p={p} isManager={isManager} onSaved={load} />}
+      {tab === 'actions' && <ActionsTab p={p} isManager={isManager} onSaved={load} />}
       {tab === 'comments' && <Comments type="problem" id={p.id} />}
       {tab === 'history' && <History type="problem" id={p.id} labels={LABELS} refreshKey={p.updatedAt} />}
       {tab === 'links' && <LinkedItems type="problem" id={p.id}
@@ -136,6 +137,8 @@ function Infos({ p, isManager, onSaved }) {
     ownerType: p.ownerType || '', ownerId: p.ownerId || '', ownerDisplayName: p.ownerDisplayName || ''
   })
   const [msg, setMsg] = useState('')
+  const [deleting, setDeleting] = useState(null)   // SOC-14 : aperçu de la suppression (Admin)
+  const nav = useNavigate()
   const set = k => e => setF({ ...f, [k]: e.target.value })
   const force = forceOptions(graph, p.status, f.status, reason)
   // PRB-21 : le gestionnaire du problème est le responsable du socle ; vide, l'API
@@ -191,22 +194,31 @@ function Infos({ p, isManager, onSaved }) {
               .map(c => <option key={c}>{c}</option>)}
           </select></div>
       )}
-      {isManager
-        ? <button className="btn" onClick={save} disabled={force && !reason.trim()}>Enregistrer</button>
-        : <p style={{ color: 'var(--muted)', fontSize: 13 }}>Seuls les gestionnaires de problèmes peuvent modifier ces informations.</p>}
+      <div className="actions">
+        {isManager
+          ? <button className="btn" onClick={save} disabled={force && !reason.trim()}>Enregistrer</button>
+          : <p style={{ color: 'var(--muted)', fontSize: 13 }}>Seuls les gestionnaires de problèmes peuvent modifier ces informations.</p>}
+        {getUser()?.role === 'Admin' && <button className="btn danger" style={{ marginLeft: 'auto' }}
+          onClick={() => api.problems.deletion(p.id).then(setDeleting).catch(e => setMsg(e.message))}>Supprimer</button>}
+      </div>
+      {deleting && <DeleteDialog reference={deleting.reference} title={deleting.title} impacts={deleting.impacts}
+        onConfirm={() => api.problems.remove(p.id).then(() => nav('/problems'))} onClose={() => setDeleting(null)} />}
     </div>
   )
 }
 
-function Rca({ p, onSaved }) {
+function Rca({ p, isManager, onSaved }) {
   const [current, setCurrent] = useState(p.analyses[p.analyses.length - 1] || null)
   // Initialisation paresseuse : passée en valeur, l'expression était
   // réévaluée à CHAQUE rendu, et une analyse qu'on démarre (sans dataJson)
   // faisait planter l'onglet — aucune analyse ne pouvait être créée (B1).
   const [data, setData] = useState(() => (current ? JSON.parse(current.dataJson) : {}))
   const [msg, setMsg] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   const start = (method) => { setCurrent({ method, id: null }); setData({}) }
+  // SOC-14 : un gestionnaire supprime une analyse (doublon, méthode abandonnée).
+  const remove = () => api.analyses.remove(p.id, current.id).then(() => { setDeleting(false); setCurrent(null); setMsg(''); onSaved() })
   const open = (a) => { setCurrent(a); setData(JSON.parse(a.dataJson)) }
 
   const save = async () => {
@@ -243,15 +255,21 @@ function Rca({ p, onSaved }) {
           {current.method === 'FIVE_WHYS' && <FiveWhys data={data} onChange={setData} />}
           {current.method === 'ISHIKAWA' && <Ishikawa data={data} onChange={setData} />}
           {current.method === 'FTA' && <FtaTree data={data} onChange={setData} />}
-          <button className="btn" style={{ marginTop: 16 }} onClick={save}>Enregistrer l'analyse</button>
+          <div className="actions" style={{ marginTop: 16 }}>
+            <button className="btn" onClick={save}>Enregistrer l'analyse</button>
+            {isManager && current.id && <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => setDeleting(true)}>Supprimer l'analyse</button>}
+          </div>
+          {deleting && <DeleteDialog reference={`${METHODS[current.method]} du ${new Date(current.createdAt).toLocaleDateString('fr-FR')}`}
+            note="La cause racine validée du problème n'est pas modifiée." onConfirm={remove} onClose={() => setDeleting(false)} />}
         </>
       )}
     </div>
   )
 }
 
-function ActionsTab({ p, onSaved }) {
+function ActionsTab({ p, isManager, onSaved }) {
   const nav = useNavigate()
+  const [deleting, setDeleting] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [f, setF] = useState({ title: '', description: '', dueDate: '', raci: [] })
   const [msg, setMsg] = useState('')
@@ -327,11 +345,17 @@ function ActionsTab({ p, onSaved }) {
               ? <span style={{ fontSize: 13 }}>Correctif : <Link to={'/changes/' + a.changeId}><b>{a.changeReference}</b></Link></span>
               : !['Terminée', 'Annulée'].includes(a.status) &&
                 <button className="btn ghost small" onClick={() => createChange(a)}>Créer un changement</button>}
+            {isManager && <button className="btn ghost small" style={{ marginLeft: 'auto' }} onClick={() => setDeleting(a)}
+              aria-label={`Supprimer l'action ${a.title}`}>Supprimer</button>}
           </div>
         </div>
       ))}
       {p.actions.length === 0 && !showForm &&
         <p style={{ color: 'var(--muted)' }}>Aucune action corrective pour l'instant.</p>}
+      {deleting && <DeleteDialog reference={`Action « ${deleting.title} »`}
+        impacts={deleting.raci.length ? [{ label: 'affectations RACI', count: deleting.raci.length }] : []}
+        note={deleting.changeReference ? `Le changement ${deleting.changeReference} n'est pas supprimé.` : undefined}
+        onConfirm={() => api.actions.remove(deleting.id).then(() => { setDeleting(null); onSaved() })} onClose={() => setDeleting(null)} />}
     </>
   )
 }
