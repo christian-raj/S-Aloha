@@ -78,7 +78,7 @@ public class DiscoveredAsset : IHasPerimeter
 public class DiscoveryJob : IHasPerimeter
 {
     /// <summary>Types de scan disponibles ; WinRM, hyperviseurs et agent viendront en phases 3 et 4 du chantier F13.</summary>
-    public static readonly string[] ScanTypes = ["IpSweep", "Snmp", "ActiveDirectory", "Ssh", "Proxmox", "VCenter"];
+    public static readonly string[] ScanTypes = ["IpSweep", "Snmp", "ActiveDirectory", "Ssh", "Proxmox", "VCenter", "WinRm"];
     /// <summary>Types dont la cible est l'URL d'une API (hyperviseurs, CFG-54), et non une plage IP.</summary>
     public static readonly string[] ApiScanTypes = ["Proxmox", "VCenter"];
     public const string NeverRun = "Jamais lancée";

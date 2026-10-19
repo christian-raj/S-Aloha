@@ -21,4 +21,8 @@
   <ItemGroup>
     <ProjectReference Include="../../backend/SAloha.Api.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Comme l'API (CFG-57) : NTLM géré par .NET, sans GSSAPI, pour le collecteur WinRM testé ici. -->
+    <RuntimeHostConfigurationOption Include="System.Net.Security.UseManagedNtlm" Value="true" />
+  </ItemGroup>
 </Project>

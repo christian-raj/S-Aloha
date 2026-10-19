@@ -26,13 +26,15 @@ public sealed class HypervisorApi : IDisposable
     /// <summary>Certificat changé : la connexion a été refusée.</summary>
     public bool CertificateRefused { get; private set; }
 
-    private HypervisorApi(Uri baseUri, int perimeter, ConcurrentDictionary<string, SshHostKey> known)
+    private HypervisorApi(Uri baseUri, int perimeter, ConcurrentDictionary<string, SshHostKey> known, ICredentials? credentials)
     {
         BaseUri = baseUri;
         _known = known;
         var handler = new SocketsHttpHandler
         {
             ConnectTimeout = TimeSpan.FromSeconds(5),
+            Credentials = credentials,
+            PreAuthenticate = false,
             SslOptions = new SslClientAuthenticationOptions
             {
                 RemoteCertificateValidationCallback = (_, certificate, _, errors) =>
@@ -65,14 +67,48 @@ public sealed class HypervisorApi : IDisposable
         var known = new ConcurrentDictionary<string, SshHostKey>(await db.SshHostKeys
             .Where(k => k.PerimeterId == perimeter && k.Protocol == SshHostKey.Tls && k.Host == uri.Host && k.Port == uri.Port)
             .ToDictionaryAsync(k => k.Host, ct));
-        return new HypervisorApi(uri, perimeter, known);
+        return new HypervisorApi(uri, perimeter, known, null);
     }
+
+    /// <summary>
+    /// Client d'un hôte parmi d'autres (WinRM, CFG-57) : les certificats retenus du périmètre sont
+    /// chargés une fois par la tâche et partagés entre hôtes ; <paramref name="credentials"/>
+    /// porte l'authentification négociée par HTTP (NTLM).
+    /// </summary>
+    public static HypervisorApi ForHost(Uri baseUri, int perimeter, ConcurrentDictionary<string, SshHostKey> known, ICredentials? credentials) =>
+        new(baseUri, perimeter, known, credentials);
 
     /// <summary>Certificats nouveaux ou changés : enregistrés après la collecte.</summary>
     public async Task SaveTrustAsync(AppDbContext db, CancellationToken ct)
     {
         foreach (var key in _known.Values.Where(k => k.Id == 0)) db.SshHostKeys.Add(key);
         await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>Envoi d'un corps brut (SOAP de WS-Management) ; réponse texte, ou exception avec le motif.</summary>
+    public async Task<string> PostRawAsync(string path, string body, string contentType, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, path.TrimStart('/'))
+        {
+            Content = new StringContent(body, Encoding.UTF8, MediaTypeHeaderValue.Parse(contentType))
+        };
+        HttpResponseMessage response;
+        try { response = await _http.SendAsync(request, ct); }
+        catch (HttpRequestException ex) when (CertificateRefused)
+        {
+            throw new InvalidOperationException(
+                $"Certificat de {BaseUri.Host} changé depuis le premier contact : connexion refusée jusqu'à acceptation par l'Admin.", ex);
+        }
+        using (response)
+        {
+            if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+                throw new UnauthorizedAccessException($"Accès refusé par {BaseUri.Host} ({(int)response.StatusCode}).");
+            var text = await response.Content.ReadAsStringAsync(ct);
+            // WS-Management signale ses fautes en 500 avec un corps SOAP : l'appelant le lit.
+            if (!response.IsSuccessStatusCode && (int)response.StatusCode != 500)
+                throw new InvalidOperationException($"{BaseUri.Host} : POST {path} a répondu {(int)response.StatusCode}.");
+            return text;
+        }
     }
 
     public async Task<JsonElement> SendAsync(HttpMethod method, string path, Action<HttpRequestHeaders>? headers, CancellationToken ct,
