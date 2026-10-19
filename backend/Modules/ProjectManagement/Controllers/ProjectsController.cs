@@ -11,8 +11,9 @@ namespace SAloha.Api.Modules.ProjectManagement;
 /// (PRJ-01) ; seuls le chef de projet et les gestionnaires le modifient (PRJ-04).
 /// </summary>
 [Route("api/projects")]
-public class ProjectsController(AppDbContext db) : RecordController<Project, ProjectDto>(db)
+public class ProjectsController(AppDbContext db) : RecordController<Project, ProjectDto, ProjectView>(db)
 {
+    protected override ProjectView View(Project e) => ProjectView.From(e);
     protected override string Code => "PRJ";
     protected override string LinkType => "project";
     protected override string[] Statuses => Project.Statuses;

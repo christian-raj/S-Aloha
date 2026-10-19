@@ -9,8 +9,9 @@ using SAloha.Api.Core.Notifications;
 namespace SAloha.Api.Modules.IncidentManagement;
 
 [Route("api/incidents")]
-public class IncidentsController(AppDbContext db) : RecordController<Incident, IncidentDto>(db)
+public class IncidentsController(AppDbContext db) : RecordController<Incident, IncidentDto, IncidentView>(db)
 {
+    protected override IncidentView View(Incident e) => IncidentView.From(e);
     protected override string Code => "INC";
     protected override string LinkType => "incident";
     protected override string[] Statuses => Incident.Statuses;

@@ -7,8 +7,9 @@ namespace SAloha.Api.Modules.ServiceLevelManagement;
 
 /// <summary>Catalogue des services : référentiel tenu par les gestionnaires.</summary>
 [Route("api/services")]
-public class ServicesController(AppDbContext db) : RecordController<ItService, ItServiceDto>(db)
+public class ServicesController(AppDbContext db) : RecordController<ItService, ItServiceDto, ItServiceView>(db)
 {
+    protected override ItServiceView View(ItService e) => ItServiceView.From(e);
     protected override string Code => "SVC";
     protected override string LinkType => "service";
     protected override string[] Statuses => ItService.Statuses;
@@ -43,8 +44,9 @@ public class ServicesController(AppDbContext db) : RecordController<ItService, I
 
 /// <summary>Accords de niveau de service (SLA), rattachés à un service du catalogue.</summary>
 [Route("api/agreements")]
-public class AgreementsController(AppDbContext db) : RecordController<ServiceLevelAgreement, ServiceLevelAgreementDto>(db)
+public class AgreementsController(AppDbContext db) : RecordController<ServiceLevelAgreement, ServiceLevelAgreementDto, ServiceLevelAgreementView>(db)
 {
+    protected override ServiceLevelAgreementView View(ServiceLevelAgreement e) => ServiceLevelAgreementView.From(e);
     protected override string Code => "SLA";
     protected override string LinkType => "agreement";
     protected override string[] Statuses => ServiceLevelAgreement.Statuses;
@@ -177,6 +179,6 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
         Db.AgreementReviews.Add(review);
         e.ReviewDate = next; e.UpdatedAt = DateTime.UtcNow;
         await Db.SaveChangesAsync();
-        return Ok(review);
+        return Ok(AgreementReviewView.From(review));
     }
 }

@@ -7,8 +7,9 @@ namespace SAloha.Api.Modules.ProjectManagement;
 
 /// <summary>Phases (cycle en V) et étapes de gestion (PRINCE2) — PRJ-10, PRJ-20, PRJ-21.</summary>
 [Route("api/projects/{projectId:int}/phases")]
-public class PhasesController(AppDbContext db) : ProjectPartController<ProjectPhase, PhaseDto>(db)
+public class PhasesController(AppDbContext db) : ProjectPartController<ProjectPhase, PhaseDto, ProjectPhaseView>(db)
 {
+    protected override ProjectPhaseView View(ProjectPhase e) => ProjectPhaseView.From(e);
     protected override string[] Components => [Methods.Phases, Methods.Stages];
     protected override bool LeadOnly => true;
     protected override IQueryable<ProjectPhase> Order(IQueryable<ProjectPhase> q) => q.OrderBy(x => x.Order).ThenBy(x => x.Id);
@@ -58,13 +59,14 @@ public class PhasesController(AppDbContext db) : ProjectPartController<ProjectPh
             .OrderBy(x => x.Order).FirstOrDefaultAsync();
         if (next is not null) next.Status = "En cours";
         await Db.SaveChangesAsync();
-        return Ok(e);
+        return Ok(View(e));
     }
 }
 
 [Route("api/projects/{projectId:int}/milestones")]
-public class MilestonesController(AppDbContext db) : ProjectPartController<Milestone, MilestoneDto>(db)
+public class MilestonesController(AppDbContext db) : ProjectPartController<Milestone, MilestoneDto, MilestoneView>(db)
 {
+    protected override MilestoneView View(Milestone e) => MilestoneView.From(e);
     protected override string[] Components => [Methods.Milestones];
     protected override bool LeadOnly => true;
     protected override IQueryable<Milestone> Order(IQueryable<Milestone> q) => q.OrderBy(x => x.DueDate).ThenBy(x => x.Id);
@@ -81,8 +83,9 @@ public class MilestonesController(AppDbContext db) : ProjectPartController<Miles
 
 /// <summary>Livrables (PRJ-11) : seul le chef de projet ou un gestionnaire valide.</summary>
 [Route("api/projects/{projectId:int}/deliverables")]
-public class DeliverablesController(AppDbContext db) : ProjectPartController<Deliverable, DeliverableDto>(db)
+public class DeliverablesController(AppDbContext db) : ProjectPartController<Deliverable, DeliverableDto, DeliverableView>(db)
 {
+    protected override DeliverableView View(Deliverable e) => DeliverableView.From(e);
     protected override string[] Components => [Methods.Deliverables];
     protected override IQueryable<Deliverable> Order(IQueryable<Deliverable> q) => q.OrderBy(x => x.DueDate).ThenBy(x => x.Id);
 
@@ -104,8 +107,9 @@ public class DeliverablesController(AppDbContext db) : ProjectPartController<Del
 
 /// <summary>Sprints (PRJ-12) : un seul actif ; un sprint clos ne se rouvre pas.</summary>
 [Route("api/projects/{projectId:int}/sprints")]
-public class SprintsController(AppDbContext db) : ProjectPartController<Sprint, SprintDto>(db)
+public class SprintsController(AppDbContext db) : ProjectPartController<Sprint, SprintDto, SprintView>(db)
 {
+    protected override SprintView View(Sprint e) => SprintView.From(e);
     protected override string[] Components => [Methods.Sprints];
     protected override bool LeadOnly => true;
     protected override IQueryable<Sprint> Order(IQueryable<Sprint> q) => q.OrderBy(x => x.StartDate).ThenBy(x => x.Id);
@@ -176,8 +180,9 @@ public class SprintsController(AppDbContext db) : ProjectPartController<Sprint, 
 
 /// <summary>Éléments de travail (PRJ-14) : tous les rôles les créent et les déplacent.</summary>
 [Route("api/projects/{projectId:int}/workitems")]
-public class WorkItemsController(AppDbContext db) : ProjectPartController<WorkItem, WorkItemDto>(db)
+public class WorkItemsController(AppDbContext db) : ProjectPartController<WorkItem, WorkItemDto, WorkItemView>(db)
 {
+    protected override WorkItemView View(WorkItem e) => WorkItemView.From(e);
     protected override string[] Components => [Methods.Backlog, Methods.Board];
     protected override IQueryable<WorkItem> Order(IQueryable<WorkItem> q) => q.OrderBy(x => x.Rank).ThenBy(x => x.Id);
 
@@ -221,8 +226,9 @@ public class WorkItemsController(AppDbContext db) : ProjectPartController<WorkIt
 
 /// <summary>Registre des risques (PRJ-15) : score = probabilité × impact.</summary>
 [Route("api/projects/{projectId:int}/risks")]
-public class ProjectRisksController(AppDbContext db) : ProjectPartController<ProjectRisk, RiskDto>(db)
+public class ProjectRisksController(AppDbContext db) : ProjectPartController<ProjectRisk, RiskDto, ProjectRiskView>(db)
 {
+    protected override ProjectRiskView View(ProjectRisk e) => ProjectRiskView.From(e);
     protected override string[] Components => [Methods.Risks];
     protected override IQueryable<ProjectRisk> Order(IQueryable<ProjectRisk> q) =>
         q.OrderBy(x => x.Status).ThenByDescending(x => x.Probability * x.Impact).ThenBy(x => x.Id);
@@ -242,8 +248,9 @@ public class ProjectRisksController(AppDbContext db) : ProjectPartController<Pro
 
 /// <summary>Registre des incidents projet (PRJ-15) : clos seulement avec une résolution.</summary>
 [Route("api/projects/{projectId:int}/issues")]
-public class ProjectIssuesController(AppDbContext db) : ProjectPartController<ProjectIssue, IssueDto>(db)
+public class ProjectIssuesController(AppDbContext db) : ProjectPartController<ProjectIssue, IssueDto, ProjectIssueView>(db)
 {
+    protected override ProjectIssueView View(ProjectIssue e) => ProjectIssueView.From(e);
     protected override string[] Components => [Methods.Issues];
     protected override IQueryable<ProjectIssue> Order(IQueryable<ProjectIssue> q) => q.OrderBy(x => x.Status == "Clos").ThenByDescending(x => x.CreatedAt);
 

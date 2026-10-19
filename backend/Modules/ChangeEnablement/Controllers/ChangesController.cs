@@ -8,8 +8,9 @@ using SAloha.Api.Core.Notifications;
 namespace SAloha.Api.Modules.ChangeEnablement;
 
 [Route("api/changes")]
-public class ChangesController(AppDbContext db) : RecordController<Change, ChangeDto>(db)
+public class ChangesController(AppDbContext db) : RecordController<Change, ChangeDto, ChangeView>(db)
 {
+    protected override ChangeView View(Change e) => ChangeView.From(e);
     private const string StandardModel = "Modèle standard (pré-autorisé)";
 
     protected override string Code => "CHG";
@@ -191,7 +192,7 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
     [HttpGet("{id:int}/approvals")]
     public async Task<IActionResult> Approvals(int id) =>
         await VisibleAsync(id)
-            ? Ok(await Db.ChangeApprovals.AsNoTracking().Where(a => a.ChangeId == id).OrderByDescending(a => a.At).ToListAsync())
+            ? Ok(await Db.ChangeApprovals.AsNoTracking().Where(a => a.ChangeId == id).OrderByDescending(a => a.At).Select(a => ChangeApprovalView.From(a)).ToListAsync())
             : NotFound();
 
     /// <summary>
@@ -246,7 +247,7 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
             n.ToCreator(e, LinkType, ev); n.ToOwner(e, LinkType, ev);
             await n.SaveAsync();
         }
-        return Ok(new { e.Status, e.AuthorizedBy, Decision = decision });
+        return Ok(new { e.Status, e.AuthorizedBy, Decision = ChangeApprovalView.From(decision) });
     }
 
     /// <summary>Calendrier des changements : changements planifiés non rejetés, à partir d'une date.</summary>

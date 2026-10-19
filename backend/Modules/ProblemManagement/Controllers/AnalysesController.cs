@@ -18,7 +18,7 @@ public class AnalysesController(AppDbContext db, PerimeterAccess access) : Contr
     public async Task<IActionResult> List(int problemId) =>
         await VisiblePerimeterAsync(problemId) is null ? NotFound() : Ok(await db.Analyses.AsNoTracking()
             .Where(a => a.ProblemId == problemId)
-            .OrderBy(a => a.CreatedAt).ToListAsync());
+            .OrderBy(a => a.CreatedAt).Select(a => RcaAnalysisView.From(a)).ToListAsync());
 
     [HttpPost]
     public async Task<IActionResult> Create(int problemId, AnalysisDto dto)
@@ -39,7 +39,7 @@ public class AnalysesController(AppDbContext db, PerimeterAccess access) : Contr
         var p = await db.Problems.FindAsync(problemId);
         if (p!.Status == "Nouveau") { p.Status = "En analyse"; p.UpdatedAt = DateTime.UtcNow; }
         await db.SaveChangesAsync();
-        return Ok(a);
+        return Ok(RcaAnalysisView.From(a));
     }
 
     [HttpPut("{id:int}")]
@@ -50,7 +50,7 @@ public class AnalysesController(AppDbContext db, PerimeterAccess access) : Contr
         if (a is null) return NotFound();
         a.DataJson = dto.DataJson; a.Conclusion = dto.Conclusion; a.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
-        return Ok(a);
+        return Ok(RcaAnalysisView.From(a));
     }
 
     [HttpDelete("{id:int}")]

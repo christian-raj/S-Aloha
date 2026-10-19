@@ -9,8 +9,9 @@ using SAloha.Api.Core.Notifications;
 namespace SAloha.Api.Modules.ServiceConfigurationManagement;
 
 [Route("api/configuration-items")]
-public class ConfigurationItemsController(AppDbContext db) : RecordController<ConfigurationItem, ConfigurationItemDto>(db)
+public class ConfigurationItemsController(AppDbContext db) : RecordController<ConfigurationItem, ConfigurationItemDto, ConfigurationItemView>(db)
 {
+    protected override ConfigurationItemView View(ConfigurationItem e) => ConfigurationItemView.From(e);
     protected override string Code => "CI";
     protected override string LinkType => "ci";
     protected override string[] Statuses => ConfigurationItem.Statuses;
@@ -50,7 +51,7 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
         if (!IsManager && !User.Designates(e.OwnerType, e.OwnerId)) return Forbid();
         e.LastVerifiedAt = DateTime.UtcNow; e.LastVerifiedBy = MyDisplay;
         await Db.SaveChangesAsync();
-        return Ok(e);
+        return Ok(View(e));
     }
 
     // CFG-12 : retirer un CI est réservé aux gestionnaires.

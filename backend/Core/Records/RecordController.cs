@@ -19,10 +19,13 @@ namespace SAloha.Api.Core.Records;
 /// </summary>
 [ApiController]
 [Authorize(Policy = "User")]
-public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBase
+public abstract class RecordController<T, TDto, TView>(AppDbContext db) : ControllerBase
     where T : Record, new()
     where TDto : IRecordDto
 {
+    /// <summary>A2 (ADR-0016) : la réponse de l'API pour cet enregistrement — jamais l'entité EF elle-même.</summary>
+    protected abstract TView View(T e);
+
     protected AppDbContext Db => db;
     protected string Me => User.Identity?.Name ?? "";
     protected string MyDisplay => User.FindFirst("displayName")?.Value ?? Me;
@@ -168,7 +171,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         q.Where(x => x.Title.ToLower().Contains(key) || x.Reference.ToLower().Contains(key));
     protected virtual IQueryable<T> WithDetails(IQueryable<T> q) => q;
     /// <summary>Lignes du registre : un module allège ici ses champs volumineux (contenu, plans).</summary>
-    protected virtual async Task<IEnumerable<object>> ListItems(IQueryable<T> q) => await q.ToListAsync();
+    protected virtual async Task<IEnumerable<object>> ListItems(IQueryable<T> q) => (await q.ToListAsync()).Select(e => (object)View(e)!);
 
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? q, [FromQuery] string? owner,
@@ -203,15 +206,15 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
     public IActionResult GetTransitions() => Ok(Transitions ?? StatusGraph.Free(Statuses));
 
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> Get(int id)
+    public async Task<ActionResult<TView>> Get(int id)
     {
         var e = await WithDetails(db.Set<T>().AsNoTracking()).FirstOrDefaultAsync(x => x.Id == id);
         // Hors de ses périmètres, l'enregistrement n'existe pas pour l'utilisateur (PER-05).
-        return e is null || !await VisibleAsync(e) ? NotFound() : Ok(e);
+        return e is null || !await VisibleAsync(e) ? NotFound() : Ok(View(e));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(TDto dto)
+    public async Task<ActionResult<TView>> Create(TDto dto)
     {
         // PER-04 : périmètre obligatoire, proposé quand l'utilisateur n'en a qu'un ; on ne
         // crée que dans un périmètre où l'on est affecté.
@@ -245,11 +248,11 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         await db.SaveChangesAsync();
         await OnCreatedAsync(e);
         await NotifyAsync(e, "", (null, null));
-        return CreatedAtAction(nameof(Get), new { id = e.Id }, e);
+        return CreatedAtAction(nameof(Get), new { id = e.Id }, View(e));
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, TDto dto)
+    public async Task<ActionResult<TView>> Update(int id, TDto dto)
     {
         var e = await db.Set<T>().FindAsync(id);
         if (e is null || !await VisibleAsync(e)) return NotFound();
@@ -300,7 +303,7 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         await BeforeSaveAsync(e, false);
         await db.SaveChangesAsync();
         await NotifyAsync(e, left, ownerBefore);
-        return Ok(e);
+        return Ok(View(e));
     }
 
     /// <summary>

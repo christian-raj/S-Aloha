@@ -1,0 +1,63 @@
+namespace SAloha.Api.Modules.ContinualImprovement;
+
+// Réponses de l'API (A2, ADR-0016) : DTO explicites, noms de champs inchangés pour le frontend.
+// Un champ ajouté à une entité n'est exposé qu'en l'ajoutant ici.
+
+public record ImprovementView(
+    int Step,
+    string? Priority,
+    string? Benefit,
+    string? Baseline,
+    string? Target,
+    string? Outcome,
+    string? AbandonReason,
+    string? Source,
+    int? Value,
+    int? Effort,
+    DateTime? DueDate,
+    string? ValidatedBy,
+    DateTime? ValidatedAt,
+    DateTime? CompletedAt,
+    int Id,
+    int PerimeterId,
+    string? Reference,
+    string? Title,
+    string? Description,
+    string? Status,
+    string? OwnerType,
+    string? OwnerId,
+    string? OwnerDisplayName,
+    string? CreatedBy,
+    string? CreatedByDisplayName,
+    DateTime CreatedAt,
+    DateTime UpdatedAt)
+{
+    public static ImprovementView From(Improvement e) => new(
+        e.Step,
+        e.Priority,
+        e.Benefit,
+        e.Baseline,
+        e.Target,
+        e.Outcome,
+        e.AbandonReason,
+        e.Source,
+        e.Value,
+        e.Effort,
+        e.DueDate,
+        e.ValidatedBy,
+        e.ValidatedAt,
+        e.CompletedAt,
+        e.Id,
+        e.PerimeterId,
+        e.Reference,
+        e.Title,
+        e.Description,
+        e.Status,
+        e.OwnerType,
+        e.OwnerId,
+        e.OwnerDisplayName,
+        e.CreatedBy,
+        e.CreatedByDisplayName,
+        e.CreatedAt,
+        e.UpdatedAt);
+}

@@ -23,6 +23,18 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
   confirmation qui rappelle la référence et compte ce qui part avec (liens, commentaires,
   analyses, relations, accords…).
 
+### Modifié
+
+- **Réponses de l'API en DTO** (A2) : l'API ne renvoie plus ses entités internes, mais des
+  objets de réponse explicites, de mêmes noms de champs ; les navigations internes (problème
+  d'une analyse, données brutes de la découverte…) n'en sortent plus. Le contrat est figé par
+  un test.
+
+### Corrigé
+
+- **Fins de support** : la liste (`GET /api/discovery/end-of-life`) est de nouveau lisible par
+  tous les utilisateurs, comme documenté ; elle exigeait le rôle Manager.
+
 ### Sécurité
 
 - **Jeton de session en cookie HttpOnly** (S5) : le jeton n'est plus lisible par les scripts

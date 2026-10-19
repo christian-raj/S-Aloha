@@ -16,7 +16,7 @@ public class AuditController(AppDbContext db) : ControllerBase
         Ok(await db.AuditEntries.AsNoTracking()
             .Where(a => a.EntityType == type && a.EntityId == id)
             .OrderByDescending(a => a.At).ThenByDescending(a => a.Id)
-            .ToListAsync());
+            .Select(a => AuditEntryView.From(a)).ToListAsync());
 }
 
 /// <summary>Conservation du journal : 3 ans par défaut (Audit:RetentionYears), purge quotidienne.</summary>

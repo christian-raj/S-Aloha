@@ -52,7 +52,9 @@ public class ActionsController(AppDbContext db, PerimeterAccess access, Notifier
             Problem = new { a.Problem!.Id, a.Problem.Reference, a.Problem.Title },
             a.Raci
         }).ToListAsync();
-        return Ok(items);
+        // Les affectations RACI sortent en DTO (A2).
+        var view = items.Select(i => new { i.Id, i.Title, i.Status, i.DueDate, i.CompletedAt, i.Problem, Raci = i.Raci.Select(RaciAssignmentView.From) });
+        return Ok(view);
     }
 
     [HttpPost("api/problems/{problemId:int}/actions")]
@@ -78,7 +80,7 @@ public class ActionsController(AppDbContext db, PerimeterAccess access, Notifier
         db.Actions.Add(action);
         await db.SaveChangesAsync();
         await NotifyAssigneesAsync(action, []);
-        return Ok(action);
+        return Ok(CorrectiveActionView.From(action));
     }
 
     [HttpPut("api/actions/{id:int}")]
@@ -124,7 +126,7 @@ public class ActionsController(AppDbContext db, PerimeterAccess access, Notifier
         if (error is not null) return BadRequest(new { message = error });
         await db.SaveChangesAsync();
         await NotifyAssigneesAsync(a, raciBefore);
-        return Ok(a);
+        return Ok(CorrectiveActionView.From(a));
     }
 
     private bool IsAccountable(CorrectiveAction a) =>
@@ -153,7 +155,7 @@ public class ActionsController(AppDbContext db, PerimeterAccess access, Notifier
         foreach (var r in a.Raci.Where(r => r.Role == "A"))
             notify.ToPrincipal(problem, "problem", r.AssigneeType, r.AssigneeId, ev.Length > 200 ? ev[..200] : ev);
         await notify.SaveAsync();
-        return Ok(a);
+        return Ok(CorrectiveActionView.From(a));
     }
 
     /// <summary>
@@ -181,7 +183,7 @@ public class ActionsController(AppDbContext db, PerimeterAccess access, Notifier
         if (!linked)
             db.ItemLinks.Add(new ItemLink { FromType = "problem", FromId = a.ProblemId, ToType = "change", ToId = change.Id, CreatedBy = User.Identity?.Name ?? "" });
         await db.SaveChangesAsync();
-        return Ok(a);
+        return Ok(CorrectiveActionView.From(a));
     }
 
     /// <summary>Vrai si la requête ne change que le statut de l'action.</summary>

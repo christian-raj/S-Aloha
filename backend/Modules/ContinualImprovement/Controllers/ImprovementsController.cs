@@ -8,8 +8,9 @@ using SAloha.Api.Core.Notifications;
 namespace SAloha.Api.Modules.ContinualImprovement;
 
 [Route("api/improvements")]
-public class ImprovementsController(AppDbContext db) : RecordController<Improvement, ImprovementDto>(db)
+public class ImprovementsController(AppDbContext db) : RecordController<Improvement, ImprovementDto, ImprovementView>(db)
 {
+    protected override ImprovementView View(Improvement e) => ImprovementView.From(e);
     protected override string Code => "AMI";
     protected override string LinkType => "improvement";
     protected override string[] Statuses => Improvement.Statuses;

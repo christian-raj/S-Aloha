@@ -19,7 +19,7 @@ public class ChangeFreezesController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> List([FromQuery] DateTime? from)
     {
         var start = Dates.Utc(from) ?? DateTime.UtcNow.Date.AddDays(-7);
-        return Ok(await db.ChangeFreezes.AsNoTracking().Where(f => f.End >= start).OrderBy(f => f.Start).ToListAsync());
+        return Ok(await db.ChangeFreezes.AsNoTracking().Where(f => f.End >= start).OrderBy(f => f.Start).Select(f => ChangeFreezeView.From(f)).ToListAsync());
     }
 
     [HttpPost]
@@ -37,7 +37,7 @@ public class ChangeFreezesController(AppDbContext db) : ControllerBase
         if (error is not null) return BadRequest(new { message = error });
         db.ChangeFreezes.Add(f);
         await db.SaveChangesAsync();
-        return Ok(f);
+        return Ok(ChangeFreezeView.From(f));
     }
 
     [HttpDelete("{id:int}")]
@@ -63,7 +63,7 @@ public class StandardChangeModelsController(AppDbContext db) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] bool all = false) =>
-        Ok(await db.StandardChangeModels.AsNoTracking().Where(m => all || m.Active).OrderBy(m => m.Name).ToListAsync());
+        Ok(await db.StandardChangeModels.AsNoTracking().Where(m => all || m.Active).OrderBy(m => m.Name).Select(m => StandardChangeModelView.From(m)).ToListAsync());
 
     private static string? Fill(StandardChangeModel m, StandardChangeModelDto dto)
     {
@@ -87,7 +87,7 @@ public class StandardChangeModelsController(AppDbContext db) : ControllerBase
         if (error is not null) return BadRequest(new { message = error });
         db.StandardChangeModels.Add(m);
         await db.SaveChangesAsync();
-        return Ok(m);
+        return Ok(StandardChangeModelView.From(m));
     }
 
     [HttpPut("{id:int}")]
@@ -99,7 +99,7 @@ public class StandardChangeModelsController(AppDbContext db) : ControllerBase
         var error = Fill(m, dto);
         if (error is not null) return BadRequest(new { message = error });
         await db.SaveChangesAsync();
-        return Ok(m);
+        return Ok(StandardChangeModelView.From(m));
     }
 
     [HttpDelete("{id:int}")]

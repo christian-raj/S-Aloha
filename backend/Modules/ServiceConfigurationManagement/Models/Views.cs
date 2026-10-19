@@ -1,0 +1,194 @@
+namespace SAloha.Api.Modules.ServiceConfigurationManagement;
+
+// Réponses de l'API (A2, ADR-0016) : DTO explicites, noms de champs inchangés pour le frontend.
+// Un champ ajouté à une entité n'est exposé qu'en l'ajoutant ici.
+
+/// <summary>CI cité par un autre objet (relation, actif découvert) : de quoi l'afficher et y mener.</summary>
+public record CiSummary(int Id, string Reference, string Title, string CiType, string Status)
+{
+    public static CiSummary? Of(ConfigurationItem? e) => e is null ? null : new(e.Id, e.Reference, e.Title, e.CiType, e.Status);
+}
+
+public record ConfigurationItemView(
+    DateTime? LastVerifiedAt,
+    string? LastVerifiedBy,
+    string? CiType,
+    string? Environment,
+    string? Location,
+    string? IpAddress,
+    string? MacAddress,
+    string? OperatingSystem,
+    string? AppCode,
+    string? BusinessUnit,
+    string? BusinessOwnerType,
+    string? BusinessOwnerId,
+    string? BusinessOwnerDisplayName,
+    string? TechnicalOwnerType,
+    string? TechnicalOwnerId,
+    string? TechnicalOwnerDisplayName,
+    string? Criticality,
+    int? RtoHours,
+    int? RpoHours,
+    bool GdprSensitive,
+    bool Nis2Scope,
+    string? AppLifecycle,
+    string? Vendor,
+    string? Model,
+    string? SerialNumber,
+    DateTime? PurchaseDate,
+    DateTime? WarrantyExpiry,
+    DateTime? EndOfSupport,
+    IReadOnlyList<CiRelationshipView> Outgoing,
+    IReadOnlyList<CiRelationshipView> Incoming,
+    int Id,
+    int PerimeterId,
+    string? Reference,
+    string? Title,
+    string? Description,
+    string? Status,
+    string? OwnerType,
+    string? OwnerId,
+    string? OwnerDisplayName,
+    string? CreatedBy,
+    string? CreatedByDisplayName,
+    DateTime CreatedAt,
+    DateTime UpdatedAt)
+{
+    public static ConfigurationItemView From(ConfigurationItem e) => new(
+        e.LastVerifiedAt,
+        e.LastVerifiedBy,
+        e.CiType,
+        e.Environment,
+        e.Location,
+        e.IpAddress,
+        e.MacAddress,
+        e.OperatingSystem,
+        e.AppCode,
+        e.BusinessUnit,
+        e.BusinessOwnerType,
+        e.BusinessOwnerId,
+        e.BusinessOwnerDisplayName,
+        e.TechnicalOwnerType,
+        e.TechnicalOwnerId,
+        e.TechnicalOwnerDisplayName,
+        e.Criticality,
+        e.RtoHours,
+        e.RpoHours,
+        e.GdprSensitive,
+        e.Nis2Scope,
+        e.AppLifecycle,
+        e.Vendor,
+        e.Model,
+        e.SerialNumber,
+        e.PurchaseDate,
+        e.WarrantyExpiry,
+        e.EndOfSupport,
+        e.Outgoing.Select(CiRelationshipView.From).ToList(),
+        e.Incoming.Select(CiRelationshipView.From).ToList(),
+        e.Id,
+        e.PerimeterId,
+        e.Reference,
+        e.Title,
+        e.Description,
+        e.Status,
+        e.OwnerType,
+        e.OwnerId,
+        e.OwnerDisplayName,
+        e.CreatedBy,
+        e.CreatedByDisplayName,
+        e.CreatedAt,
+        e.UpdatedAt);
+}
+
+public record CiRelationshipView(
+    int Id,
+    int SourceId,
+    CiSummary? Source,
+    int TargetId,
+    CiSummary? Target,
+    string? Type)
+{
+    public static CiRelationshipView From(CiRelationship e) => new(
+        e.Id,
+        e.SourceId,
+        CiSummary.Of(e.Source),
+        e.TargetId,
+        CiSummary.Of(e.Target),
+        e.Type);
+}
+
+public record DiscoveredAssetView(
+    int Id,
+    int PerimeterId,
+    string? IpAddress,
+    string? MacAddress,
+    string? Hostname,
+    string? SerialNumber,
+    string? Vendor,
+    string? Model,
+    string? DetectedOs,
+    string? DetectedType,
+    string? Location,
+    string? OpenPorts,
+    string? Sources,
+    bool InDirectory,
+    string? Status,
+    int ConfidenceScore,
+    string? MatchRule,
+    string? SuggestedAction,
+    string? ConflictReason,
+    int? MatchedCiId,
+    CiSummary? MatchedCi,
+    int? JobId,
+    DateTime FirstSeenAt,
+    DateTime LastSeenAt,
+    DateTime? ReconciledAt,
+    string? ReconciledBy,
+    bool Unknown)
+{
+    public static DiscoveredAssetView From(DiscoveredAsset e) => new(
+        e.Id,
+        e.PerimeterId,
+        e.IpAddress,
+        e.MacAddress,
+        e.Hostname,
+        e.SerialNumber,
+        e.Vendor,
+        e.Model,
+        e.DetectedOs,
+        e.DetectedType,
+        e.Location,
+        e.OpenPorts,
+        e.Sources,
+        e.InDirectory,
+        e.Status,
+        e.ConfidenceScore,
+        e.MatchRule,
+        e.SuggestedAction,
+        e.ConflictReason,
+        e.MatchedCiId,
+        CiSummary.Of(e.MatchedCi),
+        e.JobId,
+        e.FirstSeenAt,
+        e.LastSeenAt,
+        e.ReconciledAt,
+        e.ReconciledBy,
+        e.Unknown);
+}
+
+public record EndOfLifeRuleView(
+    int Id,
+    string? Product,
+    DateTime EndOfSupport,
+    string? Notes,
+    DateTime CreatedAt,
+    string? CreatedBy)
+{
+    public static EndOfLifeRuleView From(EndOfLifeRule e) => new(
+        e.Id,
+        e.Product,
+        e.EndOfSupport,
+        e.Notes,
+        e.CreatedAt,
+        e.CreatedBy);
+}
