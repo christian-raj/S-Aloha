@@ -28,6 +28,7 @@ async function request(path, options = {}) {
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
+    if (res.status === 413 && !body.message) throw new Error('Fichier trop volumineux pour le serveur (413) : vérifier la taille admise par le proxy.')
     throw new Error(body.message || 'Une erreur est survenue (' + res.status + ')')
   }
   if (options.raw) return res

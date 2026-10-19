@@ -462,7 +462,7 @@ Indicateurs du tableau de bord : onglet [Configuration & inventaire](../reportin
 | `POST /api/discovery/ssh-host-keys/{id}/accept`, `DELETE …/ssh-host-keys/{id}` | Admin | Acceptation d'une clé changée, oubli d'un hôte (CFG-53) |
 | `GET /api/discovery/relations` (filtres `status`, `asset`) | User, gestionnaire du périmètre | Relations proposées, avec les CI rapprochés de chaque côté et `ready` (CFG-55) |
 | `POST /api/discovery/relations/{id}/accept`, `POST …/relations/{id}/dismiss` | User, gestionnaire du périmètre | Acceptation (relation créée dans la CMDB) ou rejet d'une proposition (CFG-55) |
-| `POST /api/discovery/mac-vendors/import` (`csv` : contenu de `oui.csv`, 12 Mo au plus) | Admin | Import du registre OUI de l'IEEE, remplace la base (CFG-50) |
+| `POST /api/discovery/mac-vendors/import` (`csv` : contenu de `oui.csv`, 12 Mo au plus ; nginx admet 16 Mo sur `/api/`) | Admin | Import du registre OUI de l'IEEE, remplace la base (CFG-50) |
 
 Configuration de l'API (section `Discovery`) : `VaultKey` (clé du coffre, à fixer avant le
 premier identifiant et à ne plus changer), `IntervalMinutes` (relevé des tâches échues,
