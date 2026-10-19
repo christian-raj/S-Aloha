@@ -11,6 +11,7 @@ import PerimeterDetail from './core/pages/admin/PerimeterDetail'
 import Health from './core/pages/admin/Health'
 import Users from './core/pages/admin/Users'
 import AuditLog from './core/pages/admin/AuditLog'
+import Duplicates from './core/pages/admin/Duplicates'
 import Problems from './modules/problem-management/pages/Problems'
 import ProblemDetail from './modules/problem-management/pages/ProblemDetail'
 import Actions from './modules/problem-management/pages/Actions'
@@ -72,6 +73,7 @@ export default function App() {
         <Route path="admin/users" element={<Users />} />
         <Route path="admin/health" element={<Health />} />
         <Route path="admin/audit" element={<AuditLog />} />
+        <Route path="admin/duplicates" element={<Duplicates />} />
         {/* Pratique — Gestion des incidents */}
         <Route path="incidents" element={<Incidents />} />
         <Route path="incidents/:id" element={<IncidentDetail />} />

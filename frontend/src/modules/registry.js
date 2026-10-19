@@ -135,6 +135,7 @@ export const SECTIONS = [
       { href: '/admin/search', label: 'Index de recherche', description: 'État et reconstruction', icon: 'admin' },
       { href: '/admin/health', label: 'Santé', description: 'Base, annuaire, services, version', icon: 'admin' },
       { href: '/admin/audit', label: "Journal d'audit", description: 'Toutes pratiques, export', icon: 'admin' },
+      { href: '/admin/duplicates', label: 'Nettoyage des doublons', description: 'Détection et fusion', icon: 'admin' },
     ]
   },
 ]

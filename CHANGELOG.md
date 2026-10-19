@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Administration › Nettoyage des doublons** (ADM-40 à ADM-43) : doublons probables (même
+  pratique, même périmètre, même titre aux accents et à la casse près, créés à 7 jours au
+  plus) ; fusion qui reporte liens et commentaires sur l'enregistrement conservé, ou « pas un
+  doublon ».
+
 - **Administration › Utilisateurs et rôles** (ADM-10 à ADM-13) : membres des groupes AD de
   rôle lus dans l'annuaire, rôle effectif par périmètre et sa source, date de dernière
   connexion (seule donnée retenue, 13 mois), affectations de comptes sans accès signalées.

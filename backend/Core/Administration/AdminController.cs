@@ -159,6 +159,44 @@ public class AdminController(AppDbContext db, LdapService directory, IDirectoryR
         });
     }
 
+    /// <summary>ADM-40 : doublons probables, avec ce qui serait reporté (liens, commentaires).</summary>
+    [HttpGet("duplicates")]
+    public async Task<IActionResult> Duplicates([FromServices] Duplicates duplicates)
+    {
+        var pairs = await duplicates.FindAsync();
+        async Task<object> Describe(string type, Duplicates.Side s) => new
+        {
+            s.Id, s.Reference, s.Title, s.Status, s.CreatedAt,
+            Links = await db.ItemLinks.CountAsync(l => (l.FromType == type && l.FromId == s.Id) || (l.ToType == type && l.ToId == s.Id)),
+            Comments = await db.Comments.CountAsync(c => c.TargetType == type && c.TargetId == s.Id),
+        };
+        var result = new List<object>();
+        foreach (var p in pairs) result.Add(new { p.Type, First = await Describe(p.Type, p.First), Second = await Describe(p.Type, p.Second) });
+        return Ok(result);
+    }
+
+    public record MergeDto(string Type, int KeepId, int RemoveId);
+    public record DismissDto(string Type, int FirstId, int SecondId);
+
+    /// <summary>ADM-41 : fusion du doublon dans l'enregistrement conservé.</summary>
+    [HttpPost("duplicates/merge")]
+    public async Task<IActionResult> Merge(MergeDto dto, [FromServices] Duplicates duplicates)
+    {
+        if (!Administration.Duplicates.Supports(dto.Type)) return BadRequest(new { message = $"Pratique non prise en charge : « {dto.Type} »." });
+        var me = User.Identity?.Name ?? "";
+        var result = await duplicates.MergeAsync(dto.Type, dto.KeepId, dto.RemoveId, me, User.FindFirst("displayName")?.Value ?? me);
+        return result.Error is not null ? BadRequest(new { message = result.Error }) : Ok(new { result.LinksMoved, result.CommentsMoved });
+    }
+
+    /// <summary>ADM-42 : « pas un doublon », la paire n'est plus proposée.</summary>
+    [HttpPost("duplicates/dismiss")]
+    public async Task<IActionResult> Dismiss(DismissDto dto, [FromServices] Duplicates duplicates)
+    {
+        if (!Administration.Duplicates.Supports(dto.Type)) return BadRequest(new { message = $"Pratique non prise en charge : « {dto.Type} »." });
+        await duplicates.DismissAsync(dto.Type, dto.FirstId, dto.SecondId, User.Identity?.Name ?? "");
+        return NoContent();
+    }
+
     public record AuditQuery(string? Author, string? Type, string? Action, string? Reference, DateTime? From, DateTime? To);
 
     private IQueryable<AuditEntry> Filter(AuditQuery f)

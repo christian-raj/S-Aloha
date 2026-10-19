@@ -66,6 +66,9 @@ export const api = {
   admin: {
     health: () => request('/admin/health'),
     users: (params = {}) => request('/admin/users?' + new URLSearchParams(params)),
+    duplicates: () => request('/admin/duplicates'),
+    mergeDuplicate: (dto) => request('/admin/duplicates/merge', { method: 'POST', body: JSON.stringify(dto) }),
+    dismissDuplicate: (dto) => request('/admin/duplicates/dismiss', { method: 'POST', body: JSON.stringify(dto) }),
     audit: (params = {}) => request('/admin/audit?' + new URLSearchParams(params)),
     auditExport: (params = {}) => download('/admin/audit/export?' + new URLSearchParams(params))
   },
