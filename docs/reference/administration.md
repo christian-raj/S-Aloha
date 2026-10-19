@@ -14,8 +14,8 @@
 | Section | Entrée | Visible par | Règles | Statut |
 |---|---|---|---|---|
 | Administration | Utilisateurs et rôles | Admin | ADM-10 à ADM-13 | 🔜 |
-| Administration | Santé | Admin | ADM-20, ADM-21 | 🔜 |
-| Administration | Journal d'audit | Admin | ADM-30, ADM-31 | 🔜 |
+| Administration | Santé | Admin | ADM-20, ADM-21 | ✅ |
+| Administration | Journal d'audit | Admin | ADM-30, ADM-31 | ✅ |
 | Administration | Nettoyage des doublons | Admin | ADM-40 à ADM-43 | 🔜 |
 | Administration | Périmètres | Admin | [PER-01 à PER-12](perimetres.md) | ✅ |
 | Administration | Index de recherche | Admin | [RAG-08](recherche.md) | ✅ |
@@ -34,15 +34,15 @@
 
 | ID | Règle | Statut |
 |---|---|---|
-| ADM-20 | **État des composants**, chacun « OK », « Dégradé » ou « Hors service » avec un message et la durée de la vérification : base (connexion, migrations en attente), annuaire (liaison du compte de service), service d'embeddings ([RAG-08](recherche.md)), coffre de la découverte (clé configurée), tâches de fond (dernier relevé des notifications datées, tâches de découverte en échec) | 🔜 |
-| ADM-21 | **Version** déployée (numéro et commit), date de démarrage de l'API, environnement ; aucun secret ni chaîne de connexion affichés. Les sondes publiques `/health/live` et `/health/ready` sont distinctes ([#121](https://github.com/christian-raj/S-Aloha/issues/121)) | 🔜 |
+| ADM-20 | **État des composants**, chacun « OK », « Dégradé » ou « Hors service » avec un message et la durée de la vérification : base (connexion, migrations en attente), annuaire (liaison du compte de service), service d'embeddings ([RAG-08](recherche.md)), coffre de la découverte (clé configurée), tâches de fond (dernier relevé des notifications datées, tâches de découverte en échec) | ✅ |
+| ADM-21 | **Version** déployée (numéro et commit), date de démarrage de l'API, environnement ; aucun secret ni chaîne de connexion affichés. Les sondes publiques `/health/live` et `/health/ready` sont distinctes ([#121](https://github.com/christian-raj/S-Aloha/issues/121)) | ✅ |
 
 ## 4. Journal d'audit global
 
 | ID | Règle | Statut |
 |---|---|---|
-| ADM-30 | **Journal global** ([SOC-20](regles-metier.md#9-traçabilité-commentaires-administration)) : toutes pratiques, du plus récent au plus ancien, filtrable par auteur, type d'enregistrement (pratique), action, référence et période (30 derniers jours par défaut) ; pages de 100 lignes ; chaque ligne mène à la fiche | 🔜 |
-| ADM-31 | **Export CSV** des lignes filtrées (séparateur « ; », BOM UTF-8, comme [REP-08](reporting.md)), 10 000 lignes au plus | 🔜 |
+| ADM-30 | **Journal global** ([SOC-20](regles-metier.md#9-traçabilité-commentaires-administration)) : toutes pratiques, du plus récent au plus ancien, filtrable par auteur, type d'enregistrement (pratique), action, référence et période (30 derniers jours par défaut) ; pages de 100 lignes ; chaque ligne mène à la fiche | ✅ |
+| ADM-31 | **Export CSV** des lignes filtrées (séparateur « ; », BOM UTF-8, comme [REP-08](reporting.md)), 10 000 lignes au plus | ✅ |
 
 ## 5. Nettoyage des doublons
 

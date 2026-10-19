@@ -30,7 +30,19 @@ async function request(path, options = {}) {
     const body = await res.json().catch(() => ({}))
     throw new Error(body.message || 'Une erreur est survenue (' + res.status + ')')
   }
+  if (options.raw) return res
   return res.status === 204 ? null : res.json()
+}
+
+/** Téléchargement d'un fichier servi par l'API (export CSV), sous le nom qu'elle propose. */
+async function download(path) {
+  const res = await request(path, { raw: true })
+  const name = /filename\*?=(?:UTF-8'')?"?([^";]+)/i.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? 'export.csv'
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(await res.blob())
+  a.download = decodeURIComponent(name)
+  a.click()
+  URL.revokeObjectURL(a.href)
 }
 
 /** Client CRUD d'un processus servi par le RecordController commun de l'API. */
@@ -50,6 +62,12 @@ const records = (path) => ({
 
 export const api = {
   audit: { list: (type, id) => request(`/audit?type=${type}&id=${id}`) },
+  // Administration (ADM, Admin) : santé, journal d'audit global.
+  admin: {
+    health: () => request('/admin/health'),
+    audit: (params = {}) => request('/admin/audit?' + new URLSearchParams(params)),
+    auditExport: (params = {}) => download('/admin/audit/export?' + new URLSearchParams(params))
+  },
   login: (username, password) =>
     request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }), quiet: true }),
   me: () => request('/auth/me', { quiet: true }),

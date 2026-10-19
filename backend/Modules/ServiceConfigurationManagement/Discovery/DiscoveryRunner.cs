@@ -93,7 +93,8 @@ public class DiscoveryRunner(AppDbContext db, IEnumerable<IDiscoveryCollector> c
 /// tâches échues. Au démarrage, une tâche interrompue par un arrêt est notée en échec et une
 /// tâche en file y est remise.
 /// </summary>
-public class DiscoveryWorker(IServiceScopeFactory scopes, DiscoveryQueue queue, IConfiguration config, ILogger<DiscoveryWorker> logger)
+public class DiscoveryWorker(IServiceScopeFactory scopes, DiscoveryQueue queue, IConfiguration config,
+    Core.Administration.Heartbeats heartbeats, ILogger<DiscoveryWorker> logger)
     : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken ct)
@@ -157,10 +158,12 @@ public class DiscoveryWorker(IServiceScopeFactory scopes, DiscoveryQueue queue, 
                     await db.SaveChangesAsync(ct);
                     queue.Enqueue(job.Id);
                 }
+                heartbeats.Record("discovery", true);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 logger.LogError(ex, "Découverte : planification en échec.");
+                heartbeats.Record("discovery", false, ex.Message.Split('\n')[0]);
             }
             await Task.Delay(every, ct);
         }

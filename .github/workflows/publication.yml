@@ -24,6 +24,7 @@ jobs:
       - name: Construction et envoi
         env:
           VERSION: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
         run: |
           set -euo pipefail
           prefixe=ghcr.io/christian-raj/s-aloha
@@ -31,6 +32,7 @@ jobs:
           for image in api:backend web:frontend annuaire-demo:demo/annuaire; do
             nom=${image%%:*}; dossier=${image#*:}
             docker build "$dossier" \
+              --build-arg VERSION="${VERSION#v}" --build-arg COMMIT="$COMMIT" \
               --label org.opencontainers.image.source="$source" \
               --label org.opencontainers.image.version="$VERSION" \
               --label org.opencontainers.image.licenses=AGPL-3.0-or-later \
