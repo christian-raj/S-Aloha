@@ -849,6 +849,7 @@ table.compact td { padding: 9px 12px; font-size: var(--fs-sm); }
 .filter-tile.tone-blue { --tile-tone: var(--accent-blue); }
 .filter-tile.tone-red { --tile-tone: var(--accent-red); }
 .filter-tile.tone-amber { --tile-tone: var(--accent-amber); }
+.filter-tile.tone-violet { --tile-tone: var(--accent-violet); }
 .filter-tile.tone-emerald { --tile-tone: var(--accent-emerald); }
 .filter-tile.tone-neutral { --tile-tone: var(--border-strong); }
 

@@ -355,4 +355,52 @@ public class DiscoveryTests(ApiFixture api)
         Assert.Equal(("nginx", "1.24.0"), (Str(software, "name"), Str(software, "version")));
         Assert.Equal(("nginx\nssh", "22,80"), (Str(detail.GetProperty("asset"), "services"), Str(detail.GetProperty("asset"), "listeningPorts")));
     }
+
+    [Fact]
+    public async Task CFG_55_relation_Heberge_proposee_acceptee_ou_ecartee_par_le_gestionnaire()
+    {
+        var (p, admin, manager) = await Perimeter("cfg55");
+        var hostCi = await Json(await admin.PostAsJsonAsync("/api/configuration-items", Server("pve55", p, serial: "SN-55-H")));
+        var vmCi = await Json(await admin.PostAsJsonAsync("/api/configuration-items", Server("vm-55", p, serial: "SN-55-V")));
+        var cred = await Json(await admin.PostAsJsonAsync("/api/discovery/credentials",
+            new { name = "Jeton", credentialType = "ProxmoxToken", username = "inventaire@pve!saloha", secret = "s", perimeterId = p }));
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync("/api/discovery/credentials",
+            new { name = "Jeton", credentialType = "ProxmoxToken", username = "inventaire", secret = "s", perimeterId = p })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Proxmox", scanType = "Proxmox", targetRange = "10.55.0.0/24", credentialId = Id(cred), perimeterId = p })).StatusCode);
+        const string target = "https://pve55.test:8006";
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Proxmox 55", scanType = "Proxmox", targetRange = target, credentialId = Id(cred), perimeterId = p }));
+        FakeCollector.Observations[target] =
+        [
+            new("Proxmox", IpAddress: "10.55.0.1", Hostname: "pve55", SerialNumber: "SN-55-H", Os: "Proxmox VE 8.2.4", Type: "Serveur"),
+            new("Proxmox", Hostname: "vm-55", SerialNumber: "SN-55-V", Type: "Serveur", HostedBy: "pve55", HostedReason: "Proxmox VE : VM 101 sur le nœud pve55"),
+            new("Proxmox", Hostname: "vm-55b", MacAddress: "BC:24:11:55:00:02", Type: "Serveur", HostedBy: "pve55"),
+        ];
+        await RunAndWait(manager, Id(job));
+        Assert.Equal(HttpStatusCode.Forbidden, (await api.Client("User", "agent.cfg55").GetAsync("/api/discovery/relations")).StatusCode);
+        var proposals = (await Json(await manager.GetAsync("/api/discovery/relations?status=Proposée"))).EnumerateArray()
+            .Where(r => r.GetProperty("perimeterId").GetInt32() == p).ToList();
+        Assert.Equal(2, proposals.Count);
+        JsonElement For(string name) => proposals.Single(r => Str(r.GetProperty("target"), "hostname") == name);
+        Assert.Equal(("Héberge", "pve55", "Proxmox VE : VM 101 sur le nœud pve55"),
+            (Str(For("vm-55"), "type"), Str(For("vm-55").GetProperty("source"), "hostname"), Str(For("vm-55"), "reason")));
+
+        // Rien n'entre dans la CMDB sans décision ; une VM non rapprochée ne peut pas être reliée.
+        await using (var db = api.Database())
+            Assert.False(await db.CiRelationships.AnyAsync(r => r.SourceId == Id(hostCi)));
+        Assert.True(For("vm-55").GetProperty("ready").GetBoolean());
+        Assert.False(For("vm-55b").GetProperty("ready").GetBoolean());
+        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PostAsync($"/api/discovery/relations/{Id(For("vm-55b"))}/accept", null)).StatusCode);
+        var accepted = await Json(await manager.PostAsync($"/api/discovery/relations/{Id(For("vm-55"))}/accept", null));
+        Assert.Equal(RelationProposal.Accepted, Str(accepted, "status"));
+        await using (var db = api.Database())
+            Assert.True(await db.CiRelationships.AnyAsync(r => r.SourceId == Id(hostCi) && r.TargetId == Id(vmCi) && r.Type == "Héberge"));
+        await Json(await manager.PostAsync($"/api/discovery/relations/{Id(For("vm-55b"))}/dismiss", null));
+
+        // Un nouveau scan ne repropose ni la relation acceptée, ni l'écartée.
+        await RunAndWait(manager, Id(job));
+        var after = (await Json(await manager.GetAsync("/api/discovery/relations"))).EnumerateArray().Where(r => r.GetProperty("perimeterId").GetInt32() == p).ToList();
+        Assert.Equal(new[] { RelationProposal.Accepted, RelationProposal.Dismissed }.Order(), after.Select(r => Str(r, "status")).Order());
+    }
 }

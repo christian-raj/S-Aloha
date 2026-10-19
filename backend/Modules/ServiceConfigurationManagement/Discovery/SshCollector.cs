@@ -77,7 +77,7 @@ public class SshCollector(AppDbContext db, ILogger<SshCollector> logger) : IDisc
         var port = SshPort(context.Job.PortList);
         var perimeter = context.Job.PerimeterId;
         var known = new ConcurrentDictionary<string, SshHostKey>(
-            (await db.SshHostKeys.Where(k => k.PerimeterId == perimeter && k.Port == port).ToListAsync(ct)).ToDictionary(k => k.Host));
+            (await db.SshHostKeys.Where(k => k.PerimeterId == perimeter && k.Protocol == SshHostKey.Ssh && k.Port == port).ToListAsync(ct)).ToDictionary(k => k.Host));
 
         var results = new List<Observation>();
         using var throttle = new SemaphoreSlim(Math.Max(1, context.MaxConcurrency));
@@ -135,12 +135,13 @@ public class SshCollector(AppDbContext db, ILogger<SshCollector> logger) : IDisc
     /// clé différente : refusée (la connexion s'arrête avant l'authentification) et notée en
     /// attente de l'Admin.
     /// </summary>
-    public static bool Trust(ConcurrentDictionary<string, SshHostKey> known, int perimeter, string host, int port, string algorithm, string fingerprint)
+    public static bool Trust(ConcurrentDictionary<string, SshHostKey> known, int perimeter, string host, int port, string algorithm, string fingerprint,
+        string protocol = SshHostKey.Ssh)
     {
         var now = DateTime.UtcNow;
         var key = known.GetOrAdd(host, _ => new SshHostKey
         {
-            PerimeterId = perimeter, Host = host, Port = port, Algorithm = algorithm, Fingerprint = fingerprint, FirstSeenAt = now
+            PerimeterId = perimeter, Protocol = protocol, Host = host, Port = port, Algorithm = algorithm, Fingerprint = fingerprint, FirstSeenAt = now
         });
         lock (key)
         {

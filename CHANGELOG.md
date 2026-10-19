@@ -14,6 +14,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Découverte : hyperviseurs et relations proposées** (CFG-54, CFG-55) : scans Proxmox VE
+  (jeton d'API) et VMware vCenter (compte en lecture seule) — nœuds ou hôtes ESXi, machines
+  virtuelles et conteneurs avec leur adresse MAC et leur système. La relation « hôte Héberge
+  machine » est proposée dans le sas (vue Relations proposées) et n'entre dans la CMDB que si
+  le gestionnaire l'accepte. Un certificat autosigné est retenu au premier contact, comme les
+  clés SSH (Paramétrage › Découverte du réseau › Clés et certificats).
+
 - **Découverte : inventaire SSH** (CFG-52, CFG-53) : nouveau type de scan pour les serveurs
   Linux et Unix, avec un compte SSH du coffre (mot de passe ou clé privée) sans droits
   d'administration : système, constructeur, logiciels installés, services actifs, ports en
@@ -83,6 +90,9 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Hyperviseurs (CFG-54)** : la migration `Hypervisors` ajoute une colonne (clés existantes :
+  « ssh ») et une table ; créer un jeton Proxmox (rôle PVEAuditor) ou un compte vCenter en
+  lecture seule.
 - **Inventaire SSH (CFG-52)** : la migration `SshInventory` ajoute deux colonnes et deux tables ;
   créer un compte SSH dédié, sans sudo, sur les serveurs à inventorier.
 - **SNMP v3 (CFG-51)** : la migration `SnmpV3Interfaces` ajoute trois colonnes facultatives ;

@@ -134,6 +134,12 @@ export const api = {
   discovery: {
     // CFG-50 : base des constructeurs par préfixe MAC (registre OUI de l'IEEE, importé par l'Admin).
     // CFG-53 : clés d'hôte SSH retenues au premier contact.
+    // CFG-55 : relations proposées par la découverte.
+    relations: {
+      list: (params = {}) => request('/discovery/relations?' + new URLSearchParams(params)),
+      accept: id => request(`/discovery/relations/${id}/accept`, { method: 'POST' }),
+      dismiss: id => request(`/discovery/relations/${id}/dismiss`, { method: 'POST' })
+    },
     sshHostKeys: {
       list: () => request('/discovery/ssh-host-keys'),
       accept: id => request(`/discovery/ssh-host-keys/${id}/accept`, { method: 'POST' }),
