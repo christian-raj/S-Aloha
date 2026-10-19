@@ -22,7 +22,9 @@ function Seen({ asset }) {
         ['Nom d’hôte', asset.hostname], ['Adresse IP', asset.ipAddress], ['Adresse MAC', asset.macAddress],
         ['Type déduit', asset.detectedType], ['Système', asset.detectedOs], ['Constructeur', asset.vendor],
         ['Modèle', asset.model], ['Numéro de série', asset.serialNumber], ['Emplacement', asset.location],
-        ['Ports ouverts', asset.openPorts], ['Sources', <Sources value={asset.sources} />],
+        ['Ports ouverts', asset.openPorts],
+        ['Bannières', asset.banners && <pre className="banners">{asset.banners}</pre>],
+        ['Sources', <Sources value={asset.sources} />],
         ['Annuaire', asset.inDirectory ? 'Compte d’ordinateur présent' : 'Absent de l’annuaire'],
         ['Première détection', dateTimeFr(asset.firstSeenAt)], ['Dernière détection', dateTimeFr(asset.lastSeenAt)],
       ]} />

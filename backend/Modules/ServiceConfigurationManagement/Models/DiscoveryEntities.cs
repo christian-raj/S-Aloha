@@ -32,6 +32,8 @@ public class DiscoveredAsset : IHasPerimeter
     [MaxLength(30)] public string DetectedType { get; set; } = "Autre";
     [MaxLength(150)] public string? Location { get; set; }
     [MaxLength(250)] public string? OpenPorts { get; set; }
+    /// <summary>CFG-49 : bannières lues sur les ports ouverts, une par ligne (« 22 SSH-2.0-OpenSSH_9.6 »).</summary>
+    [MaxLength(500)] public string? Banners { get; set; }
     /// <summary>Sources qui l'ont vu, séparées par des virgules (IpSweep, Snmp, ActiveDirectory).</summary>
     [MaxLength(100)] public string Sources { get; set; } = "";
     /// <summary>Compte d'ordinateur présent dans l'annuaire (CFG-42).</summary>

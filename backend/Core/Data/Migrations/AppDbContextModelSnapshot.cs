@@ -2370,6 +2370,10 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Banners")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<int>("ConfidenceScore")
                         .HasColumnType("integer");
 
@@ -2477,6 +2481,25 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.HasIndex("PerimeterId", "Status");
 
                     b.ToTable("DiscoveredAssets");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.Discovery.MacVendor", b =>
+                {
+                    b.Property<string>("Prefix")
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)");
+
+                    b.Property<DateTime>("ImportedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Organization")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Prefix");
+
+                    b.ToTable("MacVendors");
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveryCredential", b =>

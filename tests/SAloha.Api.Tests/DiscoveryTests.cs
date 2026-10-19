@@ -258,4 +258,37 @@ public class DiscoveryTests(ApiFixture api)
         Assert.Equal(DiscoveryJob.Failed, Str(done, "lastStatus"));
         Assert.Contains("Inexistant", Str(done, "lastError"));
     }
+
+    [Fact]
+    public async Task CFG_49_CFG_50_constructeur_par_prefixe_MAC_et_bannieres_au_sas()
+    {
+        var (p, admin, manager) = await Perimeter("cfg50");
+        const string oui = "Registry,Assignment,Organization Name,Organization Address\n"
+            + "MA-L,0C5050,\"Fabricant Cinquante, Inc.\",\"1 rue X, Paris FR\"\n"
+            + "MA-M,0C5051A,Registre moyen,adresse\n"
+            + "MA-L,ZZZZZZ,Mal formé,adresse\n";
+        Assert.Equal(HttpStatusCode.Forbidden, (await manager.PostAsJsonAsync("/api/discovery/mac-vendors/import", new { csv = oui })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync("/api/discovery/mac-vendors/import", new { csv = "a,b\n1,2\n" })).StatusCode);
+        var report = await Json(await admin.PostAsJsonAsync("/api/discovery/mac-vendors/import", new { csv = oui }));
+        Assert.Equal((1, 2), (report.GetProperty("imported").GetInt32(), report.GetProperty("skipped").GetInt32()));
+        var status = await Json(await manager.GetAsync("/api/discovery/mac-vendors"));
+        Assert.Equal(1, status.GetProperty("count").GetInt32());
+
+        FakeCollector.Observations["10.50.0.0/24"] =
+        [
+            new("IpSweep", IpAddress: "10.50.0.10", MacAddress: "0c:50:50:00:00:10", Type: "Serveur", OpenPorts: "22",
+                Os: "Linux Ubuntu", Banners: "22 SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.5"),
+            new("IpSweep", IpAddress: "10.50.0.20", MacAddress: "0e:50:50:00:00:20", Type: "Poste de travail"),
+        ];
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Balayage 50", scanType = "IpSweep", targetRange = "10.50.0.0/24", perimeterId = p }));
+        await RunAndWait(manager, Id(job));
+        var assets = await Staged(manager, p);
+        var known = assets.Single(a => Str(a, "ipAddress") == "10.50.0.10");
+        Assert.Equal("Fabricant Cinquante", Str(known, "vendor"));
+        var detail = (await Json(await manager.GetAsync($"/api/discovery/staging/{Id(known)}"))).GetProperty("asset");
+        Assert.Equal("22 SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.5", Str(detail, "banners"));
+        // Adresse administrée localement (aléatoire) : pas de constructeur.
+        Assert.Equal(JsonValueKind.Null, assets.Single(a => Str(a, "ipAddress") == "10.50.0.20").GetProperty("vendor").ValueKind);
+    }
 }

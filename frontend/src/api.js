@@ -132,6 +132,11 @@ export const api = {
   },
   // Découverte automatique (CFG-40 à CFG-47) : sas de staging, tâches de scan, coffre, fins de support.
   discovery: {
+    // CFG-50 : base des constructeurs par préfixe MAC (registre OUI de l'IEEE, importé par l'Admin).
+    macVendors: {
+      get: () => request('/discovery/mac-vendors'),
+      import: csv => request('/discovery/mac-vendors/import', { method: 'POST', body: JSON.stringify({ csv }) })
+    },
     staging: {
       list: (params = {}) => request('/discovery/staging?' + new URLSearchParams(params)),
       summary: () => request('/discovery/staging/summary'),

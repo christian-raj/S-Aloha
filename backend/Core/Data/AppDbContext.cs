@@ -49,6 +49,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<DiscoveryJob> DiscoveryJobs => Set<DiscoveryJob>();
     public DbSet<DiscoveryCredential> DiscoveryCredentials => Set<DiscoveryCredential>();
     public DbSet<EndOfLifeRule> EndOfLifeRules => Set<EndOfLifeRule>();
+    public DbSet<Modules.ServiceConfigurationManagement.Discovery.MacVendor> MacVendors => Set<Modules.ServiceConfigurationManagement.Discovery.MacVendor>();
     // Niveaux de service
     public DbSet<ItService> Services => Set<ItService>();
     public DbSet<ServiceLevelAgreement> Agreements => Set<ServiceLevelAgreement>();
