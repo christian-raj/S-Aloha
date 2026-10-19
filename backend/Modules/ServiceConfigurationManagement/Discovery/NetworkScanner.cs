@@ -84,12 +84,26 @@ public class NetworkScanner(ILogger<NetworkScanner> logger) : IDiscoveryCollecto
         try
         {
             var entry = await Dns.GetHostEntryAsync(ip.ToString(), ct).WaitAsync(TimeSpan.FromMilliseconds(DnsTimeoutMs), ct);
-            return entry.HostName == ip.ToString() ? null : entry.HostName.ToLowerInvariant();
+            return UsefulHostname(entry.HostName, ip);
         }
         catch (Exception ex) when (ex is SocketException or TimeoutException or ArgumentException)
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// Nom réel d'un hôte, ou null pour un nom fabriqué : l'adresse elle-même, ou le nom
+    /// synthétique que le DNS d'un cluster Kubernetes donne à toute adresse
+    /// (« 192-168-1-11.kubernetes.default.svc.cluster.local ») — il fausserait le rapprochement.
+    /// </summary>
+    public static string? UsefulHostname(string? name, IPAddress ip)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return null;
+        var host = name.Trim().TrimEnd('.').ToLowerInvariant();
+        var dashed = ip.ToString().Replace('.', '-');
+        if (host == ip.ToString() || host.Split('.')[0] == dashed || host.EndsWith(".cluster.local")) return null;
+        return host;
     }
 
     /// <summary>Table ARP du système (Linux) : adresse IP → adresse MAC, pour les hôtes du même segment.</summary>

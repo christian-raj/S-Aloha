@@ -98,6 +98,14 @@ public class DiscoveryUnitTests
         Assert.Throws<InvalidOperationException>(() => none.Protect("secret"));
     }
 
+    [Theory]
+    [InlineData("srv-mail.corp.local.", "srv-mail.corp.local")]
+    [InlineData("192-168-1-11.kubernetes.default.svc.cluster.local", null)]
+    [InlineData("192-168-1-11.box.lan", null)]
+    [InlineData("192.168.1.11", null)]
+    public void CFG_41_un_nom_DNS_fabrique_n_est_pas_un_nom_d_hote(string name, string? expected) =>
+        Assert.Equal(expected, NetworkScanner.UsefulHostname(name, System.Net.IPAddress.Parse("192.168.1.11")));
+
     [Fact]
     public void Empreinte_le_type_deduit_reste_un_type_de_CI()
     {
