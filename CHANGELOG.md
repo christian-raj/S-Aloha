@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Découverte : inventaire WinRM** (CFG-57) : serveurs et postes Windows, en WS-Management
+  sur HTTPS avec un compte de domaine ou local (NTLM) : système, constructeur, numéro de
+  série, logiciels, services actifs, ports en écoute et flux réseau. **À valider sur un
+  Windows réel** : testé contre un serveur WS-Management factice.
+
 - **Découverte : flux réseau** (CFG-56) : l'inventaire SSH relève les connexions établies ;
   une connexion vers ou depuis un autre actif du sas propose « client Se connecte à serveur »
   (avec les ports vus), validée par le gestionnaire comme les relations d'hébergement.
@@ -102,6 +107,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **WinRM (CFG-57)** : activer WinRM en HTTPS (port 5986) sur les hôtes à inventorier et
+  placer le compte de découverte dans « Remote Management Users ». Aucune migration.
 - **Hyperviseurs (CFG-54)** : la migration `Hypervisors` ajoute une colonne (clés existantes :
   « ssh ») et une table ; créer un jeton Proxmox (rôle PVEAuditor) ou un compte vCenter en
   lecture seule.

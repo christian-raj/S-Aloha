@@ -19,6 +19,9 @@ const SCAN_TYPES = {
   Ssh: { label: 'Inventaire SSH (Linux, Unix)', target: 'Réseau CIDR (/24 au plus) ou adresse', credentials: ['Ssh'], help: SSH_HELP },
   Proxmox: { label: 'Proxmox VE', target: 'Adresse de l’API, ex. https://pve.corp.local:8006', credentials: ['ProxmoxToken'],
     help: 'Nœuds, machines virtuelles et conteneurs, avec un jeton d’API en lecture seule (rôle PVEAuditor). Relation « Héberge » proposée.' },
+  WinRm: { label: 'Inventaire WinRM (Windows)', target: 'Réseau CIDR (/24 au plus) ou adresse', credentials: ['WindowsDomain'],
+    help: 'WS-Management sur HTTPS (5986), compte de domaine ou local membre de « Remote Management Users » (NTLM) : système, '
+      + 'constructeur, logiciels, services actifs, ports en écoute, connexions (flux proposés). À valider sur un Windows réel.' },
   VCenter: { label: 'VMware vCenter', target: 'Adresse de vCenter, ex. https://vcenter.corp.local', credentials: ['VCenter'],
     help: 'Hôtes ESXi et machines virtuelles (vCenter 7 et suivants), avec un compte en lecture seule. Relation « Héberge » proposée.' },
 }
@@ -73,8 +76,8 @@ function JobForm({ job, credentials, onSaved, onCancel }) {
         {f.scanType === 'IpSweep' && <div className="field full"><label>Ports TCP sondés</label>
           <input value={f.portList} onChange={e => set({ portList: e.target.value })} placeholder="Par défaut : 22,80,443,135,445,3389,5985,9100" />
           <small className="field-hint">Séparés par des virgules, 50 au plus.</small></div>}
-        {f.scanType === 'Ssh' && <div className="field"><label>Port SSH</label>
-          <input value={f.portList} onChange={e => set({ portList: e.target.value })} placeholder="22" inputMode="numeric" /></div>}
+        {['Ssh', 'WinRm'].includes(f.scanType) && <div className="field"><label>{f.scanType === 'Ssh' ? 'Port SSH' : 'Port WinRM (HTTPS)'}</label>
+          <input value={f.portList} onChange={e => set({ portList: e.target.value })} placeholder={f.scanType === 'Ssh' ? '22' : '5986'} inputMode="numeric" /></div>}
         {type.credentials.length > 0 && <div className="field"><label>Identifiant du coffre{f.scanType !== 'ActiveDirectory' && ' *'}</label>
           <select value={f.credentialId} onChange={e => set({ credentialId: e.target.value })}>
             <option value="">{f.scanType === 'ActiveDirectory' ? 'Compte de service de l’API' : '— Choisir —'}</option>

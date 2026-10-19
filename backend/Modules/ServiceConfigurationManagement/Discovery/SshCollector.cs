@@ -202,14 +202,28 @@ public static class SshInventory
     /// </summary>
     public static List<Flow> Flows(string? text, IReadOnlyCollection<int> listening, int sshPort)
     {
-        var flows = new List<Flow>();
+        var pairs = new List<((IPAddress Ip, int Port) Local, (IPAddress Ip, int Port) Peer)>();
         foreach (var line in (text ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
             var ends = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(t => t.Contains(':') && t.LastIndexOf(':') < t.Length - 1).ToList();
-            if (ends.Count < 2 || Endpoint(ends[0]) is not { } local || Endpoint(ends[1]) is not { } peer) continue;
+            if (ends.Count >= 2 && Endpoint(ends[0]) is { } local && Endpoint(ends[1]) is { } peer) pairs.Add((local, peer));
+        }
+        return Flows(pairs, listening, [sshPort]);
+    }
+
+    /// <summary>
+    /// CFG-56 : connexions (extrémité locale, pair) en flux : entrante si le port local est en
+    /// écoute, sinon sortante ; boucle locale et entrées sur les ports d'administration écartées.
+    /// </summary>
+    public static List<Flow> Flows(IEnumerable<((IPAddress Ip, int Port) Local, (IPAddress Ip, int Port) Peer)> connections,
+        IReadOnlyCollection<int> listening, IReadOnlyCollection<int> adminPorts)
+    {
+        var flows = new List<Flow>();
+        foreach (var (local, peer) in connections)
+        {
             if (IPAddress.IsLoopback(peer.Ip) || IPAddress.IsLoopback(local.Ip)) continue;
             var inbound = listening.Contains(local.Port);
-            if (inbound && local.Port == sshPort) continue;
+            if (inbound && adminPorts.Contains(local.Port)) continue;
             var flow = new Flow(!inbound, peer.Ip.ToString(), inbound ? local.Port : peer.Port);
             if (!flows.Contains(flow)) flows.Add(flow);
             if (flows.Count >= 200) break;

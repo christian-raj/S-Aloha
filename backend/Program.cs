@@ -40,6 +40,7 @@ builder.Services.AddScoped<IDiscoveryCollector, ActiveDirectoryCollector>();
 builder.Services.AddScoped<IDiscoveryCollector, SshCollector>();
 builder.Services.AddScoped<IDiscoveryCollector, ProxmoxCollector>();
 builder.Services.AddScoped<IDiscoveryCollector, VCenterCollector>();
+builder.Services.AddScoped<IDiscoveryCollector, WinRmCollector>();
 builder.Services.AddScoped<MatchingEngine>();
 builder.Services.AddScoped<DiscoveryRunner>();
 builder.Services.AddHostedService<DiscoveryWorker>();

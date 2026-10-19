@@ -81,7 +81,7 @@ export const ciConfig = {
 }
 
 /** Libellés des sources de découverte et des types de scan. */
-export const SOURCE_LABELS = { IpSweep: 'Balayage IP', Snmp: 'SNMP', ActiveDirectory: 'Active Directory', Ssh: 'SSH', Proxmox: 'Proxmox VE', VCenter: 'vCenter' }
+export const SOURCE_LABELS = { IpSweep: 'Balayage IP', Snmp: 'SNMP', ActiveDirectory: 'Active Directory', Ssh: 'SSH', Proxmox: 'Proxmox VE', VCenter: 'vCenter', WinRm: 'WinRM' }
 export const RULE_LABELS = { SerialNumber: 'Numéro de série', MacAddress: 'Adresse MAC', Hostname: 'Nom d’hôte', IpAddress: 'Adresse IP', None: 'Aucun' }
 /** Ton des statuts du sas de staging (badges). */
 export const STAGING_TONES = { 'À rapprocher': 't-progress', 'En conflit': 't-bad', 'Rapproché': 't-done', 'Ignoré': 't-closed' }

@@ -59,7 +59,9 @@ réservée à l'Admin. L'inventaire SSH vérifie la clé de l'hôte avant d'envo
 n'exécute que des lectures, sans sudo : un compte sans droits d'administration suffit. Les API
 d'hyperviseurs ne sont appelées qu'en HTTPS ; un certificat autosigné est retenu au premier
 contact de la même façon (CFG-54) ; des comptes en lecture seule suffisent (PVEAuditor,
-Lecture seule de vCenter).
+Lecture seule de vCenter). L'inventaire WinRM n'emploie que HTTPS et NTLM (implémentation
+gérée de .NET, `System.Net.Security.UseManagedNtlm`) : un serveur qui réclamerait Basic
+n'obtient pas le mot de passe (CFG-57).
 
 ## Surface exposée
 

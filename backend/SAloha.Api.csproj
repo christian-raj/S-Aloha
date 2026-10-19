@@ -27,4 +27,8 @@
     <!-- Structure du référentiel NIS 2 (ReCyF), sans le texte des exigences : ADR-0012. -->
     <EmbeddedResource Include="Modules/ComplianceAssessment/Referential/*.csv" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- CFG-57 : NTLM géré par .NET pour WinRM, sans bibliothèque GSSAPI dans l'image. -->
+    <RuntimeHostConfigurationOption Include="System.Net.Security.UseManagedNtlm" Value="true" />
+  </ItemGroup>
 </Project>

@@ -109,10 +109,11 @@ public class DiscoveryJobsController(AppDbContext db, PerimeterAccess access, Di
         else if (dto.ScanType != "ActiveDirectory" && IpRange.Validate(target) is { } rangeError) return rangeError;
         var ports = dto.ScanType == "IpSweep" ? (string.IsNullOrWhiteSpace(dto.PortList) ? DiscoveryJob.DefaultPorts : dto.PortList) : "";
         if (dto.ScanType == "IpSweep" && IpRange.Ports(ports, out var portError) is null) return portError;
-        // SSH : un seul port, 22 par défaut (CFG-52).
-        if (dto.ScanType == "Ssh" && !string.IsNullOrWhiteSpace(dto.PortList))
+        // SSH, WinRM : un seul port, 22 ou 5986 par défaut (CFG-52, CFG-57).
+        if (dto.ScanType is "Ssh" or "WinRm" && !string.IsNullOrWhiteSpace(dto.PortList))
         {
-            if (IpRange.Ports(dto.PortList, out var sshError) is not [_]) return sshError ?? "Un scan SSH vise un seul port (22 par défaut).";
+            if (IpRange.Ports(dto.PortList, out var sshError) is not [_])
+                return sshError ?? $"Un scan {(dto.ScanType == "Ssh" ? "SSH" : "WinRM")} vise un seul port ({(dto.ScanType == "Ssh" ? 22 : 5986)} par défaut).";
             ports = dto.PortList.Trim();
         }
         if (dto.FrequencyHours is < 0 or > 24 * 31) return "Fréquence en heures : 0 (lancement manuel) à 744 (un mois).";
@@ -132,9 +133,10 @@ public class DiscoveryJobsController(AppDbContext db, PerimeterAccess access, Di
                 return "Choisir un identifiant du coffre du même périmètre que la tâche.";
         }
         string[] expected = dto.ScanType switch { "Snmp" => ["SnmpV2c", "SnmpV3"], "ActiveDirectory" => ["WindowsDomain"], "Ssh" => ["Ssh"],
-            "Proxmox" => ["ProxmoxToken"], "VCenter" => ["VCenter"], _ => [] };
+            "Proxmox" => ["ProxmoxToken"], "VCenter" => ["VCenter"], "WinRm" => ["WindowsDomain"], _ => [] };
         if (dto.ScanType == "Snmp" && credential is null) return "Un scan SNMP exige une communauté v2c ou un utilisateur v3 du coffre.";
         if (dto.ScanType == "Ssh" && credential is null) return "Un scan SSH exige un compte SSH du coffre.";
+        if (dto.ScanType == "WinRm" && credential is null) return "Un scan WinRM exige un compte Windows (de domaine ou local) du coffre.";
         if (DiscoveryJob.ApiScanTypes.Contains(dto.ScanType) && credential is null)
             return dto.ScanType == "Proxmox" ? "Un scan Proxmox VE exige un jeton d'API du coffre." : "Un scan vCenter exige un compte vCenter du coffre.";
         if (credential is not null && !expected.Contains(credential.CredentialType))
