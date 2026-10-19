@@ -146,7 +146,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/console` | User | Console par rôle, orientée action (blocs « à traiter » / « à suivre ») | Core/Pilotage |
 | GET/POST `/api/problems`, GET `/api/problems/{id}`, GET `/api/problems/transitions` | User | Liste (filtres statut, texte, `owner`, `perimeter`), détail, déclaration | Modules/ProblemManagement (socle) |
 | PUT `/api/problems/{id}` | Manager du périmètre | Qualification, statuts, cause racine, contournement, gestionnaire du problème ; transition forcée (Admin) | Modules/ProblemManagement (socle) |
-| DELETE `/api/problems/{id}` | Admin | Suppression | Modules/ProblemManagement |
+| DELETE `/api/problems/{id}`, GET `/{id}/deletion` | Admin | Suppression ; ce qu'elle emporte (SOC-14). Chaque registre du socle sert le même `GET …/{id}/deletion` | Modules/ProblemManagement, Core/Records |
 | GET/POST/PUT `/api/problems/{id}/analyses[...]` | User | Analyses RCA (DELETE : Manager) | Modules/ProblemManagement |
 | GET `/api/actions`, POST `/api/problems/{id}/actions`, PUT `/api/actions/{id}`, POST `/{id}/request-approval`, PUT `/{id}/change` | User | Actions + RACI, approbation par l'A (PRB-25), changement du correctif (PRB-27) (DELETE : Manager) | Modules/ProblemManagement |
 | GET/POST/PUT `/api/incidents[/{id}]` | User | Incidents (DELETE : Admin) | Modules/IncidentManagement |

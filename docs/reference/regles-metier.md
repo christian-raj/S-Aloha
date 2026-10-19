@@ -196,7 +196,7 @@ S'appliquent à toutes les pratiques : toutes reposent sur le socle `Core/Record
 | SOC-11 | **Recherche** (titre, référence) insensible à la casse ; filtres `status`, `q`, `owner` sur chaque registre | ✅ | |
 | SOC-12 | **Liens inter-processus** : tout enregistrement peut être relié à un autre par sa référence ; le lien se lit des deux côtés ; un doublon (dans un sens ou dans l'autre) ⇒ 409 ; supprimer un enregistrement supprime ses liens | ✅ | |
 | SOC-13 | Les **registres** du changement et des connaissances ne renvoient pas les champs longs (plans, contenu) : ils restent dans la fiche | ✅ | |
-| SOC-14 | **Suppression** réservée à l'Admin (sauf analyses et actions : Manager), avec **confirmation** dans l'interface qui rappelle la référence et le nombre de liens supprimés — résout M8 | 🔜 (API ✅, interface 🔜) | 2 |
+| SOC-14 | **Suppression** réservée à l'Admin (sauf analyses et actions : Manager), avec **confirmation** dans l'interface qui rappelle la référence et compte ce qui part avec : liens, commentaires, notifications et dépendants supprimés en cascade (analyses, actions, relations, accords…), lus dans le modèle de données (`GET …/{id}/deletion`, Admin) — résout M8 | ✅ | 2 |
 | SOC-15 | **Enregistrement terminé** (statut final de la pratique) : modifiable seulement par un Manager ; un User qui doit le reprendre le rouvre (transition permise) | 🔜 | 2 |
 
 ## 6. Priorité

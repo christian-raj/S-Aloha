@@ -48,7 +48,6 @@ Décidés le 2026-10-19, à réaliser :
 
 | # | Chantier | Décision |
 |---|---|---|
-| M8 | Suppressions dans l'interface | [SOC-14](reference/regles-metier.md#5-règles-communes-aux-processus) tel qu'écrit : Admin pour un enregistrement (problème compris), Manager pour une analyse ou une action ; confirmation qui rappelle la référence et compte ce qui part avec |
 | A2 | Réponses de l'API : entités EF exposées | **Tous les DTO maintenant**, noms de champs inchangés, contrat figé par un test ([ADR-0016](decisions/adr-0016-reponses-de-l-api-en-dto.md)) |
 | O2 | Observabilité | **Journal JSON** et **OpenTelemetry optionnel** (OTLP si configuré) ([ADR-0017](decisions/adr-0017-observabilite-journal-json-et-opentelemetry.md)) |
 

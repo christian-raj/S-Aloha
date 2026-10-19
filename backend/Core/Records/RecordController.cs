@@ -303,6 +303,27 @@ public abstract class RecordController<T, TDto>(AppDbContext db) : ControllerBas
         return Ok(e);
     }
 
+    /// <summary>
+    /// SOC-14 : ce que la suppression emporterait — liens, commentaires, notifications et
+    /// dépendants supprimés en cascade (analyses, relations, accords…) — pour la confirmation.
+    /// </summary>
+    [HttpGet("{id:int}/deletion")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> DeletionPreview(int id)
+    {
+        var e = await db.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null) return NotFound();
+        var links = await db.ItemLinks.CountAsync(l => (l.FromType == LinkType && l.FromId == id) || (l.ToType == LinkType && l.ToId == id));
+        var comments = await db.Comments.CountAsync(c => c.TargetType == LinkType && c.TargetId == id);
+        var notifications = await db.Notifications.CountAsync(n => n.TargetType == LinkType && n.TargetId == id);
+        var impacts = (await Deletion.CascadeAsync<T>(db, id))
+            .Prepend(new Deletion.Impact("notifications", notifications))
+            .Prepend(new Deletion.Impact("commentaires", comments))
+            .Prepend(new Deletion.Impact("liens vers d'autres enregistrements", links))
+            .Where(i => i.Count > 0).ToList();
+        return Ok(new { e.Id, e.Reference, e.Title, Impacts = impacts });
+    }
+
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Delete(int id)
