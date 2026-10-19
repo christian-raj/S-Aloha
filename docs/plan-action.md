@@ -60,7 +60,6 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 | S1 | **Secrets hors du dépôt** (`Jwt:Key`, mots de passe PostgreSQL et LDAP) | code + action |
 | S2 | **LDAPS** et **HTTPS** | action |
 | S3 | **CORS** restreint ([#122](https://github.com/christian-raj/S-Aloha/issues/122)) ; API et Swagger non publiés hors de nginx | code |
-| S5 | **Jeton en cookie `HttpOnly`** et politique CSP, décidé le 2026-10-19 ([ADR-0018](decisions/adr-0018-jeton-en-cookie-httponly-et-csp.md)) | code |
 | ~~S7~~ | ~~Refus de démarrer hors développement avec les valeurs d'exemple~~ — soldé le 2026-10-16 (`SampleSecrets` ; démonstration : `Security:AllowSampleSecrets`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 1) | code |
 | ~~S8~~ | ~~Audience du jeton JWT~~ — soldé le 2026-10-16 (`Jwt:Audience`, émise et vérifiée) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 2) | code |
 | O1 | Démarrage : sondes `/health/live` et `/health/ready`, rattrapage des échéances SLA dans un service de fond, migrations pilotables (`Database:MigrateOnStartup`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 4) ; sondes : [#121](https://github.com/christian-raj/S-Aloha/issues/121) | code |

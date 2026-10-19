@@ -47,6 +47,10 @@ public sealed class ApiFixture : IAsyncLifetime
                 // Rôle d'un autre compte (INC-13) : annuaire de test, sans LDAP.
                 s.RemoveAll<SAloha.Api.Core.Auth.IUserDirectory>();
                 s.AddSingleton<SAloha.Api.Core.Auth.IUserDirectory, FakeUserDirectory>();
+                // Connexion (S5) : mot de passe de test, sinon le vrai service LDAP (injoignable).
+                s.AddSingleton<FakeUserDirectory>();
+                s.RemoveAll<SAloha.Api.Core.Auth.IAuthenticator>();
+                s.AddSingleton<SAloha.Api.Core.Auth.IAuthenticator, FakeAuthenticator>();
                 // Collecteurs de découverte factices : ni réseau ni annuaire pendant les tests.
                 s.RemoveAll<SAloha.Api.Modules.ServiceConfigurationManagement.Discovery.IDiscoveryCollector>();
                 foreach (var type in SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveryJob.ScanTypes)
@@ -65,6 +69,9 @@ public sealed class ApiFixture : IAsyncLifetime
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token(username, role, groups));
         return client;
     }
+
+    /// <summary>Client sans jeton, qui garde ses cookies (session du navigateur, S5).</summary>
+    public HttpClient AnonymousClient() => _factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
 
     internal static string Token(string username, string role, params string[] groups)
     {

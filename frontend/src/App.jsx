@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { getToken } from './api'
+import { api, getUser, setUser } from './api'
 import Layout from './core/components/Layout'
 import Login from './core/pages/Login'
 import Console from './core/pages/Console'
@@ -40,8 +40,18 @@ import Assessments from './modules/compliance-assessment/pages/Assessments'
 import AssessmentDetail from './modules/compliance-assessment/pages/AssessmentDetail'
 import ReferentialSettings from './modules/compliance-assessment/pages/ReferentialSettings'
 
+/**
+ * Pages réservées : l'utilisateur affiché, ou la session reprise par le cookie HttpOnly
+ * (nouvel onglet, rechargement : S5) ; sans session valide, la connexion.
+ */
 function Private({ children }) {
-  return getToken() ? children : <Navigate to="/login" replace />
+  const [state, setState] = useState(getUser() ? 'ok' : 'checking')
+  useEffect(() => {
+    if (state !== 'checking') return
+    api.me().then(user => { setUser(user); setState('ok') }).catch(() => setState('none'))
+  }, [])
+  if (state === 'checking') return <p className="muted" style={{ padding: 24 }}>Chargement…</p>
+  return state === 'ok' ? children : <Navigate to="/login" replace />
 }
 
 export default function App() {

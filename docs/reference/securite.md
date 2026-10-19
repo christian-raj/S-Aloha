@@ -17,6 +17,15 @@
 - Jeton **JWT HS256** signé avec `Jwt:Key`, vérifié sur l'émetteur, l'**audience**
   (`Jwt:Audience`, S8) et la signature, durée `Jwt:ExpiryHours` (8 h par défaut). Pas de révocation : un jeton
   reste valide jusqu'à expiration, même si l'utilisateur est retiré du groupe AD.
+- **Côté navigateur** (S5, [ADR-0018](../decisions/adr-0018-jeton-en-cookie-httponly-et-csp.md)) : le
+  jeton vit dans le cookie `saloha_session`, `HttpOnly` (illisible par un script de la
+  page), `SameSite=Strict`, limité à `/api`, `Secure` dès que la requête arrive en HTTPS ;
+  déconnexion par `POST /api/auth/logout`. **CSRF** : une modification authentifiée par le
+  cookie sans l'en-tête `X-S-Aloha: 1` reçoit 403. Les clients d'API (scripts) obtiennent le
+  jeton sur demande (`returnToken`) et l'envoient en `Authorization: Bearer`.
+- **CSP** servie par nginx : scripts de la seule origine (le script de thème en ligne autorisé
+  par son empreinte), polices Google Fonts, `frame-ancestors 'none'`, `object-src 'none'` ;
+  avec `X-Content-Type-Options: nosniff` et `Referrer-Policy: same-origin`.
 - Le jeton porte les **groupes AD directs** de l'utilisateur (SOC-10), lus à la connexion :
   un changement d'appartenance prend effet à la connexion suivante. Les noms de groupes
   sont visibles de qui détient le jeton (son titulaire).
@@ -67,7 +76,7 @@ réservée à l'Admin.
 | Transport | HTTP sur le port 80 | HTTPS (reverse proxy TLS) |
 | CORS | `AllowAnyOrigin` | Origine du frontend uniquement |
 | Exposition | API et Swagger publiés sur 8080 | API joignable seulement via nginx ; Swagger désactivé en production |
-| Jeton côté navigateur | `sessionStorage`, lisible par tout script de la page (XSS) ; pas de CSP | Décidé ([ADR-0018](../decisions/adr-0018-jeton-en-cookie-httponly-et-csp.md)) : cookie `HttpOnly`, `SameSite=Strict`, en-tête anti-CSRF, CSP servie par nginx |
+| Jeton côté navigateur | ✅ Cookie `HttpOnly`, `SameSite=Strict`, en-tête anti-CSRF, CSP servie par nginx ([ADR-0018](../decisions/adr-0018-jeton-en-cookie-httponly-et-csp.md)) ; non `Secure` en HTTP seul | HTTPS (S2) pour un cookie `Secure` |
 | Révocation | Aucune avant expiration | Durée courte et/ou contrôle de l'appartenance AD |
 | Tentatives de connexion | Aucune limitation de débit | Limitation par IP et par compte |
 

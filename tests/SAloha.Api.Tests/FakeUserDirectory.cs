@@ -12,7 +12,7 @@ public sealed class FakeUserDirectory : IUserDirectory
 {
     public Task<DirectoryAccount?> FindAsync(string username) => Task.FromResult(Find(username));
 
-    private static DirectoryAccount? Find(string username)
+    public static DirectoryAccount? Find(string username)
     {
         var name = username.ToLowerInvariant();
         if (name.Contains("annuaire.hs")) throw new InvalidOperationException("Annuaire injoignable (test)");

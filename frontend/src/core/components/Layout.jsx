@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { getUser } from '../../api'
+import { api, clearSession, getUser } from '../../api'
 import { GROUPS, MODULES, SECTIONS, groupOf, visibleFor } from '../../modules/registry'
 import ThemeToggle from './ThemeToggle'
 import NotificationBell from './NotificationBell'
@@ -192,7 +192,8 @@ export default function Layout() {
   const [open, setOpen] = useState(false)
   // Un seul état pour la barre latérale et le tiroir mobile.
   const [collapsed, toggleCollapsed] = useCollapsed()
-  const logout = () => { sessionStorage.clear(); nav('/login') }
+  // S5 : l'API efface le cookie de session ; l'utilisateur affiché est oublié.
+  const logout = () => api.logout().catch(() => {}).finally(() => { clearSession(); nav('/login') })
 
   return (
     <div className="shell">
