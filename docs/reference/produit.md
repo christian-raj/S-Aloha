@@ -83,6 +83,10 @@ Indépendants des processus, accessibles à tous les rôles :
 - **Périmètres** — droits et visibilité limités à une direction, un site ou une entité,
   affectations d'utilisateurs et de groupes AD, écran Administration › Périmètres
   ([périmètres](perimetres.md)) ;
+- **Administration et Paramétrage** — pour l'Admin : utilisateurs et rôles lus dans
+  l'annuaire, santé de la plateforme, journal d'audit global et export, nettoyage des
+  doublons ; pour les gestionnaires et l'Admin : catégories d'incident et de problème,
+  découverte du réseau ([administration](administration.md)) ;
 - **Reporting** — tableau de bord à onglets : score de santé des services, incidents
   (MTTR, MTTD, résolution au premier contact, SLA), problèmes, changements et projets,
   conformité ; filtres période et service, exports CSV et PDF ([reporting](reporting.md)).
@@ -97,7 +101,7 @@ détaillées, pratique par pratique : [`processus/`](processus/readme.md).
 | Incidents | Minimiser l'impact négatif des incidents en rétablissant le service normal au plus vite | Déclaration, priorité P1–P4, assignation AD ; incident majeur piloté par un gestionnaire ; échéances de prise en charge et de résolution en heures de service, SLA en risque ; attente motivée, réouverture encadrée ; résolution avec code ; problème lié |
 | Demandes | Délivrer la qualité de service convenue en traitant les demandes prédéfinies des utilisateurs, de façon efficace et conviviale | Catalogue de demandes et modèles pré-approuvés, bénéficiaire ; approbation par un gestionnaire ; échéance et groupe d'exécution ; retards en relance ; annulation par le demandeur |
 | Changements | Maximiser le nombre de changements réussis : évaluer les risques, autoriser, gérer le calendrier | Types Standard (depuis un modèle pré-autorisé), Normal, Urgent ; autorité selon le risque, CAB, séparation des tâches ; périodes de gel ; plans de mise en œuvre et de retour arrière ; calendrier et conflits ; dates réelles, revue post-implémentation |
-| Configuration | Une information exacte et fiable sur les services et les CI, quand et où elle est nécessaire | CI typés par environnement, propriétaire ; relations et impact en amont et en aval ; rattachement aux services ; vérification ; retrait encadré ; portefeuille applicatif et actifs matériels, inventaire et fins de support ; découverte automatique (balayage IP, SNMP, annuaire) avec sas de staging et coffre d’identifiants |
+| Configuration | Une information exacte et fiable sur les services et les CI, quand et où elle est nécessaire | CI typés par environnement, propriétaire ; relations et impact en amont et en aval ; rattachement aux services ; vérification ; retrait encadré ; portefeuille applicatif et actifs matériels, inventaire et fins de support ; découverte automatique (balayage IP et bannières, SNMP v2c et v3, annuaire, inventaire SSH et WinRM, hyperviseurs Proxmox VE et vCenter) avec sas de staging, coffre d’identifiants, et relations « Héberge » et « Se connecte à » proposées au gestionnaire |
 | Niveaux de service | Des cibles claires, orientées métier, et le suivi de la prestation au regard de ces cibles | Catalogue des services ; SLA en heures de service (délais de prise en charge et de résolution P1–P4) ; respect mesuré, alerte sous la cible ; expiration et revues |
 | Connaissances | Un usage efficace, efficient et pratique de l'information et des connaissances | Articles (solution, procédure, erreur connue, FAQ) en Markdown ; soumission puis publication validée ; revue périodique et demande d'archivage ; articles d'erreur connue créés depuis les problèmes ; compteur d'utilisation |
 | Amélioration continue | Aligner les services sur l'évolution des besoins par l'amélioration continue | Registre priorisé (source, priorité), mesures de départ et cible, modèle ITIL 4 en 7 étapes, validation ; propositions sur problèmes récurrents et SLA sous la cible ; retards en relance |

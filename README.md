@@ -98,8 +98,11 @@ dépendance à un éditeur.
   éléments de configuration par type et environnement, relations et **impact** en amont et
   en aval, rattachement aux services, vérification périodique, retrait encadré ;
   **portefeuille applicatif** et **actifs matériels** avec inventaire et fins de support ;
-  **découverte automatique** (balayage IP, SNMP, Active Directory) avec sas de staging,
-  rapprochement des CI, détection du Shadow IT et coffre d'identifiants chiffré.
+  **découverte automatique** (balayage IP et bannières, SNMP v2c et v3, Active Directory,
+  inventaire SSH des serveurs Linux et WinRM des serveurs Windows, hyperviseurs Proxmox VE et
+  vCenter) avec sas de staging, rapprochement des CI, détection du Shadow IT, coffre
+  d'identifiants chiffré, et relations « Héberge » et « Se connecte à » proposées au
+  gestionnaire.
 
 ### 📈 Qualité de service et pilotage
 
@@ -126,6 +129,10 @@ dépendance à un éditeur.
   ou entité ; utilisateurs et groupes AD affectés depuis l'écran d'administration.
 - **Traçabilité** — journal d'audit sur chaque fiche : qui a changé quoi, quand, avec
   l'ancienne et la nouvelle valeur ; transitions forcées motivées.
+- **[Administration](docs/reference/administration.md)** — utilisateurs et rôles lus dans
+  l'annuaire avec leur dernière connexion, santé de la plateforme, journal d'audit global
+  et export, nettoyage des doublons ; catégories d'incident et de problème tenues par les
+  gestionnaires.
 
 ## Aperçu
 
@@ -287,15 +294,19 @@ place, NIS 2 built in.**
   Ishikawa, fault tree) and RACI corrective actions; change enablement (standard models,
   risk-based authority and CAB, freeze periods, schedule, post-implementation review);
   CMDB with relationships, impact analysis and service mapping, application portfolio and
-  hardware assets, network discovery (IP sweep, SNMP, Active Directory) through a staging
-  area with CI reconciliation and shadow-IT detection.
+  hardware assets, network discovery (IP sweep and banners, SNMP v2c/v3, Active Directory,
+  SSH and WinRM inventory, Proxmox VE and vCenter hypervisors) through a staging area with
+  CI reconciliation, shadow-IT detection, and hosting and network-flow relationships
+  proposed for approval.
 - **Service quality and steering**: service catalogue and SLAs with measured compliance,
   continual improvement (ITIL 7-step model, automatic proposals), a reporting dashboard
   (health score, MTTR/MTTD, FCR, SLA, CSV/PDF exports) and project management (Scrum,
   Kanban, V-model, PRINCE2 or hybrid).
 - **Security and compliance**: **NIS 2** self-assessment against the French ANSSI
   framework (scores, gaps, evidence, comparison, auditor export), perimeter-scoped
-  permissions (department, site, entity), full audit trail.
+  permissions (department, site, entity), full audit trail; an administration console
+  (users and roles from the directory, platform health, global audit log, duplicate
+  clean-up) and manager-maintained incident and problem categories.
 - **On every record**: comments (public or work notes), history, in-app notifications,
   links between records, hybrid search (keywords + semantic, local `bge-m3` model).
 - **Roadmap**: regulatory incident notifications (NIS 2, GDPR), attachments, e-mail

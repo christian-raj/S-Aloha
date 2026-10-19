@@ -113,7 +113,8 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/projects`, `/projects/:id` | `modules/project-management/pages/Projects`, `ProjectDetail` | Projets › Projets |
 | `/admin/perimeters`, `/admin/perimeters/:id` | `core/pages/admin/Perimeters`, `PerimeterDetail` | Administration › Périmètres (Admin) |
 | `/admin/users`, `/admin/health`, `/admin/audit`, `/admin/duplicates` | `core/pages/admin/Users`, `Health`, `AuditLog`, `Duplicates` | Administration › Utilisateurs et rôles, Santé, Journal d'audit, Nettoyage des doublons (Admin) |
-| `/settings/discovery` | `modules/service-configuration-management/pages/DiscoverySettings` | Paramétrage › Découverte du réseau (Manager, Admin) |
+| `/settings/categories` | `core/pages/settings/Categories` | Paramétrage › Catégories d'incident et de problème (Manager, Admin) |
+| `/settings/discovery` | `modules/service-configuration-management/pages/DiscoverySettings` | Paramétrage › Découverte du réseau (Manager, Admin) ; onglets `?tab=` : tâches, identifiants, fins de support, clés et certificats, constructeurs (OUI) |
 | `/settings/nis2` | `modules/compliance-assessment/pages/ReferentialSettings` | Paramétrage › Référentiel NIS 2 (Admin) |
 
 Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont rendues dans
@@ -240,7 +241,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | | Modèles de changement standard | Tous ; écriture Manager | CHG-26 | ✅ |
 | [Configuration](processus/gestion-de-la-configuration.md) | Registre des CI (filtre par type) | Tous | CFG-01, CFG-07 | ✅ |
 | | Inventaire : portefeuille applicatif et actifs matériels, export CSV, impression | Tous | CFG-39 | ✅ |
-| | Sas de staging : tuiles-filtres (à traiter, en conflit, inconnus, rapprochés, ignorés), fiche d'un actif avec la décision (rapprocher du CI proposé, créer le CI pré-rempli, rapprocher d'un autre CI, ignorer, rétablir) et la comparaison découvert / CMDB | Manager, Admin | CFG-40 à CFG-42 | ✅ |
+| | Sas de staging : tuiles-filtres (à traiter, en conflit, inconnus, rapprochés, ignorés, relations proposées), fiche d'un actif avec la décision (rapprocher du CI proposé, créer le CI pré-rempli, rapprocher d'un autre CI, ignorer, rétablir), la comparaison découvert / CMDB, et ce que la découverte a vu (bannières, interfaces, services, ports en écoute, logiciels filtrables) ; vue Relations proposées (« Héberge », « Se connecte à » : accepter une fois les deux actifs rapprochés, ou écarter) | Manager, Admin | CFG-40 à CFG-42, CFG-49 à CFG-56 | ✅ |
 | | CI à vérifier | Tous (propriétaires), Manager | CFG-15 | 🔜 |
 | [Niveaux de service](processus/gestion-des-niveaux-de-service.md) | Catalogue des services | Tous | SLM-01 | ✅ |
 | | Accords (SLA) | Tous | SLM-02 | ✅ |
@@ -290,7 +291,7 @@ cycle de vie.
 | Modèles de changement standard | Manager, Admin | [CHG-26](processus/habilitation-des-changements.md) | 🔜 |
 | Périodes de gel | Manager, Admin | [CHG-25](processus/habilitation-des-changements.md) | 🔜 |
 | Import des CI (CSV) | Admin | [CFG-30](processus/gestion-de-la-configuration.md) | 🔜 |
-| Découverte du réseau (`/settings/discovery`) : tâches de scan (type, cible, ports, identifiant, fréquence, fenêtre, lancement, dernier passage), identifiants du coffre (Admin : communautés SNMP, comptes de domaine ; secret jamais réaffiché), fins de support | Manager, Admin | [CFG-45 à CFG-47](processus/gestion-de-la-configuration.md) | ✅ |
+| Découverte du réseau (`/settings/discovery`) : tâches de scan (balayage IP, SNMP, Active Directory, SSH, Proxmox VE, vCenter, WinRM ; cible, port, identifiant, fréquence, fenêtre, lancement, dernier passage), identifiants du coffre (Admin : communautés SNMP v2c, utilisateurs SNMP v3, comptes SSH par mot de passe ou clé, jetons Proxmox, comptes vCenter et Windows ; secret jamais réaffiché), fins de support, clés d'hôte et certificats retenus (acceptation : Admin), constructeurs par préfixe MAC (import OUI : Admin) | Manager, Admin | [CFG-45 à CFG-57](processus/gestion-de-la-configuration.md) | ✅ |
 | Heures de service (calendriers) | Manager, Admin | [SLM-14](processus/gestion-des-niveaux-de-service.md) | 🔜 |
 | Référentiel NIS 2 : structure embarquée et import du texte des exigences (`/settings/nis2`) | Admin | [NIS-20, NIS-21](processus/conformite-nis2.md) | ✅ |
 
