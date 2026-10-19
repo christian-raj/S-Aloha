@@ -51,10 +51,12 @@ côté serveur : un client ne reçoit jamais un bloc non autorisé pour son rôl
 complète : [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).
 
 **Coffre d'identifiants de la découverte** ([CFG-45](processus/gestion-de-la-configuration.md)) :
-communautés SNMP v2c, phrases des utilisateurs SNMP v3 (MD5 et DES refusés, CFG-51) et comptes de domaine chiffrés en AES-256-GCM (chiffrement authentifié : une
+communautés SNMP v2c, phrases des utilisateurs SNMP v3 (MD5 et DES refusés, CFG-51), comptes SSH (mot de passe ou clé privée, CFG-52) et comptes de domaine chiffrés en AES-256-GCM (chiffrement authentifié : une
 valeur altérée en base est refusée), clé dérivée de `Discovery:VaultKey`, tenue hors de la
 base ; l'API n'en renvoie jamais la valeur, et un échec de scan n'en cite pas. Écriture
-réservée à l'Admin.
+réservée à l'Admin. L'inventaire SSH vérifie la clé de l'hôte avant d'envoyer l'identifiant
+(confiance au premier contact ; clé changée refusée jusqu'à acceptation par l'Admin, CFG-53) et
+n'exécute que des lectures, sans sudo : un compte sans droits d'administration suffit.
 
 ## Surface exposée
 

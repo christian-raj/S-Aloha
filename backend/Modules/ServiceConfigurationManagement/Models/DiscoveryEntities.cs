@@ -36,6 +36,12 @@ public class DiscoveredAsset : IHasPerimeter
     [MaxLength(500)] public string? Banners { get; set; }
     /// <summary>CFG-51 : interfaces lues par SNMP (<c>ifTable</c>), une par ligne.</summary>
     [MaxLength(8000)] public string? Interfaces { get; set; }
+    /// <summary>CFG-52 : services en cours d'exécution lus par SSH (systemd), un par ligne.</summary>
+    [MaxLength(8000)] public string? Services { get; set; }
+    /// <summary>CFG-52 : ports TCP en écoute hors boucle locale, lus par SSH (« 22,80,5432 »).</summary>
+    [MaxLength(250)] public string? ListeningPorts { get; set; }
+    /// <summary>CFG-52 : logiciels installés, relevés par SSH ; remplacés à chaque relevé.</summary>
+    public List<DiscoveredSoftware> Software { get; set; } = [];
     /// <summary>Sources qui l'ont vu, séparées par des virgules (IpSweep, Snmp, ActiveDirectory).</summary>
     [MaxLength(100)] public string Sources { get; set; } = "";
     /// <summary>Compte d'ordinateur présent dans l'annuaire (CFG-42).</summary>
@@ -71,8 +77,8 @@ public class DiscoveredAsset : IHasPerimeter
 /// <summary>Tâche de découverte : cible, fréquence et fenêtre de scan, identifiant du coffre (CFG-46).</summary>
 public class DiscoveryJob : IHasPerimeter
 {
-    /// <summary>Types de scan disponibles ; SSH, WinRM, hyperviseurs et agent viendront en phases 3 et 4 du chantier F13.</summary>
-    public static readonly string[] ScanTypes = ["IpSweep", "Snmp", "ActiveDirectory"];
+    /// <summary>Types de scan disponibles ; WinRM, hyperviseurs et agent viendront en phases 3 et 4 du chantier F13.</summary>
+    public static readonly string[] ScanTypes = ["IpSweep", "Snmp", "ActiveDirectory", "Ssh"];
     public const string NeverRun = "Jamais lancée";
     public const string Queued = "En file";
     public const string Running = "En cours";
@@ -114,7 +120,7 @@ public class DiscoveryJob : IHasPerimeter
 public class DiscoveryCredential : IHasPerimeter
 {
     /// <summary>Types utilisables par les collecteurs actuels ; clés SSH et API cloud viendront avec leurs collecteurs.</summary>
-    public static readonly string[] Types = ["SnmpV2c", "SnmpV3", "WindowsDomain"];
+    public static readonly string[] Types = ["SnmpV2c", "SnmpV3", "WindowsDomain", "Ssh"];
 
     public int Id { get; set; }
     public int PerimeterId { get; set; } = Perimeter.DefaultId;
@@ -132,6 +138,38 @@ public class DiscoveryCredential : IHasPerimeter
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [MaxLength(100)] public string CreatedBy { get; set; } = "";
     public DateTime? SecretChangedAt { get; set; }
+}
+
+/// <summary>Logiciel installé sur un actif découvert (CFG-52) : paquet du système et sa version.</summary>
+public class DiscoveredSoftware
+{
+    public int Id { get; set; }
+    public int AssetId { get; set; }
+    [MaxLength(200)] public string Name { get; set; } = "";
+    [MaxLength(100)] public string? Version { get; set; }
+}
+
+/// <summary>
+/// CFG-53 : clé d'hôte SSH retenue au premier contact (confiance au premier contact). Une clé
+/// différente ensuite est refusée avant tout envoi d'identifiant, et attend dans
+/// <see cref="PendingFingerprint"/> que l'Admin l'accepte.
+/// </summary>
+public class SshHostKey : IHasPerimeter
+{
+    public int Id { get; set; }
+    public int PerimeterId { get; set; } = Perimeter.DefaultId;
+    [MaxLength(45)] public string Host { get; set; } = "";
+    public int Port { get; set; } = 22;
+    [MaxLength(50)] public string Algorithm { get; set; } = "";
+    /// <summary>Empreinte SHA-256 (base64, comme <c>ssh-keygen -l</c>).</summary>
+    [MaxLength(100)] public string Fingerprint { get; set; } = "";
+    public DateTime FirstSeenAt { get; set; } = DateTime.UtcNow;
+    public DateTime LastSeenAt { get; set; } = DateTime.UtcNow;
+    [MaxLength(50)] public string? PendingAlgorithm { get; set; }
+    [MaxLength(100)] public string? PendingFingerprint { get; set; }
+    public DateTime? PendingSeenAt { get; set; }
+    public DateTime? AcceptedAt { get; set; }
+    [MaxLength(100)] public string? AcceptedBy { get; set; }
 }
 
 /// <summary>
@@ -158,10 +196,12 @@ public record DiscoveryJobDto(
 
 /// <summary>
 /// Identifiant du coffre ; en SNMP v3, <see cref="Secret"/> est la phrase d'authentification et
-/// <see cref="PrivacySecret"/> celle du chiffrement.
+/// <see cref="PrivacySecret"/> celle du chiffrement ; en SSH, <see cref="Secret"/> est le mot de
+/// passe, ou <see cref="PrivateKey"/> la clé privée (OpenSSH ou PEM) et <see cref="KeyPassphrase"/> sa phrase.
 /// </summary>
 public record DiscoveryCredentialDto(
     string Name, string CredentialType, string? Username, string? Domain, string? Secret, int? PerimeterId = null,
-    string? AuthProtocol = null, string? PrivProtocol = null, string? PrivacySecret = null);
+    string? AuthProtocol = null, string? PrivProtocol = null, string? PrivacySecret = null,
+    string? PrivateKey = null, string? KeyPassphrase = null);
 
 public record EndOfLifeRuleDto(string Product, DateTime? EndOfSupport, string? Notes);

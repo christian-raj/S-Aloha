@@ -49,6 +49,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<DiscoveryJob> DiscoveryJobs => Set<DiscoveryJob>();
     public DbSet<DiscoveryCredential> DiscoveryCredentials => Set<DiscoveryCredential>();
     public DbSet<EndOfLifeRule> EndOfLifeRules => Set<EndOfLifeRule>();
+    public DbSet<DiscoveredSoftware> DiscoveredSoftware => Set<DiscoveredSoftware>();
+    public DbSet<SshHostKey> SshHostKeys => Set<SshHostKey>();
     public DbSet<Modules.ServiceConfigurationManagement.Discovery.MacVendor> MacVendors => Set<Modules.ServiceConfigurationManagement.Discovery.MacVendor>();
     // Niveaux de service
     public DbSet<ItService> Services => Set<ItService>();
@@ -138,6 +140,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<DiscoveredAsset>().Ignore(a => a.Unknown);
         b.Entity<DiscoveryJob>().HasOne(j => j.Credential).WithMany().HasForeignKey(j => j.CredentialId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<EndOfLifeRule>().HasIndex(r => r.Product).IsUnique();
+        b.Entity<DiscoveredAsset>().HasMany(a => a.Software).WithOne().HasForeignKey(s => s.AssetId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<SshHostKey>().HasIndex(k => new { k.PerimeterId, k.Host, k.Port }).IsUnique();
         b.Entity<ItService>().HasMany(s => s.Agreements).WithOne(a => a.Service!)
             .HasForeignKey(a => a.ServiceId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<ServiceLevelAgreement>().Property(a => a.AvailabilityTarget).HasPrecision(5, 2);

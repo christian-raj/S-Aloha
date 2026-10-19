@@ -320,4 +320,39 @@ public class DiscoveryTests(ApiFixture api)
         var detail = (await Json(await manager.GetAsync($"/api/discovery/staging/{Id(asset)}"))).GetProperty("asset");
         Assert.Contains("Gi0/2 · ethernet · inactive", Str(detail, "interfaces"));
     }
+
+    [Fact]
+    public async Task CFG_52_compte_SSH_au_coffre_et_logiciels_au_sas()
+    {
+        var (p, admin, manager) = await Perimeter("cfg52");
+        foreach (var refused in new object[]
+                 {
+                     new { name = "SSH", credentialType = "Ssh", secret = "x", perimeterId = p },                              // sans compte
+                     new { name = "SSH", credentialType = "Ssh", username = "inventaire", perimeterId = p },                  // sans secret
+                     new { name = "SSH", credentialType = "Ssh", username = "inventaire", privateKey = "pas une clé", perimeterId = p },
+                 })
+            Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync("/api/discovery/credentials", refused)).StatusCode);
+        var cred = await Json(await admin.PostAsJsonAsync("/api/discovery/credentials",
+            new { name = "Compte d'inventaire", credentialType = "Ssh", username = "inventaire", secret = "mot-de-passe-52", perimeterId = p }));
+        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "SSH sans compte", scanType = "Ssh", targetRange = "10.52.0.0/24", perimeterId = p })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "SSH deux ports", scanType = "Ssh", targetRange = "10.52.0.0/24", portList = "22,2222", credentialId = Id(cred), perimeterId = p })).StatusCode);
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Inventaire SSH 52", scanType = "Ssh", targetRange = "10.52.0.0/24", credentialId = Id(cred), perimeterId = p }));
+
+        Observation Seen(params SoftwareItem[] software) => new("Ssh", IpAddress: "10.52.0.5", Hostname: "srv-52", Os: "Ubuntu 22.04.4 LTS",
+            Type: "Serveur", Software: software, Services: "nginx\nssh", ListeningPorts: "22,80");
+        FakeCollector.Observations["10.52.0.0/24"] = [Seen(new SoftwareItem("nginx", "1.18.0"), new SoftwareItem("openssh-server", "8.9p1"))];
+        await RunAndWait(manager, Id(job));
+        Assert.Equal(new SshSecret("mot-de-passe-52", null, null), SshSecret.Parse(FakeCollector.SecretsReceived["10.52.0.0/24"]!));
+        var asset = Assert.Single(await Staged(manager, p));
+        // Un second relevé remplace la liste des logiciels.
+        FakeCollector.Observations["10.52.0.0/24"] = [Seen(new SoftwareItem("nginx", "1.24.0"))];
+        await RunAndWait(manager, Id(job));
+        var detail = await Json(await manager.GetAsync($"/api/discovery/staging/{Id(asset)}"));
+        var software = Assert.Single(detail.GetProperty("software").EnumerateArray());
+        Assert.Equal(("nginx", "1.24.0"), (Str(software, "name"), Str(software, "version")));
+        Assert.Equal(("nginx\nssh", "22,80"), (Str(detail.GetProperty("asset"), "services"), Str(detail.GetProperty("asset"), "listeningPorts")));
+    }
 }

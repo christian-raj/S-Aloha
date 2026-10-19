@@ -25,10 +25,32 @@ function Seen({ asset }) {
         ['Ports ouverts', asset.openPorts],
         ['Bannières', asset.banners && <pre className="banners">{asset.banners}</pre>],
         ['Interfaces', asset.interfaces && <pre className="banners">{asset.interfaces}</pre>],
+        ['Ports en écoute', asset.listeningPorts],
+        ['Services actifs', asset.services && <pre className="banners">{asset.services}</pre>],
         ['Sources', <Sources value={asset.sources} />],
         ['Annuaire', asset.inDirectory ? 'Compte d’ordinateur présent' : 'Absent de l’annuaire'],
         ['Première détection', dateTimeFr(asset.firstSeenAt)], ['Dernière détection', dateTimeFr(asset.lastSeenAt)],
       ]} />
+    </section>
+  )
+}
+
+/** CFG-52 : logiciels installés relevés par SSH, filtrables. */
+function Software({ items }) {
+  const [q, setQ] = useState('')
+  if (!items?.length) return null
+  const shown = items.filter(s => s.name.toLowerCase().includes(q.trim().toLowerCase()))
+  return (
+    <section className="card" style={{ marginTop: 16 }}>
+      <h3 className="card-title">Logiciels installés ({items.length})</h3>
+      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Filtrer, ex. openssl" aria-label="Filtrer les logiciels" style={{ maxWidth: 280, marginBottom: 8 }} />
+      <div className="table-scroll" style={{ maxHeight: 360 }}>
+        <table className="compact">
+          <thead><tr><th>Logiciel</th><th>Version</th></tr></thead>
+          <tbody>{shown.slice(0, 500).map(s => <tr key={s.name}><td>{s.name}</td><td className="small">{s.version ?? '—'}</td></tr>)}</tbody>
+        </table>
+      </div>
+      {shown.length > 500 && <p className="muted small">500 premiers affichés : affiner le filtre.</p>}
     </section>
   )
 }
@@ -207,6 +229,7 @@ export default function StagingAsset() {
         <Seen asset={asset} />
         <Match data={data} />
       </div>
+      <Software items={data.software} />
       <p style={{ marginTop: 16 }}><button className="btn danger small" onClick={remove}>Supprimer du sas</button></p>
     </>
   )

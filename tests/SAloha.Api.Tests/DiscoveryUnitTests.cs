@@ -174,4 +174,42 @@ public class DiscoveryUnitTests
         Assert.Equal(expected, banner);
         if (!ssh) Assert.StartsWith("HEAD / HTTP/1.0", request);
     }
+
+    [Fact]
+    public void CFG_52_lecture_de_l_inventaire_SSH()
+    {
+        const string output = "##os\nPRETTY_NAME=\"Ubuntu 22.04.4 LTS\"\nNAME=\"Ubuntu\"\n##uname\nLinux 5.15.0 x86_64\n##hostname\nsrv-app.corp.local\n"
+            + "##dmi\nsys_vendor=Dell Inc.\nproduct_name=PowerEdge R650\nproduct_serial=\n"
+            + "##pkg\nopenssh-server\t1:8.9p1-3ubuntu0.6\nnginx\t1.18.0-6ubuntu14\n"
+            + "##svc\nnginx.service loaded active running A high performance web server\nssh.service loaded active running OpenBSD Secure Shell server\n"
+            + "##listen\nLISTEN 0 511 0.0.0.0:80 0.0.0.0:*\nLISTEN 0 128 127.0.0.1:5432 0.0.0.0:*\nLISTEN 0 128 [::]:22 [::]:*\nLISTEN 0 128 [::1]:631 [::]:*\n";
+        var o = SshInventory.Parse(output, "10.0.0.5");
+        Assert.Equal(("Ubuntu 22.04.4 LTS", "srv-app.corp.local", "Dell", "PowerEdge R650"), (o.Os, o.Hostname, o.Vendor, o.Model));
+        Assert.Null(o.SerialNumber);   // illisible sans droits root
+        Assert.Equal([new SoftwareItem("openssh-server", "1:8.9p1-3ubuntu0.6"), new SoftwareItem("nginx", "1.18.0-6ubuntu14")], o.Software);
+        Assert.Equal("nginx\nssh", o.Services);
+        Assert.Equal("22,80", o.ListeningPorts);
+    }
+
+    [Fact]
+    public void CFG_52_paquets_apk_et_rpm_ports_netstat_systeme_par_uname()
+    {
+        Assert.Equal([new SoftwareItem("musl", "1.2.5-r1"), new SoftwareItem("ca-certificates-bundle", "20240705-r0")],
+            SshInventory.Packages("musl-1.2.5-r1\nca-certificates-bundle-20240705-r0\nsans-version\n"));
+        Assert.Equal(new SoftwareItem("kernel", "5.14.0-427.el9"), SshInventory.Packages("kernel\t5.14.0-427.el9")[0]);
+        Assert.Equal([22, 443], SshInventory.ListeningPorts("tcp 0 0 0.0.0.0:443 0.0.0.0:* LISTEN\ntcp 0 0 10.0.0.5:22 0.0.0.0:* LISTEN\ntcp 0 0 127.0.0.1:25 0.0.0.0:* LISTEN"));
+        Assert.Equal("Linux 6.1.0 aarch64", SshInventory.OsName("", "Linux 6.1.0 aarch64\n"));
+        Assert.Equal(22, SshCollector.SshPort(""));
+        Assert.Equal(2222, SshCollector.SshPort("2222"));
+    }
+
+    [Fact]
+    public void CFG_53_confiance_au_premier_contact()
+    {
+        var known = new System.Collections.Concurrent.ConcurrentDictionary<string, SshHostKey>();
+        Assert.True(SshCollector.Trust(known, 1, "10.0.0.5", 22, "ssh-ed25519", "AAAA"));
+        Assert.True(SshCollector.Trust(known, 1, "10.0.0.5", 22, "ssh-ed25519", "AAAA"));
+        Assert.False(SshCollector.Trust(known, 1, "10.0.0.5", 22, "ssh-ed25519", "BBBB"));
+        Assert.Equal(("AAAA", "BBBB"), (known["10.0.0.5"].Fingerprint, known["10.0.0.5"].PendingFingerprint));
+    }
 }
