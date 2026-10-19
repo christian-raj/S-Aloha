@@ -130,6 +130,7 @@ export const SECTIONS = [
   },
   {
     id: 'administration', label: 'Administration', roles: ['Admin'], entries: [
+      { href: '/admin/users', label: 'Utilisateurs et rôles', description: 'Annuaire, rôles, connexions', icon: 'admin' },
       { href: '/admin/perimeters', label: 'Périmètres', description: 'Directions, sites, affectations', icon: 'admin' },
       { href: '/admin/search', label: 'Index de recherche', description: 'État et reconstruction', icon: 'admin' },
       { href: '/admin/health', label: 'Santé', description: 'Base, annuaire, services, version', icon: 'admin' },

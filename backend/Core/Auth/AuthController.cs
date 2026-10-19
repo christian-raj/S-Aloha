@@ -9,7 +9,7 @@ namespace SAloha.Api.Core.Auth;
 /// </summary>
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IAuthenticator directory, TokenService tokens, ILogger<AuthController> logger) : ControllerBase
+public class AuthController(IAuthenticator directory, TokenService tokens, Data.AppDbContext db, ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest req)
@@ -29,6 +29,8 @@ public class AuthController(IAuthenticator directory, TokenService tokens, ILogg
             return Unauthorized(new { message = "Identifiants invalides ou compte hors des groupes autorisés." });
 
         var (account, display, role, groups) = result.Value;
+        // ADM-12 : seule la date de connexion est retenue.
+        await Administration.LastLogin.RecordAsync(db, account);
         var token = tokens.Create(account, display, role, groups);
         Response.Cookies.Append(SessionCookie.Name, token, SessionCookie.Options(Request, DateTimeOffset.UtcNow.Add(tokens.Lifetime)));
         // Un client d'API (script) qui le demande reçoit aussi le jeton, pour l'en-tête Authorization.

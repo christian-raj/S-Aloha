@@ -29,6 +29,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SearchPassage> SearchPassages => Set<SearchPassage>();
     public DbSet<Perimeter> Perimeters => Set<Perimeter>();
     public DbSet<PerimeterAssignment> PerimeterAssignments => Set<PerimeterAssignment>();
+    public DbSet<Administration.LastLogin> LastLogins => Set<Administration.LastLogin>();
     // Gestion des problèmes
     public DbSet<Problem> Problems => Set<Problem>();
     public DbSet<RcaAnalysis> Analyses => Set<RcaAnalysis>();
