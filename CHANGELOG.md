@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Administration › Santé et Journal d'audit** (ADM-20 à ADM-31) : état de la base, de
+  l'annuaire, des embeddings, du coffre et des tâches de fond, version déployée ; journal
+  d'audit de toutes les pratiques, filtrable par auteur, pratique, action, référence et
+  période, exportable en CSV.
+
 - **Observabilité** (O2) : journal JSON hors développement, identifiant de trace sur chaque
   ligne et dans l'en-tête `traceparent` des réponses ; traces et métriques OpenTelemetry
   (HTTP, PostgreSQL, annuaire, découverte, notifications) exportées si

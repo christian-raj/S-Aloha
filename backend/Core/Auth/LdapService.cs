@@ -54,6 +54,12 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
     private Task<LdapConnection> ServiceConnectAsync() =>
         ConnectAsync(config["Ldap:BindUser"]!, config["Ldap:BindPassword"]!, service: true);
 
+    /// <summary>ADM-20 : l'annuaire répond et accepte le compte de service ; lève <see cref="DirectoryUnavailableException"/> sinon.</summary>
+    public async Task ProbeAsync()
+    {
+        using var _ = await ServiceConnectAsync();
+    }
+
     /// <summary>Première entrée d'une recherche ; les référents d'un AD (Configuration, DomainDnsZones…) ne sont pas des comptes.</summary>
     private static async Task<LdapEntry?> FirstEntryAsync(ILdapSearchResults search)
     {

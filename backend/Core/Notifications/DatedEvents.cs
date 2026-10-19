@@ -158,7 +158,7 @@ public class DatedEvents(AppDbContext db, Notifier notify)
 }
 
 /// <summary>Relève les événements datés à intervalle régulier (Notifications:IntervalMinutes, 15 par défaut ; 0 : jamais).</summary>
-public class DatedEventsWorker(IServiceScopeFactory scopes, IConfiguration config, ILogger<DatedEventsWorker> logger) : BackgroundService
+public class DatedEventsWorker(IServiceScopeFactory scopes, IConfiguration config, Administration.Heartbeats heartbeats, ILogger<DatedEventsWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
@@ -173,10 +173,12 @@ public class DatedEventsWorker(IServiceScopeFactory scopes, IConfiguration confi
                 await using var scope = scopes.CreateAsyncScope();
                 var n = await scope.ServiceProvider.GetRequiredService<DatedEvents>().RunAsync(DateTime.UtcNow);
                 if (n > 0) logger.LogInformation("Notifications datées : {Count} événement(s).", n);
+                heartbeats.Record("notifications", true);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 logger.LogError(ex, "Notifications datées : relevé en échec.");
+                heartbeats.Record("notifications", false, ex.Message.Split('\n')[0]);
             }
         }
     }
