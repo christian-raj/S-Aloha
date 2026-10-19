@@ -9,7 +9,7 @@ import { JOB_TONES, SOURCE_LABELS } from '../config'
 /** Types de scan : cible attendue et identifiant du coffre requis. */
 const SCAN_TYPES = {
   IpSweep: { label: 'Balayage IP', target: 'Réseau CIDR (/24 au plus) ou adresse, ex. 192.168.1.0/24', credential: null,
-    help: 'Ping et sondage TCP des ports témoins, nom par DNS inverse. Sans identifiant.' },
+    help: 'Ping et sondage TCP des ports témoins, nom par DNS inverse, bannières SSH et HTTP des ports ouverts. Sans identifiant.' },
   Snmp: { label: 'SNMP v2c', target: 'Réseau CIDR (/24 au plus) ou adresse', credential: 'SnmpV2c',
     help: 'Lecture seule (sysDescr, sysName, sysLocation, n° de série) avec une communauté du coffre.' },
   ActiveDirectory: { label: 'Active Directory', target: 'BaseDN facultatif (sinon celle de l’annuaire configuré)', credential: 'WindowsDomain',
@@ -283,6 +283,58 @@ function EndOfLife({ canEdit }) {
   )
 }
 
+const IEEE_OUI_URL = 'https://standards-oui.ieee.org/oui/oui.csv'
+
+/**
+ * Constructeurs par préfixe MAC (CFG-50) : la base n'est pas fournie avec S-Aloha ; l'Admin
+ * importe le registre public de l'IEEE, et l'importe de nouveau pour la tenir à jour.
+ */
+function MacVendors({ isAdmin }) {
+  const [status, setStatus] = useState(null)
+  const [report, setReport] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const load = () => api.discovery.macVendors.get().then(setStatus).catch(e => setError(e.message))
+  useEffect(() => { load() }, [])
+  const importFile = async file => {
+    if (!file) return
+    setBusy(true); setReport(null); setError('')
+    try {
+      setReport(await api.discovery.macVendors.import(await file.text()))
+      await load()
+    } catch (e) { setError(e.message) } finally { setBusy(false) }
+  }
+  return (
+    <>
+      <p className="muted small" style={{ marginBottom: 12 }}>
+        Le constructeur d’un équipement découvert sans SNMP se déduit du préfixe de son adresse MAC (OUI). Les adresses
+        aléatoires (téléphones, machines virtuelles) n’en ont pas. La base vient du registre public de
+        l’<a href={IEEE_OUI_URL} target="_blank" rel="noreferrer">IEEE</a> (fichier <code>oui.csv</code>) ; un nouvel import la remplace.
+      </p>
+      {error && <div className="error" role="alert">{error}</div>}
+      {status && (
+        <p style={{ marginBottom: 12 }}>
+          {status.count === 0
+            ? 'Aucun préfixe importé : le constructeur ne vient que de SNMP et des bannières.'
+            : <><b>{status.count.toLocaleString('fr-FR')}</b> préfixe(s) · dernier import le {dateTimeFr(status.lastImport)}</>}
+        </p>
+      )}
+      {isAdmin
+        ? <label className="btn ghost" style={{ display: 'inline-flex', cursor: busy ? 'wait' : 'pointer' }}>
+            {busy ? 'Import en cours…' : 'Importer oui.csv'}
+            <input type="file" accept=".csv,text/csv" hidden disabled={busy} aria-label="Fichier oui.csv"
+              onChange={e => { importFile(e.target.files[0]); e.target.value = '' }} />
+          </label>
+        : <p className="muted small">L’import est réservé aux administrateurs.</p>}
+      {report && (
+        <div className="notice ok" role="status" style={{ marginTop: 12 }}>
+          Import terminé : {report.imported.toLocaleString('fr-FR')} préfixe(s), {report.skipped} ligne(s) écartée(s) (autre registre ou mal formée).
+        </div>
+      )}
+    </>
+  )
+}
+
 /**
  * Paramétrage → Découverte du réseau (Manager, Admin) : tâches de scan, coffre
  * d'identifiants (Admin) et référentiel des fins de support.
@@ -295,6 +347,7 @@ export default function DiscoverySettings() {
     { id: 'jobs', label: 'Tâches de scan' },
     isAdmin && { id: 'credentials', label: 'Identifiants (coffre)' },
     { id: 'eol', label: 'Fins de support' },
+    { id: 'oui', label: 'Constructeurs (OUI)' },
   ].filter(Boolean)
   const tab = tabs.find(t => t.id === params.get('tab')) ?? tabs[0]
   return (
@@ -311,6 +364,7 @@ export default function DiscoverySettings() {
       {tab.id === 'jobs' && <Jobs isAdmin={isAdmin} />}
       {tab.id === 'credentials' && <Credentials />}
       {tab.id === 'eol' && <EndOfLife canEdit={['Admin', 'Manager'].includes(role)} />}
+      {tab.id === 'oui' && <MacVendors isAdmin={isAdmin} />}
     </>
   )
 }

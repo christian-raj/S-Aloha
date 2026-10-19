@@ -115,4 +115,70 @@ public class DiscoveryUnitTests
         Assert.All(new[] { Fingerprint.FromPorts([135, 445], 128).Type, Fingerprint.FromSysDescr("Cisco IOS").Type },
             t => Assert.Contains(t, ConfigurationItem.Types));
     }
+
+    [Fact]
+    public void CFG_49_bannieres_SSH_et_HTTP_lues_et_bornees()
+    {
+        Assert.Equal("SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.5", Banner.Ssh("SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.5\r\n"));
+        Assert.Null(Banner.Ssh("220 smtp ready\r\n"));
+        Assert.Equal("nginx/1.24.0", Banner.HttpServer("HTTP/1.1 200 OK\r\nDate: x\r\nServer: nginx/1.24.0\r\n\r\n"));
+        Assert.Null(Banner.HttpServer("HTTP/1.1 200 OK\r\n\r\nServer: dans le corps"));
+        Assert.Null(Banner.HttpServer("SSH-2.0-x"));
+        Assert.Equal(Banner.MaxLength, Banner.Clean(new string('a', 300) + "\u0001")!.Length);
+    }
+
+    [Fact]
+    public void CFG_49_les_bannieres_precisent_systeme_constructeur_et_type()
+    {
+        Assert.Equal((null, "Linux Ubuntu", null), Fingerprint.FromBanners([(22, "SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.5")]));
+        Assert.Equal((null, "Microsoft Windows", "Serveur"), Fingerprint.FromBanners([(80, "Microsoft-IIS/10.0")]));
+        Assert.Equal(("MikroTik", "RouterOS", "Réseau"), Fingerprint.FromBanners([(22, "SSH-2.0-ROSSSH")]));
+        Assert.Equal(("HP", "Imprimante (micrologiciel)", "Autre"), Fingerprint.FromBanners([(8080, "HP HTTP Server; HP LaserJet")]));
+        Assert.Equal((null, null, null), Fingerprint.FromBanners([(80, "Apache")]));
+        Assert.All(new[] { "Réseau", "Serveur", "Stockage", "Autre" }, t => Assert.Contains(t, ConfigurationItem.Types));
+    }
+
+    [Theory]
+    [InlineData("00:1A:2B:3C:4D:5E", "001A2B")]
+    [InlineData("00-1a-2b-3c-4d-5e", "001A2B")]
+    [InlineData("DA:A1:19:00:00:01", null)]   // administrée localement (adresse aléatoire)
+    [InlineData("01:00:5E:00:00:01", null)]   // groupe (multicast)
+    [InlineData("pas une MAC", null)]
+    public void CFG_50_prefixe_OUI_d_une_adresse_MAC(string mac, string? expected) => Assert.Equal(expected, MacVendors.PrefixOf(mac));
+
+    [Theory]
+    [InlineData("Cisco Systems, Inc", "Cisco Systems")]
+    [InlineData("Hewlett Packard Enterprise", "Hewlett Packard Enterprise")]
+    [InlineData("HUAWEI TECHNOLOGIES CO.,LTD", "HUAWEI TECHNOLOGIES")]
+    [InlineData("Synology Incorporated", "Synology Incorporated")]
+    [InlineData("Siemens AG", "Siemens")]
+    public void CFG_50_nom_du_constructeur_sans_forme_juridique(string raw, string expected) => Assert.Equal(expected, MacVendors.ShortName(raw));
+
+    [Theory]
+    [InlineData(true, "SSH-2.0-OpenSSH_9.6p1 Debian-5\r\n", "SSH-2.0-OpenSSH_9.6p1 Debian-5")]
+    [InlineData(false, "HTTP/1.0 200 OK\r\nServer: lighttpd/1.4.59\r\n\r\n", "lighttpd/1.4.59")]
+    [InlineData(false, "", null)]
+    public async Task CFG_49_banniere_lue_sur_une_connexion_locale(bool ssh, string answer, string? expected)
+    {
+        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        string? request = null;
+        var server = Task.Run(async () =>
+        {
+            using var socket = await listener.AcceptTcpClientAsync();
+            var stream = socket.GetStream();
+            if (!ssh)
+            {
+                var buffer = new byte[512];
+                request = System.Text.Encoding.ASCII.GetString(buffer, 0, await stream.ReadAsync(buffer));
+            }
+            await stream.WriteAsync(System.Text.Encoding.ASCII.GetBytes(answer));
+        });
+        var banner = await NetworkScanner.ReadBannerAsync(System.Net.IPAddress.Loopback, port, ssh, CancellationToken.None);
+        await server;
+        listener.Stop();
+        Assert.Equal(expected, banner);
+        if (!ssh) Assert.StartsWith("HEAD / HTTP/1.0", request);
+    }
 }

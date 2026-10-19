@@ -52,6 +52,7 @@ et l'arbitrage du portefeuille (choix d'investissement entre applications ou pro
 | Lire la liste du coffre (noms et types, jamais les secrets) | ✘ | ✔ | ✔ | ✅ CFG-45 |
 | Créer, modifier, remplacer le secret, supprimer un identifiant du coffre | ✘ | ✘ | ✔ | ✅ CFG-45 |
 | Tenir le référentiel des fins de support | ✘ | ✔ | ✔ | ✅ CFG-47 |
+| Importer la base des constructeurs (registre OUI de l'IEEE) | ✘ | ✘ | ✔ | ✅ CFG-50 |
 | Importer en masse | ✘ | ✘ | ✔ | 🔜 CFG-30 |
 | Supprimer un CI | ✘ | ✘ | ✔ | ✅ |
 
@@ -161,10 +162,11 @@ L'emplacement physique précis se saisit dans `Location` (§ 3.2).
 
 | Objet | Champs principaux | Usage | Statut |
 |---|---|---|---|
-| Actif découvert (`DiscoveredAssets`) | `IpAddress`, `MacAddress`, `Hostname`, `SerialNumber`, `Vendor`, `Model`, `DetectedOs`, `DetectedType` (valeurs de `CiType`), `Location`, `OpenPorts`, `Sources` (IpSweep, Snmp, ActiveDirectory : liste des sources qui l'ont vu), `InDirectory`, `Status` (À rapprocher, En conflit, Rapproché, Ignoré), `ConfidenceScore` (0 à 100), `MatchRule`, `SuggestedAction` (UpdateExisting, Conflict, CreateNew), `ConflictReason`, `MatchedCiId`, `JobId`, `FirstSeenAt`, `LastSeenAt`, `ReconciledAt`, `ReconciledBy`, périmètre | Sas de staging avant réconciliation (CFG-40) | ✅ |
+| Actif découvert (`DiscoveredAssets`) | `IpAddress`, `MacAddress`, `Hostname`, `SerialNumber`, `Vendor`, `Model`, `DetectedOs`, `DetectedType` (valeurs de `CiType`), `Location`, `OpenPorts`, `Banners` (bannières SSH et HTTP, CFG-49), `Sources` (IpSweep, Snmp, ActiveDirectory : liste des sources qui l'ont vu), `InDirectory`, `Status` (À rapprocher, En conflit, Rapproché, Ignoré), `ConfidenceScore` (0 à 100), `MatchRule`, `SuggestedAction` (UpdateExisting, Conflict, CreateNew), `ConflictReason`, `MatchedCiId`, `JobId`, `FirstSeenAt`, `LastSeenAt`, `ReconciledAt`, `ReconciledBy`, périmètre | Sas de staging avant réconciliation (CFG-40) | ✅ |
 | Tâche de scan (`DiscoveryJobs`) | `Name`, `ScanType` (IpSweep, Snmp, ActiveDirectory), `TargetRange` (CIDR ou IP ; BaseDN facultatif pour l'annuaire), `PortList` (balayage), `CredentialId`, `FrequencyHours` (0 : manuelle), `WindowStart`, `WindowEnd`, `IsActive`, `LastRunAt`, `LastStatus` (Jamais lancée, En file, En cours, Réussie, En échec), `LastError`, `LastFoundCount`, périmètre | Planification et suivi des scans (CFG-46) | ✅ |
 | Identifiant du coffre (`DiscoveryCredentials`) | `Name`, `CredentialType` (SnmpV2c, WindowsDomain), `Username`, `Domain`, `EncryptedSecret`, `SecretChangedAt`, périmètre | Secrets chiffrés au repos, jamais renvoyés (CFG-45) | ✅ |
 | Fin de support (`EndOfLifeRules`) | `Product` (unique, sans tenir compte de la casse), `EndOfSupport`, `Notes` | Référentiel partagé de l'obsolescence (CFG-47) | ✅ |
+| Constructeur par préfixe MAC (`MacVendors`) | `Prefix` (OUI, 6 chiffres hexadécimaux, clé), `Organization` (sans forme juridique), `ImportedAt` | Constructeur d'un actif découvert sans SNMP (CFG-50) ; base importée, non fournie | ✅ |
 
 Types de scan et d'identifiant à venir avec leurs collecteurs : SNMP v3, SSH, WinRM,
 hyperviseurs et API cloud (phases 2 et 3 du chantier F13), agent nomade (phase 4). 🔜
@@ -255,7 +257,8 @@ flowchart TD
 
 Collecteurs, par phase du chantier F13 : annuaire AD et balayage IP (ping, ports TCP
 témoins, DNS inverse, table ARP locale) ✅ ; SNMP v2c en lecture seule (MIB-II, numéro de
-série et modèle de l'ENTITY-MIB) ✅ ; SNMP v3, empreinte OUI et bannières 🔜 (phase 2) ;
+série et modèle de l'ENTITY-MIB) ✅ ; bannières SSH et HTTP (CFG-49) et constructeur par
+préfixe MAC (CFG-50) ✅ ; SNMP v3 et `ifTable` 🔜 (phase 2) ;
 SSH, WinRM, hyperviseurs et cartographie des dépendances 🔜 (phase 3) ; agent nomade 🔜
 (phase 4).
 
@@ -371,6 +374,8 @@ d'action](../../plan-action.md#découverte-automatique-et-cmdb-augmentée-f13)) 
 | CFG-46 | **Sobriété et fenêtres de scan** : les scans s'exécutent en tâche de fond, une tâche à la fois, avec une concurrence limitée (`Discovery:MaxConcurrency`, 10 hôtes à la fois par défaut), une plage de /24 au plus large, 50 ports au plus, une durée bornée (`Discovery:JobTimeoutMinutes`, 30 min) ; une tâche planifiée part toutes les `FrequencyHours` heures, dans sa fenêtre en heure locale (`Discovery:TimeZone`, une fenêtre peut passer minuit, 20:00–06:00 par défaut). Lancement manuel hors fenêtre (202) ; une tâche déjà en file ou en cours ⇒ 400. Un scan SNMP exige une communauté SNMP v2c, l'annuaire accepte un compte de domaine, le balayage aucun identifiant ; l'identifiant est du même périmètre que la tâche. Un échec note son motif, jamais le secret ; un scan interrompu par un arrêt de l'API est noté en échec au redémarrage | ✅ | 3 |
 | CFG-47 | **Détection d'obsolescence (NIS 2)** : la fin de support d'un actif matériel est la date de sa fiche ou celle du référentiel des fins de support dont le produit figure dans son système, son constructeur ou son modèle — la plus proche l'emporte. État : Fin de support dépassée, Fin de support proche (moins de 6 mois), Supporté, Non renseigné ; affiché dans l'inventaire et le tableau de bord. Preuves de l'objectif 6 du ReCyF dans l'évaluation NIS 2 : 🔜 | ✅ (preuves NIS 2 : 🔜) | 3 |
 | CFG-48 | **Cycle applicatif cohérent** : `AppLifecycle` Étude, Développement, Homologation ⇔ CI Planifié ; En production, Dépréciée ⇔ En service ou Hors service ; Retirée ⇔ Retiré (400 sinon, § 4.3). Sans cycle saisi, celui du statut (Étude, En production, Retirée) ; quand seul le statut change, un cycle devenu incompatible s'aligne de même | ✅ | 3 |
+| CFG-49 | **Bannières (empreinte passive)** : sur les ports ouverts d'un balayage IP, la découverte lit la ligne d'identification d'un serveur SSH (port 22, envoyée dès la connexion) et l'en-tête `Server` d'une réponse à `HEAD /` sur les ports HTTP en clair (80, 8000, 8008, 8080), en 1,5 s au plus, sans authentification. Bannière réduite à 120 caractères imprimables, gardée sur l'actif ; elle précise le système (Ubuntu, Debian, Windows…), le constructeur et le type quand elle les nomme. HTTPS (certificat) : phase 3 | ✅ | 3 |
+| CFG-50 | **Constructeur par préfixe MAC (OUI)** : un actif sans constructeur connu par SNMP reçoit celui du préfixe de son adresse MAC dans la base `MacVendors`. La base n'est pas fournie : l'Admin importe le registre MA-L public de l'IEEE (`oui.csv`), qui la remplace ; lignes d'un autre registre ou mal formées écartées et comptées. Adresse administrée localement (aléatoire) ou de groupe : pas de constructeur | ✅ | 3 |
 
 ## 6. Délais, calculs et alertes
 
@@ -437,6 +442,8 @@ Indicateurs du tableau de bord : onglet [Configuration & inventaire](../reportin
 | `POST /api/discovery/credentials`, `PUT …/credentials/{id}`, `DELETE …/credentials/{id}` | Admin | Coffre : création, modification et rotation du secret, suppression (CFG-45) |
 | `GET /api/discovery/end-of-life` | User | Référentiel des fins de support (CFG-47) |
 | `POST /api/discovery/end-of-life`, `PUT …/end-of-life/{id}`, `DELETE …/end-of-life/{id}` | Manager | Tenue du référentiel (CFG-47) |
+| `GET /api/discovery/mac-vendors` | User | État de la base des constructeurs : nombre de préfixes, dernier import (CFG-50) |
+| `POST /api/discovery/mac-vendors/import` (`csv` : contenu de `oui.csv`, 12 Mo au plus) | Admin | Import du registre OUI de l'IEEE, remplace la base (CFG-50) |
 
 Configuration de l'API (section `Discovery`) : `VaultKey` (clé du coffre, à fixer avant le
 premier identifiant et à ne plus changer), `IntervalMinutes` (relevé des tâches échues,
@@ -463,3 +470,5 @@ premier identifiant et à ne plus changer), `IntervalMinutes` (relevé des tâch
 - **CFG-45** — *Étant donné* un identifiant enregistré dans le coffre, *quand* un gestionnaire liste le coffre, *alors* la réponse ne contient pas le secret, seulement son existence ; il ne peut pas en créer (403) ; la valeur stockée en base est chiffrée (« v1: »…), et le scan reçoit le secret déchiffré.
 - **CFG-46** — *Quand* on crée une tâche sur un réseau de /16, *alors* 400 ; *étant donné* une tâche en cours, *quand* on la relance, *alors* 400.
 - **CFG-48** — *Étant donné* une application En service « En production », *quand* on la retire sans changer son cycle, *alors* il passe à « Retirée » ; *quand* on lui donne le cycle « Étude » sans changer de statut, *alors* 400.
+- **CFG-49** — *Étant donné* un hôte qui annonce « SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.5 » sur le port 22, *quand* le balayage le trouve, *alors* l'actif porte cette bannière et le système « Linux Ubuntu ».
+- **CFG-50** — *Étant donné* la base OUI importée avec le préfixe `0C5050`, *quand* un actif d'adresse `0c:50:50:00:00:10` est découvert sans SNMP, *alors* il reçoit le constructeur de ce préfixe ; une adresse administrée localement n'en reçoit pas ; un gestionnaire ne peut pas importer (403).

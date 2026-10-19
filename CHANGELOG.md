@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Découverte : empreinte passive** (CFG-49, CFG-50) : le balayage IP lit les bannières SSH
+  et HTTP des ports ouverts (système, constructeur, type plus précis), affichées sur la fiche
+  de l'actif ; le constructeur d'un équipement sans SNMP se déduit du préfixe de son adresse
+  MAC, d'après le registre OUI de l'IEEE que l'Admin importe dans Paramétrage › Découverte du
+  réseau › Constructeurs (OUI).
+
 - **Paramétrage › Catégories** (ADM-50 à ADM-53, SOC-27) : liste des catégories d'incident
   et de problème tenue par les gestionnaires ; dès qu'une pratique en a une active, la
   catégorie se choisit dans la liste (l'API refuse une catégorie hors liste). Une catégorie
@@ -65,6 +71,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Constructeurs (CFG-50)** : la migration `PassiveFingerprint` crée une table vide ; pour
+  en profiter, importer `oui.csv` (https://standards-oui.ieee.org/oui/oui.csv) en Admin.
 - **Catégories (ADM-52)** : la migration `Categories` reprend les catégories déjà saisies sur
   les incidents et les problèmes ; dès lors, une catégorie se choisit dans cette liste. La
   relire dans Paramétrage › Catégories pour désactiver les variantes indésirables.

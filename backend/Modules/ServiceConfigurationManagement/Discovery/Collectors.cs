@@ -9,7 +9,7 @@ public record Observation(
     string? IpAddress = null, string? MacAddress = null, string? Hostname = null,
     string? SerialNumber = null, string? Vendor = null, string? Model = null, string? Os = null,
     string Type = "Autre", string? OpenPorts = null, string? Location = null,
-    bool InDirectory = false, string? Raw = null);
+    bool InDirectory = false, string? Raw = null, string? Banners = null);
 
 /// <summary>Tâche à exécuter, avec le secret déchiffré de son identifiant (jamais journalisé).</summary>
 public record CollectContext(DiscoveryJob Job, DiscoveryCredential? Credential, string? Secret, int MaxConcurrency);
@@ -87,6 +87,36 @@ public static class IpRange
     }
 }
 
+/// <summary>CFG-49 : lecture des bannières, réduites à une ligne de texte imprimable et bornée.</summary>
+public static class Banner
+{
+    public const int MaxLength = 120;
+
+    public static string? Clean(string? text)
+    {
+        if (text is null) return null;
+        var printable = new string(text.Where(c => c >= ' ' && c < 127).ToArray()).Trim();
+        return printable.Length == 0 ? null : printable.Length > MaxLength ? printable[..MaxLength] : printable;
+    }
+
+    /// <summary>Ligne d'identification d'un serveur SSH (RFC 4253 § 4.2), ou null.</summary>
+    public static string? Ssh(string received)
+    {
+        var line = received.Split('\n').Select(l => l.TrimEnd('\r')).FirstOrDefault(l => l.StartsWith("SSH-", StringComparison.Ordinal));
+        return Clean(line);
+    }
+
+    /// <summary>Valeur de l'en-tête <c>Server</c> d'une réponse HTTP, ou null.</summary>
+    public static string? HttpServer(string received)
+    {
+        var lines = received.Split('\n').Select(l => l.TrimEnd('\r')).ToList();
+        if (lines.Count == 0 || !lines[0].StartsWith("HTTP/", StringComparison.Ordinal)) return null;
+        var header = lines.Skip(1).TakeWhile(l => l.Length > 0)
+            .FirstOrDefault(l => l.StartsWith("Server:", StringComparison.OrdinalIgnoreCase));
+        return Clean(header?["Server:".Length..]);
+    }
+}
+
 /// <summary>Déduction prudente du type d'équipement et du système, d'après les ports ouverts et le TTL.</summary>
 public static class Fingerprint
 {
@@ -99,6 +129,41 @@ public static class Fingerprint
         if (open.Contains(161) || open.Contains(23)) return ("Réseau", null);
         if (open.Contains(80) || open.Contains(443)) return ("Autre", null);
         return ("Autre", null);
+    }
+
+    /// <summary>
+    /// CFG-49 : précisions tirées des bannières (port, texte) ; chaque valeur est null quand
+    /// aucune bannière ne la donne, et les ports gardent alors le dernier mot.
+    /// </summary>
+    public static (string? Vendor, string? Os, string? Type) FromBanners(IEnumerable<(int Port, string Text)> banners)
+    {
+        string? vendor = null, os = null, type = null;
+        foreach (var (port, text) in banners)
+        {
+            var t = text.ToLowerInvariant();
+            if (port == 22)
+            {
+                if (t.Contains("openssh_for_windows")) os = "Microsoft Windows";
+                else if (t.Contains("ubuntu")) os = "Linux Ubuntu";
+                else if (t.Contains("debian")) os = "Linux Debian";
+                else if (t.Contains("raspbian")) os = "Linux Raspbian";
+                else if (t.Contains("freebsd")) os = "FreeBSD";
+                else if (t.Contains("cisco")) (vendor, type) = ("Cisco", "Réseau");
+                else if (t.Contains("rosssh")) (vendor, os, type) = ("MikroTik", "RouterOS", "Réseau");
+                else if (t.Contains("openssh")) os ??= "Linux / Unix";
+            }
+            else
+            {
+                if (t.StartsWith("microsoft-iis")) (os, type) = ("Microsoft Windows", "Serveur");
+                else if (t.Contains("hp http server") || t.Contains("hp-chaisoe")) (vendor, os, type) = ("HP", "Imprimante (micrologiciel)", "Autre");
+                else if (t.Contains("synology")) (vendor, type) = ("Synology", "Stockage");
+                else if (t.Contains("qnap")) (vendor, type) = ("QNAP", "Stockage");
+                else if (t.Contains("routeros") || t.Contains("mikrotik")) (vendor, os, type) = ("MikroTik", "RouterOS", "Réseau");
+                else if (t.Contains("ubuntu")) os ??= "Linux Ubuntu";
+                else if (t.Contains("debian")) os ??= "Linux Debian";
+            }
+        }
+        return (vendor, os, type);
     }
 
     /// <summary>Constructeur, modèle, système et type d'après la chaîne <c>sysDescr</c> (MIB-II).</summary>

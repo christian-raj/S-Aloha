@@ -97,6 +97,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
             Merge(asset, o, job.Id);
             touched.Add(asset);
         }
+        await VendorsFromMacAsync(touched, ct);
 
         foreach (var asset in touched)
         {
@@ -127,6 +128,21 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         return new IngestResult(seen, added, auto, conflicts);
     }
 
+    /// <summary>
+    /// CFG-50 : sans constructeur connu par une source plus précise (SNMP), celui du préfixe
+    /// MAC dans la base OUI importée ; rien si la base est vide ou l'adresse aléatoire.
+    /// </summary>
+    private async Task VendorsFromMacAsync(IEnumerable<DiscoveredAsset> assets, CancellationToken ct)
+    {
+        var waiting = assets.Where(a => a.Vendor is null).Select(a => (Asset: a, Prefix: MacVendors.PrefixOf(a.MacAddress)))
+            .Where(x => x.Prefix is not null).ToList();
+        if (waiting.Count == 0) return;
+        var prefixes = waiting.Select(x => x.Prefix!).Distinct().ToList();
+        var names = await db.MacVendors.AsNoTracking().Where(v => prefixes.Contains(v.Prefix)).ToDictionaryAsync(v => v.Prefix, v => v.Organization, ct);
+        foreach (var (asset, prefix) in waiting)
+            if (names.TryGetValue(prefix!, out var name)) asset.Vendor = name;
+    }
+
     private static DiscoveredAsset? FindStaged(List<DiscoveredAsset> staged, Observation o)
     {
         string? Short(string? h) => h?.Split('.')[0];
@@ -148,12 +164,14 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         // Un nom complet (FQDN) remplace un nom court, pas l'inverse.
         if (o.Hostname is not null && (a.Hostname is null || o.Hostname.Contains('.') || !a.Hostname.Contains('.'))) a.Hostname = o.Hostname;
         a.SerialNumber ??= o.SerialNumber;
-        a.Vendor = o.Vendor ?? a.Vendor;
+        // Le balayage (bannières) ne remplace pas un constructeur déjà connu par SNMP ou l'OUI.
+        if (o.Vendor is not null && (a.Vendor is null || o.Source != "IpSweep")) a.Vendor = o.Vendor;
         a.Model = o.Model ?? a.Model;
         if (o.Os is not null && (a.DetectedOs is null || o.Source != "IpSweep")) a.DetectedOs = o.Os;
         if (o.Type != "Autre" && (a.DetectedType == "Autre" || o.Source != "IpSweep")) a.DetectedType = o.Type;
         a.Location = o.Location ?? a.Location;
         a.OpenPorts = o.OpenPorts ?? a.OpenPorts;
+        a.Banners = o.Banners ?? a.Banners;
         a.InDirectory |= o.InDirectory;
         a.RawData = o.Raw ?? a.RawData;
         var sources = a.Sources.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -170,7 +188,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         static string? Cut(string? v, int max) => v is null || v.Length <= max ? v : v[..max];
         a.Hostname = Cut(a.Hostname, 200); a.SerialNumber = Cut(a.SerialNumber, 100);
         a.Vendor = Cut(a.Vendor, 100); a.Model = Cut(a.Model, 100); a.DetectedOs = Cut(a.DetectedOs, 150);
-        a.Location = Cut(a.Location, 150); a.OpenPorts = Cut(a.OpenPorts, 250);
+        a.Location = Cut(a.Location, 150); a.OpenPorts = Cut(a.OpenPorts, 250); a.Banners = Cut(a.Banners, 500);
     }
 
     /// <summary>
