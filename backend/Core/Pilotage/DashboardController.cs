@@ -7,6 +7,7 @@ using SAloha.Api.Modules.ChangeEnablement;
 using SAloha.Api.Modules.ComplianceAssessment;
 using SAloha.Api.Modules.IncidentManagement;
 using SAloha.Api.Modules.ProjectManagement;
+using SAloha.Api.Modules.ServiceConfigurationManagement;
 
 namespace SAloha.Api.Core.Pilotage;
 
@@ -119,6 +120,7 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
 
         var rcaPending = await RcaPendingCount(problems);
         var slaToReview = await In(db.Agreements).CountAsync(a => a.Status == "En vigueur" && a.ReviewDate < now.Date);
+        var configuration = await ConfigurationBadgeAsync(perimeter);
         return Ok(new
         {
             Period = new { f.From, To = f.To.AddDays(-1) },
@@ -141,6 +143,7 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 Problems = new { Count = rcaPending, Tone = "wait" },
                 ChangesProjects = new { Count = outOfTolerance + failed, Tone = outOfTolerance > 0 ? "bad" : "wait" },
                 Compliance = new { Count = slaToReview, Tone = "wait" },
+                Configuration = new { Count = configuration.Obsolete + configuration.Staging, Tone = configuration.Obsolete > 0 ? "bad" : "wait" },
             }
         });
     }
@@ -383,6 +386,103 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 PublishedInPeriod = articles.Count(a => a.PublishedAt >= f.From && a.PublishedAt < f.To),
             },
             // Déclarations réglementaires (DRG) : ajoutées à cet onglet avec leur module.
+        });
+    }
+
+    /// <summary>Périmètres dont l'utilisateur est gestionnaire (sas de staging, PER-06) : null = tous.</summary>
+    private async Task<List<int>?> ManagedAsync(int? perimeter)
+    {
+        var scope = await access.GetAsync();
+        if (scope.Global && perimeter is null) return null;
+        return (perimeter is { } only ? (scope.ManagerOn(only) ? [only] : []) : scope.ManagedIds).ToList();
+    }
+
+    private IQueryable<DiscoveredAsset> Staged(List<int>? managed) =>
+        managed is null ? db.DiscoveredAssets.AsNoTracking() : db.DiscoveredAssets.AsNoTracking().Where(a => managed.Contains(a.PerimeterId));
+
+    /// <summary>REP-07 : badge de l'onglet Configuration — CI en fin de support dépassée, actifs du sas à traiter (gestionnaires).</summary>
+    private async Task<(int Obsolete, int Staging)> ConfigurationBadgeAsync(int? perimeter)
+    {
+        var today = DateTime.UtcNow.Date;
+        var rules = await db.EndOfLifeRules.AsNoTracking().ToListAsync();
+        var types = ConfigurationItem.HardwareTypes;
+        var hardware = await In(db.ConfigurationItems.AsNoTracking()).Where(c => c.Status != "Retiré" && types.Contains(c.CiType)).ToListAsync();
+        var obsolete = hardware.Count(c => Obsolescence.Of(c, rules, today).State == Obsolescence.Passed);
+        var managed = await ManagedAsync(perimeter);
+        var staging = managed is { Count: 0 } ? 0 : await Staged(managed).CountAsync(a => DiscoveredAsset.Open.Contains(a.Status));
+        return (obsolete, staging);
+    }
+
+    /// <summary>
+    /// Onglet Configuration et inventaire (REP-50 à REP-53) : état de la CMDB à date ; les
+    /// découvertes de la période et le sas de staging pour les gestionnaires.
+    /// </summary>
+    [HttpGet("configuration")]
+    public async Task<IActionResult> ConfigurationTab([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service,
+        [FromQuery] int? perimeter)
+    {
+        _scope = await ReportScope.ForAsync(access, perimeter);
+        var f = Read(from, to, service);
+        var today = DateTime.UtcNow.Date;
+        var cis = await In(db.ConfigurationItems.AsNoTracking()).Where(c => c.Status != "Retiré").ToListAsync();
+        var rules = await db.EndOfLifeRules.AsNoTracking().ToListAsync();
+        static IEnumerable<object> Bars(IEnumerable<string> keys, IEnumerable<string> order) =>
+            keys.GroupBy(k => k).OrderBy(g => order.ToList().IndexOf(g.Key)).Select(g => new { Label = g.Key, Count = g.Count() });
+
+        // REP-51 : couverture du portefeuille applicatif (CFG-35).
+        var apps = cis.Where(c => c.CiType == "Application").ToList();
+        var governed = apps.Count(a => a.AppCode != null && a.BusinessUnit != null && a.BusinessOwnerId != null && a.TechnicalOwnerId != null && a.Criticality != null);
+        // REP-52 : obsolescence des actifs matériels (CFG-38, CFG-47).
+        var hardware = cis.Where(c => ConfigurationItem.HardwareTypes.Contains(c.CiType))
+            .Select(c => new { Ci = c, Support = Obsolescence.Of(c, rules, today) }).ToList();
+        var obsolete = hardware.Where(h => h.Support.State is Obsolescence.Passed or Obsolescence.Near).OrderBy(h => h.Support.Date).Take(25)
+            .Select(h => new { h.Ci.Id, h.Ci.Reference, h.Ci.Title, h.Ci.CiType, h.Support.State, h.Support.Date, h.Support.Source }).ToList();
+
+        // REP-53 : sas de staging et découvertes de la période (CFG-36, CFG-37), gestionnaires seulement.
+        object? staging = null;
+        var managed = await ManagedAsync(perimeter);
+        if (managed is not { Count: 0 })
+        {
+            var assets = await Staged(managed).ToListAsync();
+            var days = Enumerable.Range(0, (int)(f.To - f.From).TotalDays).Select(n => f.From.AddDays(n)).ToList();
+            staging = new
+            {
+                ToReconcile = assets.Count(a => a.Status == DiscoveredAsset.ToReconcile),
+                Conflicts = assets.Count(a => a.Status == DiscoveredAsset.InConflict),
+                Unknown = assets.Count(a => a.Unknown),
+                Reconciled = assets.Count(a => a.Status == DiscoveredAsset.Reconciled),
+                Discovered = days.Select(d => new
+                {
+                    Date = d,
+                    Discovered = assets.Count(a => a.FirstSeenAt >= d && a.FirstSeenAt < d.AddDays(1)),
+                    Reconciled = assets.Count(a => a.ReconciledAt >= d && a.ReconciledAt < d.AddDays(1)),
+                }),
+                BySource = assets.SelectMany(a => a.Sources.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    .GroupBy(s => s).OrderByDescending(g => g.Count()).Select(g => new { Label = g.Key, Count = g.Count() }),
+                UnknownAssets = assets.Where(a => a.Unknown).OrderByDescending(a => a.FirstSeenAt).Take(25)
+                    .Select(a => new { a.Id, a.IpAddress, a.Hostname, a.DetectedType, a.Sources, a.FirstSeenAt }),
+            };
+        }
+
+        return Ok(new
+        {
+            Kpis = new
+            {
+                Cis = cis.Count,
+                Applications = apps.Count,
+                PortfolioCoverage = Pct(governed, apps.Count),
+                Hardware = hardware.Count,
+                SupportPassed = hardware.Count(h => h.Support.State == Obsolescence.Passed),
+                SupportNear = hardware.Count(h => h.Support.State == Obsolescence.Near),
+            },
+            // REP-50 : répartitions de la CMDB (CFG-31).
+            ByType = Bars(cis.Select(c => c.CiType), ConfigurationItem.Types),
+            ByEnvironment = Bars(cis.Select(c => c.Environment), ConfigurationItem.Environments),
+            ByStatus = Bars(cis.Select(c => c.Status), ConfigurationItem.Statuses),
+            ByCriticality = Bars(apps.Select(a => a.Criticality ?? "Non renseignée"), [.. ConfigurationItem.Criticalities, "Non renseignée"]),
+            Support = Bars(hardware.Select(h => h.Support.State), [Obsolescence.Passed, Obsolescence.Near, Obsolescence.Supported, Obsolescence.Unknown]),
+            Obsolete = obsolete,
+            Staging = staging,
         });
     }
 }

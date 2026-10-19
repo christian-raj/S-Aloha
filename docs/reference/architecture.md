@@ -52,7 +52,7 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
     ├── IncidentManagement/           # Gestion des incidents : Incidents
     ├── ServiceRequestManagement/     # Gestion des demandes de service : ServiceRequests
     ├── ChangeEnablement/             # Habilitation des changements : Changes (+ calendrier)
-    ├── ServiceConfigurationManagement/ # Configuration des services : ConfigurationItems (+ relations)
+    ├── ServiceConfigurationManagement/ # Configuration des services : ConfigurationItems (+ relations), découverte (Discovery/ : collecteurs, sas de staging, coffre)
     ├── ServiceLevelManagement/       # Niveaux de service : Services, Agreements
     ├── KnowledgeManagement/          # Connaissances : Knowledge
     ├── ContinualImprovement/         # Amélioration continue : Improvements
@@ -152,7 +152,8 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET/POST/PUT `/api/incidents[/{id}]` | User | Incidents (DELETE : Admin) | Modules/IncidentManagement |
 | GET/POST/PUT `/api/requests[/{id}]` | User | Demandes ; Approuvée/Rejetée : Manager (DELETE : Admin) | Modules/ServiceRequestManagement |
 | GET/POST/PUT `/api/changes[/{id}]`, GET `/api/changes/schedule`, GET `/api/changes/{id}/conflicts` | User | Changements, calendrier et conflits ; Autorisé/Rejeté : Manager (DELETE : Admin) | Modules/ChangeEnablement |
-| GET/POST/PUT `/api/configuration-items[/{id}]`, GET `/{id}/impact`, GET `/impact-of?type=&id=`, POST `/{id}/relations`, POST `/{id}/verify`, DELETE `/relations/{id}` | User | CI, relations, vue d'impact transitive et services touchés, impact d'un changement (CFG-20), vérification par le propriétaire ou un gestionnaire (CFG-15) (DELETE d'un CI : Admin) | Modules/ServiceConfigurationManagement |
+| GET/POST/PUT `/api/configuration-items[/{id}]`, GET `/{id}/impact`, GET `/impact-of?type=&id=`, GET `/inventory`, POST `/{id}/relations`, POST `/{id}/verify`, DELETE `/relations/{id}` | User | CI, relations, vue d'impact transitive et services touchés, impact d'un changement (CFG-20), rapport d'inventaire (CFG-39), vérification par le propriétaire ou un gestionnaire (CFG-15) (DELETE d'un CI : Admin) | Modules/ServiceConfigurationManagement |
+| `/api/discovery/staging[/{id}]` (GET, `summary`, POST `reconcile`, `ignore`, `restore`, DELETE), `/api/discovery/jobs[/{id}]` (GET, POST, PUT, POST `run`, DELETE : Admin), `/api/discovery/credentials[/{id}]` (GET ; écriture : Admin), `/api/discovery/end-of-life[/{id}]` (GET ; écriture : Manager) | User, gestionnaire du périmètre | Sas de staging, tâches de scan, coffre d'identifiants, fins de support (CFG-40 à CFG-47) ; exécution en tâche de fond (`DiscoveryWorker`, file `DiscoveryQueue`) | Modules/ServiceConfigurationManagement |
 | GET/POST `/api/changes/{id}/approvals` ; `/api/change-freezes` ; `/api/standard-changes` | User ; écriture Manager | CAB (CHG-20), périodes de gel (CHG-25), modèles standard (CHG-26) | Modules/ChangeEnablement |
 | GET `/api/request-catalog[/{id}]` ; POST/PUT (Manager) ; DELETE (Admin) | User | Catalogue de demandes (REQ-20) | Modules/ServiceRequestManagement |
 | GET `/api/services`, `/api/agreements`, `/api/agreements/{id}/compliance` ; POST/PUT ; POST `/api/agreements/{id}/reviews` | User ; écriture Manager | Catalogue des services, SLA, respect mesuré (SLM-20) et revues (SLM-22) (DELETE : Admin) | Modules/ServiceLevelManagement |

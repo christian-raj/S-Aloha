@@ -183,7 +183,7 @@ public class ItilModulesTests(ApiFixture api)
     public async Task Relations_entre_CI()
     {
         var client = api.Client();
-        var app = await Create(client, "/api/configuration-items", new { title = "app-paie", ciType = "Application", environment = "Production", ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto" });
+        var app = await Create(client, "/api/configuration-items", new { title = "app-paie", ciType = "Application", environment = "Production", status = "Planifié", ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto" });
         var srv = await Create(client, "/api/configuration-items", new { title = "srv-paie", ciType = "Serveur", environment = "Production", ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto" });
 
         await Json(await client.PostAsJsonAsync($"/api/configuration-items/{Id(app)}/relations",

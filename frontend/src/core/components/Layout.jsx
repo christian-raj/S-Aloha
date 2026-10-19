@@ -98,10 +98,12 @@ function ModuleItem({ module, location, role, onClick }) {
   const pages = (module.pages ?? []).filter((p) => visibleFor(p, role))
   // Une seule sous-entrée active : l'URL complète d'abord (« Erreurs connues »
   // est le registre filtré), puis le chemin seul (registre avec un autre
-  // filtre), puis le préfixe (fiche /problems/12, sous-page /changes/schedule).
+  // filtre), puis le préfixe le plus long (fiche /problems/12 ; fiche d'actif
+  // /configuration/staging/3 sous « Sas de staging », pas sous le registre).
   const active = pages.find((p) => p.href === pathname + search)
     ?? pages.find((p) => p.href === pathname)
-    ?? pages.find((p) => pathname.startsWith(pathOf(p.href) + '/'))
+    ?? [...pages].sort((a, b) => pathOf(b.href).length - pathOf(a.href).length)
+      .find((p) => pathname.startsWith(pathOf(p.href) + '/'))
   return (
     <>
       <NavItem href={module.href} label={module.label} description={module.description}

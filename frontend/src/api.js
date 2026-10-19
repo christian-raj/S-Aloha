@@ -90,7 +90,41 @@ export const api = {
     verify: (id) => request(`/configuration-items/${id}/verify`, { method: 'POST' }),
     ...records('/configuration-items'),
     addRelation: (id, dto) => request(`/configuration-items/${id}/relations`, { method: 'POST', body: JSON.stringify(dto) }),
-    removeRelation: (relId) => request('/configuration-items/relations/' + relId, { method: 'DELETE' })
+    removeRelation: (relId) => request('/configuration-items/relations/' + relId, { method: 'DELETE' }),
+    // CFG-39 : rapport d'inventaire (portefeuille applicatif, actifs matériels).
+    inventory: (retired = false) => request('/configuration-items/inventory' + (retired ? '?retired=true' : ''))
+  },
+  // Découverte automatique (CFG-40 à CFG-47) : sas de staging, tâches de scan, coffre, fins de support.
+  discovery: {
+    staging: {
+      list: (params = {}) => request('/discovery/staging?' + new URLSearchParams(params)),
+      summary: () => request('/discovery/staging/summary'),
+      get: (id) => request('/discovery/staging/' + id),
+      reconcile: (id, dto) => request(`/discovery/staging/${id}/reconcile`, { method: 'POST', body: JSON.stringify(dto) }),
+      ignore: (id) => request(`/discovery/staging/${id}/ignore`, { method: 'POST' }),
+      restore: (id) => request(`/discovery/staging/${id}/restore`, { method: 'POST' }),
+      remove: (id) => request('/discovery/staging/' + id, { method: 'DELETE' })
+    },
+    jobs: {
+      list: () => request('/discovery/jobs'),
+      get: (id) => request('/discovery/jobs/' + id),
+      create: (dto) => request('/discovery/jobs', { method: 'POST', body: JSON.stringify(dto) }),
+      update: (id, dto) => request('/discovery/jobs/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+      remove: (id) => request('/discovery/jobs/' + id, { method: 'DELETE' }),
+      run: (id) => request(`/discovery/jobs/${id}/run`, { method: 'POST' })
+    },
+    credentials: {
+      list: () => request('/discovery/credentials'),
+      create: (dto) => request('/discovery/credentials', { method: 'POST', body: JSON.stringify(dto) }),
+      update: (id, dto) => request('/discovery/credentials/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+      remove: (id) => request('/discovery/credentials/' + id, { method: 'DELETE' })
+    },
+    endOfLife: {
+      list: () => request('/discovery/end-of-life'),
+      create: (dto) => request('/discovery/end-of-life', { method: 'POST', body: JSON.stringify(dto) }),
+      update: (id, dto) => request('/discovery/end-of-life/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+      remove: (id) => request('/discovery/end-of-life/' + id, { method: 'DELETE' })
+    }
   },
   services: records('/services'),
   // REQ-20 : catalogue de demandes (modèles).

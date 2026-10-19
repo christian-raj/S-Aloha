@@ -96,7 +96,10 @@ dépendance à un éditeur.
   calendrier et conflits, revue post-implémentation.
 - **[Configuration (CMDB)](docs/reference/processus/gestion-de-la-configuration.md)** —
   éléments de configuration par type et environnement, relations et **impact** en amont et
-  en aval, rattachement aux services, vérification périodique, retrait encadré.
+  en aval, rattachement aux services, vérification périodique, retrait encadré ;
+  **portefeuille applicatif** et **actifs matériels** avec inventaire et fins de support ;
+  **découverte automatique** (balayage IP, SNMP, Active Directory) avec sas de staging,
+  rapprochement des CI, détection du Shadow IT et coffre d'identifiants chiffré.
 
 ### 📈 Qualité de service et pilotage
 
@@ -283,7 +286,9 @@ place, NIS 2 built in.**
 - **Control of the IT estate**: problem management with root-cause analysis (5 Whys,
   Ishikawa, fault tree) and RACI corrective actions; change enablement (standard models,
   risk-based authority and CAB, freeze periods, schedule, post-implementation review);
-  CMDB with relationships, impact analysis and service mapping.
+  CMDB with relationships, impact analysis and service mapping, application portfolio and
+  hardware assets, network discovery (IP sweep, SNMP, Active Directory) through a staging
+  area with CI reconciliation and shadow-IT detection.
 - **Service quality and steering**: service catalogue and SLAs with measured compliance,
   continual improvement (ITIL 7-step model, automatic proposals), a reporting dashboard
   (health score, MTTR/MTTD, FCR, SLA, CSV/PDF exports) and project management (Scrum,

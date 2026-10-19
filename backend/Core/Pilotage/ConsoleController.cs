@@ -200,7 +200,18 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                 .Where(a => a.Status == "Validée" && a.NextAssessmentDate != null && a.NextAssessmentDate <= today && (all || managed.Contains(a.PerimeterId)))
                 .Select(a => new Item("assessment", a.Id, a.Reference, a.Title, "À renouveler")).ToListAsync());
 
-            management = new { ToQualify = toQualify, InAnalysisNoRootCause = inAnalysisNoRootCause,
+            // CFG-40 : sas de staging des périmètres gérés — actifs à rapprocher, en conflit, inconnus (CFG-42).
+            var staged = await db.DiscoveredAssets.AsNoTracking()
+                .Where(a => Modules.ServiceConfigurationManagement.DiscoveredAsset.Open.Contains(a.Status) && (all || managed.Contains(a.PerimeterId)))
+                .Select(a => new { a.Status, a.InDirectory, a.MatchedCiId }).ToListAsync();
+            var staging = new
+            {
+                ToReconcile = staged.Count(a => a.Status == Modules.ServiceConfigurationManagement.DiscoveredAsset.ToReconcile),
+                Conflicts = staged.Count(a => a.Status == Modules.ServiceConfigurationManagement.DiscoveredAsset.InConflict),
+                Unknown = staged.Count(a => !a.InDirectory && a.MatchedCiId == null),
+            };
+
+            management = new { Staging = staging, ToQualify = toQualify, InAnalysisNoRootCause = inAnalysisNoRootCause,
                                KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue,
                                MajorIncidents = majorIncidents, Decisions = decisions, ReviewsDue = reviewsDue,
                                OverdueRequests = overdueRequests,

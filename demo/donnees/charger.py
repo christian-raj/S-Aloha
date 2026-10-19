@@ -27,6 +27,21 @@ COMPTES = {
 MARC = {'ownerType': 'User', 'ownerId': 'demo.manager', 'ownerDisplayName': 'Marc Manager'}
 URSULA = {'ownerType': 'User', 'ownerId': 'demo.user', 'ownerDisplayName': 'Ursula Utilisatrice'}
 MAINTENANT = datetime.now(timezone.utc).replace(microsecond=0)
+DSI = {'technicalOwnerType': 'User', 'technicalOwnerId': 'demo.manager', 'technicalOwnerDisplayName': 'Marc Manager'}
+# Identification des CI (CFG-43 : portefeuille applicatif ; CFG-44 : actifs matériels). Valeurs fictives.
+DETAILS_CI = {
+    'VPN-GW-01': {'vendor': 'Fortinet', 'model': 'FortiGate 100F', 'serialNumber': 'FGT1HF-DEMO-0001', 'ipAddress': '10.0.0.1'},
+    'FW-SIEGE-01': {'vendor': 'Fortinet', 'model': 'FortiGate 200F', 'serialNumber': 'FGT2HF-DEMO-0002', 'ipAddress': '10.0.0.254'},
+    'SRV-MAIL-01': {'operatingSystem': 'Microsoft Windows Server 2016 Standard', 'ipAddress': '10.0.1.10'},
+    'SAN-01': {'vendor': 'Synology', 'model': 'RackStation RS3621xs+', 'serialNumber': 'SYN-DEMO-0003', 'ipAddress': '10.0.1.20'},
+    'SW-MAHAJANGA-01': {'vendor': 'Cisco', 'model': 'Catalyst 1000', 'serialNumber': 'FOC-DEMO-0004', 'ipAddress': '10.20.0.2'},
+    'APP-EXCHANGE': {'appCode': 'MSG', 'businessUnit': 'Secrétariat général', 'criticality': 'Majeure', 'rtoHours': 8,
+                     'rpoHours': 4, 'gdprSensitive': True, 'nis2Scope': True, **DSI, 'businessOwnerType': 'User',
+                     'businessOwnerId': 'demo.user', 'businessOwnerDisplayName': 'Ursula Utilisatrice'},
+    'APP-ERP': {'appCode': 'ERP', 'businessUnit': 'Direction financière', 'criticality': 'Vitale', 'rtoHours': 4,
+                'rpoHours': 1, 'gdprSensitive': True, 'nis2Scope': True, **DSI, 'businessOwnerType': 'User',
+                'businessOwnerId': 'demo.user', 'businessOwnerDisplayName': 'Ursula Utilisatrice'},
+}
 
 
 def jour(delta):
@@ -95,7 +110,8 @@ def main():
     # --- Configuration (CMDB) ----------------------------------------------------
     def ci(titre, type_, desc):
         return creer(m, '/api/configuration-items', {**MARC, 'title': titre, 'description': desc,
-            'ciType': type_, 'environment': 'Production', 'location': 'Salle serveurs — siège'})
+            'ciType': type_, 'environment': 'Production', 'location': 'Salle serveurs — siège',
+            **DETAILS_CI.get(titre, {})})
     passerelle = ci('VPN-GW-01', 'Réseau', 'Passerelle VPN principale.')
     parefeu = ci('FW-SIEGE-01', 'Réseau', 'Pare-feu périmétrique du siège.')
     mail = ci('SRV-MAIL-01', 'Serveur', 'Serveur de messagerie.')
@@ -232,7 +248,7 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
     # --- Configuration -----------------------------------------------------------
     def ci(titre, type_, lieu, desc, statut=None):
         corps = {**MARC, 'title': titre, 'description': desc, 'ciType': type_,
-                 'environment': 'Production', 'location': lieu}
+                 'environment': 'Production', 'location': lieu, **DETAILS_CI.get(titre, {})}
         if statut:
             corps['status'] = statut
         return appel('POST', '/api/configuration-items', m, corps)
@@ -248,6 +264,9 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
               {'targetReference': cible['reference'], 'type': type_})
     lier(m, 'ci', exchange['id'], messagerie['reference'])
     lier(m, 'ci', app_erp['id'], erp['reference'])
+    # CFG-47 : fin de support étendu de Windows Server 2016 (12 janvier 2027), pour l'inventaire.
+    appel('POST', '/api/discovery/end-of-life', m, {'product': 'Windows Server 2016', 'endOfSupport': '2027-01-12',
+          'notes': 'Fin du support étendu Microsoft.'})
     lier(m, 'ci', imp['id'], impression['reference'])
 
     # --- Incidents ---------------------------------------------------------------

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getUser } from '../../api'
-import RecordForm, { toForm, toPayload } from './RecordForm'
+import RecordForm, { toForm, toPayload, applies } from './RecordForm'
 import StatusBadge from './StatusBadge'
 import PerimeterSelect from './PerimeterSelect'
 import usePerimeters from '../usePerimeters'
@@ -18,7 +18,7 @@ function NewRecord({ config, onCreated }) {
   const submit = () => config.api.create({ ...toPayload(config.fields, f), status: f.status || null, perimeterId })
     .then(onCreated).catch(e => setError(e.message))
   // PER-04 : avec plusieurs périmètres, le choix est obligatoire.
-  const missing = config.fields.some(fd => fd.required && fd.create !== false && fd.type !== 'checkbox' && !f[fd.key])
+  const missing = config.fields.some(fd => fd.required && fd.create !== false && fd.type !== 'checkbox' && applies(fd, f) && !f[fd.key])
     || (perimeters.length > 1 && !perimeterId)
   return (
     <div className="card" style={{ marginBottom: 20 }}>

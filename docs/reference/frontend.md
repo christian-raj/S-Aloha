@@ -63,7 +63,10 @@ du socle (`RecordList`, `RecordDetail`) : client d'API (`api.js` › `records(pa
 `basePath`, `linkType`, statuts avec tonalité (`tone` : `new`, `progress`, `wait`, `done`,
 `bad`, `closed` — classes `.badge.t-*`) et marque `manager` des statuts réservés, champs du
 formulaire (`text`, `textarea`, `select`, `date`, `datetime`, `number`, `checkbox`, `person`),
-colonnes du registre, badges et mentions de l'en-tête. Une page n'ajoute que ce qui est
+colonnes du registre, badges et mentions de l'en-tête. Un champ peut dépendre des autres
+valeurs (`when(form)` : le portefeuille applicatif ne s'affiche que pour une application,
+l'identification matérielle que pour un équipement), porter une aide (`hint`, texte ou
+fonction des valeurs) ; `type: 'heading'` est un intertitre de bloc, sans valeur. Une page n'ajoute que ce qui est
 propre au processus :
 
 - `tab = { label, render(record, reload) }` : l'**onglet propre à la pratique** — Conflits
@@ -100,13 +103,16 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/incidents`, `/incidents/:id` | `modules/incident-management/pages/*` | Pratiques › Incidents |
 | `/requests`, `/requests/:id`, `/requests/catalog` | `modules/service-request-management/pages/*` (registre, fiche, catalogue de demandes) | Pratiques › Demandes |
 | `/changes`, `/changes/schedule`, `/changes/:id` | `modules/change-enablement/pages/*` | Pratiques › Changements |
-| `/configuration`, `/configuration/:id` | `modules/service-configuration-management/pages/*` | Pratiques › Configuration |
+| `/configuration`, `/configuration/:id` | `modules/service-configuration-management/pages/ConfigurationItems`, `ConfigurationItemDetail` | Pratiques › Configuration |
+| `/configuration/inventory` | `modules/service-configuration-management/pages/Inventory` | Pratiques › Configuration › Inventaire |
+| `/configuration/staging`, `/configuration/staging/:id` | `modules/service-configuration-management/pages/Staging`, `StagingAsset` | Pratiques › Configuration › Sas de staging (Manager, Admin) |
 | `/services`, `/services/:id`, `/agreements`, `/agreements/:id` | `modules/service-level-management/pages/*` | Pratiques › Niveaux de service |
 | `/knowledge`, `/knowledge/:id` | `modules/knowledge-management/pages/*` | Pratiques › Connaissances |
 | `/improvements`, `/improvements/:id` | `modules/continual-improvement/pages/*` | Pratiques › Amélioration (CSI) |
 | `/assessments`, `/assessments/:id` | `modules/compliance-assessment/pages/Assessments`, `AssessmentDetail` | Conformité & réglementation › NIS 2 |
 | `/projects`, `/projects/:id` | `modules/project-management/pages/Projects`, `ProjectDetail` | Projets › Projets |
 | `/admin/perimeters`, `/admin/perimeters/:id` | `core/pages/admin/Perimeters`, `PerimeterDetail` | Administration › Périmètres (Admin) |
+| `/settings/discovery` | `modules/service-configuration-management/pages/DiscoverySettings` | Paramétrage › Découverte du réseau (Manager, Admin) |
 | `/settings/nis2` | `modules/compliance-assessment/pages/ReferentialSettings` | Paramétrage › Référentiel NIS 2 (Admin) |
 
 Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont rendues dans
@@ -126,14 +132,16 @@ Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont r
   `'practices'`, lu par `groupOf(module)`) et, pour un module actif, `href`
   (point d'entrée), `routes` (préfixes d'URL qui l'activent dans la navigation), `pages`
   (sous-entrées affichées quand le module est ouvert, facultatives ; quand une sous-page en
-  prolonge une autre — `/changes/schedule` sous `/changes` — la correspondance exacte l'emporte) ;
+  prolonge une autre — `/changes/schedule` sous `/changes` — la correspondance exacte l'emporte,
+  puis le préfixe le plus long : la fiche `/configuration/staging/3` active « Sas de staging »,
+  pas le registre `/configuration`) ;
 - `SECTIONS` — les sections de menu après les groupes de modules : **Paramétrage**
   (`id: 'settings'`, `roles: ['Manager','Admin']`) et **Administration**
   (`id: 'administration'`, `roles: ['Admin']`), chacune avec ses `entries`. Une entrée :
   `{ href, label, description, icon, roles? }`, où `icon` est une clé de `SECTION_ICONS`
   (`'settings'` ou `'admin'`). Une section n'est affichée que si au moins une de ses
-  entrées est visible pour le rôle : aujourd'hui, aucune ne l'est (pas de section vide,
-  vérifié par `Layout.sections.test.jsx` sur le registre réel). Le titre de la section
+  entrées est visible pour le rôle (pas de section vide, vérifié par
+  `Layout.sections.test.jsx` sur le registre réel). Le titre de la section
   Administration porte un marqueur ambre (`.nav-section.admin`) ;
 - `roles` (section, module ou sous-entrée, facultatif) : rôles qui voient l'entrée ; absent, tous.
   `visibleFor(entry, role)` décide ; la barre latérale masque les entrées réservées (l'API
@@ -211,7 +219,7 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | Entrée | Visible par | Règle | Statut |
 |---|---|---|---|
 | Ma console (filtre « Périmètre » dès que l'on en a plusieurs, PER-09) | Tous | [socle § 2](regles-metier.md#2-consoles-par-rôle) | ✅ |
-| Reporting : tableau de bord à onglets (synthèse, incidents, problèmes, changements et projets, conformité), période, service, export CSV et PDF | Tous | [REP-01 à REP-43](reporting.md), [SOC-18, SOC-19](regles-metier.md#7-reporting) | ✅ |
+| Reporting : tableau de bord à onglets (synthèse, incidents, problèmes, changements et projets, conformité, configuration et inventaire), période, service, export CSV et PDF | Tous | [REP-01 à REP-53](reporting.md), [SOC-18, SOC-19](regles-metier.md#7-reporting) | ✅ |
 | Notifications : **cloche** au pied de la barre latérale (barre supérieure en mobile) avec compteur, pas une entrée de menu ; `core/components/NotificationBell.jsx` | Tous | [SOC-21](regles-metier.md#8-notifications) | ✅ |
 
 ### Pratiques
@@ -230,6 +238,8 @@ Un module `soon` apparaît grisé, non cliquable, avec le badge « Bientôt ».
 | | Calendrier des changements (conflits, **périodes de gel**) | Tous | CHG-08, CHG-09, CHG-25 | ✅ |
 | | Modèles de changement standard | Tous ; écriture Manager | CHG-26 | ✅ |
 | [Configuration](processus/gestion-de-la-configuration.md) | Registre des CI (filtre par type) | Tous | CFG-01, CFG-07 | ✅ |
+| | Inventaire : portefeuille applicatif et actifs matériels, export CSV, impression | Tous | CFG-39 | ✅ |
+| | Sas de staging : tuiles-filtres (à traiter, en conflit, inconnus, rapprochés, ignorés), fiche d'un actif avec la décision (rapprocher du CI proposé, créer le CI pré-rempli, rapprocher d'un autre CI, ignorer, rétablir) et la comparaison découvert / CMDB | Manager, Admin | CFG-40 à CFG-42 | ✅ |
 | | CI à vérifier | Tous (propriétaires), Manager | CFG-15 | 🔜 |
 | [Niveaux de service](processus/gestion-des-niveaux-de-service.md) | Catalogue des services | Tous | SLM-01 | ✅ |
 | | Accords (SLA) | Tous | SLM-02 | ✅ |
@@ -279,15 +289,16 @@ cycle de vie.
 | Modèles de changement standard | Manager, Admin | [CHG-26](processus/habilitation-des-changements.md) | 🔜 |
 | Périodes de gel | Manager, Admin | [CHG-25](processus/habilitation-des-changements.md) | 🔜 |
 | Import des CI (CSV) | Admin | [CFG-30](processus/gestion-de-la-configuration.md) | 🔜 |
+| Découverte du réseau (`/settings/discovery`) : tâches de scan (type, cible, ports, identifiant, fréquence, fenêtre, lancement, dernier passage), identifiants du coffre (Admin : communautés SNMP, comptes de domaine ; secret jamais réaffiché), fins de support | Manager, Admin | [CFG-45 à CFG-47](processus/gestion-de-la-configuration.md) | ✅ |
 | Heures de service (calendriers) | Manager, Admin | [SLM-14](processus/gestion-des-niveaux-de-service.md) | 🔜 |
 | Référentiel NIS 2 : structure embarquée et import du texte des exigences (`/settings/nis2`) | Admin | [NIS-20, NIS-21](processus/conformite-nis2.md) | ✅ |
 
 Le **catalogue des services** reste dans la pratique Niveaux de service : c'est un objet de
 la pratique, consulté par tous, pas un réglage.
 
-« Référentiel NIS 2 » est la **première entrée réelle** de la section : réservée à l'Admin,
-la section Paramétrage n'apparaît aujourd'hui que pour lui ; elle apparaîtra pour les
-gestionnaires avec leur première entrée.
+« Découverte du réseau » est la **première entrée ouverte aux gestionnaires** : la section
+Paramétrage apparaît pour eux, avec cette seule entrée (l'onglet du coffre y reste réservé à
+l'Admin) ; « Référentiel NIS 2 » reste à l'Admin.
 
 ### Administration
 
@@ -303,9 +314,9 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 | Index de recherche | État du service d'embeddings et de l'index par source, reconstruction ; avis ambre si le service est injoignable | [RAG-08](recherche.md) | ✅ |
 
 « Index de recherche » est la **première entrée réelle** de la section : un Admin voit
-désormais les six sections (Pilotage, Pratiques, Projets, Conformité & réglementation,
-Paramétrage, Administration), un Manager quatre (Pilotage, Pratiques, Projets,
-Conformité & réglementation), tant qu'aucune entrée de Paramétrage ne lui est ouverte.
+les six sections (Pilotage, Pratiques, Projets, Conformité & réglementation, Paramétrage,
+Administration), un Manager cinq (sans Administration), un User quatre (sans Paramétrage ni
+Administration).
 
 ### Onglets communs des fiches
 

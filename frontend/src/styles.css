@@ -804,3 +804,81 @@ table.compact td { padding: 9px 12px; font-size: var(--fs-sm); }
 .notif-event { font-size: var(--fs-sm); font-weight: 600; }
 .notif-title { font-size: var(--fs-sm); }
 .notif-meta { font-size: var(--fs-2xs); color: var(--text-tertiary); }
+
+/* ==========================================================================
+   Configuration : formulaires conditionnels, sas de staging, découverte, inventaire
+   ========================================================================== */
+.form-heading {
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
+  margin: 18px 0 10px; padding-top: 14px; border-top: 1px solid var(--border-subtle);
+  font-size: var(--fs-sm); font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: var(--text-secondary);
+}
+.form-heading small { font-size: var(--fs-xs); font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-tertiary); }
+.field-hint { display: block; margin-top: 4px; font-size: var(--fs-xs); color: var(--text-tertiary); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.check { display: inline-flex; gap: 8px; align-items: center; font-weight: 400; font-size: var(--fs-sm); }
+.check input { width: auto; }
+
+/* Barre d'outils d'une page : recherche, filtres, actions. */
+.toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+.row-actions { white-space: nowrap; text-align: right; }
+.row-actions .btn + .btn { margin-left: 6px; }
+
+/* État vide : explication et action qui le fait sortir. */
+.empty-state { text-align: center; padding: 40px 24px; }
+.empty-state h3 { font-size: var(--fs-md); margin-bottom: 6px; }
+.empty-state p { max-width: 560px; margin: 0 auto 16px; }
+
+/* Tuiles-filtres du sas de staging : nombre, libellé, aide ; la tuile active est soulignée. */
+.filter-tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.filter-tile {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 14px 16px;
+  background: var(--bg-surface); border: 1px solid var(--border-default); border-top: 3px solid var(--tile-tone, var(--accent-blue));
+  color: var(--text-primary); box-shadow: var(--shadow-sm); cursor: pointer;
+}
+.filter-tile:hover { background: var(--bg-surface-hover); }
+.filter-tile.on { outline: 2px solid var(--tile-tone, var(--accent-blue)); outline-offset: -2px; }
+.filter-tile .n { font-size: var(--fs-xl); font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.filter-tile .l { font-size: var(--fs-sm); font-weight: 600; }
+.filter-tile .h { font-size: var(--fs-xs); color: var(--text-tertiary); }
+.filter-tile.tone-blue { --tile-tone: var(--accent-blue); }
+.filter-tile.tone-red { --tile-tone: var(--accent-red); }
+.filter-tile.tone-amber { --tile-tone: var(--accent-amber); }
+.filter-tile.tone-emerald { --tile-tone: var(--accent-emerald); }
+.filter-tile.tone-neutral { --tile-tone: var(--border-strong); }
+
+/* Score de rapprochement (CFG-41) : jauge, valeur et critère écrits. */
+.score-meter { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+.score-meter .bar-track { display: inline-block; width: 72px; height: 8px; background: var(--bg-surface-hover); border: 1px solid var(--border-subtle); }
+.score-meter .bar { display: block; height: 100%; background: var(--border-strong); }
+.score-meter .bar.ok { background: var(--accent-emerald); }
+.score-meter .bar.warn { background: var(--accent-amber); }
+.score-meter small { font-size: var(--fs-xs); }
+
+/* Fiche d'un actif découvert. */
+.decision { border-left: 3px solid var(--accent-blue); }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; font-size: var(--fs-sm); }
+.kv dt { color: var(--text-tertiary); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+table.compare th[scope=row] { font-weight: 500; color: var(--text-tertiary); text-transform: none; letter-spacing: 0; font-size: var(--fs-sm); }
+table.compare tr.diff td { background: var(--accent-amber-soft); }
+.pick-list { list-style: none; display: grid; gap: 6px; margin-top: 10px; }
+.pick-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 10px; border: 1px solid var(--border-subtle); background: var(--bg-surface); }
+
+/* Inventaire : application dont la gouvernance est incomplète ; criticité. */
+tr.warn-row td:first-child { box-shadow: inset 3px 0 0 var(--accent-amber); }
+.badge.crit-0 { background: var(--accent-red-soft); color: var(--accent-red); border-color: color-mix(in srgb, var(--accent-red) 30%, transparent); }
+.badge.crit-1 { background: var(--accent-amber-soft); color: var(--accent-amber); border-color: color-mix(in srgb, var(--accent-amber) 30%, transparent); }
+.badge.crit-2 { background: var(--accent-blue-soft); color: var(--accent-blue); border-color: color-mix(in srgb, var(--accent-blue) 30%, transparent); }
+.badge.crit-3 { background: var(--bg-surface-hover); color: var(--text-tertiary); border-color: var(--border-default); }
+
+@media (max-width: 1023px) {
+  .filter-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .filter-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .row2.stack-mobile { grid-template-columns: 1fr; }
+  .row-actions { white-space: normal; }
+}
