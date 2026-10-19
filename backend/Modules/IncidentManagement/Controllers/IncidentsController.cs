@@ -59,8 +59,14 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
     }
 
     // SLM-10, INC-20 : service du catalogue (vérifié ici, recopié avant l'écriture).
-    protected override async Task<string?> ValidateAsync(Incident e) =>
-        await ServiceCatalog.ResolveAsync(Db, e) ?? await MajorOwnerAsync(e);
+    // ADM-51 : catégorie tirée de la liste de la pratique ; SLM-10 : service du catalogue.
+    protected override async Task<string?> ValidateAsync(Incident e)
+    {
+        var before = Db.Entry(e).State is Microsoft.EntityFrameworkCore.EntityState.Detached or Microsoft.EntityFrameworkCore.EntityState.Added ? null : Db.Entry(e).Property(x => x.Category).OriginalValue;
+        var (error, value) = await Core.Itil.Category.CheckAsync(Db, "incident", e.Category, before);
+        e.Category = value;
+        return error ?? await ServiceCatalog.ResolveAsync(Db, e) ?? await MajorOwnerAsync(e);
+    }
 
     /// <summary>
     /// INC-13 : le responsable d'un incident majeur est gestionnaire du périmètre de l'incident
@@ -126,6 +132,7 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
     protected override async Task BeforeSaveAsync(Incident e, bool creating)
     {
         await ServiceCatalog.ResolveAsync(Db, e);   // SLM-10, INC-20
+        if (creating) e.Category = (await Core.Itil.Category.CheckAsync(Db, "incident", e.Category, null)).Value;   // ADM-51
         var entry = Db.Entry(e);
         // INC-22 : l'horloge SLA s'arrête En attente ; à la reprise, l'attente (en heures de
         // service) prolonge les échéances. Le motif ne vaut que pendant l'attente (INC-07).

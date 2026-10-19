@@ -12,6 +12,7 @@ import Health from './core/pages/admin/Health'
 import Users from './core/pages/admin/Users'
 import AuditLog from './core/pages/admin/AuditLog'
 import Duplicates from './core/pages/admin/Duplicates'
+import Categories from './core/pages/settings/Categories'
 import Problems from './modules/problem-management/pages/Problems'
 import ProblemDetail from './modules/problem-management/pages/ProblemDetail'
 import Actions from './modules/problem-management/pages/Actions'
@@ -114,6 +115,7 @@ export default function App() {
         <Route path="assessments" element={<Assessments />} />
         <Route path="assessments/:id" element={<AssessmentDetail />} />
         {/* Paramétrage */}
+        <Route path="settings/categories" element={<Categories />} />
         <Route path="settings/discovery" element={<DiscoverySettings />} />
         <Route path="settings/nis2" element={<ReferentialSettings />} />
       </Route>

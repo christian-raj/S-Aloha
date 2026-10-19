@@ -98,6 +98,8 @@ function Field({ fd, form, onChange, disabled }) {
       input = (
         <select value={v} onChange={set} disabled={disabled}>
           {!fd.required && <option value="">—</option>}
+          {fd.keepUnknown && v !== '' && !fd.options.some(o => (typeof o === 'object' ? o.value : o) === v)
+            && <option value={v}>{fd.keepUnknown(v)}</option>}
           {fd.options.map(o => typeof o === 'object'
             ? <option key={o.value} value={o.value}>{o.label}</option>
             : <option key={o}>{o}</option>)}

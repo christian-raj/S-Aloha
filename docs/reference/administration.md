@@ -19,7 +19,7 @@
 | Administration | Nettoyage des doublons | Admin | ADM-40 à ADM-43 | ✅ |
 | Administration | Périmètres | Admin | [PER-01 à PER-12](perimetres.md) | ✅ |
 | Administration | Index de recherche | Admin | [RAG-08](recherche.md) | ✅ |
-| Paramétrage | Catégories (incidents, problèmes) | Manager, Admin | ADM-50 à ADM-53 | 🔜 |
+| Paramétrage | Catégories (incidents, problèmes) | Manager, Admin | ADM-50 à ADM-53 | ✅ |
 
 ## 2. Utilisateurs et rôles
 
@@ -57,10 +57,10 @@
 
 | ID | Règle | Statut |
 |---|---|---|
-| ADM-50 | **Liste des catégories** par pratique (incidents, problèmes), tenue par les gestionnaires dans Paramétrage : nom unique par pratique, active ou non ; une catégorie utilisée se désactive au lieu de se supprimer | 🔜 |
-| ADM-51 | Les fiches d'incident et de problème proposent les **catégories actives** de leur pratique ; l'API refuse (400) une catégorie hors liste à la création et quand la catégorie change. Une catégorie inactive reste lisible sur les enregistrements qui la portent | 🔜 |
-| ADM-52 | **Reprise** : à la migration, les catégories déjà saisies sur les incidents et les problèmes deviennent des catégories actives de leur pratique (sans tenir compte de la casse) | 🔜 |
-| ADM-53 | Le service affecté reste tiré du catalogue ([SLM-10](processus/gestion-des-niveaux-de-service.md)) ; SOC-27 est réalisée avec ADM-50 à ADM-52 | 🔜 |
+| ADM-50 | **Liste des catégories** par pratique (incidents, problèmes), tenue par les gestionnaires dans Paramétrage : nom unique par pratique (casse ignorée), active ou non ; une catégorie utilisée se désactive au lieu de se supprimer (409) | ✅ |
+| ADM-51 | Les fiches d'incident et de problème proposent les **catégories actives** de leur pratique ; dès que la pratique a au moins une catégorie active, l'API refuse (400) une catégorie hors liste à la création et quand la catégorie change, et ramène la saisie au nom exact de la liste (casse, espaces). Sans catégorie active (installation neuve), la saisie reste libre. Une catégorie inactive reste lisible sur les enregistrements qui la portent | ✅ |
+| ADM-52 | **Reprise** : à la migration, les catégories déjà saisies sur les incidents et les problèmes deviennent des catégories actives de leur pratique (sans tenir compte de la casse) | ✅ |
+| ADM-53 | Le service affecté reste tiré du catalogue ([SLM-10](processus/gestion-des-niveaux-de-service.md)) ; SOC-27 est réalisée avec ADM-50 à ADM-52 | ✅ |
 
 ## 7. API
 

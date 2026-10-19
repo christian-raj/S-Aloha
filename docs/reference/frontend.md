@@ -285,7 +285,7 @@ cycle de vie.
 
 | Entrée | Visible par | Règle | Statut |
 |---|---|---|---|
-| Catégories (incidents, problèmes) | Manager, Admin | [ADM-50 à ADM-53](administration.md) | 🔜 |
+| Catégories (incidents, problèmes) | Manager, Admin | [ADM-50 à ADM-53](administration.md) | ✅ |
 | Catalogue de demandes (modèles) | Manager, Admin | [REQ-20](processus/gestion-des-demandes.md) | 🔜 |
 | Modèles de changement standard | Manager, Admin | [CHG-26](processus/habilitation-des-changements.md) | 🔜 |
 | Périodes de gel | Manager, Admin | [CHG-25](processus/habilitation-des-changements.md) | 🔜 |

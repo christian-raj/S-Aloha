@@ -5,6 +5,7 @@ import RecordDetail from '../../../core/components/RecordDetail'
 import SimilarCases from '../../../core/components/SimilarCases'
 import { incidentConfig } from '../config'
 import { useServiceConfig } from '../../../core/useServices'
+import { useCategoryConfig } from '../../../core/useCategories'
 
 /** Un incident récurrent ou de cause inconnue ouvre un problème, relié à l'incident. */
 function OpenProblem({ incident }) {
@@ -33,7 +34,7 @@ function OpenProblem({ incident }) {
 }
 
 export default function IncidentDetail() {
-  const config = useServiceConfig(incidentConfig)
+  const config = useCategoryConfig(useServiceConfig(incidentConfig), 'incident')
   if (!config) return <p>Chargement…</p>
   return <RecordDetail config={config}>{r => <><OpenProblem incident={r} /><SimilarCases type="incident" id={r.id} /></>}</RecordDetail>
 }
