@@ -22,6 +22,10 @@ import ChangeSchedule from './modules/change-enablement/pages/ChangeSchedule'
 import StandardChanges from './modules/change-enablement/pages/StandardChanges'
 import ConfigurationItems from './modules/service-configuration-management/pages/ConfigurationItems'
 import ConfigurationItemDetail from './modules/service-configuration-management/pages/ConfigurationItemDetail'
+import Inventory from './modules/service-configuration-management/pages/Inventory'
+import Staging from './modules/service-configuration-management/pages/Staging'
+import StagingAsset from './modules/service-configuration-management/pages/StagingAsset'
+import DiscoverySettings from './modules/service-configuration-management/pages/DiscoverySettings'
 import Services from './modules/service-level-management/pages/Services'
 import ServiceDetail from './modules/service-level-management/pages/ServiceDetail'
 import Agreements from './modules/service-level-management/pages/Agreements'
@@ -70,6 +74,9 @@ export default function App() {
         <Route path="changes/:id" element={<ChangeDetail />} />
         {/* Pratique — Gestion de la configuration des services */}
         <Route path="configuration" element={<ConfigurationItems />} />
+        <Route path="configuration/inventory" element={<Inventory />} />
+        <Route path="configuration/staging" element={<Staging />} />
+        <Route path="configuration/staging/:id" element={<StagingAsset />} />
         <Route path="configuration/:id" element={<ConfigurationItemDetail />} />
         {/* Pratique — Gestion des niveaux de service */}
         <Route path="services" element={<Services />} />
@@ -89,6 +96,7 @@ export default function App() {
         <Route path="assessments" element={<Assessments />} />
         <Route path="assessments/:id" element={<AssessmentDetail />} />
         {/* Paramétrage */}
+        <Route path="settings/discovery" element={<DiscoverySettings />} />
         <Route path="settings/nis2" element={<ReferentialSettings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

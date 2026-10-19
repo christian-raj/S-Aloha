@@ -36,6 +36,9 @@ public sealed class ApiFixture : IAsyncLifetime
             .UseSetting("ConnectionStrings:Default", _db.GetConnectionString())
             .UseSetting("Jwt:Key", JwtKey)
             .UseSetting("Jwt:Issuer", "S-Aloha")
+            // Découverte : pas de lancement planifié (seuls les lancements des tests), coffre configuré.
+            .UseSetting("Discovery:IntervalMinutes", "0")
+            .UseSetting("Discovery:VaultKey", "cle-du-coffre-de-test-uniquement-0123456789")
             // Embeddings déterministes à la place du service Ollama (ADR-0013).
             .ConfigureTestServices(s =>
             {
@@ -44,6 +47,10 @@ public sealed class ApiFixture : IAsyncLifetime
                 // Rôle d'un autre compte (INC-13) : annuaire de test, sans LDAP.
                 s.RemoveAll<SAloha.Api.Core.Auth.IUserDirectory>();
                 s.AddSingleton<SAloha.Api.Core.Auth.IUserDirectory, FakeUserDirectory>();
+                // Collecteurs de découverte factices : ni réseau ni annuaire pendant les tests.
+                s.RemoveAll<SAloha.Api.Modules.ServiceConfigurationManagement.Discovery.IDiscoveryCollector>();
+                foreach (var type in SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveryJob.ScanTypes)
+                    s.AddScoped<SAloha.Api.Modules.ServiceConfigurationManagement.Discovery.IDiscoveryCollector>(_ => new FakeCollector(type));
             }));
     }
 

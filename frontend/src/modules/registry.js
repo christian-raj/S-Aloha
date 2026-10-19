@@ -66,6 +66,12 @@ export const MODULES = [
   {
     id: 'configuration', label: 'Configuration', description: 'Actifs et dépendances (CMDB)', status: 'active',
     href: '/configuration', routes: ['/configuration'],
+    pages: [
+      { href: '/configuration', label: 'Registre des CI' },
+      { href: '/configuration/inventory', label: 'Inventaire' },
+      // CFG-40 : file de travail des gestionnaires, pas un réglage (docs/reference/frontend.md).
+      { href: '/configuration/staging', label: 'Sas de staging', roles: ['Manager', 'Admin'] },
+    ],
   },
   {
     id: 'service-level', label: 'Niveaux de service', description: 'Catalogue, SLA et engagements', status: 'active',
@@ -116,6 +122,8 @@ export const groupOf = (module) => module.group ?? 'practices'
 export const SECTIONS = [
   {
     id: 'settings', label: 'Paramétrage', roles: ['Manager', 'Admin'], entries: [
+      { href: '/settings/discovery', label: 'Découverte du réseau', description: 'Tâches de scan, coffre, fins de support',
+        icon: 'settings' },
       { href: '/settings/nis2', label: 'Référentiel NIS 2', description: 'Structure et texte des exigences',
         icon: 'settings', roles: ['Admin'] },
     ]

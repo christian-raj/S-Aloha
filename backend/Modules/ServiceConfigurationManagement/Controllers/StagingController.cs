@@ -30,10 +30,11 @@ public class StagingController(AppDbContext db, PerimeterAccess access, Matching
 
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? source, [FromQuery] string? q,
-        [FromQuery] bool unknown = false, [FromQuery] int? ci = null)
+        [FromQuery] bool unknown = false, [FromQuery] int? ci = null, [FromQuery] int? perimeter = null)
     {
         if (await ManagedAsync() is not { } query) return Forbid();
         query = query.AsNoTracking();
+        if (perimeter is not null) query = query.Where(a => a.PerimeterId == perimeter);
         if (!string.IsNullOrEmpty(status)) query = query.Where(a => a.Status == status);
         if (!string.IsNullOrEmpty(source)) query = query.Where(a => a.Sources.Contains(source));
         if (ci is not null) query = query.Where(a => a.MatchedCiId == ci);

@@ -1,0 +1,261 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using SAloha.Api.Modules.ServiceConfigurationManagement;
+using SAloha.Api.Modules.ServiceConfigurationManagement.Discovery;
+
+namespace SAloha.Api.Tests;
+
+/// <summary>Découverte et sas de staging : CFG-40 à CFG-46 (collecteurs factices, FakeCollector).</summary>
+[Collection("api")]
+public class DiscoveryTests(ApiFixture api)
+{
+    private static async Task<JsonElement> Json(HttpResponseMessage res)
+    {
+        var body = await res.Content.ReadAsStringAsync();
+        Assert.True(res.IsSuccessStatusCode, $"HTTP {(int)res.StatusCode} : {body}");
+        return body.Length == 0 ? default : JsonDocument.Parse(body).RootElement;
+    }
+
+    private static int Id(JsonElement e) => e.GetProperty("id").GetInt32();
+    private static string Str(JsonElement e, string p) => e.GetProperty(p).GetString()!;
+
+    /// <summary>Périmètre propre au test (les actifs du sas sont propres à un périmètre) et son gestionnaire.</summary>
+    private async Task<(int Perimeter, HttpClient Admin, HttpClient Manager)> Perimeter(string tag)
+    {
+        var admin = api.Client("Admin", $"admin.{tag}");
+        var p = Id(await Json(await admin.PostAsJsonAsync("/api/admin/perimeters", new { name = $"Site {tag}" })));
+        await Json(await admin.PostAsJsonAsync($"/api/admin/perimeters/{p}/assignments",
+            new { principalType = "User", principalId = $"chef.{tag}", principalDisplayName = "Chef", role = "Manager" }));
+        return (p, admin, api.Client("User", $"chef.{tag}"));
+    }
+
+    private static object Server(string title, int perimeter, string? serial = null, string? ip = null) => new
+    {
+        title, ciType = "Serveur", environment = "Production", status = "En service", perimeterId = perimeter,
+        ownerType = "User", ownerId = "owner.cfg", ownerDisplayName = "Owner", serialNumber = serial, ipAddress = ip
+    };
+
+    private static async Task<JsonElement> RunAndWait(HttpClient client, int jobId)
+    {
+        Assert.Equal(HttpStatusCode.Accepted, (await client.PostAsync($"/api/discovery/jobs/{jobId}/run", null)).StatusCode);
+        for (var i = 0; i < 100; i++)
+        {
+            var job = await Json(await client.GetAsync($"/api/discovery/jobs/{jobId}"));
+            if (Str(job, "lastStatus") is DiscoveryJob.Succeeded or DiscoveryJob.Failed) return job;
+            await Task.Delay(100);
+        }
+        throw new TimeoutException("Le scan ne s'est pas terminé.");
+    }
+
+    private static async Task<List<JsonElement>> Staged(HttpClient client, int perimeter) =>
+        (await Json(await client.GetAsync($"/api/discovery/staging?perimeter={perimeter}"))).EnumerateArray().ToList();
+
+    [Fact]
+    public async Task CFG_45_le_secret_est_chiffre_au_repos_jamais_renvoye_et_dechiffre_pour_le_scan()
+    {
+        var (p, admin, manager) = await Perimeter("cfg45");
+        var created = await Json(await admin.PostAsJsonAsync("/api/discovery/credentials",
+            new { name = "Communauté du site", credentialType = "SnmpV2c", secret = "communaute-cfg45", perimeterId = p }));
+        Assert.True(created.GetProperty("hasSecret").GetBoolean());
+
+        var list = await admin.GetStringAsync("/api/discovery/credentials");
+        Assert.DoesNotContain("communaute-cfg45", list);
+        await using (var db = api.Database())
+        {
+            var stored = await db.DiscoveryCredentials.SingleAsync(c => c.Id == Id(created));
+            Assert.StartsWith("v1:", stored.EncryptedSecret);
+            Assert.DoesNotContain("communaute-cfg45", stored.EncryptedSecret);
+        }
+        // Le gestionnaire lit la liste (pour choisir l'identifiant d'une tâche), seul l'Admin l'écrit.
+        Assert.DoesNotContain("communaute-cfg45", await manager.GetStringAsync("/api/discovery/credentials"));
+        Assert.Equal(HttpStatusCode.Forbidden, (await manager.PostAsJsonAsync("/api/discovery/credentials",
+            new { name = "Pirate", credentialType = "SnmpV2c", secret = "x", perimeterId = p })).StatusCode);
+
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs", new
+        {
+            name = "SNMP du site", scanType = "Snmp", targetRange = "10.45.0.0/24", credentialId = Id(created), perimeterId = p
+        }));
+        Assert.Equal(DiscoveryJob.Succeeded, Str(await RunAndWait(manager, Id(job)), "lastStatus"));
+        Assert.Equal("communaute-cfg45", FakeCollector.SecretsReceived["10.45.0.0/24"]);
+
+        // Rotation : le nouveau secret remplace l'ancien ; un identifiant utilisé ne se supprime pas (409).
+        await Json(await admin.PutAsJsonAsync($"/api/discovery/credentials/{Id(created)}",
+            new { name = "Communauté du site", credentialType = "SnmpV2c", secret = "nouvelle-cfg45" }));
+        await RunAndWait(manager, Id(job));
+        Assert.Equal("nouvelle-cfg45", FakeCollector.SecretsReceived["10.45.0.0/24"]);
+        Assert.Equal(HttpStatusCode.Conflict, (await admin.DeleteAsync($"/api/discovery/credentials/{Id(created)}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task CFG_46_une_tache_valide_sa_plage_ses_ports_son_identifiant_et_ne_se_relance_pas_en_cours()
+    {
+        var (p, _, manager) = await Perimeter("cfg46");
+        async Task<HttpStatusCode> Create(object dto) => (await manager.PostAsJsonAsync("/api/discovery/jobs", dto)).StatusCode;
+        Assert.Equal(HttpStatusCode.BadRequest, await Create(new { name = "Trop large", scanType = "IpSweep", targetRange = "10.0.0.0/16", perimeterId = p }));
+        Assert.Equal(HttpStatusCode.BadRequest, await Create(new { name = "Port", scanType = "IpSweep", targetRange = "10.0.0.0/24", portList = "22,99999", perimeterId = p }));
+        Assert.Equal(HttpStatusCode.BadRequest, await Create(new { name = "SNMP", scanType = "Snmp", targetRange = "10.0.0.0/24", perimeterId = p }));
+        Assert.Equal(HttpStatusCode.BadRequest, await Create(new { name = "Fenêtre", scanType = "IpSweep", targetRange = "10.0.0.1", windowStart = "25:00", windowEnd = "06:00", perimeterId = p }));
+        Assert.Equal(HttpStatusCode.BadRequest, await Create(new { name = "SSH", scanType = "Ssh", targetRange = "10.0.0.1", perimeterId = p }));
+
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Balayage", scanType = "IpSweep", targetRange = "10.46.0.0/24", perimeterId = p }));
+        Assert.Equal(DiscoveryJob.NeverRun, Str(job, "lastStatus"));
+        Assert.Equal("20:00", Str(job, "windowStart"));
+        await using (var db = api.Database())
+        {
+            var j = await db.DiscoveryJobs.SingleAsync(x => x.Id == Id(job));
+            j.LastStatus = DiscoveryJob.Running;
+            await db.SaveChangesAsync();
+        }
+        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PostAsync($"/api/discovery/jobs/{Id(job)}/run", null)).StatusCode);
+        // Un simple utilisateur ne voit pas les tâches ; seul l'Admin supprime.
+        Assert.Equal(HttpStatusCode.Forbidden, (await api.Client("User", "lambda.cfg46").GetAsync("/api/discovery/jobs")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await manager.DeleteAsync($"/api/discovery/jobs/{Id(job)}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task CFG_40_CFG_41_CFG_42_entree_dans_le_sas_rapprochement_et_deduplication()
+    {
+        var (p, admin, manager) = await Perimeter("cfg41");
+        var bySerial = await Json(await admin.PostAsJsonAsync("/api/configuration-items", Server("srv-serie-41", p, serial: "SN-41-A")));
+        var byName = await Json(await admin.PostAsJsonAsync("/api/configuration-items", Server("srv-nom-41", p)));
+        await Json(await admin.PostAsJsonAsync("/api/configuration-items", Server("srv-ip-41", p, ip: "10.41.0.30")));
+        await Json(await admin.PostAsJsonAsync("/api/configuration-items", Server("srv-autre-41", p, serial: "SN-41-D")));
+        // Une application homonyme n'est jamais rapprochée d'un hôte.
+        await Json(await admin.PostAsJsonAsync("/api/configuration-items", new
+        {
+            title = "inconnu-41", ciType = "Application", environment = "Production", status = "Planifié", perimeterId = p
+        }));
+
+        FakeCollector.Observations["10.41.0.0/24"] =
+        [
+            new("IpSweep", IpAddress: "10.41.0.10", SerialNumber: "sn-41-a", Os: "Linux / Unix", Type: "Serveur"),
+            new("IpSweep", IpAddress: "10.41.0.20", Hostname: "SRV-NOM-41.corp.local", MacAddress: "00-1a-2b-3c-4d-41", Type: "Serveur"),
+            new("IpSweep", IpAddress: "10.41.0.30", Type: "Serveur"),
+            new("IpSweep", IpAddress: "10.41.0.40", Hostname: "srv-autre-41", SerialNumber: "SN-41-X", Type: "Serveur"),
+            new("IpSweep", IpAddress: "10.41.0.50", Hostname: "inconnu-41.corp.local", Type: "Poste de travail", OpenPorts: "445"),
+            new("IpSweep", IpAddress: "10.41.0.60", Hostname: "pc-annuaire-41.corp.local", Type: "Poste de travail"),
+        ];
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Balayage 41", scanType = "IpSweep", targetRange = "10.41.0.0/24", perimeterId = p }));
+        var done = await RunAndWait(manager, Id(job));
+        Assert.Equal(6, done.GetProperty("lastFoundCount").GetInt32());
+
+        var assets = await Staged(manager, p);
+        JsonElement At(string ip) => assets.Single(a => Str(a, "ipAddress") == ip);
+        // Numéro de série (100) et nom d'hôte (80) : rapprochés seuls, le CI reçoit l'identification technique.
+        Assert.Equal((DiscoveredAsset.Reconciled, 100), (Str(At("10.41.0.10"), "status"), At("10.41.0.10").GetProperty("confidenceScore").GetInt32()));
+        Assert.Equal((DiscoveredAsset.Reconciled, 80), (Str(At("10.41.0.20"), "status"), At("10.41.0.20").GetProperty("confidenceScore").GetInt32()));
+        var updated = await Json(await admin.GetAsync($"/api/configuration-items/{Id(byName)}"));
+        Assert.Equal(("10.41.0.20", "00:1A:2B:3C:4D:41"), (Str(updated, "ipAddress"), Str(updated, "macAddress")));
+        Assert.Equal("Linux / Unix", Str(await Json(await admin.GetAsync($"/api/configuration-items/{Id(bySerial)}")), "operatingSystem"));
+        // Adresse IP seule (50) ou numéro de série contradictoire : en conflit, rien n'est modifié.
+        Assert.Equal((DiscoveredAsset.InConflict, "IpAddress"), (Str(At("10.41.0.30"), "status"), Str(At("10.41.0.30"), "matchRule")));
+        Assert.Equal(DiscoveredAsset.InConflict, Str(At("10.41.0.40"), "status"));
+        Assert.Contains("SN-41-D", Str(At("10.41.0.40"), "conflictReason"));
+        // Aucun rapprochement : à créer, et inconnu tant qu'il n'est pas dans l'annuaire (CFG-42).
+        var unknown = At("10.41.0.50");
+        Assert.Equal((DiscoveredAsset.ToReconcile, "CreateNew"), (Str(unknown, "status"), Str(unknown, "suggestedAction")));
+        Assert.True(unknown.GetProperty("unknown").GetBoolean());
+
+        // Synchronisation de l'annuaire : l'ordinateur rejoint l'actif déjà vu (même nom), sans doublon.
+        FakeCollector.Observations["DC=cfg41"] = [new("ActiveDirectory", Hostname: "pc-annuaire-41.corp.local", Os: "Windows 11 Pro", Type: "Poste de travail", InDirectory: true)];
+        var ad = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Annuaire 41", scanType = "ActiveDirectory", targetRange = "DC=cfg41", perimeterId = p }));
+        await RunAndWait(manager, Id(ad));
+        await RunAndWait(manager, Id(job));
+        assets = await Staged(manager, p);
+        Assert.Equal(6, assets.Count);
+        var known = At("10.41.0.60");
+        Assert.False(known.GetProperty("unknown").GetBoolean());
+        Assert.Equal(("Windows 11 Pro", "IpSweep,ActiveDirectory"), (Str(known, "detectedOs"), Str(known, "sources")));
+        Assert.True(At("10.41.0.50").GetProperty("unknown").GetBoolean());
+
+        // Un gestionnaire d'un autre périmètre ne voit pas ces actifs.
+        var (_, _, other) = await Perimeter("cfg41-autre");
+        Assert.Empty(await Staged(other, p));
+        Assert.Equal(HttpStatusCode.NotFound, (await other.GetAsync($"/api/discovery/staging/{Id(unknown)}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await api.Client("User", "lambda.cfg41").GetAsync("/api/discovery/staging")).StatusCode);
+    }
+
+    [Fact]
+    public async Task CFG_40_reconcilier_cree_un_CI_aux_regles_du_registre_ou_met_a_jour_le_CI_choisi()
+    {
+        var (p, admin, manager) = await Perimeter("cfg40");
+        var target = await Json(await admin.PostAsJsonAsync("/api/configuration-items", Server("srv-cible-40", p, ip: "10.40.0.9")));
+        FakeCollector.Observations["10.40.0.0/24"] =
+        [
+            new("IpSweep", IpAddress: "10.40.0.5", Hostname: "pc-nouveau-40", Type: "Poste de travail"),
+            new("IpSweep", IpAddress: "10.40.0.9", Os: "Linux / Unix", Type: "Serveur"),
+            new("IpSweep", IpAddress: "10.40.0.7", Hostname: "imprimante-40", Type: "Autre"),
+        ];
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Balayage 40", scanType = "IpSweep", targetRange = "10.40.0.0/24", perimeterId = p }));
+        await RunAndWait(manager, Id(job));
+        var assets = await Staged(manager, p);
+        int At(string ip) => Id(assets.Single(a => Str(a, "ipAddress") == ip));
+
+        // La fiche propose un CI pré-rempli.
+        var sheet = await Json(await manager.GetAsync($"/api/discovery/staging/{At("10.40.0.5")}"));
+        Assert.Equal(("pc-nouveau-40", "Poste de travail"), (Str(sheet.GetProperty("proposal"), "title"), Str(sheet.GetProperty("proposal"), "ciType")));
+
+        object Ci(string status, string? owner = null, string? serial = null) => new
+        {
+            action = "create", ci = new
+            {
+                title = "pc-nouveau-40", ciType = "Poste de travail", environment = "Production", status, location = "Siège, 2e étage",
+                ownerType = owner is null ? null : "User", ownerId = owner, ownerDisplayName = owner, vendor = "Dell", serialNumber = serial,
+                ipAddress = "10.40.0.5"
+            }
+        };
+        var reconcile = $"/api/discovery/staging/{At("10.40.0.5")}/reconcile";
+        // CFG-11 puis CFG-44 : mêmes contrôles que le registre.
+        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PostAsJsonAsync(reconcile, Ci("En service"))).StatusCode);
+        var noSerial = await manager.PostAsJsonAsync(reconcile, Ci("En service", owner: "tiana.cfg40"));
+        Assert.Equal(HttpStatusCode.BadRequest, noSerial.StatusCode);
+        Assert.Contains("CFG-44", await noSerial.Content.ReadAsStringAsync());
+        var created = await Json(await manager.PostAsJsonAsync(reconcile, Ci("En service", owner: "tiana.cfg40", serial: "SN-40-NEW")));
+        var ci = created.GetProperty("configurationItem");
+        Assert.StartsWith("CI-", Str(ci, "reference"));
+        var fresh = await Json(await admin.GetAsync($"/api/configuration-items/{Id(ci)}"));
+        Assert.Equal((p, "10.40.0.5", "SN-40-NEW"), (fresh.GetProperty("perimeterId").GetInt32(), Str(fresh, "ipAddress"), Str(fresh, "serialNumber")));
+        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PostAsJsonAsync(reconcile, Ci("Planifié"))).StatusCode);   // déjà rapproché
+
+        // Rapprochement manuel d'un conflit vers le CI choisi.
+        Assert.Equal(DiscoveredAsset.InConflict, Str(assets.Single(a => Str(a, "ipAddress") == "10.40.0.9"), "status"));
+        await Json(await manager.PostAsJsonAsync($"/api/discovery/staging/{At("10.40.0.9")}/reconcile", new { action = "update", targetCiId = Id(target) }));
+        Assert.Equal("Linux / Unix", Str(await Json(await admin.GetAsync($"/api/configuration-items/{Id(target)}")), "operatingSystem"));
+
+        // Ignorer, puis rétablir.
+        var printer = At("10.40.0.7");
+        Assert.Equal(DiscoveredAsset.Ignored, Str(await Json(await manager.PostAsync($"/api/discovery/staging/{printer}/ignore", null)), "status"));
+        Assert.Equal(HttpStatusCode.BadRequest, (await manager.PostAsync($"/api/discovery/staging/{printer}/ignore", null)).StatusCode);
+        Assert.Equal(DiscoveredAsset.ToReconcile, Str(await Json(await manager.PostAsync($"/api/discovery/staging/{printer}/restore", null)), "status"));
+
+        var summary = await Json(await manager.GetAsync("/api/discovery/staging/summary"));
+        Assert.Equal((1, 2), (summary.GetProperty("toReconcile").GetInt32(), summary.GetProperty("reconciled").GetInt32()));
+        // Console des gestionnaires (CFG-40).
+        var console = await Json(await manager.GetAsync($"/api/console?perimeter={p}"));
+        Assert.Equal(1, console.GetProperty("management").GetProperty("staging").GetProperty("toReconcile").GetInt32());
+    }
+
+    [Fact]
+    public async Task CFG_46_une_tache_en_echec_note_son_motif_sans_le_secret()
+    {
+        var (p, _, manager) = await Perimeter("cfg46b");
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Balayage", scanType = "IpSweep", targetRange = "10.47.0.0/24", perimeterId = p }));
+        await using (var db = api.Database())
+        {
+            // Type introuvable parmi les collecteurs : l'exécution échoue proprement.
+            var j = await db.DiscoveryJobs.SingleAsync(x => x.Id == Id(job));
+            j.ScanType = "Inexistant";
+            await db.SaveChangesAsync();
+        }
+        var done = await RunAndWait(manager, Id(job));
+        Assert.Equal(DiscoveryJob.Failed, Str(done, "lastStatus"));
+        Assert.Contains("Inexistant", Str(done, "lastError"));
+    }
+}

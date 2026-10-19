@@ -90,17 +90,24 @@ export default function Console() {
   const myOverdue = c.myActions.filter(a => a.overdue)
   const myTodo = c.myActions.filter(a => !a.overdue)
   const L = k => m?.[k]?.length ?? 0
+  // CFG-40 : actifs découverts en attente de décision, regroupés par vue du sas.
+  const st = m?.staging
+  const staging = !st ? [] : [
+    st.conflicts > 0 && { id: 'conflict', reference: 'Sas de staging', title: `${st.conflicts} actif(s) en conflit à arbitrer`, href: '/configuration/staging?view=conflict' },
+    st.toReconcile > 0 && { id: 'open', reference: 'Sas de staging', title: `${st.toReconcile} actif(s) découvert(s) à rapprocher`,
+      meta: st.unknown > 0 ? `dont ${st.unknown} inconnu(s)` : null, href: '/configuration/staging' },
+  ].filter(Boolean)
 
   // Les quatre temps de la console, dans l'ordre où l'on doit les traiter.
   const urgent = myOverdue.length + L('majorIncidents') + (c.mySlaIncidents?.length ?? 0) + L('slaIncidents')
-  const decide = L('decisions') + L('toQualify')
+  const decide = L('decisions') + L('toQualify') + staging.length
   const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts')
   const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0)
   const follow = c.myProblems.length + L('inAnalysisNoRootCause')
 
   const tiles = [
     { id: 'urgent', label: 'Urgent', caption: 'Retards et incidents majeurs', n: urgent, tone: 'red' },
-    m && { id: 'decisions', label: 'Décisions', caption: 'À autoriser, approuver, qualifier', n: decide, tone: 'blue' },
+    m && { id: 'decisions', label: 'Décisions', caption: 'À autoriser, approuver, qualifier, rapprocher', n: decide, tone: 'blue' },
     m && { id: 'relances', label: 'Relances', caption: 'Retards d’équipe, revues échues', n: chase, tone: 'amber' },
     { id: 'travail', label: 'Mon travail', caption: 'Actions et dossiers en cours', n: work, tone: 'emerald' },
   ].filter(Boolean)
@@ -163,6 +170,9 @@ export default function Console() {
       {m && <Group id="decisions" title="Décisions" total={decide}>
         <List title="En attente de votre décision" tone="blue" rows={m.decisions} onRow={goItem}
           hint="Changements à autoriser, demandes à approuver, améliorations à valider." render={itemRow} />
+        <List title="Découverte : actifs à traiter" tone="blue" rows={staging} onRow={r => nav(r.href)}
+          hint="Rapprocher d’un CI, créer le CI ou ignorer : rien n’entre dans la CMDB sans votre décision."
+          render={r => <Row reference={r.reference} title={r.title} meta={r.meta && <span className="row-status">{r.meta}</span>} />} />
         <List title="Problèmes à qualifier" tone="blue" rows={m.toQualify} onRow={goP}
           hint="Nouveaux problèmes : impact, urgence et catégorie à confirmer."
           render={r => <Row reference={r.reference} title={r.title}

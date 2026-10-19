@@ -9,12 +9,13 @@ using SAloha.Api.Modules.ServiceConfigurationManagement.Discovery;
 namespace SAloha.Api.Modules.ServiceConfigurationManagement.Controllers;
 
 /// <summary>
-/// Coffre d'identifiants (CFG-45), Admin seul : le secret s'écrit (création, rotation), ne se
-/// relit jamais ; l'API indique seulement s'il est présent et quand il a changé.
+/// Coffre d'identifiants (CFG-45), tenu par l'Admin : le secret s'écrit (création, rotation), ne
+/// se relit jamais ; l'API indique seulement s'il est présent et quand il a changé. Les
+/// gestionnaires lisent la liste (noms, types) pour choisir l'identifiant d'une tâche de scan.
 /// </summary>
 [ApiController]
 [Route("api/discovery/credentials")]
-[Authorize(Policy = "Admin")]
+[Authorize(Policy = "Manager")]
 public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess access, CredentialVault vault) : ControllerBase
 {
     private static object View(DiscoveryCredential c, int usedBy) => new
@@ -35,6 +36,7 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
     }
 
     [HttpPost]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Create(DiscoveryCredentialDto dto)
     {
         if (!vault.Configured) return StatusCode(503, new { message = CredentialVault.NotConfigured });
@@ -53,6 +55,7 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
 
     /// <summary>Modification ; un secret fourni remplace l'ancien (rotation), vide il est conservé.</summary>
     [HttpPut("{id:int}")]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Update(int id, DiscoveryCredentialDto dto)
     {
         var c = await db.Set<DiscoveryCredential>().FirstOrDefaultAsync(x => x.Id == id);
@@ -71,6 +74,7 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var c = await db.Set<DiscoveryCredential>().FirstOrDefaultAsync(x => x.Id == id);
@@ -109,6 +113,7 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
 public class EndOfLifeRulesController(AppDbContext db) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = "Manager")]
     public async Task<IActionResult> List() =>
         Ok(await db.Set<EndOfLifeRule>().AsNoTracking().OrderBy(r => r.EndOfSupport).ThenBy(r => r.Product).ToListAsync());
 

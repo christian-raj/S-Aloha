@@ -46,7 +46,7 @@ it('ouvre sur la synthèse : score de santé, alerte des incidents majeurs, badg
   expect(await screen.findByText('75')).toBeTruthy()
   expect(screen.getByText('Alerte : à traiter en priorité')).toBeTruthy()
   const tabs = screen.getAllByRole('tab').map(t => t.textContent)
-  expect(tabs).toEqual(['Synthèse globale', 'Incidents3', 'Problèmes', 'Changements & projets', 'Conformité & métriques1'])
+  expect(tabs).toEqual(['Synthèse globale', 'Incidents3', 'Problèmes', 'Changements & projets', 'Conformité & métriques1', 'Configuration & inventaire'])
   expect(screen.getByLabelText('3 alerte(s)').className).toContain('bad')
 })
 

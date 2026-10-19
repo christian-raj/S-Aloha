@@ -7,6 +7,7 @@ import IncidentsTab, { incidentsCsv } from './reporting/IncidentsTab'
 import ProblemsTab, { problemsCsv } from './reporting/ProblemsTab'
 import ChangesProjectsTab, { changesProjectsCsv } from './reporting/ChangesProjectsTab'
 import ComplianceTab, { complianceCsv } from './reporting/ComplianceTab'
+import ConfigurationTab, { configurationCsv } from './reporting/ConfigurationTab'
 import { date, downloadCsv } from './reporting/exportCsv'
 
 /**
@@ -20,6 +21,7 @@ export const TABS = [
   { id: 'problems', label: 'Problèmes', load: 'problems', View: ProblemsTab, csv: problemsCsv, badge: 'problems', service: true },
   { id: 'changes', label: 'Changements & projets', load: 'changes-projects', View: ChangesProjectsTab, csv: changesProjectsCsv, badge: 'changesProjects', service: false },
   { id: 'compliance', label: 'Conformité & métriques', load: 'compliance', View: ComplianceTab, csv: complianceCsv, badge: 'compliance', service: true },
+  { id: 'configuration', label: 'Configuration & inventaire', load: 'configuration', View: ConfigurationTab, csv: configurationCsv, badge: 'configuration', service: false },
 ]
 
 export const PERIODS = [
@@ -99,7 +101,7 @@ export default function Reporting() {
   return (
     <>
       <h1 className="page-title">Reporting</h1>
-      <p className="page-sub">Tableau de bord des pratiques : santé des services, incidents, problèmes, changements et projets, conformité.</p>
+      <p className="page-sub">Tableau de bord des pratiques : santé des services, incidents, problèmes, changements et projets, conformité, configuration.</p>
 
       <div className="report-toolbar no-print" role="search" aria-label="Filtres du tableau de bord">
         <label>Période
@@ -146,7 +148,9 @@ export default function Reporting() {
         Période du {date(bounds.from)} au {date(bounds.to)} — service : {service || 'tous'} — édité le {new Date().toLocaleString('fr-FR')}
       </p>
       {service && !tab.service && !printing &&
-        <p className="notice small no-print">Le filtre de service ne s'applique pas aux changements ni aux projets, qui ne portent pas de service.</p>}
+        <p className="notice small no-print">{tab.id === 'configuration'
+          ? 'Le filtre de service ne s\'applique pas à la configuration : la CMDB est montrée en entier.'
+          : 'Le filtre de service ne s\'applique pas aux changements ni aux projets, qui ne portent pas de service.'}</p>}
       {error && <div className="error">{error}</div>}
 
       {printing ? TABS.map((t, i) => (
