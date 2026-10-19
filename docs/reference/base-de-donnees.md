@@ -221,4 +221,8 @@ erDiagram
 
 1. Déclarer les entités dans `backend/Modules/<Processus>/Models/` (dérivées de `Record` pour un processus).
 2. Ajouter les `DbSet`, l'index unique de la référence et la configuration (`OnModelCreating`) dans `AppDbContext`.
-3. Documenter les tables ici.
+3. Déclarer les **DTO de réponse** dans `Models/Views.cs` (`XxxView.From(entité)`) : l'API ne renvoie jamais une entité
+   ([ADR-0016](../decisions/adr-0016-reponses-de-l-api-en-dto.md) ; `EntityGuard` le refuse à l'exécution). Un nouveau
+   champ n'est exposé qu'en l'ajoutant à la vue ; l'instantané `openapi-reponses.json` se met à jour avec
+   `UPDATE_OPENAPI_SNAPSHOT=1 dotnet test`.
+4. Documenter les tables ici.

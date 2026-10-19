@@ -87,7 +87,11 @@ builder.Services.AddAuthorizationBuilder()
 // juste ajoutée au contexte levait une JsonException APRÈS l'enregistrement :
 // la première analyse d'un problème était créée en base mais répondait 500.
 builder.Services.AddControllers().AddJsonOptions(o =>
-    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+{
+    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    // A2 (ADR-0016) : aucune entité EF dans une réponse ni une requête.
+    o.JsonSerializerOptions.Converters.Add(new EntityGuard());
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>

@@ -48,7 +48,7 @@ public class CommentsController(AppDbContext db, PerimeterAccess access) : Contr
         if (record is null) return NotFound();
         var comments = await db.Comments.AsNoTracking()
             .Where(c => c.TargetType == type && c.TargetId == id && (notes || c.Visibility == Comment.Public))
-            .OrderBy(c => c.CreatedAt).ToListAsync();
+            .OrderBy(c => c.CreatedAt).Select(c => CommentView.From(c)).ToListAsync();
         return Ok(new { Comments = comments, CanWriteNotes = notes });
     }
 
@@ -71,7 +71,7 @@ public class CommentsController(AppDbContext db, PerimeterAccess access) : Contr
         };
         db.Comments.Add(c);
         await db.SaveChangesAsync();
-        return Ok(c);
+        return Ok(CommentView.From(c));
     }
 
     /// <summary>Retirer un commentaire : son auteur ou un Admin.</summary>

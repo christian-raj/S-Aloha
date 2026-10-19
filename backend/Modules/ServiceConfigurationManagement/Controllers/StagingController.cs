@@ -87,7 +87,7 @@ public class StagingController(AppDbContext db, PerimeterAccess access, Matching
         asset.MatchedCi = null;   // décrit par TargetCi
         return Ok(new
         {
-            Asset = asset,
+            Asset = DiscoveredAssetView.From(asset),
             Suggestion = match is null ? null : new { match.Score, match.Rule, match.Action, match.Conflict },
             TargetCi = target is null ? null : new
             {

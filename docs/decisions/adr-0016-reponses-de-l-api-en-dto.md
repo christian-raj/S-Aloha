@@ -29,6 +29,17 @@ navigation chargée pour un calcul part dans la réponse ([audit du 2026-10-16](
    OpenAPI est versionné dans les tests ; toute différence fait échouer `OpenApiTests` et doit
    être acceptée en connaissance de cause dans la PR.
 
+## Mise en œuvre (2026-10-19)
+
+- `RecordController<T, TDto, TView>` et `ProjectPartController<T, TDto, TView>` : chaque
+  pratique déclare `View(e)` ; les DTO de réponse sont dans `Models/Views.cs` de chaque module
+  (et `Core/Perimeters/Views.cs`, `AuditEntryView`, `CommentView`).
+- **Garde-fou** : `Core/Data/EntityGuard.cs`, convertisseur JSON de MVC, refuse tout type du
+  modèle EF ; toute la suite de tests passe avec lui.
+- **Instantané** : `OpenApiTests` vérifie qu'aucun schéma n'est une entité et fige les champs
+  des vues typées (`openapi-reponses.json`) ; les réponses composites (console, tableau de
+  bord, inventaire…) restent des projections explicites.
+
 ## Conséquences
 
 - Chantier transversal : un fichier de DTO par pratique, une projection par entité, des

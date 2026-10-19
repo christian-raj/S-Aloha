@@ -14,8 +14,9 @@ namespace SAloha.Api.Modules.ComplianceAssessment;
 /// rôle, tant que l'évaluation n'est pas validée (NIS-04, NIS-06).
 /// </summary>
 [Route("api/assessments")]
-public class AssessmentsController(AppDbContext db) : RecordController<Assessment, AssessmentDto>(db)
+public class AssessmentsController(AppDbContext db) : RecordController<Assessment, AssessmentDto, AssessmentView>(db)
 {
+    protected override AssessmentView View(Assessment e) => AssessmentView.From(e);
     protected override string Code => "EVA";
     protected override string LinkType => "assessment";
     protected override string[] Statuses => Assessment.Statuses;

@@ -52,7 +52,7 @@ public class PerimetersController(AppDbContext db, PerimeterAccess access) : Con
         var p = await db.Perimeters.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (p is null) return NotFound();
         var assignments = await db.PerimeterAssignments.AsNoTracking().Where(a => a.PerimeterId == id)
-            .OrderBy(a => a.Role).ThenBy(a => a.PrincipalDisplayName).ToListAsync();
+            .OrderBy(a => a.Role).ThenBy(a => a.PrincipalDisplayName).Select(a => PerimeterAssignmentView.From(a)).ToListAsync();
         return Ok(new { p.Id, p.Name, p.Description, p.CreatedAt, p.CreatedBy, p.DeletedAt, p.DeletedBy,
             IsDefault = p.Id == Perimeter.DefaultId, Counts = await CountsAsync(id), Assignments = assignments });
     }
@@ -66,7 +66,7 @@ public class PerimetersController(AppDbContext db, PerimeterAccess access) : Con
         if (error is not null) return error;
         db.Perimeters.Add(p);
         await db.SaveChangesAsync();
-        return Ok(p);
+        return Ok(PerimeterView.From(p));
     }
 
     [HttpPut("api/admin/perimeters/{id:int}")]
@@ -78,7 +78,7 @@ public class PerimetersController(AppDbContext db, PerimeterAccess access) : Con
         var error = await FillAsync(p, dto);
         if (error is not null) return error;
         await db.SaveChangesAsync();
-        return Ok(p);
+        return Ok(PerimeterView.From(p));
     }
 
     /// <summary>Suppression douce : le périmètre quitte les sélecteurs, se restaure (PER-01).</summary>
@@ -101,7 +101,7 @@ public class PerimetersController(AppDbContext db, PerimeterAccess access) : Con
         var p = await db.Perimeters.FindAsync(id);
         if (p is null) return NotFound();
         if (p.DeletedAt is not null) { p.DeletedAt = null; p.DeletedBy = null; await db.SaveChangesAsync(); }
-        return Ok(p);
+        return Ok(PerimeterView.From(p));
     }
 
     /// <summary>Suppression définitive : seulement sans enregistrement ni affectation (409 avec les compteurs).</summary>
@@ -133,7 +133,7 @@ public class PerimetersController(AppDbContext db, PerimeterAccess access) : Con
     public async Task<IActionResult> Assignments(int id) =>
         await db.Perimeters.AnyAsync(p => p.Id == id)
             ? Ok(await db.PerimeterAssignments.AsNoTracking().Where(a => a.PerimeterId == id)
-                .OrderBy(a => a.Role).ThenBy(a => a.PrincipalDisplayName).ToListAsync())
+                .OrderBy(a => a.Role).ThenBy(a => a.PrincipalDisplayName).Select(a => PerimeterAssignmentView.From(a)).ToListAsync())
             : NotFound();
 
     /// <summary>Affecte un utilisateur ou un groupe AD avec le rôle Manager ou User (PER-02).</summary>
@@ -164,7 +164,7 @@ public class PerimetersController(AppDbContext db, PerimeterAccess access) : Con
         if (length is not null) return BadRequest(new { message = length });
         db.PerimeterAssignments.Add(a);
         await db.SaveChangesAsync();
-        return Ok(a);
+        return Ok(PerimeterAssignmentView.From(a));
     }
 
     [HttpDelete("api/admin/assignments/{id:int}")]

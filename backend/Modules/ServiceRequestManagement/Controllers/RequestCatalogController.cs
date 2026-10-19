@@ -18,11 +18,11 @@ public class RequestCatalogController(AppDbContext db) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] bool all = false) =>
-        Ok(await db.RequestCatalogItems.AsNoTracking().Where(x => all || x.Active).OrderBy(x => x.Name).ToListAsync());
+        Ok(await db.RequestCatalogItems.AsNoTracking().Where(x => all || x.Active).OrderBy(x => x.Name).Select(x => RequestCatalogItemView.From(x)).ToListAsync());
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id) =>
-        await db.RequestCatalogItems.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id) is { } item ? Ok(item) : NotFound();
+        await db.RequestCatalogItems.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id) is { } item ? Ok(RequestCatalogItemView.From(item)) : NotFound();
 
     private async Task<string?> CheckAsync(RequestCatalogItemDto dto)
     {
@@ -52,7 +52,7 @@ public class RequestCatalogController(AppDbContext db) : ControllerBase
         if (error is not null) return BadRequest(new { message = error });
         db.RequestCatalogItems.Add(item);
         await db.SaveChangesAsync();
-        return Ok(item);
+        return Ok(RequestCatalogItemView.From(item));
     }
 
     [HttpPut("{id:int}")]
@@ -66,7 +66,7 @@ public class RequestCatalogController(AppDbContext db) : ControllerBase
         error ??= Lengths.Check(item);
         if (error is not null) return BadRequest(new { message = error });
         await db.SaveChangesAsync();
-        return Ok(item);
+        return Ok(RequestCatalogItemView.From(item));
     }
 
     [HttpDelete("{id:int}")]

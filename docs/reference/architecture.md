@@ -63,7 +63,7 @@ backend/                              # projet SAloha.Api (namespace SAloha.Api.
     ├── ContinualImprovement/         # Amélioration continue : Improvements
     ├── ComplianceAssessment/         # Conformité NIS 2 : Assessments, référentiel
     └── ProjectManagement/            # Projets : Projects et ses composants (phases, sprints, éléments de travail…)
-        # chaque module : Controllers/ et Models/ (Entities.cs : entités et DTO)
+        # chaque module : Controllers/ et Models/ (Entities.cs : entités et DTO d'entrée ; Views.cs : DTO de réponse)
 ```
 
 ### Socle commun des processus (`Core/Records`)
@@ -73,7 +73,7 @@ Les processus autres que les problèmes héritent d'un même socle :
 - **`Record`** — classe de base non mappée (une table par processus) : `Id`, `Reference`,
   `Title`, `Description`, `Status`, responsable AD (`OwnerType`, `OwnerId`,
   `OwnerDisplayName`), traçabilité (`CreatedBy`, `CreatedAt`, `UpdatedAt`).
-- **`RecordController<T, TDto>`** — API CRUD commune : liste (`status`, `q`, `owner=me`),
+- **`RecordController<T, TDto, TView>`** — API CRUD commune ; `TView` est la réponse (DTO, `View(e)`), jamais l'entité ([ADR-0016](../decisions/adr-0016-reponses-de-l-api-en-dto.md)) ; un convertisseur JSON (`Core/Data/EntityGuard.cs`) refuse toute entité EF dans une réponse ou une requête, et `OpenApiTests` fige les champs des vues (`tests/SAloha.Api.Tests/openapi-reponses.json`) : liste (`status`, `q`, `owner=me`),
   détail, création avec référence (`References.CreateAsync`), modification avec contrôle
   du statut, suppression (Admin, liens compris). Un module ne déclare que son préfixe,
   ses statuts et ses règles : `Transitions` (graphe des transitions permises, SOC-05,

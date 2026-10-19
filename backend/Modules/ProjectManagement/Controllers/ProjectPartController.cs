@@ -14,8 +14,11 @@ namespace SAloha.Api.Modules.ProjectManagement;
 /// </summary>
 [ApiController]
 [Authorize(Policy = "User")]
-public abstract class ProjectPartController<T, TDto>(AppDbContext db) : ControllerBase where T : ProjectPart, new()
+public abstract class ProjectPartController<T, TDto, TView>(AppDbContext db) : ControllerBase where T : ProjectPart, new()
 {
+    /// <summary>A2 (ADR-0016) : la réponse de l'API pour ce composant — jamais l'entité EF.</summary>
+    protected abstract TView View(T e);
+
     protected AppDbContext Db => db;
     protected string Me => User.Identity?.Name ?? "";
     protected string MyDisplay => User.FindFirst("displayName")?.Value ?? Me;
@@ -61,7 +64,7 @@ public abstract class ProjectPartController<T, TDto>(AppDbContext db) : Controll
     {
         var (p, error) = await Load(projectId, false);
         if (error is not null) return error;
-        return Ok(await Order(db.Set<T>().AsNoTracking().Where(x => x.ProjectId == p!.Id)).ToListAsync());
+        return Ok((await Order(db.Set<T>().AsNoTracking().Where(x => x.ProjectId == p!.Id)).ToListAsync()).Select(View));
     }
 
     [HttpPost]
@@ -75,7 +78,7 @@ public abstract class ProjectPartController<T, TDto>(AppDbContext db) : Controll
         await OnSavingAsync(e, null);
         db.Set<T>().Add(e);
         await db.SaveChangesAsync();
-        return Ok(e);
+        return Ok(View(e));
     }
 
     [HttpPut("{id:int}")]
@@ -90,7 +93,7 @@ public abstract class ProjectPartController<T, TDto>(AppDbContext db) : Controll
         if (message is not null) return BadRequest(new { message });
         await OnSavingAsync(e, before);
         await db.SaveChangesAsync();
-        return Ok(e);
+        return Ok(View(e));
     }
 
     [HttpDelete("{id:int}")]

@@ -8,8 +8,9 @@ using SAloha.Api.Core.Notifications;
 namespace SAloha.Api.Modules.ServiceRequestManagement;
 
 [Route("api/requests")]
-public class ServiceRequestsController(AppDbContext db) : RecordController<ServiceRequest, ServiceRequestDto>(db)
+public class ServiceRequestsController(AppDbContext db) : RecordController<ServiceRequest, ServiceRequestDto, ServiceRequestView>(db)
 {
+    protected override ServiceRequestView View(ServiceRequest e) => ServiceRequestView.From(e);
     protected override string Code => "REQ";
     protected override string LinkType => "request";
     protected override string[] Statuses => ServiceRequest.Statuses;

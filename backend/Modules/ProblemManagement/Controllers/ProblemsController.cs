@@ -16,8 +16,9 @@ namespace SAloha.Api.Modules.ProblemManagement;
 /// gestionnaire du périmètre.
 /// </summary>
 [Route("api/problems")]
-public class ProblemsController(AppDbContext db) : RecordController<Problem, ProblemDto>(db)
+public class ProblemsController(AppDbContext db) : RecordController<Problem, ProblemDto, ProblemView>(db)
 {
+    protected override ProblemView View(Problem e) => ProblemView.From(e);
     protected override string Code => "PRB";
     protected override string LinkType => "problem";
     protected override string[] Statuses => ProblemManagement.Problem.Statuses;

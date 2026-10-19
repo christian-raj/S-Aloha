@@ -44,12 +44,6 @@ code qui doit s'y conformer.
 |---|---|---|
 | A1 | **Console d'administration inexistante** (Admin = console Manager) | Décidé le 2026-10-07 : section de menu **Administration** (Admin : utilisateurs et rôles, santé, journal d'audit, nettoyage — [SOC-26](reference/regles-metier.md#9-traçabilité-commentaires-administration)) et section **Paramétrage** (Manager, Admin : référentiels — SOC-27 — et paramétrage des pratiques) ; voir [frontend § Navigation cible](reference/frontend.md#navigation-cible) |
 
-Décidés le 2026-10-19, à réaliser :
-
-| # | Chantier | Décision |
-|---|---|---|
-| A2 | Réponses de l'API : entités EF exposées | **Tous les DTO maintenant**, noms de champs inchangés, contrat figé par un test ([ADR-0016](decisions/adr-0016-reponses-de-l-api-en-dto.md)) |
-
 ## 5. Avant une mise en production
 
 Détail : [sécurité § Points de durcissement](reference/securite.md#points-de-durcissement-avant-production).

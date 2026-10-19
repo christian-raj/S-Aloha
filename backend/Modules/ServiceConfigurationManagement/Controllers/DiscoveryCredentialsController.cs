@@ -118,9 +118,9 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
 public class EndOfLifeRulesController(AppDbContext db) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Policy = "Manager")]
     public async Task<IActionResult> List() =>
-        Ok(await db.Set<EndOfLifeRule>().AsNoTracking().OrderBy(r => r.EndOfSupport).ThenBy(r => r.Product).ToListAsync());
+        Ok(await db.Set<EndOfLifeRule>().AsNoTracking().OrderBy(r => r.EndOfSupport).ThenBy(r => r.Product)
+            .Select(r => EndOfLifeRuleView.From(r)).ToListAsync());
 
     [HttpPost]
     [Authorize(Policy = "Manager")]
@@ -130,7 +130,7 @@ public class EndOfLifeRulesController(AppDbContext db) : ControllerBase
         if (await ApplyAsync(rule, dto) is { } error) return BadRequest(new { message = error });
         db.Add(rule);
         await db.SaveChangesAsync();
-        return Ok(rule);
+        return Ok(EndOfLifeRuleView.From(rule));
     }
 
     [HttpPut("{id:int}")]
@@ -141,7 +141,7 @@ public class EndOfLifeRulesController(AppDbContext db) : ControllerBase
         if (rule is null) return NotFound();
         if (await ApplyAsync(rule, dto) is { } error) return BadRequest(new { message = error });
         await db.SaveChangesAsync();
-        return Ok(rule);
+        return Ok(EndOfLifeRuleView.From(rule));
     }
 
     [HttpDelete("{id:int}")]

@@ -8,8 +8,9 @@ using SAloha.Api.Core.Notifications;
 namespace SAloha.Api.Modules.KnowledgeManagement;
 
 [Route("api/knowledge")]
-public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeArticle, KnowledgeArticleDto>(db)
+public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeArticle, KnowledgeArticleDto, KnowledgeArticleView>(db)
 {
+    protected override KnowledgeArticleView View(KnowledgeArticle e) => KnowledgeArticleView.From(e);
     protected override string Code => "KB";
     protected override string LinkType => "article";
     protected override string[] Statuses => KnowledgeArticle.Statuses;
@@ -81,7 +82,7 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
         // KB-20 : brouillon soumis → gestionnaires.
         Notify.ToManagers(e, LinkType, "Article soumis à publication");
         await Notify.SaveAsync();
-        return Ok(e);
+        return Ok(View(e));
     }
 
     /// <summary>KB-17 : le responsable confirme l'article à sa revue ; il reste publié.</summary>
@@ -101,7 +102,7 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
         e.LastReviewedAt = DateTime.UtcNow; e.LastReviewedBy = MyDisplay;
         e.ArchiveRequestedAt = null; e.ArchiveRequestedBy = null; e.ArchiveRequestReason = null;
         await Db.SaveChangesAsync();
-        return Ok(e);
+        return Ok(View(e));
     }
 
     /// <summary>KB-17 : à la revue, le responsable demande l'archivage ; un gestionnaire décide.</summary>
@@ -121,7 +122,7 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
         var error = Lengths.Check(e);
         if (error is not null) return BadRequest(new { message = error });
         await Db.SaveChangesAsync();
-        return Ok(e);
+        return Ok(View(e));
     }
 
     /// <summary>KB-14 : incidents et demandes reliés à l'article (résolus ou traités grâce à lui).</summary>
