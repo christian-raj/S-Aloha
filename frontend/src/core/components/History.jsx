@@ -63,5 +63,5 @@ export default function History({ type, id, labels = {}, refreshKey }) {
 }
 
 /** Libellés des champs d'une configuration de module (`config.fields`). */
-export const labelsOf = fields => Object.fromEntries(fields.flatMap(f =>
+export const labelsOf = fields => Object.fromEntries(fields.filter(f => f.type !== 'heading').flatMap(f =>
   [[f.key, f.label], ...(f.nameKey ? [[f.nameKey, f.label]] : [])]))

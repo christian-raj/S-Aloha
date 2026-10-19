@@ -13,7 +13,7 @@
 
 Donner en un écran l'état du service rendu et ce qui demande une action : un score de
 santé expliqué, les incidents à suivre, les causes racines en attente, les changements et
-projets à risque, la conformité. Chaque onglet se lit seul et s'exporte.
+projets à risque, la conformité, l'état de la CMDB. Chaque onglet se lit seul et s'exporte.
 
 ## 2. Filtres et onglets
 
@@ -23,7 +23,7 @@ Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=&perime
   aujourd'hui compris ([SOC-18](regles-metier.md#7-reporting)).
 - **Service** : nom d'un service du catalogue. Il filtre les **incidents** et les
   **problèmes** (service affecté), pas les changements ni les projets, qui n'ont pas de
-  service ; l'onglet Changements & projets l'ignore.
+  service ; les onglets Changements & projets et Configuration & inventaire l'ignorent.
 - **Périmètre** ([PER-09](perimetres.md)) : les indicateurs portent sur les périmètres de
   l'utilisateur (tous pour l'Admin) ; le filtre, affiché dès qu'on en a plusieurs, en retient
   un. Un périmètre qui n'est pas le sien ne renvoie rien.
@@ -35,6 +35,7 @@ Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=&perime
 | Problèmes | `GET /api/reports/dashboard/problems` | REP-20 à REP-25 |
 | Changements & projets | `GET /api/reports/dashboard/changes-projects` | REP-30 à REP-34 |
 | Conformité & métriques | `GET /api/reports/dashboard/compliance` | REP-40 à REP-43 |
+| Configuration & inventaire | `GET /api/reports/dashboard/configuration` | REP-50 à REP-53 |
 
 Paramètres : `from`, `to` (dates, incluses), `service` (facultatif, sans tenir compte de la
 casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste servi.
@@ -49,7 +50,7 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 | REP-04 | **Matrice des priorités** des incidents et problèmes ouverts : P1 Critique, P2 Élevée, P3 Moyenne, P4 Basse | ✅ | |
 | REP-05 | **État de tolérance** d'un projet (délai, coût) : même calcul que la synthèse du projet ([PRJ-31, PRJ-32](processus/gestion-de-projet.md)) | ✅ | |
 | REP-06 | **Projets à risque ou en retard** : liste avec leur état de tolérance et le lien vers la fiche | ✅ | |
-| REP-07 | **Badges** des onglets : Incidents = majeurs ouverts + ouverts hors SLA (rouge s'il y a un majeur) ; Problèmes = RCA en attente (REP-22) ; Changements & projets = projets hors tolérance + changements en échec (rouge s'il y a un projet hors tolérance) ; Conformité = SLA à revoir | ✅ | |
+| REP-07 | **Badges** des onglets : Incidents = majeurs ouverts + ouverts hors SLA (rouge s'il y a un majeur) ; Problèmes = RCA en attente (REP-22) ; Changements & projets = projets hors tolérance + changements en échec (rouge s'il y a un projet hors tolérance) ; Conformité = SLA à revoir ; Configuration = actifs matériels en fin de support dépassée + actifs du sas de staging à rapprocher ou en conflit, pour les gestionnaires (rouge s'il y a une fin de support dépassée) | ✅ | |
 | REP-08 | **Exports** : CSV de l'onglet actif (séparateur « ; », BOM UTF-8, décimales à la française : s'ouvre tel quel dans Excel) ; **PDF** par l'impression du navigateur, tous les onglets chargés puis imprimés à la suite | ✅ | |
 
 ## 4. Incidents
@@ -94,7 +95,20 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 | REP-43 | **Connaissances** : articles publiés, brouillons, revues en retard, publications de la période | ✅ | |
 | REP-44 | **Déclarations réglementaires** (échéances tenues, en cours) ajoutées avec leur module ([DRG](processus/declarations-reglementaires.md)) | 🔜 | 2 |
 
-## 8. Limites connues
+## 8. Configuration et inventaire
+
+État de la CMDB **à date** (CI non retirés de mes périmètres) : la période ne règle que la
+courbe de la découverte. Le sas de staging n'est montré qu'aux gestionnaires, sur les
+périmètres qu'ils gèrent ([CFG-40](processus/gestion-de-la-configuration.md)).
+
+| ID | Règle | Statut | Lot |
+|---|---|---|---|
+| REP-50 | **Répartitions de la CMDB** : CI par type, par environnement, par statut ; applications par criticité (« Non renseignée » comprise) ([CFG-31](processus/gestion-de-la-configuration.md)) | ✅ | |
+| REP-51 | **Couverture du portefeuille applicatif** : part des applications avec code, direction, propriétaire métier, responsable DSI et criticité ([CFG-35, CFG-43](processus/gestion-de-la-configuration.md)) | ✅ | |
+| REP-52 | **Obsolescence** : actifs matériels par état de support, actifs en fin de support dépassée ou dans les 6 mois (25 au plus, du plus ancien au plus récent), avec la source de la date ([CFG-38, CFG-47](processus/gestion-de-la-configuration.md)) ; en alerte s'il y en a une dépassée | ✅ | |
+| REP-53 | **Découverte** (gestionnaires) : actifs à rapprocher, en conflit, inconnus (Shadow IT, 25 derniers listés), rapprochés ; actifs par source ; nouveaux actifs et rapprochements par jour de la période ([CFG-36, CFG-37, CFG-42](processus/gestion-de-la-configuration.md)) | ✅ | |
+
+## 9. Limites connues
 
 - Les **heures** des échéances SLA sont calendaires ; heures de service et suspension En
   attente viendront avec [INC-22](processus/gestion-des-incidents.md).

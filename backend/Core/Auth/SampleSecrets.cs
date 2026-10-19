@@ -11,6 +11,7 @@ public static class SampleSecrets
     public const string SampleJwtKey = "CHANGEZ-CETTE-CLE-SECRETE-DE-64-CARACTERES-MINIMUM-0123456789ab";
     private const string SampleBindPassword = "MotDePasseServiceAccount";
     private const string SampleDbPassword = "ChangeMe_Str0ng!";
+    public const string SampleVaultKey = "CHANGEZ-CETTE-CLE-DU-COFFRE-DE-32-CARACTERES-MINIMUM-0123456789";
 
     /// <summary>Réglages restés à leur valeur d'exemple, ou trop faibles.</summary>
     public static IReadOnlyList<string> Problems(IConfiguration config)
@@ -19,6 +20,8 @@ public static class SampleSecrets
         var key = config["Jwt:Key"] ?? "";
         if (key == SampleJwtKey) problems.Add("Jwt:Key vaut la clé d'exemple");
         else if (key.Length < 64) problems.Add("Jwt:Key fait moins de 64 caractères");
+        // CFG-45 : la clé d'exemple du coffre rendrait les secrets de scan déchiffrables par tous.
+        if (config["Discovery:VaultKey"] == SampleVaultKey) problems.Add("Discovery:VaultKey vaut la clé d'exemple");
         if (config["Ldap:BindPassword"] == SampleBindPassword) problems.Add("Ldap:BindPassword vaut le mot de passe d'exemple");
         if ((config.GetConnectionString("Default") ?? "").Contains(SampleDbPassword, StringComparison.Ordinal))
             problems.Add("ConnectionStrings:Default contient le mot de passe d'exemple");

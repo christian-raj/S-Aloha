@@ -18,15 +18,9 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
     protected override bool StatusChosenAtCreation => true;
     protected override string InitialStatus(ConfigurationItem e) => "En service";
 
-    protected override string? Apply(ConfigurationItem e, ConfigurationItemDto dto, bool creating)
-    {
-        var error = Allowed.Check("Type de CI", dto.CiType, ConfigurationItem.Types)
-                    ?? Allowed.Check("Environnement", dto.Environment, ConfigurationItem.Environments);
-        if (error is not null) return error;
-        e.CiType = dto.CiType!; e.Environment = dto.Environment!;
-        e.Location = dto.Location ?? "";
-        return null;
-    }
+    // Champs propres au CI, portefeuille applicatif et actifs matériels : règles communes (CiRules).
+    protected override string? Apply(ConfigurationItem e, ConfigurationItemDto dto, bool creating) =>
+        CiRules.Apply(e, dto, string.IsNullOrEmpty(dto.Status) ? (creating ? "En service" : e.Status) : dto.Status);
 
     // CFG-22 : CI passé Hors service → propriétaire, et responsables des services touchés (CFG-21).
     protected override void OnNotify(ConfigurationItem e, string? from, Notifier n)
@@ -62,12 +56,11 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
     // CFG-12 : retirer un CI est réservé aux gestionnaires.
     protected override bool RequiresManager(string status) => status == "Retiré";
 
-    // CFG-11 : un CI en service a un propriétaire.
+    // CFG-11, CFG-43, CFG-44, CFG-48 : conditions communes (CiRules).
     // CFG-13 : un CI relié à un incident ou changement ouvert ne peut pas être retiré.
     protected override async Task<string?> CheckStatusAsync(ConfigurationItem e, string status)
     {
-        if (status == "En service" && string.IsNullOrWhiteSpace(e.OwnerId))
-            return "Désigner un propriétaire : il est obligatoire pour un CI en service.";
+        if (CiRules.CheckStatus(e, status) is { } error) return error;
 
         if (status == "Retiré")
         {
@@ -99,21 +92,65 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
         return null;
     }
 
-    // CFG-17 : deux CI non retirés ne portent pas le même nom dans un même environnement.
-    protected override async Task<string?> ConflictAsync(ConfigurationItem e)
-    {
-        if (e.Status == "Retiré") return null;
-        var name = e.Title.ToLower();
-        var twin = await Db.ConfigurationItems.AsNoTracking()
-            .Where(c => c.Id != e.Id && c.Status != "Retiré" && c.Environment == e.Environment && c.Title.ToLower() == name)
-            .Select(c => c.Reference).FirstOrDefaultAsync();
-        return twin is null ? null : $"Un CI « {e.Title} » existe déjà en {e.Environment} ({twin}).";
-    }
+    // CFG-17, CFG-43, CFG-44 : nom par environnement, code applicatif et numéro de série uniques.
+    protected override Task<string?> ConflictAsync(ConfigurationItem e) => CiRules.ConflictAsync(Db, e);
+
+    // Recherche élargie aux identifiants : code applicatif, numéro de série, adresse IP.
+    protected override IQueryable<ConfigurationItem> Search(IQueryable<ConfigurationItem> q, string key) =>
+        q.Where(x => x.Title.ToLower().Contains(key) || x.Reference.ToLower().Contains(key)
+                     || (x.AppCode != null && x.AppCode.ToLower().Contains(key))
+                     || (x.SerialNumber != null && x.SerialNumber.ToLower().Contains(key))
+                     || (x.IpAddress != null && x.IpAddress.Contains(key)));
 
     protected override IQueryable<ConfigurationItem> Filter(IQueryable<ConfigurationItem> q)
     {
         var type = Request.Query["type"].ToString();
         return string.IsNullOrEmpty(type) ? q : q.Where(c => c.CiType == type);
+    }
+
+    /// <summary>
+    /// CFG-39 : rapport d'inventaire — portefeuille applicatif (gouvernance, criticité, cycle) et
+    /// actifs matériels (identification, garantie, fin de support CFG-47), sur mes périmètres.
+    /// </summary>
+    [HttpGet("inventory")]
+    public async Task<IActionResult> Inventory([FromQuery] bool retired = false)
+    {
+        var q = await InScopeAsync(Db.ConfigurationItems.AsNoTracking());
+        if (!retired) q = q.Where(c => c.Status != "Retiré");
+        var today = DateTime.UtcNow.Date;
+        var rules = await Db.Set<EndOfLifeRule>().AsNoTracking().ToListAsync();
+        var apps = await q.Where(c => c.CiType == "Application").OrderBy(c => c.AppCode ?? c.Title).ToListAsync();
+        var hardwareTypes = ConfigurationItem.HardwareTypes;
+        var hardware = await q.Where(c => hardwareTypes.Contains(c.CiType)).OrderBy(c => c.CiType).ThenBy(c => c.Title).ToListAsync();
+        bool Governed(ConfigurationItem a) => a.AppCode != null && a.BusinessUnit != null && a.BusinessOwnerId != null
+                                              && a.TechnicalOwnerId != null && a.Criticality != null;
+        var assets = hardware.Select(c => new { Ci = c, Support = Obsolescence.Of(c, rules, today), Warranty = Obsolescence.Warranty(c, today) }).ToList();
+        return Ok(new
+        {
+            Summary = new
+            {
+                Applications = apps.Count,
+                Governed = apps.Count(Governed),
+                Hardware = hardware.Count,
+                SupportPassed = assets.Count(a => a.Support.State == Obsolescence.Passed),
+                SupportNear = assets.Count(a => a.Support.State == Obsolescence.Near),
+                WarrantyExpired = assets.Count(a => a.Warranty == Obsolescence.WarrantyExpired),
+                MissingSerial = hardware.Count(c => ConfigurationItem.PhysicalTypes.Contains(c.CiType) && c.SerialNumber == null),
+            },
+            Applications = apps.Select(a => new
+            {
+                a.Id, a.Reference, a.Title, a.Status, a.Environment, a.AppCode, a.BusinessUnit, a.BusinessOwnerDisplayName,
+                a.TechnicalOwnerDisplayName, a.OwnerDisplayName, a.Criticality, a.AppLifecycle, a.RtoHours, a.RpoHours,
+                a.GdprSensitive, a.Nis2Scope, Governed = Governed(a)
+            }),
+            Hardware = assets.Select(x => new
+            {
+                x.Ci.Id, x.Ci.Reference, x.Ci.Title, x.Ci.CiType, x.Ci.Status, x.Ci.Environment, x.Ci.Vendor, x.Ci.Model,
+                x.Ci.SerialNumber, x.Ci.Location, x.Ci.IpAddress, x.Ci.OperatingSystem, x.Ci.PurchaseDate, x.Ci.WarrantyExpiry,
+                x.Warranty, SupportState = x.Support.State, SupportDate = x.Support.Date, SupportSource = x.Support.Source,
+                x.Ci.OwnerDisplayName
+            })
+        });
     }
 
     protected override IQueryable<ConfigurationItem> WithDetails(IQueryable<ConfigurationItem> q) =>

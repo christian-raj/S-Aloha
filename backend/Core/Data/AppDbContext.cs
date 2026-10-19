@@ -41,6 +41,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     // Configuration des services
     public DbSet<ConfigurationItem> ConfigurationItems => Set<ConfigurationItem>();
     public DbSet<CiRelationship> CiRelationships => Set<CiRelationship>();
+    // Découverte automatique et sas de staging (CFG-40 à CFG-47)
+    public DbSet<DiscoveredAsset> DiscoveredAssets => Set<DiscoveredAsset>();
+    public DbSet<DiscoveryJob> DiscoveryJobs => Set<DiscoveryJob>();
+    public DbSet<DiscoveryCredential> DiscoveryCredentials => Set<DiscoveryCredential>();
+    public DbSet<EndOfLifeRule> EndOfLifeRules => Set<EndOfLifeRule>();
     // Niveaux de service
     public DbSet<ItService> Services => Set<ItService>();
     public DbSet<ServiceLevelAgreement> Agreements => Set<ServiceLevelAgreement>();
@@ -117,6 +122,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(r => r.SourceId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<ConfigurationItem>().HasMany(c => c.Incoming).WithOne(r => r.Target!)
             .HasForeignKey(r => r.TargetId).OnDelete(DeleteBehavior.Cascade);
+        // Identifiants de rapprochement (CFG-41) et unicités contrôlées par l'API (CFG-43, CFG-44).
+        b.Entity<ConfigurationItem>().HasIndex(c => c.SerialNumber);
+        b.Entity<ConfigurationItem>().HasIndex(c => c.MacAddress);
+        b.Entity<ConfigurationItem>().HasIndex(c => c.AppCode);
+        // Sas de staging : un CI supprimé rend ses actifs au rapprochement ; un identifiant
+        // utilisé par une tâche ne se supprime pas (l'API le refuse avant, 409).
+        b.Entity<DiscoveredAsset>().HasOne(a => a.MatchedCi).WithMany().HasForeignKey(a => a.MatchedCiId).OnDelete(DeleteBehavior.SetNull);
+        b.Entity<DiscoveredAsset>().HasOne<DiscoveryJob>().WithMany().HasForeignKey(a => a.JobId).OnDelete(DeleteBehavior.SetNull);
+        b.Entity<DiscoveredAsset>().HasIndex(a => new { a.PerimeterId, a.Status });
+        b.Entity<DiscoveredAsset>().Ignore(a => a.Unknown);
+        b.Entity<DiscoveryJob>().HasOne(j => j.Credential).WithMany().HasForeignKey(j => j.CredentialId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<EndOfLifeRule>().HasIndex(r => r.Product).IsUnique();
         b.Entity<ItService>().HasMany(s => s.Agreements).WithOne(a => a.Service!)
             .HasForeignKey(a => a.ServiceId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<ServiceLevelAgreement>().Property(a => a.AvailabilityTarget).HasPrecision(5, 2);

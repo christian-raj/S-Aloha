@@ -25,6 +25,20 @@ public class SecurityStartupTests(ApiFixture api)
     private static HostingEnvironment Env(string name) => new() { EnvironmentName = name };
 
     [Fact]
+    public void S7_la_cle_d_exemple_du_coffre_est_refusee_comme_les_autres_secrets()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Jwt:Key"] = new string('x', 64), ["Ldap:BindPassword"] = "vrai-secret", ["ConnectionStrings:Default"] = "Host=db;Password=autre",
+            ["Discovery:VaultKey"] = SampleSecrets.SampleVaultKey
+        }).Build();
+        Assert.Contains("Discovery:VaultKey", Assert.Single(SampleSecrets.Problems(config)));
+        // La valeur livrée dans appsettings.json est bien celle que le contrôle reconnaît.
+        var shipped = new ConfigurationBuilder().AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json")).Build();
+        Assert.Equal(SampleSecrets.SampleVaultKey, shipped["Discovery:VaultKey"]);
+    }
+
+    [Fact]
     public void S7_valeurs_d_exemple_detectees_et_refusees_hors_developpement()
     {
         var sample = Config(SampleSecrets.SampleJwtKey, "MotDePasseServiceAccount", "Host=db;Password=ChangeMe_Str0ng!");

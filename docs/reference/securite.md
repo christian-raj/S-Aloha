@@ -39,6 +39,12 @@ actions selon le rôle, mais **le contrôle fait foi côté API**. La console es
 côté serveur : un client ne reçoit jamais un bloc non autorisé pour son rôle. Matrice
 complète : [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).
 
+**Coffre d'identifiants de la découverte** ([CFG-45](processus/gestion-de-la-configuration.md)) :
+communautés SNMP et comptes de domaine chiffrés en AES-256-GCM (chiffrement authentifié : une
+valeur altérée en base est refusée), clé dérivée de `Discovery:VaultKey`, tenue hors de la
+base ; l'API n'en renvoie jamais la valeur, et un échec de scan n'en cite pas. Écriture
+réservée à l'Admin.
+
 ## Surface exposée
 
 | Port | Service | Contenu |
@@ -46,6 +52,7 @@ complète : [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).
 | 80 | `web` (nginx) | Frontend + proxy `/api/` |
 | 8080 | `api` | API **et Swagger** (`/swagger`), exposés directement |
 | — | `db` | Non publié hors du réseau compose |
+| sortant | `api` (découverte) | Ping, ports TCP témoins, SNMP (UDP 161) vers les réseaux des tâches de scan, LDAP vers l'annuaire : à ouvrir par le pare-feu vers les seuls réseaux à inventorier ([CFG-46](processus/gestion-de-la-configuration.md)) |
 | — | `embeddings` | Non publié hors du réseau compose ; reçoit le texte des contenus indexés, qui **ne quitte pas le SI** (modèle exécuté localement, [ADR-0013](../decisions/adr-0013-recherche-hybride-service-embeddings-separe.md)) |
 
 ## Points de durcissement avant production
@@ -55,7 +62,7 @@ complète : [`regles-metier.md`](regles-metier.md#1-rôles-et-droits).
 
 | Point | État actuel | Cible |
 |---|---|---|
-| Secrets | Valeurs **d'exemple** de `Jwt:Key`, du mot de passe PostgreSQL et de `BindPassword` dans `appsettings.json` et `docker-compose.yml` ; hors développement, l'API **refuse de démarrer** avec elles ou avec une clé de moins de 64 caractères (S7), sauf en démonstration (`Security:AllowSampleSecrets`, avertissement au journal) | Secrets Docker ou variables d'environnement injectées, clé JWT aléatoire ≥ 64 caractères |
+| Secrets | Valeurs **d'exemple** de `Jwt:Key`, de `Discovery:VaultKey`, du mot de passe PostgreSQL et de `BindPassword` dans `appsettings.json` et `docker-compose.yml` ; hors développement, l'API **refuse de démarrer** avec elles ou avec une clé JWT de moins de 64 caractères (S7), sauf en démonstration (`Security:AllowSampleSecrets`, avertissement au journal) | Secrets Docker ou variables d'environnement injectées, clé JWT aléatoire ≥ 64 caractères, clé du coffre aléatoire ≥ 32 caractères fixée avant le premier identifiant |
 | LDAP | `UseSsl: false`, port 389 : mots de passe utilisateurs en clair sur le réseau | LDAPS (636) |
 | Transport | HTTP sur le port 80 | HTTPS (reverse proxy TLS) |
 | CORS | `AllowAnyOrigin` | Origine du frontend uniquement |

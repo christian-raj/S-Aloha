@@ -11,7 +11,19 @@ import { getUser } from '../../api'
  * la création (donnée de proposition, comme l'enregistrement d'origine) ; `numeric`
  * envoie la valeur d'une liste comme nombre (identifiant, étape…) ; `managerOnly`
  * fige le champ pour qui n'est ni Manager ni Admin (incident majeur, INC-13).
+ * `when(form)` n'affiche le champ que si la condition tient (champs du portefeuille pour une
+ * application, CFG-43) ; `hint` : aide sous le champ ; `type: 'heading'` : intertitre d'un
+ * bloc de champs (sans valeur), soumis au même `when`. `hint` peut dépendre des valeurs (fonction).
  */
+
+/** Champs porteurs d'une valeur (les intertitres n'en ont pas). */
+const valued = fields => fields.filter(fd => fd.type !== 'heading')
+
+/** Le champ s'applique-t-il aux valeurs saisies ? */
+export const applies = (fd, form) => !fd.when || fd.when(form)
+
+/** Aide du champ : texte, ou fonction des valeurs saisies. */
+const hintOf = (fd, form) => (typeof fd.hint === 'function' ? fd.hint(form) : fd.hint)
 
 const pad = n => String(n).padStart(2, '0')
 /** ISO UTC → valeur d'un <input type="datetime-local"> (heure locale). */
@@ -23,7 +35,7 @@ const toLocalInput = iso => {
 /** Valeurs de formulaire à partir d'un enregistrement de l'API (ou de valeurs par défaut). */
 export function toForm(fields, record = {}) {
   const f = {}
-  for (const fd of fields) {
+  for (const fd of valued(fields)) {
     const v = record[fd.key] ?? fd.default
     if (fd.type === 'date') f[fd.key] = v ? String(v).slice(0, 10) : ''
     else if (fd.type === 'datetime') f[fd.key] = v ? toLocalInput(v) : ''
@@ -40,7 +52,7 @@ export function toForm(fields, record = {}) {
 /** Corps de requête à partir des valeurs de formulaire. */
 export function toPayload(fields, form) {
   const p = {}
-  for (const fd of fields) {
+  for (const fd of valued(fields)) {
     const v = form[fd.key]
     if (fd.type === 'date' || fd.type === 'datetime') p[fd.key] = v ? new Date(v).toISOString() : null
     else if (fd.type === 'number') p[fd.key] = v === '' || v === null ? null : Number(v)
@@ -108,6 +120,7 @@ function Field({ fd, form, onChange, disabled }) {
     <div className={'field' + (fd.full || fd.type === 'textarea' ? ' full' : '')}>
       <label>{fd.label}{fd.required && ' *'}</label>
       {input}
+      {hintOf(fd, form) && <small className="field-hint">{hintOf(fd, form)}</small>}
     </div>
   )
 }
@@ -117,8 +130,10 @@ export default function RecordForm({ fields, form, onChange, disabled, creating 
   const isManager = ['Admin', 'Manager'].includes(getUser()?.role)
   return (
     <div className="form-grid">
-      {fields.filter(fd => !(creating && fd.create === false) && !(!creating && fd.onlyCreate)).map(fd =>
-        <Field key={fd.key} fd={fd} form={form} onChange={onChange} disabled={disabled || fd.readOnly || (fd.managerOnly && !isManager)} />)}
+      {fields.filter(fd => !(creating && fd.create === false) && !(!creating && fd.onlyCreate) && applies(fd, form)).map(fd =>
+        fd.type === 'heading'
+          ? <h4 key={fd.key} className="form-heading">{fd.label}{fd.hint && <small>{fd.hint}</small>}</h4>
+          : <Field key={fd.key} fd={fd} form={form} onChange={onChange} disabled={disabled || fd.readOnly || (fd.managerOnly && !isManager)} />)}
     </div>
   )
 }

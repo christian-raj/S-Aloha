@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, getUser } from '../../../api'
-import { dateFr } from '../../../core/fields'
+import { dateFr, dateTimeFr } from '../../../core/fields'
 import RecordDetail from '../../../core/components/RecordDetail'
 import { ciConfig, RELATION_TYPES } from '../config'
+import { Sources, StagingBadge } from '../components/Discovery'
 
 /** Dépendances du CI : relations sortantes (ce CI → autre) et entrantes (autre → ce CI). */
 function Relations({ ci, onChanged }) {
@@ -125,13 +126,39 @@ function Verification({ ci, onSaved }) {
   )
 }
 
+/**
+ * CFG-40 : actifs de la découverte rapprochés de ce CI (gestionnaires) — d'où vient son
+ * identification technique, et quand il a été vu pour la dernière fois.
+ */
+function DiscoveryTrace({ ci }) {
+  const [assets, setAssets] = useState([])
+  const isManager = ['Admin', 'Manager'].includes(getUser()?.role)
+  useEffect(() => {
+    if (isManager) api.discovery.staging.list({ ci: ci.id }).then(setAssets).catch(() => setAssets([]))
+  }, [ci.id])
+  if (assets.length === 0) return null
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <h3 className="card-title">Découverte</h3>
+      <ul className="plain-list">
+        {assets.map(a => (
+          <li key={a.id}>
+            <Link to={'/configuration/staging/' + a.id}><b>{a.hostname ?? a.ipAddress}</b></Link>{' '}
+            <StagingBadge status={a.status} />
+            <span className="muted"> — <Sources value={a.sources} />, vu le {dateTimeFr(a.lastSeenAt)}</span>
+          </li>))}
+      </ul>
+    </div>
+  )
+}
+
 export default function ConfigurationItemDetail() {
   return (
     <RecordDetail config={ciConfig} tab={{
       label: 'Relations et impact',
       render: (r, reload) => <><Relations ci={r} onChanged={reload} /><Impact ci={r} /></>
     }}>
-      {(r, reload) => <Verification ci={r} onSaved={reload} />}
+      {(r, reload) => <><Verification ci={r} onSaved={reload} /><DiscoveryTrace ci={r} /></>}
     </RecordDetail>
   )
 }

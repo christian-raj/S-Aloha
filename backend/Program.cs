@@ -7,6 +7,7 @@ using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Auth;
 using SAloha.Api.Core.Search;
+using SAloha.Api.Modules.ServiceConfigurationManagement.Discovery;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,16 @@ builder.Services.AddScoped<SAloha.Api.Core.Notifications.Notifier>();
 builder.Services.AddScoped<SAloha.Api.Core.Notifications.DatedEvents>();
 builder.Services.AddHostedService<SAloha.Api.Core.Notifications.DatedEventsWorker>();
 builder.Services.AddHostedService<IndexWorker>();
+
+// Découverte automatique (CFG-40 à CFG-47) : collecteurs, coffre, rapprochement, file d'exécution.
+builder.Services.AddSingleton<CredentialVault>();
+builder.Services.AddSingleton<DiscoveryQueue>();
+builder.Services.AddScoped<IDiscoveryCollector, NetworkScanner>();
+builder.Services.AddScoped<IDiscoveryCollector, SnmpCollector>();
+builder.Services.AddScoped<IDiscoveryCollector, ActiveDirectoryCollector>();
+builder.Services.AddScoped<MatchingEngine>();
+builder.Services.AddScoped<DiscoveryRunner>();
+builder.Services.AddHostedService<DiscoveryWorker>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<AuditInterceptor>();

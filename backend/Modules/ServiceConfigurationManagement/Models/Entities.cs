@@ -21,6 +21,14 @@ public class ConfigurationItem : Record
     public static readonly string[] Types =
         ["Application", "Serveur", "Base de données", "Réseau", "Stockage", "Poste de travail", "Logiciel", "Autre"];
     public static readonly string[] Environments = ["Production", "Recette", "Développement", "Autre"];
+    /// <summary>Statuts où les champs « En service » du portefeuille et du matériel sont exigés (CFG-43, CFG-44).</summary>
+    public static readonly string[] InOperation = ["En service", "Hors service"];
+    /// <summary>Types qui portent une identification réseau et matérielle (§ 3.2, § 3.4).</summary>
+    public static readonly string[] HardwareTypes = ["Serveur", "Réseau", "Stockage", "Poste de travail"];
+    /// <summary>CFG-44 : types dont le constructeur, le numéro de série et l'emplacement sont exigés (un Serveur peut être une VM).</summary>
+    public static readonly string[] PhysicalTypes = ["Réseau", "Stockage", "Poste de travail"];
+    public static readonly string[] Criticalities = ["Vitale", "Majeure", "Standard", "Mineure"];
+    public static readonly string[] AppLifecycles = ["Étude", "Développement", "Homologation", "En production", "Dépréciée", "Retirée"];
 
     /// <summary>CFG-15 : dernière attestation de la fiche par le propriétaire ou un gestionnaire.</summary>
     public DateTime? LastVerifiedAt { get; set; }
@@ -28,6 +36,36 @@ public class ConfigurationItem : Record
     [MaxLength(30)] public string CiType { get; set; } = "Autre";
     [MaxLength(20)] public string Environment { get; set; } = "Production";
     [MaxLength(150)] public string Location { get; set; } = "";
+
+    // Identification technique (§ 3.2) : critères de rapprochement de la découverte (CFG-41).
+    [MaxLength(45)] public string? IpAddress { get; set; }
+    [MaxLength(17)] public string? MacAddress { get; set; }
+    [MaxLength(150)] public string? OperatingSystem { get; set; }
+
+    // Portefeuille applicatif (§ 3.3, CFG-43, CFG-48).
+    [MaxLength(20)] public string? AppCode { get; set; }
+    [MaxLength(100)] public string? BusinessUnit { get; set; }
+    [MaxLength(10)] public string? BusinessOwnerType { get; set; }
+    [MaxLength(200)] public string? BusinessOwnerId { get; set; }
+    [MaxLength(250)] public string? BusinessOwnerDisplayName { get; set; }
+    [MaxLength(10)] public string? TechnicalOwnerType { get; set; }
+    [MaxLength(200)] public string? TechnicalOwnerId { get; set; }
+    [MaxLength(250)] public string? TechnicalOwnerDisplayName { get; set; }
+    [MaxLength(10)] public string? Criticality { get; set; }
+    public int? RtoHours { get; set; }
+    public int? RpoHours { get; set; }
+    public bool GdprSensitive { get; set; }
+    public bool Nis2Scope { get; set; }
+    [MaxLength(30)] public string? AppLifecycle { get; set; }
+
+    // Actifs matériels (§ 3.4, CFG-44, CFG-47).
+    [MaxLength(100)] public string? Vendor { get; set; }
+    [MaxLength(100)] public string? Model { get; set; }
+    [MaxLength(100)] public string? SerialNumber { get; set; }
+    public DateTime? PurchaseDate { get; set; }
+    public DateTime? WarrantyExpiry { get; set; }
+    public DateTime? EndOfSupport { get; set; }
+
     public List<CiRelationship> Outgoing { get; set; } = new();   // ce CI → autres
     public List<CiRelationship> Incoming { get; set; } = new();   // autres → ce CI
 }
@@ -54,6 +92,14 @@ public class CiRelationship
 
 public record ConfigurationItemDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
-    string? CiType, string? Environment, string? Location, int? PerimeterId = null) : IRecordDto;
+    string? CiType, string? Environment, string? Location, int? PerimeterId = null,
+    string? IpAddress = null, string? MacAddress = null, string? OperatingSystem = null,
+    string? AppCode = null, string? BusinessUnit = null,
+    string? BusinessOwnerType = null, string? BusinessOwnerId = null, string? BusinessOwnerDisplayName = null,
+    string? TechnicalOwnerType = null, string? TechnicalOwnerId = null, string? TechnicalOwnerDisplayName = null,
+    string? Criticality = null, int? RtoHours = null, int? RpoHours = null,
+    bool GdprSensitive = false, bool Nis2Scope = false, string? AppLifecycle = null,
+    string? Vendor = null, string? Model = null, string? SerialNumber = null,
+    DateTime? PurchaseDate = null, DateTime? WarrantyExpiry = null, DateTime? EndOfSupport = null) : IRecordDto;
 
 public record CiRelationshipDto(string TargetReference, string Type);
