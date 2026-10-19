@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `DuplicateDismissals` | Table `DuplicateDismissals` : paires écartées (« pas un doublon », ADM-42) — type, identifiants dans l'ordre croissant (unique), auteur, date |
+| `SshInventory` | Colonnes `DiscoveredAssets.Services`, `ListeningPorts` ; tables `DiscoveredSoftware` (logiciels d'un actif du sas, suppression en cascade) et `SshHostKeys` (clé d'hôte par périmètre, adresse et port, unique ; empreinte en attente) (CFG-52, CFG-53) |
 | `SnmpV3Interfaces` | Colonnes `DiscoveryCredentials.AuthProtocol`, `PrivProtocol` (SNMP v3) et `DiscoveredAssets.Interfaces` (table des interfaces lue par SNMP) (CFG-51) |
 | `PassiveFingerprint` | Colonne `DiscoveredAssets.Banners` (bannières SSH et HTTP, CFG-49) ; table `MacVendors` : préfixe OUI (clé), constructeur, date d'import — vide tant que l'Admin n'a pas importé le registre de l'IEEE (CFG-50) |
 | `Categories` | Table `Categories` : catégories d'incident et de problème (ADM-50) — pratique, nom (unique par pratique), active, auteur, date ; reprise des catégories déjà saisies (ADM-52) |

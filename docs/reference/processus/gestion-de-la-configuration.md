@@ -53,6 +53,8 @@ et l'arbitrage du portefeuille (choix d'investissement entre applications ou pro
 | Créer, modifier, remplacer le secret, supprimer un identifiant du coffre | ✘ | ✘ | ✔ | ✅ CFG-45 |
 | Tenir le référentiel des fins de support | ✘ | ✔ | ✔ | ✅ CFG-47 |
 | Importer la base des constructeurs (registre OUI de l'IEEE) | ✘ | ✘ | ✔ | ✅ CFG-50 |
+| Consulter les clés d'hôte SSH retenues | ✘ | ✔ | ✔ | ✅ CFG-53 |
+| Accepter une clé d'hôte SSH changée, oublier un hôte | ✘ | ✘ | ✔ | ✅ CFG-53 |
 | Importer en masse | ✘ | ✘ | ✔ | 🔜 CFG-30 |
 | Supprimer un CI | ✘ | ✘ | ✔ | ✅ |
 
@@ -162,14 +164,16 @@ L'emplacement physique précis se saisit dans `Location` (§ 3.2).
 
 | Objet | Champs principaux | Usage | Statut |
 |---|---|---|---|
-| Actif découvert (`DiscoveredAssets`) | `IpAddress`, `MacAddress`, `Hostname`, `SerialNumber`, `Vendor`, `Model`, `DetectedOs`, `DetectedType` (valeurs de `CiType`), `Location`, `OpenPorts`, `Banners` (bannières SSH et HTTP, CFG-49), `Interfaces` (interfaces lues par SNMP, CFG-51), `Sources` (IpSweep, Snmp, ActiveDirectory : liste des sources qui l'ont vu), `InDirectory`, `Status` (À rapprocher, En conflit, Rapproché, Ignoré), `ConfidenceScore` (0 à 100), `MatchRule`, `SuggestedAction` (UpdateExisting, Conflict, CreateNew), `ConflictReason`, `MatchedCiId`, `JobId`, `FirstSeenAt`, `LastSeenAt`, `ReconciledAt`, `ReconciledBy`, périmètre | Sas de staging avant réconciliation (CFG-40) | ✅ |
-| Tâche de scan (`DiscoveryJobs`) | `Name`, `ScanType` (IpSweep, Snmp, ActiveDirectory), `TargetRange` (CIDR ou IP ; BaseDN facultatif pour l'annuaire), `PortList` (balayage), `CredentialId`, `FrequencyHours` (0 : manuelle), `WindowStart`, `WindowEnd`, `IsActive`, `LastRunAt`, `LastStatus` (Jamais lancée, En file, En cours, Réussie, En échec), `LastError`, `LastFoundCount`, périmètre | Planification et suivi des scans (CFG-46) | ✅ |
-| Identifiant du coffre (`DiscoveryCredentials`) | `Name`, `CredentialType` (SnmpV2c, SnmpV3, WindowsDomain), `Username` (compte de domaine, utilisateur SNMP v3), `Domain`, `AuthProtocol` et `PrivProtocol` (SNMP v3, CFG-51), `EncryptedSecret`, `SecretChangedAt`, périmètre | Secrets chiffrés au repos, jamais renvoyés (CFG-45) | ✅ |
+| Actif découvert (`DiscoveredAssets`) | `IpAddress`, `MacAddress`, `Hostname`, `SerialNumber`, `Vendor`, `Model`, `DetectedOs`, `DetectedType` (valeurs de `CiType`), `Location`, `OpenPorts`, `Banners` (bannières SSH et HTTP, CFG-49), `Interfaces` (interfaces lues par SNMP, CFG-51), `Services` et `ListeningPorts` (relevés par SSH, CFG-52), `Sources` (IpSweep, Snmp, ActiveDirectory : liste des sources qui l'ont vu), `InDirectory`, `Status` (À rapprocher, En conflit, Rapproché, Ignoré), `ConfidenceScore` (0 à 100), `MatchRule`, `SuggestedAction` (UpdateExisting, Conflict, CreateNew), `ConflictReason`, `MatchedCiId`, `JobId`, `FirstSeenAt`, `LastSeenAt`, `ReconciledAt`, `ReconciledBy`, périmètre | Sas de staging avant réconciliation (CFG-40) | ✅ |
+| Tâche de scan (`DiscoveryJobs`) | `Name`, `ScanType` (IpSweep, Snmp, ActiveDirectory, Ssh), `TargetRange` (CIDR ou IP ; BaseDN facultatif pour l'annuaire), `PortList` (balayage ; port SSH, 22 par défaut), `CredentialId`, `FrequencyHours` (0 : manuelle), `WindowStart`, `WindowEnd`, `IsActive`, `LastRunAt`, `LastStatus` (Jamais lancée, En file, En cours, Réussie, En échec), `LastError`, `LastFoundCount`, périmètre | Planification et suivi des scans (CFG-46) | ✅ |
+| Identifiant du coffre (`DiscoveryCredentials`) | `Name`, `CredentialType` (SnmpV2c, SnmpV3, WindowsDomain, Ssh), `Username` (compte de domaine, utilisateur SNMP v3, compte SSH), `Domain`, `AuthProtocol` et `PrivProtocol` (SNMP v3, CFG-51), `EncryptedSecret`, `SecretChangedAt`, périmètre | Secrets chiffrés au repos, jamais renvoyés (CFG-45) | ✅ |
 | Fin de support (`EndOfLifeRules`) | `Product` (unique, sans tenir compte de la casse), `EndOfSupport`, `Notes` | Référentiel partagé de l'obsolescence (CFG-47) | ✅ |
+| Logiciel découvert (`DiscoveredSoftware`) | `AssetId` (actif du sas, suppression en cascade), `Name`, `Version` | Logiciels installés relevés par SSH, remplacés à chaque relevé (CFG-52) | ✅ |
+| Clé d'hôte SSH (`SshHostKeys`) | `Host`, `Port` (uniques par périmètre), `Algorithm`, `Fingerprint` (SHA-256), `FirstSeenAt`, `LastSeenAt`, `PendingAlgorithm`, `PendingFingerprint`, `PendingSeenAt`, `AcceptedAt`, `AcceptedBy`, périmètre | Confiance au premier contact (CFG-53) | ✅ |
 | Constructeur par préfixe MAC (`MacVendors`) | `Prefix` (OUI, 6 chiffres hexadécimaux, clé), `Organization` (sans forme juridique), `ImportedAt` | Constructeur d'un actif découvert sans SNMP (CFG-50) ; base importée, non fournie | ✅ |
 
-Types de scan et d'identifiant à venir avec leurs collecteurs : SSH, WinRM, hyperviseurs et
-API cloud (phase 3 du chantier F13), agent nomade (phase 4). 🔜
+Types de scan et d'identifiant à venir avec leurs collecteurs : hyperviseurs (Proxmox VE,
+VMware vCenter), WinRM (phase 3 du chantier F13), API cloud, agent nomade (phase 4). 🔜
 
 ## 4. Cycle de vie
 
@@ -259,7 +263,8 @@ Collecteurs, par phase du chantier F13 : annuaire AD et balayage IP (ping, ports
 témoins, DNS inverse, table ARP locale) ✅ ; SNMP v2c en lecture seule (MIB-II, numéro de
 série et modèle de l'ENTITY-MIB) ✅ ; bannières SSH et HTTP (CFG-49) et constructeur par
 préfixe MAC (CFG-50) ✅ ; SNMP v3 et table des interfaces (CFG-51) ✅ ;
-SSH, WinRM, hyperviseurs et cartographie des dépendances 🔜 (phase 3) ; agent nomade 🔜
+inventaire SSH (CFG-52, CFG-53) ✅ ; hyperviseurs, cartographie des dépendances et WinRM 🔜
+(phase 3) ; agent nomade 🔜
 (phase 4).
 
 ```mermaid
@@ -377,6 +382,8 @@ d'action](../../plan-action.md#découverte-automatique-et-cmdb-augmentée-f13)) 
 | CFG-49 | **Bannières (empreinte passive)** : sur les ports ouverts d'un balayage IP, la découverte lit la ligne d'identification d'un serveur SSH (port 22, envoyée dès la connexion) et l'en-tête `Server` d'une réponse à `HEAD /` sur les ports HTTP en clair (80, 8000, 8008, 8080), en 1,5 s au plus, sans authentification. Bannière réduite à 120 caractères imprimables, gardée sur l'actif ; elle précise le système (Ubuntu, Debian, Windows…), le constructeur et le type quand elle les nomme. HTTPS (certificat) : phase 3 | ✅ | 3 |
 | CFG-50 | **Constructeur par préfixe MAC (OUI)** : un actif sans constructeur connu par SNMP reçoit celui du préfixe de son adresse MAC dans la base `MacVendors`. La base n'est pas fournie : l'Admin importe le registre MA-L public de l'IEEE (`oui.csv`), qui la remplace ; lignes d'un autre registre ou mal formées écartées et comptées. Adresse administrée localement (aléatoire) ou de groupe : pas de constructeur | ✅ | 3 |
 | CFG-51 | **SNMP v3 et interfaces** : un scan SNMP utilise une communauté v2c ou un utilisateur v3 du coffre (sécurité USM, RFC 3414 : authentification SHA-256 par défaut, SHA-384, SHA-512 ou SHA-1 ; chiffrement AES-128 par défaut, AES-192, AES-256, ou aucun). MD5 et DES, cassés, sont refusés (400). Les deux phrases secrètes (8 caractères au moins) sont chiffrées ensemble au coffre (CFG-45) ; en remplacer une conserve l'autre. Un agent qui refuse l'accès (utilisateur, phrase ou protocole) est traité comme muet. Le scan lit aussi la table des interfaces (`ifTable` : nom, nature, état, débit, adresse MAC ; boucle locale exclue, 128 au plus), gardée sur l'actif ; la première interface Ethernet à adresse attribuée par un constructeur donne l'adresse MAC de l'actif qui n'en a pas | ✅ | 3 |
+| CFG-52 | **Inventaire SSH (Linux, Unix)** : un scan SSH se connecte, avec un compte SSH du coffre (mot de passe, ou clé privée OpenSSH ou PEM et sa phrase), aux hôtes de la plage qui ouvrent le port de la tâche (22 par défaut, un seul port), et exécute un script de lecture seule, sans sudo : système (`os-release`, sinon `uname`), nom d'hôte, constructeur, modèle et numéro de série du DMI quand ils sont lisibles, logiciels installés (dpkg, rpm ou apk ; 3 000 au plus), services systemd actifs, ports TCP en écoute hors boucle locale. Le relevé entre dans le sas comme les autres sources (CFG-40) ; la liste des logiciels est remplacée à chaque relevé. Compte refusé ou hôte muet : aucun actif | ✅ | 3 |
+| CFG-53 | **Clé d'hôte SSH : confiance au premier contact** : la clé d'un hôte (algorithme, empreinte SHA-256) est retenue au premier inventaire, par périmètre, adresse et port. Une clé différente ensuite arrête la connexion avant l'envoi de l'identifiant ; l'hôte n'est plus inventorié et apparaît « Clé changée » (nouvelle empreinte affichée) jusqu'à ce que l'Admin accepte la nouvelle clé ; il peut aussi oublier l'hôte (la clé suivante est alors retenue). Les gestionnaires consultent les clés de leurs périmètres | ✅ | 3 |
 
 ## 6. Délais, calculs et alertes
 
@@ -444,6 +451,8 @@ Indicateurs du tableau de bord : onglet [Configuration & inventaire](../reportin
 | `GET /api/discovery/end-of-life` | User | Référentiel des fins de support (CFG-47) |
 | `POST /api/discovery/end-of-life`, `PUT …/end-of-life/{id}`, `DELETE …/end-of-life/{id}` | Manager | Tenue du référentiel (CFG-47) |
 | `GET /api/discovery/mac-vendors` | User | État de la base des constructeurs : nombre de préfixes, dernier import (CFG-50) |
+| `GET /api/discovery/ssh-host-keys` | User, gestionnaire d'un périmètre | Clés d'hôte SSH retenues, clés changées en tête (CFG-53) |
+| `POST /api/discovery/ssh-host-keys/{id}/accept`, `DELETE …/ssh-host-keys/{id}` | Admin | Acceptation d'une clé changée, oubli d'un hôte (CFG-53) |
 | `POST /api/discovery/mac-vendors/import` (`csv` : contenu de `oui.csv`, 12 Mo au plus) | Admin | Import du registre OUI de l'IEEE, remplace la base (CFG-50) |
 
 Configuration de l'API (section `Discovery`) : `VaultKey` (clé du coffre, à fixer avant le
@@ -474,3 +483,5 @@ premier identifiant et à ne plus changer), `IntervalMinutes` (relevé des tâch
 - **CFG-49** — *Étant donné* un hôte qui annonce « SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.5 » sur le port 22, *quand* le balayage le trouve, *alors* l'actif porte cette bannière et le système « Linux Ubuntu ».
 - **CFG-50** — *Étant donné* la base OUI importée avec le préfixe `0C5050`, *quand* un actif d'adresse `0c:50:50:00:00:10` est découvert sans SNMP, *alors* il reçoit le constructeur de ce préfixe ; une adresse administrée localement n'en reçoit pas ; un gestionnaire ne peut pas importer (403).
 - **CFG-51** — *Étant donné* un agent avec un utilisateur v3 (SHA-256, AES), *quand* un scan utilise cet utilisateur du coffre, *alors* l'actif porte le nom, l'emplacement et les interfaces de l'agent ; avec une mauvaise phrase, aucun actif ; un identifiant MD5 ou DES est refusé (400).
+- **CFG-52** — *Étant donné* un serveur Linux et un compte SSH sans droits d'administration au coffre, *quand* le scan SSH s'exécute, *alors* l'actif porte le système, les logiciels installés (avec leur version), les services actifs et les ports en écoute ; avec un mauvais mot de passe, aucun actif.
+- **CFG-53** — *Étant donné* un hôte déjà inventorié, *quand* il présente une autre clé d'hôte, *alors* aucun identifiant n'est envoyé, aucun actif n'est relevé et l'hôte est « Clé changée » ; un gestionnaire ne peut pas accepter la clé (403) ; après acceptation par l'Admin, l'inventaire reprend.

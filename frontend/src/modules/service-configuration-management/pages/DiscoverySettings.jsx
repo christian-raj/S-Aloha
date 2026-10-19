@@ -6,6 +6,8 @@ import PerimeterSelect from '../../../core/components/PerimeterSelect'
 import usePerimeters, { perimeterName } from '../../../core/usePerimeters'
 import { JOB_TONES, SOURCE_LABELS } from '../config'
 
+const SSH_HELP = 'Inventaire en lecture seule, sans sudo : système, constructeur, logiciels installés, services actifs, ports en écoute. '
+  + 'La clé d’hôte est retenue au premier contact ; si elle change, l’hôte est refusé jusqu’à acceptation par l’Admin.'
 /** Types de scan : cible attendue et types d'identifiant du coffre utilisables. */
 const SCAN_TYPES = {
   IpSweep: { label: 'Balayage IP', target: 'Réseau CIDR (/24 au plus) ou adresse, ex. 192.168.1.0/24', credentials: [],
@@ -14,11 +16,13 @@ const SCAN_TYPES = {
     help: 'Lecture seule (sysDescr, sysName, sysLocation, n° de série, interfaces) avec une communauté v2c ou un utilisateur v3 du coffre.' },
   ActiveDirectory: { label: 'Active Directory', target: 'BaseDN facultatif (sinon celle de l’annuaire configuré)', credentials: ['WindowsDomain'],
     help: 'Comptes d’ordinateur actifs. Compte de domaine du coffre facultatif (sinon le compte de service de l’API).' },
+  Ssh: { label: 'Inventaire SSH (Linux, Unix)', target: 'Réseau CIDR (/24 au plus) ou adresse', credentials: ['Ssh'], help: SSH_HELP },
 }
 const CREDENTIAL_TYPES = {
   SnmpV3: { label: 'Utilisateur SNMP v3', secret: 'Phrase d’authentification' },
   SnmpV2c: { label: 'Communauté SNMP v2c', secret: 'Communauté' },
   WindowsDomain: { label: 'Compte de domaine Windows', secret: 'Mot de passe' },
+  Ssh: { label: 'Compte SSH', secret: 'Mot de passe' },
 }
 // SNMP v3 (CFG-51) : MD5 et DES, cassés, ne sont pas proposés.
 const V3_AUTH = [{ value: 'SHA256', label: 'SHA-256 (recommandé)' }, { value: 'SHA384', label: 'SHA-384' },
@@ -63,9 +67,11 @@ function JobForm({ job, credentials, onSaved, onCancel }) {
         {f.scanType === 'IpSweep' && <div className="field full"><label>Ports TCP sondés</label>
           <input value={f.portList} onChange={e => set({ portList: e.target.value })} placeholder="Par défaut : 22,80,443,135,445,3389,5985,9100" />
           <small className="field-hint">Séparés par des virgules, 50 au plus.</small></div>}
-        {type.credentials.length > 0 && <div className="field"><label>Identifiant du coffre{f.scanType === 'Snmp' && ' *'}</label>
+        {f.scanType === 'Ssh' && <div className="field"><label>Port SSH</label>
+          <input value={f.portList} onChange={e => set({ portList: e.target.value })} placeholder="22" inputMode="numeric" /></div>}
+        {type.credentials.length > 0 && <div className="field"><label>Identifiant du coffre{f.scanType !== 'ActiveDirectory' && ' *'}</label>
           <select value={f.credentialId} onChange={e => set({ credentialId: e.target.value })}>
-            <option value="">{f.scanType === 'Snmp' ? '— Choisir —' : 'Compte de service de l’API'}</option>
+            <option value="">{f.scanType === 'ActiveDirectory' ? 'Compte de service de l’API' : '— Choisir —'}</option>
             {usable.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
           {usable.length === 0 && <small className="field-hint">Aucun identifiant « {type.credentials.map(t => CREDENTIAL_TYPES[t].label).join(' » ou « ')} » : l’Admin l’ajoute dans l’onglet Identifiants.</small>}
@@ -161,13 +167,21 @@ function CredentialForm({ credential, onSaved, onCancel }) {
   const perimeters = usePerimeters()
   const [f, setF] = useState({ name: credential?.name ?? '', credentialType: credential?.credentialType ?? 'SnmpV2c',
     username: credential?.username ?? '', domain: credential?.domain ?? '', secret: '',
-    authProtocol: credential?.authProtocol ?? 'SHA256', privProtocol: credential?.privProtocol ?? 'AES', privacySecret: '' })
+    authProtocol: credential?.authProtocol ?? 'SHA256', privProtocol: credential?.privProtocol ?? 'AES', privacySecret: '',
+    sshMethod: 'password', privateKey: '', keyPassphrase: '' })
   const [perimeterId, setPerimeterId] = useState(null)
   const [error, setError] = useState('')
   const set = patch => setF(prev => ({ ...prev, ...patch }))
   const kind = CREDENTIAL_TYPES[f.credentialType]
-  const save = () => (credential ? api.discovery.credentials.update(credential.id, f)
-    : api.discovery.credentials.create({ ...f, perimeterId })).then(onSaved).catch(e => setError(e.message))
+  // SSH : seul le moyen choisi (mot de passe ou clé) part vers l'API.
+  const payload = () => {
+    const { sshMethod, ...dto } = f
+    if (f.credentialType !== 'Ssh') return { ...dto, privateKey: null, keyPassphrase: null }
+    return sshMethod === 'key' ? { ...dto, secret: null } : { ...dto, privateKey: null, keyPassphrase: null }
+  }
+  const save = () => (credential ? api.discovery.credentials.update(credential.id, payload())
+    : api.discovery.credentials.create({ ...payload(), perimeterId })).then(onSaved).catch(e => setError(e.message))
+  const sshKey = f.credentialType === 'Ssh' && f.sshMethod === 'key'
   return (
     <div className="card" style={{ marginBottom: 16 }}>
       <h3 className="card-title">{credential ? `Modifier « ${credential.name} »` : 'Nouvel identifiant'}</h3>
@@ -186,6 +200,25 @@ function CredentialForm({ credential, onSaved, onCancel }) {
           <div className="field"><label>Domaine</label>
             <input value={f.domain} onChange={e => set({ domain: e.target.value })} placeholder="MONDOMAINE" autoComplete="off" /></div>
         </>}
+        {f.credentialType === 'Ssh' && <>
+          <div className="field"><label>Compte *</label>
+            <input value={f.username} onChange={e => set({ username: e.target.value })} placeholder="svc-inventaire" autoComplete="off" />
+            <small className="field-hint">Compte sans droits d’administration : l’inventaire n’utilise pas sudo.</small></div>
+          <div className="field"><label>Authentification</label>
+            <select value={f.sshMethod} onChange={e => set({ sshMethod: e.target.value })} aria-label="Authentification SSH">
+              <option value="password">Mot de passe</option>
+              <option value="key">Clé privée</option>
+            </select></div>
+        </>}
+        {sshKey && <>
+          <div className="field full"><label>Clé privée{!credential && ' *'}</label>
+            <textarea rows={5} value={f.privateKey} onChange={e => set({ privateKey: e.target.value })} spellCheck={false}
+              placeholder={credential ? 'Laisser vide pour conserver la clé actuelle' : '-----BEGIN OPENSSH PRIVATE KEY-----'} aria-label="Clé privée" />
+            <small className="field-hint">OpenSSH ou PEM ; chiffrée dès l’enregistrement, jamais réaffichée.</small></div>
+          <div className="field"><label>Phrase de la clé</label>
+            <input type="password" value={f.keyPassphrase} onChange={e => set({ keyPassphrase: e.target.value })} autoComplete="new-password"
+              placeholder="Si la clé est protégée" aria-label="Phrase de la clé" /></div>
+        </>}
         {f.credentialType === 'SnmpV3' && <>
           <div className="field"><label>Utilisateur (securityName) *</label>
             <input value={f.username} onChange={e => set({ username: e.target.value })} placeholder="svc-snmp" autoComplete="off" /></div>
@@ -198,10 +231,10 @@ function CredentialForm({ credential, onSaved, onCancel }) {
               {V3_PRIV.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select></div>
         </>}
-        <div className="field"><label>{kind.secret}{!credential && ' *'}</label>
+        {!sshKey && <div className="field"><label>{kind.secret}{!credential && ' *'}</label>
           <input type="password" value={f.secret} onChange={e => set({ secret: e.target.value })} autoComplete="new-password"
             placeholder={credential ? 'Laisser vide pour conserver l’actuel' : ''} />
-          <small className="field-hint">Chiffré dès l’enregistrement ; jamais réaffiché.{f.credentialType === 'SnmpV3' && ' 8 caractères au moins.'}</small></div>
+          <small className="field-hint">Chiffré dès l’enregistrement ; jamais réaffiché.{f.credentialType === 'SnmpV3' && ' 8 caractères au moins.'}</small></div>}
         {f.credentialType === 'SnmpV3' && f.privProtocol !== 'None' && (
           <div className="field"><label>Phrase de chiffrement{!credential && ' *'}</label>
             <input type="password" value={f.privacySecret} onChange={e => set({ privacySecret: e.target.value })} autoComplete="new-password"
@@ -210,7 +243,7 @@ function CredentialForm({ credential, onSaved, onCancel }) {
         )}
       </div>
       <div className="actions">
-        <button className="btn" onClick={save} disabled={!f.name.trim() || (!credential && !f.secret)}>Enregistrer</button>
+        <button className="btn" onClick={save} disabled={!f.name.trim() || (!credential && !(sshKey ? f.privateKey.trim() : f.secret))}>Enregistrer</button>
         <button className="btn ghost" onClick={onCancel}>Annuler</button>
       </div>
     </div>
@@ -308,6 +341,51 @@ function EndOfLife({ canEdit }) {
   )
 }
 
+/**
+ * Clés d'hôte SSH (CFG-53) : retenues au premier contact. Une clé changée bloque l'inventaire de
+ * l'hôte (usurpation possible) jusqu'à ce que l'Admin, après vérification, l'accepte.
+ */
+function SshHostKeys({ isAdmin }) {
+  const [keys, setKeys] = useState(null)
+  const [error, setError] = useState('')
+  const load = () => api.discovery.sshHostKeys.list().then(setKeys).catch(e => setError(e.message))
+  useEffect(() => { load() }, [])
+  const accept = k => window.confirm(`Accepter la nouvelle clé de ${k.host} ? Vérifier d’abord son empreinte sur le serveur (ssh-keygen -lf).`)
+    && api.discovery.sshHostKeys.accept(k.id).then(load).catch(e => setError(e.message))
+  const forget = k => window.confirm(`Oublier ${k.host} ? Sa prochaine clé sera retenue sans contrôle.`)
+    && api.discovery.sshHostKeys.forget(k.id).then(load).catch(e => setError(e.message))
+  return (
+    <>
+      <p className="muted small" style={{ marginBottom: 12 }}>
+        La clé de chaque serveur est retenue au premier inventaire SSH. Si elle change (réinstallation, ou serveur usurpé), l’identifiant
+        n’est pas envoyé et l’hôte n’est plus inventorié tant que l’Admin n’a pas accepté la nouvelle clé.
+      </p>
+      {error && <div className="error" role="alert">{error}</div>}
+      <div className="table-scroll">
+        <table className="compact">
+          <thead><tr><th>Hôte</th><th>Clé retenue</th><th>État</th><th>Vue le</th><th></th></tr></thead>
+          <tbody>
+            {keys?.map(k => (
+              <tr key={k.id}>
+                <td><b>{k.host}</b>{k.port !== 22 && <span className="muted">:{k.port}</span>}</td>
+                <td className="small"><code>{k.algorithm} SHA256:{k.fingerprint}</code></td>
+                <td>{k.changed
+                  ? <><span className="badge t-bad">Clé changée</span><div className="small"><code>{k.pendingAlgorithm} SHA256:{k.pendingFingerprint}</code></div></>
+                  : <span className="badge t-done">De confiance</span>}</td>
+                <td className="small">{dateTimeFr(k.changed ? k.pendingSeenAt : k.lastSeenAt)}</td>
+                <td className="row-actions">{isAdmin && <>
+                  {k.changed && <button className="btn small" onClick={() => accept(k)}>Accepter la nouvelle clé</button>}
+                  <button className="btn ghost small" onClick={() => forget(k)}>Oublier</button>
+                </>}</td>
+              </tr>))}
+            {keys?.length === 0 && <tr><td colSpan={5} className="muted">Aucun hôte inventorié par SSH.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}
+
 const IEEE_OUI_URL = 'https://standards-oui.ieee.org/oui/oui.csv'
 
 /**
@@ -372,6 +450,7 @@ export default function DiscoverySettings() {
     { id: 'jobs', label: 'Tâches de scan' },
     isAdmin && { id: 'credentials', label: 'Identifiants (coffre)' },
     { id: 'eol', label: 'Fins de support' },
+    { id: 'ssh', label: 'Clés d’hôte SSH' },
     { id: 'oui', label: 'Constructeurs (OUI)' },
   ].filter(Boolean)
   const tab = tabs.find(t => t.id === params.get('tab')) ?? tabs[0]
@@ -389,6 +468,7 @@ export default function DiscoverySettings() {
       {tab.id === 'jobs' && <Jobs isAdmin={isAdmin} />}
       {tab.id === 'credentials' && <Credentials />}
       {tab.id === 'eol' && <EndOfLife canEdit={['Admin', 'Manager'].includes(role)} />}
+      {tab.id === 'ssh' && <SshHostKeys isAdmin={isAdmin} />}
       {tab.id === 'oui' && <MacVendors isAdmin={isAdmin} />}
     </>
   )

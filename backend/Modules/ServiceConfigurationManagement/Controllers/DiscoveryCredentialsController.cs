@@ -45,7 +45,8 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
     public async Task<IActionResult> Create(DiscoveryCredentialDto dto)
     {
         if (!vault.Configured) return StatusCode(503, new { message = CredentialVault.NotConfigured });
-        if (string.IsNullOrEmpty(dto.Secret)) return BadRequest(new { message = Secret(dto.CredentialType) + " est obligatoire." });
+        if (string.IsNullOrEmpty(dto.Secret) && string.IsNullOrEmpty(dto.PrivateKey))
+            return BadRequest(new { message = Secret(dto.CredentialType) + " est obligatoire." });
         var (perimeterId, refused, forbidden) = await access.ChooseAsync(dto.PerimeterId);
         if (forbidden) return Forbid();
         if (refused is not null) return BadRequest(new { message = refused });
@@ -71,7 +72,8 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
         var hadPrivacy = typeBefore == "SnmpV3" && c.PrivProtocol != "None";
         if (Apply(c, dto) is { } error) return BadRequest(new { message = error });
         // SNMP v3 : une phrase fournie remplace la sienne ; l'autre est conservée.
-        if (!string.IsNullOrEmpty(dto.Secret) || !string.IsNullOrEmpty(dto.PrivacySecret) || NeedsPrivacy(c, hadPrivacy))
+        if (!string.IsNullOrEmpty(dto.Secret) || !string.IsNullOrEmpty(dto.PrivacySecret) || !string.IsNullOrEmpty(dto.PrivateKey)
+            || NeedsPrivacy(c, hadPrivacy))
         {
             if (!vault.Configured) return StatusCode(503, new { message = CredentialVault.NotConfigured });
             var current = typeBefore == "SnmpV3" && c.EncryptedSecret != "" ? SnmpV3Secret.Parse(vault.Unprotect(c.EncryptedSecret)) : null;
@@ -99,7 +101,8 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
 
     private static string Secret(string? type) => type switch
     {
-        "SnmpV2c" => "La communauté SNMP", "SnmpV3" => "La phrase d'authentification", _ => "Le mot de passe"
+        "SnmpV2c" => "La communauté SNMP", "SnmpV3" => "La phrase d'authentification", "Ssh" => "Le mot de passe ou la clé privée",
+        _ => "Le mot de passe"
     };
 
     /// <summary>Passage au chiffrement SNMP v3 sans phrase de chiffrement connue : il faut la fournir.</summary>
@@ -113,6 +116,19 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
     private static string? SecretOf(DiscoveryCredential c, DiscoveryCredentialDto dto, SnmpV3Secret? current, out string? plain)
     {
         plain = null;
+        if (c.CredentialType == "Ssh")
+        {
+            // CFG-52 : mot de passe ou clé privée ; le moyen fourni remplace l'autre.
+            if (!string.IsNullOrWhiteSpace(dto.PrivateKey))
+            {
+                if (SshSecret.CheckKey(dto.PrivateKey, dto.KeyPassphrase) is { } keyError) return keyError;
+                plain = new SshSecret(null, dto.PrivateKey.Trim(), string.IsNullOrEmpty(dto.KeyPassphrase) ? null : dto.KeyPassphrase).Serialize();
+                return null;
+            }
+            if (string.IsNullOrEmpty(dto.Secret)) return Secret(c.CredentialType) + " est obligatoire.";
+            plain = new SshSecret(dto.Secret, null, null).Serialize();
+            return null;
+        }
         if (c.CredentialType != "SnmpV3")
         {
             if (string.IsNullOrEmpty(dto.Secret)) return Secret(c.CredentialType) + " est obligatoire.";
@@ -136,11 +152,12 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
             return "Un compte de domaine porte son nom de compte.";
         var v3 = dto.CredentialType == "SnmpV3";
         if (v3 && string.IsNullOrWhiteSpace(dto.Username)) return "Un utilisateur SNMP v3 porte son nom (securityName).";
+        if (dto.CredentialType == "Ssh" && string.IsNullOrWhiteSpace(dto.Username)) return "Un compte SSH porte son nom de compte.";
         if (v3 && Allowed.Check("Authentification SNMP v3", dto.AuthProtocol ?? "SHA256", SnmpAccess.AuthProtocols) is { } auth) return auth;
         if (v3 && Allowed.Check("Chiffrement SNMP v3", dto.PrivProtocol ?? "AES", SnmpAccess.PrivProtocols) is { } priv) return priv;
         c.Name = dto.Name.Trim();
         c.CredentialType = dto.CredentialType;
-        c.Username = dto.CredentialType is "WindowsDomain" or "SnmpV3" ? dto.Username?.Trim() : null;
+        c.Username = dto.CredentialType is "WindowsDomain" or "SnmpV3" or "Ssh" ? dto.Username?.Trim() : null;
         c.AuthProtocol = v3 ? dto.AuthProtocol ?? "SHA256" : null;
         c.PrivProtocol = v3 ? dto.PrivProtocol ?? "AES" : null;
         c.Domain = dto.CredentialType == "WindowsDomain" && !string.IsNullOrWhiteSpace(dto.Domain) ? dto.Domain.Trim() : null;

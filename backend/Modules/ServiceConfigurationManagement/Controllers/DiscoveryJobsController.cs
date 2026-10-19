@@ -105,6 +105,12 @@ public class DiscoveryJobsController(AppDbContext db, PerimeterAccess access, Di
         if (dto.ScanType != "ActiveDirectory" && IpRange.Validate(target) is { } rangeError) return rangeError;
         var ports = dto.ScanType == "IpSweep" ? (string.IsNullOrWhiteSpace(dto.PortList) ? DiscoveryJob.DefaultPorts : dto.PortList) : "";
         if (dto.ScanType == "IpSweep" && IpRange.Ports(ports, out var portError) is null) return portError;
+        // SSH : un seul port, 22 par défaut (CFG-52).
+        if (dto.ScanType == "Ssh" && !string.IsNullOrWhiteSpace(dto.PortList))
+        {
+            if (IpRange.Ports(dto.PortList, out var sshError) is not [_]) return sshError ?? "Un scan SSH vise un seul port (22 par défaut).";
+            ports = dto.PortList.Trim();
+        }
         if (dto.FrequencyHours is < 0 or > 24 * 31) return "Fréquence en heures : 0 (lancement manuel) à 744 (un mois).";
         TimeOnly? start = null, end = null;
         if (!string.IsNullOrWhiteSpace(dto.WindowStart) || !string.IsNullOrWhiteSpace(dto.WindowEnd))
@@ -121,8 +127,9 @@ public class DiscoveryJobsController(AppDbContext db, PerimeterAccess access, Di
             if (credential is null || credential.PerimeterId != job.PerimeterId)
                 return "Choisir un identifiant du coffre du même périmètre que la tâche.";
         }
-        string[] expected = dto.ScanType switch { "Snmp" => ["SnmpV2c", "SnmpV3"], "ActiveDirectory" => ["WindowsDomain"], _ => [] };
+        string[] expected = dto.ScanType switch { "Snmp" => ["SnmpV2c", "SnmpV3"], "ActiveDirectory" => ["WindowsDomain"], "Ssh" => ["Ssh"], _ => [] };
         if (dto.ScanType == "Snmp" && credential is null) return "Un scan SNMP exige une communauté v2c ou un utilisateur v3 du coffre.";
+        if (dto.ScanType == "Ssh" && credential is null) return "Un scan SSH exige un compte SSH du coffre.";
         if (credential is not null && !expected.Contains(credential.CredentialType))
             return expected.Length == 0 ? "Un balayage IP n'utilise pas d'identifiant."
                 : $"Un scan {dto.ScanType} attend un identifiant {string.Join(" ou ", expected)}, pas {credential.CredentialType}.";

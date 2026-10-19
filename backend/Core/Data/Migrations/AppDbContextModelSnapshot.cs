@@ -2414,6 +2414,10 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<DateTime>("LastSeenAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ListeningPorts")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
                     b.Property<string>("Location")
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
@@ -2455,6 +2459,10 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("Services")
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)");
+
                     b.Property<string>("Sources")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -2485,6 +2493,33 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.HasIndex("PerimeterId", "Status");
 
                     b.ToTable("DiscoveredAssets");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveredSoftware", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssetId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Version")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.ToTable("DiscoveredSoftware");
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.Discovery.MacVendor", b =>
@@ -2677,6 +2712,69 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("EndOfLifeRules");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.SshHostKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("AcceptedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Algorithm")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Fingerprint")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("FirstSeenAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<DateTime>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PendingAlgorithm")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PendingFingerprint")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("PendingSeenAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
+
+                    b.HasIndex("PerimeterId", "Host", "Port")
+                        .IsUnique();
+
+                    b.ToTable("SshHostKeys");
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.AgreementReview", b =>
@@ -3405,6 +3503,15 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Navigation("MatchedCi");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveredSoftware", b =>
+                {
+                    b.HasOne("SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveredAsset", null)
+                        .WithMany("Software")
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveryCredential", b =>
                 {
                     b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
@@ -3428,6 +3535,15 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Credential");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.SshHostKey", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.AgreementReview", b =>
@@ -3521,6 +3637,11 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Navigation("Incoming");
 
                     b.Navigation("Outgoing");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveredAsset", b =>
+                {
+                    b.Navigation("Software");
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.ItService", b =>

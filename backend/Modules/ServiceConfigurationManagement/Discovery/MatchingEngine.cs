@@ -96,6 +96,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
             }
             Merge(asset, o, job.Id);
             touched.Add(asset);
+            if (o.Software is not null) await ReplaceSoftwareAsync(asset, o.Software, ct);
         }
         await VendorsFromMacAsync(touched, ct);
 
@@ -126,6 +127,14 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         }
         await db.SaveChangesAsync(ct);
         return new IngestResult(seen, added, auto, conflicts);
+    }
+
+    /// <summary>CFG-52 : le dernier relevé des logiciels remplace le précédent.</summary>
+    private async Task ReplaceSoftwareAsync(DiscoveredAsset asset, IReadOnlyList<SoftwareItem> software, CancellationToken ct)
+    {
+        if (asset.Id != 0) await db.Entry(asset).Collection(a => a.Software).LoadAsync(ct);
+        asset.Software.Clear();
+        asset.Software.AddRange(software.Select(s => new DiscoveredSoftware { Name = s.Name, Version = s.Version }));
     }
 
     /// <summary>
@@ -173,6 +182,8 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         a.OpenPorts = o.OpenPorts ?? a.OpenPorts;
         a.Banners = o.Banners ?? a.Banners;
         a.Interfaces = o.Interfaces ?? a.Interfaces;
+        a.Services = o.Services ?? a.Services;
+        a.ListeningPorts = o.ListeningPorts ?? a.ListeningPorts;
         a.InDirectory |= o.InDirectory;
         a.RawData = o.Raw ?? a.RawData;
         var sources = a.Sources.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -189,7 +200,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         static string? Cut(string? v, int max) => v is null || v.Length <= max ? v : v[..max];
         a.Hostname = Cut(a.Hostname, 200); a.SerialNumber = Cut(a.SerialNumber, 100);
         a.Vendor = Cut(a.Vendor, 100); a.Model = Cut(a.Model, 100); a.DetectedOs = Cut(a.DetectedOs, 150);
-        a.Location = Cut(a.Location, 150); a.OpenPorts = Cut(a.OpenPorts, 250); a.Banners = Cut(a.Banners, 500); a.Interfaces = Cut(a.Interfaces, 8000);
+        a.Location = Cut(a.Location, 150); a.OpenPorts = Cut(a.OpenPorts, 250); a.Banners = Cut(a.Banners, 500); a.Interfaces = Cut(a.Interfaces, 8000); a.Services = Cut(a.Services, 8000); a.ListeningPorts = Cut(a.ListeningPorts, 250);
     }
 
     /// <summary>

@@ -133,6 +133,12 @@ export const api = {
   // Découverte automatique (CFG-40 à CFG-47) : sas de staging, tâches de scan, coffre, fins de support.
   discovery: {
     // CFG-50 : base des constructeurs par préfixe MAC (registre OUI de l'IEEE, importé par l'Admin).
+    // CFG-53 : clés d'hôte SSH retenues au premier contact.
+    sshHostKeys: {
+      list: () => request('/discovery/ssh-host-keys'),
+      accept: id => request(`/discovery/ssh-host-keys/${id}/accept`, { method: 'POST' }),
+      forget: id => request('/discovery/ssh-host-keys/' + id, { method: 'DELETE' })
+    },
     macVendors: {
       get: () => request('/discovery/mac-vendors'),
       import: csv => request('/discovery/mac-vendors/import', { method: 'POST', body: JSON.stringify({ csv }) })

@@ -85,9 +85,12 @@ public class StagingController(AppDbContext db, PerimeterAccess access, Matching
         var match = DiscoveredAsset.Open.Contains(asset.Status) ? await matching.FindAsync(asset) : null;
         var target = match?.Ci ?? asset.MatchedCi;
         asset.MatchedCi = null;   // décrit par TargetCi
+        var software = await db.DiscoveredSoftware.AsNoTracking().Where(s => s.AssetId == id).OrderBy(s => s.Name)
+            .Select(s => new { s.Name, s.Version }).ToListAsync();
         return Ok(new
         {
             Asset = DiscoveredAssetView.From(asset),
+            Software = software,
             Suggestion = match is null ? null : new { match.Score, match.Rule, match.Action, match.Conflict },
             TargetCi = target is null ? null : new
             {

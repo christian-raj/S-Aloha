@@ -14,6 +14,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Découverte : inventaire SSH** (CFG-52, CFG-53) : nouveau type de scan pour les serveurs
+  Linux et Unix, avec un compte SSH du coffre (mot de passe ou clé privée) sans droits
+  d'administration : système, constructeur, logiciels installés, services actifs, ports en
+  écoute, affichés sur la fiche de l'actif. La clé de chaque serveur est retenue au premier
+  contact ; si elle change, l'identifiant n'est pas envoyé et l'hôte attend que l'Admin
+  accepte la nouvelle clé (Paramétrage › Découverte du réseau › Clés d'hôte SSH).
+
 - **Découverte : SNMP v3 et interfaces** (CFG-51) : un scan SNMP utilise une communauté v2c ou
   un utilisateur v3 du coffre (authentification SHA-2, chiffrement AES ; MD5 et DES refusés) et
   lit la table des interfaces des équipements (nom, état, débit, adresse MAC), affichée sur la
@@ -76,6 +83,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Inventaire SSH (CFG-52)** : la migration `SshInventory` ajoute deux colonnes et deux tables ;
+  créer un compte SSH dédié, sans sudo, sur les serveurs à inventorier.
 - **SNMP v3 (CFG-51)** : la migration `SnmpV3Interfaces` ajoute trois colonnes facultatives ;
   les communautés v2c et les tâches existantes restent valables.
 - **Constructeurs (CFG-50)** : la migration `PassiveFingerprint` crée une table vide ; pour
