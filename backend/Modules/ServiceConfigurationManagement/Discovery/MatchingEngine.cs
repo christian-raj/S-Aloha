@@ -77,6 +77,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         int seen = 0, added = 0, auto = 0, conflicts = 0;
         var touched = new HashSet<DiscoveredAsset>();
         var hosted = new List<(DiscoveredAsset Asset, string Host, string? Reason)>();
+        var flows = new List<(DiscoveredAsset Asset, IReadOnlyList<Flow> Flows, string Source)>();
         foreach (var raw in observations)
         {
             var o = raw with
@@ -99,6 +100,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
             touched.Add(asset);
             if (o.Software is not null) await ReplaceSoftwareAsync(asset, o.Software, ct);
             if (o.HostedBy is { } host) hosted.Add((asset, host.Trim().ToLowerInvariant(), o.HostedReason));
+            if (o.Flows is { Count: > 0 } f) flows.Add((asset, f, o.Source));
         }
         await VendorsFromMacAsync(touched, ct);
 
@@ -129,6 +131,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         }
         await db.SaveChangesAsync(ct);
         if (hosted.Count > 0) await ProposeHostingAsync(job, touched, hosted, ct);
+        if (flows.Count > 0) await ProposeFlowsAsync(job, flows, ct);
         return new IngestResult(seen, added, auto, conflicts);
     }
 
@@ -157,6 +160,43 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
             db.RelationProposals.Add(proposal);
             existing.Add(proposal);
         }
+        await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// CFG-56 : « client Se connecte à serveur » pour chaque connexion établie vers (ou depuis)
+    /// une adresse IP d'un autre actif du sas du même périmètre. Le motif réunit les ports vus.
+    /// </summary>
+    private async Task ProposeFlowsAsync(DiscoveryJob job, List<(DiscoveredAsset Asset, IReadOnlyList<Flow> Flows, string Source)> seen,
+        CancellationToken ct)
+    {
+        var peers = seen.SelectMany(s => s.Flows.Select(f => f.PeerIp)).Distinct().ToList();
+        var byIp = (await db.Set<DiscoveredAsset>().Where(a => a.PerimeterId == job.PerimeterId && a.IpAddress != null && peers.Contains(a.IpAddress))
+            .ToListAsync(ct)).GroupBy(a => a.IpAddress!).ToDictionary(g => g.Key, g => g.First());
+        var ids = seen.Select(s => s.Asset.Id).ToList();
+        var existing = await db.RelationProposals
+            .Where(r => r.Type == "Se connecte à" && (ids.Contains(r.SourceAssetId) || ids.Contains(r.TargetAssetId))).ToListAsync(ct);
+        foreach (var (asset, list, source) in seen)
+            foreach (var flow in list)
+            {
+                if (!byIp.TryGetValue(flow.PeerIp, out var peer) || peer.Id == asset.Id) continue;
+                var (from, to) = flow.Outbound ? (asset, peer) : (peer, asset);
+                var port = $"port {flow.Port}";
+                var current = existing.FirstOrDefault(r => r.SourceAssetId == from.Id && r.TargetAssetId == to.Id);
+                if (current is not null)
+                {
+                    current.LastSeenAt = DateTime.UtcNow;
+                    if (!current.Reason.Contains(port) && current.Reason.Length + port.Length + 2 <= 300) current.Reason += ", " + port;
+                    continue;
+                }
+                var proposal = new RelationProposal
+                {
+                    PerimeterId = job.PerimeterId, SourceAssetId = from.Id, TargetAssetId = to.Id, Type = "Se connecte à",
+                    Reason = Truncated($"{(source == "Ssh" ? "SSH" : source)} : connexion établie de {from.Hostname ?? from.IpAddress} vers {to.Hostname ?? to.IpAddress}, {port}", 300)
+                };
+                db.RelationProposals.Add(proposal);
+                existing.Add(proposal);
+            }
         await db.SaveChangesAsync(ct);
     }
 

@@ -67,6 +67,7 @@ public class SshCollector(AppDbContext db, ILogger<SshCollector> logger) : IDisc
         elif command -v apk >/dev/null 2>&1; then apk info -v 2>/dev/null; fi
         echo '##svc'; command -v systemctl >/dev/null 2>&1 && systemctl list-units --type=service --state=running --no-legend --plain 2>/dev/null
         echo '##listen'; ss -tlnH 2>/dev/null || netstat -tln 2>/dev/null
+        echo '##conn'; ss -tnH state established 2>/dev/null || netstat -tn 2>/dev/null | grep ESTABLISHED
         """;
 
     public async Task<List<Observation>> CollectAsync(CollectContext context, CancellationToken ct)
@@ -116,7 +117,7 @@ public class SshCollector(AppDbContext db, ILogger<SshCollector> logger) : IDisc
             using var command = client.CreateCommand(Script);
             command.CommandTimeout = TimeSpan.FromSeconds(CommandTimeoutSeconds);
             await command.ExecuteAsync(ct);
-            return SshInventory.Parse(command.Result, host);
+            return SshInventory.Parse(command.Result, host, port);
         }
         catch (Exception ex) when (ex is SshException or SocketException or ProxyException or TimeoutException
                                        or OperationCanceledException && !ct.IsCancellationRequested)
@@ -170,7 +171,7 @@ public static class SshInventory
 {
     private static readonly string[] Placeholders = ["", "0", "none", "default string", "to be filled by o.e.m.", "not specified", "system serial number", "system product name"];
 
-    public static Observation Parse(string output, string ip)
+    public static Observation Parse(string output, string ip, int sshPort = 22)
     {
         var sections = Sections(output);
         var os = OsName(sections.GetValueOrDefault("os"), sections.GetValueOrDefault("uname"));
@@ -180,6 +181,7 @@ public static class SshInventory
         var software = Packages(sections.GetValueOrDefault("pkg"));
         var services = Services(sections.GetValueOrDefault("svc"));
         var listening = ListeningPorts(sections.GetValueOrDefault("listen"));
+        var flows = Flows(sections.GetValueOrDefault("conn"), listening, sshPort);
         return new Observation("Ssh", IpAddress: ip,
             Hostname: NetworkScanner.UsefulHostname(hostname, IPAddress.Parse(ip)),
             SerialNumber: Useful(dmi.GetValueOrDefault("product_serial")),
@@ -188,7 +190,42 @@ public static class SshInventory
             Os: os, Type: "Serveur",
             OpenPorts: listening.Count > 0 ? string.Join(",", listening) : null,
             Software: software, Services: services.Count > 0 ? string.Join("\n", services) : null,
-            ListeningPorts: listening.Count > 0 ? string.Join(",", listening) : null);
+            ListeningPorts: listening.Count > 0 ? string.Join(",", listening) : null,
+            Flows: flows);
+    }
+
+    /// <summary>
+    /// CFG-56 : connexions établies (ss ou netstat), réduites à un pair et un port de service.
+    /// Le port local en écoute désigne une connexion entrante, sinon elle est sortante. Sont
+    /// écartées les boucles locales et les connexions entrantes sur le port SSH de l'inventaire
+    /// (la session de la découverte elle-même, et l'administration). 200 au plus.
+    /// </summary>
+    public static List<Flow> Flows(string? text, IReadOnlyCollection<int> listening, int sshPort)
+    {
+        var flows = new List<Flow>();
+        foreach (var line in (text ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var ends = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(t => t.Contains(':') && t.LastIndexOf(':') < t.Length - 1).ToList();
+            if (ends.Count < 2 || Endpoint(ends[0]) is not { } local || Endpoint(ends[1]) is not { } peer) continue;
+            if (IPAddress.IsLoopback(peer.Ip) || IPAddress.IsLoopback(local.Ip)) continue;
+            var inbound = listening.Contains(local.Port);
+            if (inbound && local.Port == sshPort) continue;
+            var flow = new Flow(!inbound, peer.Ip.ToString(), inbound ? local.Port : peer.Port);
+            if (!flows.Contains(flow)) flows.Add(flow);
+            if (flows.Count >= 200) break;
+        }
+        return flows;
+    }
+
+    private static (IPAddress Ip, int Port)? Endpoint(string token)
+    {
+        var at = token.LastIndexOf(':');
+        var address = token[..at].Trim('[', ']');
+        if (address.StartsWith("::ffff:")) address = address[7..];
+        var percent = address.IndexOf('%');
+        if (percent > 0) address = address[..percent];
+        return IPAddress.TryParse(address, out var ip) && int.TryParse(token[(at + 1)..], out var port) && port is > 0 and < 65536
+            ? (ip, port) : null;
     }
 
     public static Dictionary<string, string> Sections(string output)

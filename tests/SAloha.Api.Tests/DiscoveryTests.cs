@@ -403,4 +403,31 @@ public class DiscoveryTests(ApiFixture api)
         var after = (await Json(await manager.GetAsync("/api/discovery/relations"))).EnumerateArray().Where(r => r.GetProperty("perimeterId").GetInt32() == p).ToList();
         Assert.Equal(new[] { RelationProposal.Accepted, RelationProposal.Dismissed }.Order(), after.Select(r => Str(r, "status")).Order());
     }
+
+    [Fact]
+    public async Task CFG_56_flux_reseau_proposes_en_Se_connecte_a()
+    {
+        var (p, admin, manager) = await Perimeter("cfg56");
+        var cred = await Json(await admin.PostAsJsonAsync("/api/discovery/credentials",
+            new { name = "SSH", credentialType = "Ssh", username = "inventaire", secret = "mot-de-passe-56", perimeterId = p }));
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "Inventaire 56", scanType = "Ssh", targetRange = "10.56.0.0/24", credentialId = Id(cred), perimeterId = p }));
+        FakeCollector.Observations["10.56.0.0/24"] =
+        [
+            new("Ssh", IpAddress: "10.56.0.10", Hostname: "app-56", Type: "Serveur", ListeningPorts: "22,443",
+                Flows: [new Flow(true, "10.56.0.20", 5432), new Flow(true, "10.56.0.20", 6379), new Flow(false, "10.56.0.30", 443), new Flow(true, "192.0.2.1", 443)]),
+            new("Ssh", IpAddress: "10.56.0.20", Hostname: "db-56", Type: "Serveur"),
+            new("Ssh", IpAddress: "10.56.0.30", Hostname: "proxy-56", Type: "Serveur"),
+        ];
+        await RunAndWait(manager, Id(job));
+        var proposals = (await Json(await manager.GetAsync("/api/discovery/relations?status=Proposée"))).EnumerateArray()
+            .Where(r => r.GetProperty("perimeterId").GetInt32() == p).ToList();
+        string Pair(JsonElement r) => $"{Str(r.GetProperty("source"), "hostname")} → {Str(r.GetProperty("target"), "hostname")}";
+        // Sortant vers la base (deux ports, une proposition) ; entrant depuis le proxy ; l'adresse inconnue du sas est ignorée.
+        Assert.Equal(new[] { "app-56 → db-56", "proxy-56 → app-56" }, proposals.Select(Pair).Order());
+        Assert.All(proposals, r => Assert.Equal("Se connecte à", Str(r, "type")));
+        var db = proposals.Single(r => Pair(r) == "app-56 → db-56");
+        Assert.Contains("port 5432", Str(db, "reason"));
+        Assert.Contains("port 6379", Str(db, "reason"));
+    }
 }

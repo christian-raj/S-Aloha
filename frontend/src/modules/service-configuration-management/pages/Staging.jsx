@@ -12,7 +12,7 @@ const VIEWS = [
   { id: 'unknown', label: 'Actifs inconnus', count: s => s.unknown, tone: 'amber', hint: 'Ni dans l’annuaire ni en CMDB (Shadow IT)' },
   { id: 'reconciled', label: 'Rapprochés', count: s => s.reconciled, tone: 'emerald', hint: 'Reliés à un CI', status: 'Rapproché' },
   { id: 'ignored', label: 'Ignorés', count: s => s.ignored, tone: 'neutral', hint: 'Exclus de la CMDB', status: 'Ignoré' },
-  { id: 'relations', label: 'Relations proposées', count: s => s.relations ?? 0, tone: 'violet', hint: 'Hyperviseur → machine, à valider' },
+  { id: 'relations', label: 'Relations proposées', count: s => s.relations ?? 0, tone: 'violet', hint: 'Héberge, Se connecte à : à valider' },
 ]
 
 /** Un côté d'une relation proposée : l'actif du sas et le CI dont il est rapproché. */
@@ -28,7 +28,7 @@ function Side({ asset }) {
 }
 
 /**
- * CFG-55 : relations déduites par la découverte, proposées au gestionnaire. Accepter crée la
+ * CFG-55, CFG-56 : relations déduites par la découverte (hébergement, flux réseau), proposées au gestionnaire. Accepter crée la
  * relation dans la CMDB, une fois les deux actifs rapprochés ; écarter ne la repropose plus.
  */
 function Relations({ onChanged }) {

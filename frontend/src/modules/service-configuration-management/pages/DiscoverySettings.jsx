@@ -6,7 +6,7 @@ import PerimeterSelect from '../../../core/components/PerimeterSelect'
 import usePerimeters, { perimeterName } from '../../../core/usePerimeters'
 import { JOB_TONES, SOURCE_LABELS } from '../config'
 
-const SSH_HELP = 'Inventaire en lecture seule, sans sudo : système, constructeur, logiciels installés, services actifs, ports en écoute. '
+const SSH_HELP = 'Inventaire en lecture seule, sans sudo : système, constructeur, logiciels installés, services actifs, ports en écoute, connexions établies (flux proposés). '
   + 'La clé d’hôte est retenue au premier contact ; si elle change, l’hôte est refusé jusqu’à acceptation par l’Admin.'
 /** Types de scan : cible attendue et types d'identifiant du coffre utilisables. */
 const SCAN_TYPES = {

@@ -212,4 +212,17 @@ public class DiscoveryUnitTests
         Assert.False(SshCollector.Trust(known, 1, "10.0.0.5", 22, "ssh-ed25519", "BBBB"));
         Assert.Equal(("AAAA", "BBBB"), (known["10.0.0.5"].Fingerprint, known["10.0.0.5"].PendingFingerprint));
     }
+
+    [Fact]
+    public void CFG_56_connexions_etablies_sens_et_port_de_service()
+    {
+        const string ss = "0 0 10.0.0.5:51234 10.0.0.9:5432\n0 0 10.0.0.5:443 10.0.0.30:60000\n0 0 10.0.0.5:22 10.0.0.99:50022\n"
+            + "0 0 127.0.0.1:40000 127.0.0.1:6379\n0 0 [::ffff:10.0.0.5]:51235 [::ffff:10.0.0.9]:5432\n";
+        var flows = SshInventory.Flows(ss, [22, 443], 22);
+        Assert.Equal([new Flow(true, "10.0.0.9", 5432), new Flow(false, "10.0.0.30", 443)], flows);
+        // netstat : même lecture.
+        Assert.Equal([new Flow(true, "10.0.0.9", 3306)],
+            SshInventory.Flows("tcp 0 0 10.0.0.5:41000 10.0.0.9:3306 ESTABLISHED", [], 22));
+        Assert.Equal([new Flow(true, "10.0.0.9", 5432)], SshInventory.Parse("##listen\n##conn\n" + ss, "10.0.0.5").Flows!.Take(1));
+    }
 }
