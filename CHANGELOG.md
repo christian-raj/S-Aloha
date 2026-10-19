@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Paramétrage › Catégories** (ADM-50 à ADM-53, SOC-27) : liste des catégories d'incident
+  et de problème tenue par les gestionnaires ; dès qu'une pratique en a une active, la
+  catégorie se choisit dans la liste (l'API refuse une catégorie hors liste). Une catégorie
+  utilisée se désactive au lieu de se supprimer. La console d'administration (A1) est complète.
+
 - **Administration › Nettoyage des doublons** (ADM-40 à ADM-43) : doublons probables (même
   pratique, même périmètre, même titre aux accents et à la casse près, créés à 7 jours au
   plus) ; fusion qui reporte liens et commentaires sur l'enregistrement conservé, ou « pas un
@@ -60,6 +65,9 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Catégories (ADM-52)** : la migration `Categories` reprend les catégories déjà saisies sur
+  les incidents et les problèmes ; dès lors, une catégorie se choisit dans cette liste. La
+  relire dans Paramétrage › Catégories pour désactiver les variantes indésirables.
 - **Session (S5)** : chacun se reconnecte une fois. Un script qui appelait
   `POST /api/auth/login` et lisait `token` dans la réponse ajoute `"returnToken": true` à sa
   requête. Derrière un reverse proxy TLS, transmettre `X-Forwarded-Proto` pour un cookie

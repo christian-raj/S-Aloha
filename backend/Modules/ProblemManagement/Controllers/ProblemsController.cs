@@ -88,8 +88,20 @@ public class ProblemsController(AppDbContext db) : RecordController<Problem, Pro
     }
 
     // SLM-10 : service du catalogue (vérifié ici, recopié sur l'enregistrement juste avant l'écriture).
-    protected override Task<string?> ValidateAsync(Problem e) => ServiceCatalog.ResolveAsync(Db, e);
-    protected override Task BeforeSaveAsync(Problem e, bool creating) => ServiceCatalog.ResolveAsync(Db, e);
+    // ADM-51 : catégorie tirée de la liste de la pratique ; SLM-10 : service du catalogue.
+    protected override async Task<string?> ValidateAsync(Problem e)
+    {
+        var before = Db.Entry(e).State is Microsoft.EntityFrameworkCore.EntityState.Detached or Microsoft.EntityFrameworkCore.EntityState.Added ? null : Db.Entry(e).Property(x => x.Category).OriginalValue;
+        var (error, value) = await Core.Itil.Category.CheckAsync(Db, "problem", e.Category, before);
+        e.Category = value;
+        return error ?? await ServiceCatalog.ResolveAsync(Db, e);
+    }
+    protected override async Task BeforeSaveAsync(Problem e, bool creating)
+    {
+        await ServiceCatalog.ResolveAsync(Db, e);
+        // ADM-51 : la création valide une copie ; le nom exact de la liste est repris ici.
+        if (creating) e.Category = (await Core.Itil.Category.CheckAsync(Db, "problem", e.Category, null)).Value;
+    }
 
     // PRB-31 : problème qualifié ou clos → déclarant.
     protected override void OnNotify(Problem p, string? from, Notifier n)

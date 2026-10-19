@@ -163,6 +163,13 @@ export const api = {
     }
   },
   services: records('/services'),
+  // ADM-50 : catégories d'incident et de problème (lecture par tous, tenue par les gestionnaires).
+  categories: {
+    list: practice => request('/categories?practice=' + practice),
+    create: dto => request('/categories', { method: 'POST', body: JSON.stringify(dto) }),
+    update: (id, dto) => request('/categories/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+    remove: id => request('/categories/' + id, { method: 'DELETE' })
+  },
   // REQ-20 : catalogue de demandes (modèles).
   requestCatalog: {
     list: (all = false) => request('/request-catalog' + (all ? '?all=true' : '')),

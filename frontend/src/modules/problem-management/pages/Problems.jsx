@@ -5,6 +5,8 @@ import PerimeterSelect from '../../../core/components/PerimeterSelect'
 import usePerimeters from '../../../core/usePerimeters'
 import useServices from '../../../core/useServices'
 import ServiceSelect from '../../../core/components/ServiceSelect'
+import CategoryInput from '../../../core/components/CategoryInput'
+import useCategories from '../../../core/useCategories'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
 const badge = s => s.replace(/[ é]/g, m => (m === ' ' ? '' : 'e'))
@@ -75,6 +77,7 @@ export default function Problems() {
 function NewProblem({ onCreated }) {
   const [f, setF] = useState({ title: '', description: '', impact: 'Moyen', urgency: 'Moyenne', category: '', affectedService: '', serviceId: '' })
   const services = useServices() ?? []
+  const categories = useCategories('problem')
   const [error, setError] = useState('')
   const [perimeterId, setPerimeterId] = useState(null)
   const perimeters = usePerimeters()
@@ -92,7 +95,8 @@ function NewProblem({ onCreated }) {
           placeholder="Symptômes observés, incidents liés, périmètre impacté…" /></div>
       <div className="row2">
         <div className="field"><label>Catégorie</label>
-          <input value={f.category} onChange={set('category')} placeholder="Réseau, Serveur, Application…" /></div>
+          <CategoryInput categories={categories} value={f.category} onChange={set('category')}
+            placeholder="Réseau, Serveur, Application…" /></div>
         <div className="field"><label>Service affecté</label>
           <ServiceSelect services={services} value={f.serviceId} onChange={set('serviceId')} /></div>
       </div>

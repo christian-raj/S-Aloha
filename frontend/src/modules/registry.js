@@ -122,6 +122,7 @@ export const groupOf = (module) => module.group ?? 'practices'
 export const SECTIONS = [
   {
     id: 'settings', label: 'Paramétrage', roles: ['Manager', 'Admin'], entries: [
+      { href: '/settings/categories', label: 'Catégories', description: 'Incidents et problèmes', icon: 'settings' },
       { href: '/settings/discovery', label: 'Découverte du réseau', description: 'Tâches de scan, coffre, fins de support',
         icon: 'settings' },
       { href: '/settings/nis2', label: 'Référentiel NIS 2', description: 'Structure et texte des exigences',

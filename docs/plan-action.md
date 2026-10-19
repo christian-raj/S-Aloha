@@ -42,7 +42,7 @@ code qui doit s'y conformer.
 
 | # | Chantier | Décision à prendre |
 |---|---|---|
-| A1 | **Console d'administration** (Admin = console Manager) | Décidé le 2026-10-07 (sections Administration et Paramétrage), précisé le 2026-10-19 ([ADR-0019](decisions/adr-0019-console-d-administration.md)) : utilisateurs lus dans l'annuaire avec leur dernière connexion, santé, journal d'audit global, doublons détectés et fusionnés, catégories (SOC-27) ; règles [ADM](reference/administration.md). En cours de réalisation |
+| ~~A1~~ | ~~**Console d'administration** (Admin = console Manager)~~ | Soldé le 2026-10-19 ([ADR-0019](decisions/adr-0019-console-d-administration.md)) : utilisateurs lus dans l'annuaire avec leur dernière connexion, santé, journal d'audit global, doublons détectés et fusionnés, catégories (SOC-27) ; règles [ADM](reference/administration.md) |
 
 ## 5. Avant une mise en production
 
@@ -77,7 +77,7 @@ restantes sont spécifiées règle par règle dans [`reference/processus/`](refe
 
 | # | Processus | Enrichissement | Règles |
 |---|---|---|---|
-| F2 | Incidents, Problèmes | Service et catégorie tirés du catalogue et d'un référentiel | [SOC-27](reference/regles-metier.md#9-traçabilité-commentaires-administration), [SLM-10](reference/processus/gestion-des-niveaux-de-service.md) |
+| ~~F2~~ | Incidents, Problèmes | ~~Service et catégorie tirés du catalogue et d'un référentiel~~ — soldé le 2026-10-19 | [SOC-27](reference/regles-metier.md#9-traçabilité-commentaires-administration), [SLM-10](reference/processus/gestion-des-niveaux-de-service.md) |
 | F3 | Demandes | Tâches d'exécution créées depuis le modèle (catalogue et modèles faits le 2026-10-14) | [REQ-24, REQ-25](reference/processus/gestion-des-demandes.md) |
 | F5 | Configuration | Import en masse, attributs par type de CI, service signalé « dégradé » (rattachement CI ↔ service fait le 2026-10-13) ; exactitude de la CMDB ([#124](https://github.com/christian-raj/S-Aloha/issues/124)), CI à vérifier dans la console ([#125](https://github.com/christian-raj/S-Aloha/issues/125)) | [CFG-16, CFG-18, CFG-30](reference/processus/gestion-de-la-configuration.md) |
 | F7 | Tous | Pièces jointes, notifications par courriel (notifications dans l'application et commentaires faits le 2026-10-13) | [SOC-22, SOC-25](reference/regles-metier.md#8-notifications) |

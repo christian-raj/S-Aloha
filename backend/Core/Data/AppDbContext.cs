@@ -31,6 +31,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PerimeterAssignment> PerimeterAssignments => Set<PerimeterAssignment>();
     public DbSet<Administration.LastLogin> LastLogins => Set<Administration.LastLogin>();
     public DbSet<Administration.DuplicateDismissal> DuplicateDismissals => Set<Administration.DuplicateDismissal>();
+    public DbSet<Itil.Category> Categories => Set<Itil.Category>();
     // Gestion des problèmes
     public DbSet<Problem> Problems => Set<Problem>();
     public DbSet<RcaAnalysis> Analyses => Set<RcaAnalysis>();
@@ -181,6 +182,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         }
 
         b.Entity<Administration.DuplicateDismissal>().HasIndex(d => new { d.Type, d.FirstId, d.SecondId }).IsUnique();
+        b.Entity<Itil.Category>().HasIndex(c => new { c.Practice, c.Name }).IsUnique();
         b.Entity<ItemLink>().HasIndex(l => new { l.FromType, l.FromId });
         b.Entity<ItemLink>().HasIndex(l => new { l.ToType, l.ToId });
         b.Entity<AuditEntry>().HasIndex(a => new { a.EntityType, a.EntityId });

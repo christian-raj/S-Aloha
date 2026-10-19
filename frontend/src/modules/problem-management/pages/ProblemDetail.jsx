@@ -17,6 +17,8 @@ import { ownerField } from '../../../core/fields'
 import usePerimeters, { perimeterName } from '../../../core/usePerimeters'
 import useServices from '../../../core/useServices'
 import ServiceSelect from '../../../core/components/ServiceSelect'
+import CategoryInput from '../../../core/components/CategoryInput'
+import useCategories from '../../../core/useCategories'
 
 const STATUSES = ['Nouveau', 'En analyse', 'Erreur connue', 'Résolu', 'Clos']
 /** Codes de clôture (PRB-13) selon le statut d'origine ; une transition forcée les admet tous. */
@@ -128,6 +130,7 @@ export default function ProblemDetail() {
 function Infos({ p, isManager, onSaved }) {
   const graph = useTransitions(api.problems.transitions)
   const services = useServices() ?? []
+  const categories = useCategories('problem')
   const [reason, setReason] = useState('')
   const [f, setF] = useState({
     title: p.title, description: p.description, status: p.status, impact: p.impact,
@@ -168,7 +171,7 @@ function Infos({ p, isManager, onSaved }) {
       </div>
       <div className="row2">
         <div className="field"><label>Catégorie</label>
-          <input value={f.category} onChange={set('category')} disabled={!isManager} /></div>
+          <CategoryInput categories={categories} value={f.category} onChange={set('category')} disabled={!isManager} /></div>
         <div className="field"><label>Service affecté</label>
           <ServiceSelect services={services} value={f.serviceId} onChange={set('serviceId')} disabled={!isManager}
             legacy={!p.serviceId && p.affectedService} /></div>

@@ -335,6 +335,8 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--accent-blue
 .btn.ghost:hover:not(:disabled) { background: var(--accent-blue-soft); filter: none; }
 .btn.small { padding: 6px 13px; font-size: var(--fs-sm); }
 .btn.danger { background: var(--accent-red); border-color: var(--accent-red); }
+.inline-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0; }
+.inline-form input { flex: 1 1 180px; min-width: 0; }
 .btn.block { width: 100%; }
 
 .error {
