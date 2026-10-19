@@ -894,3 +894,6 @@ tr.warn-row td:first-child { box-shadow: inset 3px 0 0 var(--accent-amber); }
   .modal-backdrop { align-items: flex-end; padding: 0; }
   .modal { width: 100%; max-height: 90vh; }
 }
+
+/* Nettoyage des doublons (ADM-40) : les deux enregistrements côte à côte. */
+.dup-side { border: 1px solid var(--border-subtle); padding: 12px; background: var(--bg-surface-hover); }

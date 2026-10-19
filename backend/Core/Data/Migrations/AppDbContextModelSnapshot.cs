@@ -23,6 +23,41 @@ namespace SAloha.Api.Core.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("SAloha.Api.Core.Administration.DuplicateDismissal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DismissedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DismissedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("FirstId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SecondId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type", "FirstId", "SecondId")
+                        .IsUnique();
+
+                    b.ToTable("DuplicateDismissals");
+                });
+
             modelBuilder.Entity("SAloha.Api.Core.Administration.LastLogin", b =>
                 {
                     b.Property<string>("Username")

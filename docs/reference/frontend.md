@@ -112,7 +112,7 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/assessments`, `/assessments/:id` | `modules/compliance-assessment/pages/Assessments`, `AssessmentDetail` | Conformité & réglementation › NIS 2 |
 | `/projects`, `/projects/:id` | `modules/project-management/pages/Projects`, `ProjectDetail` | Projets › Projets |
 | `/admin/perimeters`, `/admin/perimeters/:id` | `core/pages/admin/Perimeters`, `PerimeterDetail` | Administration › Périmètres (Admin) |
-| `/admin/users`, `/admin/health`, `/admin/audit` | `core/pages/admin/Users`, `Health`, `AuditLog` | Administration › Utilisateurs et rôles, Santé, Journal d'audit (Admin) |
+| `/admin/users`, `/admin/health`, `/admin/audit`, `/admin/duplicates` | `core/pages/admin/Users`, `Health`, `AuditLog`, `Duplicates` | Administration › Utilisateurs et rôles, Santé, Journal d'audit, Nettoyage des doublons (Admin) |
 | `/settings/discovery` | `modules/service-configuration-management/pages/DiscoverySettings` | Paramétrage › Découverte du réseau (Manager, Admin) |
 | `/settings/nis2` | `modules/compliance-assessment/pages/ReferentialSettings` | Paramétrage › Référentiel NIS 2 (Admin) |
 
@@ -310,7 +310,7 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 | Utilisateurs et rôles (`/admin/users`) | Membres des groupes AD de rôle (annuaire), rôle effectif par périmètre et sa source, dernière connexion ; mapping groupes AD → rôles (lecture) ; affectations « sans accès » | [ADM-10 à ADM-13](administration.md) | ✅ |
 | Santé (`/admin/health`) | Base, annuaire, embeddings, coffre, tâches de fond, version déployée | [ADM-20, ADM-21](administration.md) | ✅ |
 | Journal d'audit (`/admin/audit`) | Journal global, filtrable par auteur, pratique, action, référence, période ; pages de 100 ; export CSV | [ADM-30, ADM-31](administration.md) | ✅ |
-| Nettoyage | Doublons probables à fusionner ou écarter | [ADM-40 à ADM-43](administration.md) | 🔜 |
+| Nettoyage des doublons (`/admin/duplicates`) | Paires probables côte à côte ; « Conserver … » (fusion confirmée, `DeleteDialog`), « Pas un doublon » | [ADM-40 à ADM-43](administration.md) | ✅ |
 | Périmètres | Périmètres (création, renommage, suppression douce, restauration, suppression définitive si rien n'y est rattaché), fiche avec compteurs par pratique et affectations d'utilisateurs ou de groupes AD (Manager, User) | [PER-01 à PER-12](perimetres.md) | ✅ |
 | Index de recherche | État du service d'embeddings et de l'index par source, reconstruction ; avis ambre si le service est injoignable | [RAG-08](recherche.md) | ✅ |
 

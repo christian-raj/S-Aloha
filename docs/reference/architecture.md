@@ -147,7 +147,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 
 | Méthode / Route | Policy | Rôle métier | Emplacement |
 |---|---|---|---|
-| GET `/api/admin/users`, GET `/api/admin/health`, GET `/api/admin/audit`, GET `/api/admin/audit/export` | Admin | Utilisateurs et rôles (annuaire, ADM-10 à ADM-13), santé de la plateforme, journal d'audit global et export CSV (ADM-20 à ADM-31) | Core/Administration |
+| GET `/api/admin/users`, GET `/api/admin/health`, GET `/api/admin/audit`, GET `/api/admin/audit/export`, GET `/api/admin/duplicates`, POST `…/duplicates/merge`, POST `…/duplicates/dismiss` | Admin | Utilisateurs et rôles (annuaire, ADM-10 à ADM-13), doublons (détection, fusion, ADM-40 à ADM-42), santé de la plateforme, journal d'audit global et export CSV (ADM-20 à ADM-31) | Core/Administration |
 | POST `/api/auth/login`, POST `/logout`, GET `/me` | — (`me` : User) | Authentification AD → cookie de session (jeton dans la réponse sur `returnToken`), déconnexion, utilisateur de la session | Core/Auth |
 | GET `/api/console` | User | Console par rôle, orientée action (blocs « à traiter » / « à suivre ») | Core/Pilotage |
 | GET/POST `/api/problems`, GET `/api/problems/{id}`, GET `/api/problems/transitions` | User | Liste (filtres statut, texte, `owner`, `perimeter`), détail, déclaration | Modules/ProblemManagement (socle) |

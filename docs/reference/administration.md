@@ -16,7 +16,7 @@
 | Administration | Utilisateurs et rôles | Admin | ADM-10 à ADM-13 | ✅ |
 | Administration | Santé | Admin | ADM-20, ADM-21 | ✅ |
 | Administration | Journal d'audit | Admin | ADM-30, ADM-31 | ✅ |
-| Administration | Nettoyage des doublons | Admin | ADM-40 à ADM-43 | 🔜 |
+| Administration | Nettoyage des doublons | Admin | ADM-40 à ADM-43 | ✅ |
 | Administration | Périmètres | Admin | [PER-01 à PER-12](perimetres.md) | ✅ |
 | Administration | Index de recherche | Admin | [RAG-08](recherche.md) | ✅ |
 | Paramétrage | Catégories (incidents, problèmes) | Manager, Admin | ADM-50 à ADM-53 | 🔜 |
@@ -48,10 +48,10 @@
 
 | ID | Règle | Statut |
 |---|---|---|
-| ADM-40 | **Doublons probables** : deux enregistrements d'une même pratique (incidents, demandes, problèmes, changements, articles, améliorations) et d'un même périmètre, au **titre normalisé identique** (casse, accents, ponctuation et espaces ignorés), créés à **7 jours** d'intervalle au plus. Les CI, services, accords, évaluations et projets sont exclus (registres tenus à la main, unicité déjà contrôlée) | 🔜 |
-| ADM-41 | **Fusion** : l'Admin choisit l'enregistrement conservé ; les liens et les commentaires du doublon lui sont reportés (sans lien vers lui-même ni lien en double), le doublon est supprimé, et l'opération est tracée au journal d'audit des deux références. Refusée (400) si le doublon porte des éléments propres à sa pratique (analyses, actions correctives, décisions du CAB…) : à traiter à la main | 🔜 |
-| ADM-42 | **« Pas un doublon »** : la paire n'est plus proposée | 🔜 |
-| ADM-43 | Confirmation avant la fusion, qui rappelle les deux références et ce qui est reporté ([SOC-14](regles-metier.md#5-règles-communes-aux-processus)) | 🔜 |
+| ADM-40 | **Doublons probables** : deux enregistrements d'une même pratique (incidents, demandes, problèmes, changements, articles, améliorations) et d'un même périmètre, au **titre normalisé identique** (casse, accents, ponctuation et espaces ignorés), créés à **7 jours** d'intervalle au plus. Les CI, services, accords, évaluations et projets sont exclus (registres tenus à la main, unicité déjà contrôlée) | ✅ |
+| ADM-41 | **Fusion** : l'Admin choisit l'enregistrement conservé ; les liens et les commentaires du doublon lui sont reportés (sans lien vers lui-même ni lien en double), le doublon est supprimé, et l'opération est tracée au journal d'audit des deux références. Refusée (400) si le doublon porte des éléments propres à sa pratique (analyses, actions correctives, décisions du CAB…, comptés comme pour [SOC-14](regles-metier.md#5-règles-communes-aux-processus)) ou s'il n'est pas dans le même périmètre : à traiter à la main. Ses notifications sont effacées. Distincte de la résolution « Doublon » d'un incident (INC-08), qui garde les deux enregistrements reliés | ✅ |
+| ADM-42 | **« Pas un doublon »** : la paire n'est plus proposée | ✅ |
+| ADM-43 | Confirmation avant la fusion, qui rappelle les deux références et ce qui est reporté ([SOC-14](regles-metier.md#5-règles-communes-aux-processus)) | ✅ |
 
 ## 6. Catégories (Paramétrage)
 

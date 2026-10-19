@@ -31,6 +31,7 @@ builder.Services.AddHostedService<IndexWorker>();
 
 // Découverte automatique (CFG-40 à CFG-47) : collecteurs, coffre, rapprochement, file d'exécution.
 builder.Services.AddSingleton<SAloha.Api.Core.Administration.Heartbeats>();
+builder.Services.AddScoped<SAloha.Api.Core.Administration.Duplicates>();
 builder.Services.AddSingleton<CredentialVault>();
 builder.Services.AddSingleton<DiscoveryQueue>();
 builder.Services.AddScoped<IDiscoveryCollector, NetworkScanner>();
