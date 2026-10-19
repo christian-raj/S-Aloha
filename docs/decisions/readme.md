@@ -27,6 +27,7 @@ son état actuel, et pas seulement *quel* est cet état.
 | [0016](adr-0016-reponses-de-l-api-en-dto.md) | Réponses de l'API : des DTO, plus d'entités EF | 2026-10-19 | accepté |
 | [0017](adr-0017-observabilite-journal-json-et-opentelemetry.md) | Observabilité : journal JSON, OpenTelemetry optionnel | 2026-10-19 | accepté |
 | [0018](adr-0018-jeton-en-cookie-httponly-et-csp.md) | Jeton de session en cookie HttpOnly, politique CSP | 2026-10-19 | accepté |
+| [0019](adr-0019-console-d-administration.md) | Administration : utilisateurs depuis l'annuaire, fusion des doublons, catégories | 2026-10-19 | accepté |
 
 Les choix fondateurs antérieurs à cette base (authentification AD LDAP → JWT, analyses
 RCA stockées en JSON) sont décrits dans [`reference/architecture.md`](../reference/architecture.md)

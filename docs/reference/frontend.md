@@ -284,7 +284,7 @@ cycle de vie.
 
 | Entrée | Visible par | Règle | Statut |
 |---|---|---|---|
-| Catégories (incidents, problèmes) | Manager, Admin | [SOC-27](regles-metier.md#9-traçabilité-commentaires-administration) | 🔜 |
+| Catégories (incidents, problèmes) | Manager, Admin | [ADM-50 à ADM-53](administration.md) | 🔜 |
 | Catalogue de demandes (modèles) | Manager, Admin | [REQ-20](processus/gestion-des-demandes.md) | 🔜 |
 | Modèles de changement standard | Manager, Admin | [CHG-26](processus/habilitation-des-changements.md) | 🔜 |
 | Périodes de gel | Manager, Admin | [CHG-25](processus/habilitation-des-changements.md) | 🔜 |
@@ -306,10 +306,10 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 
 | Entrée | Contenu | Règle | Statut |
 |---|---|---|---|
-| Utilisateurs et rôles | Utilisateurs constatés, rôle effectif, mapping groupes AD → rôles (lecture) | [SOC-26](regles-metier.md#9-traçabilité-commentaires-administration) | 🔜 |
-| Santé | Base, annuaire, version déployée | SOC-26 | 🔜 |
-| Journal d'audit | Journal global, filtrable par auteur, pratique, période | [SOC-20](regles-metier.md#9-traçabilité-commentaires-administration), SOC-26 | 🔜 |
-| Nettoyage | Doublons à fusionner ou supprimer | SOC-26 | 🔜 |
+| Utilisateurs et rôles | Membres des groupes AD de rôle (annuaire), rôle effectif, affectations, dernière connexion ; mapping groupes AD → rôles (lecture) | [ADM-10 à ADM-13](administration.md) | 🔜 |
+| Santé | Base, annuaire, embeddings, coffre, tâches de fond, version déployée | [ADM-20, ADM-21](administration.md) | 🔜 |
+| Journal d'audit | Journal global, filtrable par auteur, pratique, action, référence, période ; export CSV | [ADM-30, ADM-31](administration.md) | 🔜 |
+| Nettoyage | Doublons probables à fusionner ou écarter | [ADM-40 à ADM-43](administration.md) | 🔜 |
 | Périmètres | Périmètres (création, renommage, suppression douce, restauration, suppression définitive si rien n'y est rattaché), fiche avec compteurs par pratique et affectations d'utilisateurs ou de groupes AD (Manager, User) | [PER-01 à PER-12](perimetres.md) | ✅ |
 | Index de recherche | État du service d'embeddings et de l'index par source, reconstruction ; avis ambre si le service est injoignable | [RAG-08](recherche.md) | ✅ |
 
