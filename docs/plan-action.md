@@ -55,11 +55,11 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 |---|---|---|
 | S1 | **Secrets hors du dépôt** (`Jwt:Key`, mots de passe PostgreSQL et LDAP) | code + action |
 | S2 | **LDAPS** et **HTTPS** | action |
-| S3 | **CORS** restreint ; API et Swagger non publiés hors de nginx | code |
+| S3 | **CORS** restreint ([#122](https://github.com/christian-raj/S-Aloha/issues/122)) ; API et Swagger non publiés hors de nginx | code |
 | S5 | Stockage du jeton côté navigateur (`sessionStorage` ou cookie `HttpOnly`) | décision |
 | ~~S7~~ | ~~Refus de démarrer hors développement avec les valeurs d'exemple~~ — soldé le 2026-10-16 (`SampleSecrets` ; démonstration : `Security:AllowSampleSecrets`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 1) | code |
 | ~~S8~~ | ~~Audience du jeton JWT~~ — soldé le 2026-10-16 (`Jwt:Audience`, émise et vérifiée) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 2) | code |
-| O1 | Démarrage : sondes `/health/live` et `/health/ready`, rattrapage des échéances SLA dans un service de fond, migrations pilotables (`Database:MigrateOnStartup`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 4) | code |
+| O1 | Démarrage : sondes `/health/live` et `/health/ready`, rattrapage des échéances SLA dans un service de fond, migrations pilotables (`Database:MigrateOnStartup`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 4) ; sondes : [#121](https://github.com/christian-raj/S-Aloha/issues/121) | code |
 
 ## 6. Qualité
 
@@ -67,9 +67,9 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 |---|---|---|
 | Q1 | **Tests** : socle en place (API : xUnit + Testcontainers ; frontend : Vitest), B1–B3 et M1, M2, M4–M6 couverts ; étendre aux scénarios R1–R6 (R6 couvert le 2026-10-16) | code |
 | Q2 | **CI** : build backend et frontend, `python3 scripts/check-docs.py` | code |
-| Q4 | Créer les issues GitHub des sections 1 à 7 et les lier ici | action |
-| Q5 | Mesure de la couverture de tests (coverlet) publiée en CI, sans seuil bloquant ; `dotnet format` ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 8) | code |
-| Q6 | `.dockerignore` pour `backend` et `frontend` ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 9) | code |
+| Q4 | Créer les issues GitHub des sections 1 à 7 et les lier ici ; premières **good first issue** ouvertes le 2026-10-19 pour la communauté : [#120](https://github.com/christian-raj/S-Aloha/issues/120) à [#126](https://github.com/christian-raj/S-Aloha/issues/126) | action |
+| Q5 | Mesure de la couverture de tests (coverlet) publiée en CI, sans seuil bloquant ; `dotnet format` ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 8) ; couverture : [#123](https://github.com/christian-raj/S-Aloha/issues/123) | code |
+| Q6 | `.dockerignore` pour `backend` et `frontend` ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 9) : [#120](https://github.com/christian-raj/S-Aloha/issues/120) | code |
 
 ## 7. Feuille de route fonctionnelle
 
@@ -83,7 +83,7 @@ restantes sont spécifiées règle par règle dans [`reference/processus/`](refe
 |---|---|---|---|
 | F2 | Incidents, Problèmes | Service et catégorie tirés du catalogue et d'un référentiel | [SOC-27](reference/regles-metier.md#9-traçabilité-commentaires-administration), [SLM-10](reference/processus/gestion-des-niveaux-de-service.md) |
 | F3 | Demandes | Tâches d'exécution créées depuis le modèle (catalogue et modèles faits le 2026-10-14) | [REQ-24, REQ-25](reference/processus/gestion-des-demandes.md) |
-| F5 | Configuration | Import en masse, attributs par type de CI, service signalé « dégradé » (rattachement CI ↔ service fait le 2026-10-13) | [CFG-16, CFG-18, CFG-30](reference/processus/gestion-de-la-configuration.md) |
+| F5 | Configuration | Import en masse, attributs par type de CI, service signalé « dégradé » (rattachement CI ↔ service fait le 2026-10-13) ; exactitude de la CMDB ([#124](https://github.com/christian-raj/S-Aloha/issues/124)), CI à vérifier dans la console ([#125](https://github.com/christian-raj/S-Aloha/issues/125)) | [CFG-16, CFG-18, CFG-30](reference/processus/gestion-de-la-configuration.md) |
 | F7 | Tous | Pièces jointes, notifications par courriel (notifications dans l'application et commentaires faits le 2026-10-13) | [SOC-22, SOC-25](reference/regles-metier.md#8-notifications) |
 | F8 | Connaissances, Incidents | Suggestion d'articles et cas similaires dès la saisie, relier en un clic (rendu Markdown fait le 2026-10-12) | [INC-19](reference/processus/gestion-des-incidents.md), [RAG-09, RAG-11](reference/recherche.md) |
 | F11 | Incidents, sécurité | **Déclarations réglementaires** des incidents cyber (NIS 2 : alerte précoce 24 h, notification 72 h, rapport final ; RGPD : 72 h) associées à l'incident, échéances et alertes | [INC-40 à INC-44](reference/processus/gestion-des-incidents.md), [DRG-01 à DRG-13](reference/processus/declarations-reglementaires.md) |
