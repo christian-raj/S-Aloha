@@ -57,8 +57,8 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 | S2 | **LDAPS** et **HTTPS** | action |
 | S3 | **CORS** restreint ; API et Swagger non publiés hors de nginx | code |
 | S5 | Stockage du jeton côté navigateur (`sessionStorage` ou cookie `HttpOnly`) | décision |
-| S7 | Refus de démarrer hors développement avec les valeurs d'exemple (`Jwt:Key`, `BindPassword`, mot de passe de base) ou une clé de moins de 64 caractères ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 1) | code |
-| S8 | Audience du jeton JWT (`Jwt:Audience`), émise et vérifiée ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 2) | code |
+| ~~S7~~ | ~~Refus de démarrer hors développement avec les valeurs d'exemple~~ — soldé le 2026-10-16 (`SampleSecrets` ; démonstration : `Security:AllowSampleSecrets`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 1) | code |
+| ~~S8~~ | ~~Audience du jeton JWT~~ — soldé le 2026-10-16 (`Jwt:Audience`, émise et vérifiée) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 2) | code |
 | O1 | Démarrage : sondes `/health/live` et `/health/ready`, rattrapage des échéances SLA dans un service de fond, migrations pilotables (`Database:MigrateOnStartup`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 4) | code |
 
 ## 6. Qualité

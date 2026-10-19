@@ -14,8 +14,8 @@
   connexion refusée.
 - Annuaire injoignable (serveur absent, compte de service refusé) : 503 « Annuaire
   injoignable », distinct d'un refus d'identifiants (401) ; l'erreur est journalisée (R6).
-- Jeton **JWT HS256** signé avec `Jwt:Key`, vérifié sur l'issuer et la signature (pas
-  d'audience), durée `Jwt:ExpiryHours` (8 h par défaut). Pas de révocation : un jeton
+- Jeton **JWT HS256** signé avec `Jwt:Key`, vérifié sur l'émetteur, l'**audience**
+  (`Jwt:Audience`, S8) et la signature, durée `Jwt:ExpiryHours` (8 h par défaut). Pas de révocation : un jeton
   reste valide jusqu'à expiration, même si l'utilisateur est retiré du groupe AD.
 - Le jeton porte les **groupes AD directs** de l'utilisateur (SOC-10), lus à la connexion :
   un changement d'appartenance prend effet à la connexion suivante. Les noms de groupes
@@ -62,7 +62,7 @@ réservée à l'Admin.
 
 | Point | État actuel | Cible |
 |---|---|---|
-| Secrets | `Jwt:Key`, `Discovery:VaultKey`, mot de passe PostgreSQL et `BindPassword` en clair dans `appsettings.json` et `docker-compose.yml` | Secrets Docker ou variables d'environnement injectées, clé JWT aléatoire ≥ 64 caractères, clé du coffre aléatoire ≥ 32 caractères fixée avant le premier identifiant |
+| Secrets | Valeurs **d'exemple** de `Jwt:Key`, de `Discovery:VaultKey`, du mot de passe PostgreSQL et de `BindPassword` dans `appsettings.json` et `docker-compose.yml` ; hors développement, l'API **refuse de démarrer** avec elles ou avec une clé JWT de moins de 64 caractères (S7), sauf en démonstration (`Security:AllowSampleSecrets`, avertissement au journal) | Secrets Docker ou variables d'environnement injectées, clé JWT aléatoire ≥ 64 caractères, clé du coffre aléatoire ≥ 32 caractères fixée avant le premier identifiant |
 | LDAP | `UseSsl: false`, port 389 : mots de passe utilisateurs en clair sur le réseau | LDAPS (636) |
 | Transport | HTTP sur le port 80 | HTTPS (reverse proxy TLS) |
 | CORS | `AllowAnyOrigin` | Origine du frontend uniquement |

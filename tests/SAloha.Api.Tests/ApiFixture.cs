@@ -71,6 +71,7 @@ public sealed class ApiFixture : IAsyncLifetime
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
         var token = new JwtSecurityToken(
             issuer: "S-Aloha",
+            audience: "S-Aloha",   // S8
             claims: [new Claim(ClaimTypes.Name, username), new Claim("displayName", username), new Claim(ClaimTypes.Role, role),
                      .. groups.Select(g => new Claim(SAloha.Api.Core.Auth.Principals.GroupClaim, g))],
             expires: DateTime.UtcNow.AddHours(1),
