@@ -6,6 +6,7 @@
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Lextm.SharpSnmpLib" Version="12.5.7" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13">

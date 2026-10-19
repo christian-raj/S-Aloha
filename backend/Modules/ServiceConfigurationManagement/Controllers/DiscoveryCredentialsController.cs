@@ -21,7 +21,7 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
 {
     private static object View(DiscoveryCredential c, int usedBy) => new
     {
-        c.Id, c.PerimeterId, c.Name, c.CredentialType, c.Username, c.Domain, c.CreatedAt, c.CreatedBy,
+        c.Id, c.PerimeterId, c.Name, c.CredentialType, c.Username, c.Domain, c.AuthProtocol, c.PrivProtocol, c.CreatedAt, c.CreatedBy,
         HasSecret = c.EncryptedSecret != "", c.SecretChangedAt, UsedBy = usedBy
     };
 
@@ -50,8 +50,8 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
         if (forbidden) return Forbid();
         if (refused is not null) return BadRequest(new { message = refused });
         var c = new DiscoveryCredential { PerimeterId = perimeterId!.Value, CreatedBy = User.Identity?.Name ?? "" };
-        if (Apply(c, dto) is { } error) return BadRequest(new { message = error });
-        c.EncryptedSecret = vault.Protect(dto.Secret);
+        if (Apply(c, dto) is { } error || (error = SecretOf(c, dto, null, out var plain)) is not null) return BadRequest(new { message = error });
+        c.EncryptedSecret = vault.Protect(plain!);
         c.SecretChangedAt = DateTime.UtcNow;
         db.Add(c);
         await db.SaveChangesAsync();
@@ -67,11 +67,16 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
         if (c is null) return NotFound();
         if (dto.CredentialType != c.CredentialType && await db.Set<DiscoveryJob>().AnyAsync(j => j.CredentialId == id))
             return BadRequest(new { message = "Cet identifiant sert à des tâches de scan : son type ne peut plus changer." });
+        var typeBefore = c.CredentialType;
+        var hadPrivacy = typeBefore == "SnmpV3" && c.PrivProtocol != "None";
         if (Apply(c, dto) is { } error) return BadRequest(new { message = error });
-        if (!string.IsNullOrEmpty(dto.Secret))
+        // SNMP v3 : une phrase fournie remplace la sienne ; l'autre est conservée.
+        if (!string.IsNullOrEmpty(dto.Secret) || !string.IsNullOrEmpty(dto.PrivacySecret) || NeedsPrivacy(c, hadPrivacy))
         {
             if (!vault.Configured) return StatusCode(503, new { message = CredentialVault.NotConfigured });
-            c.EncryptedSecret = vault.Protect(dto.Secret);
+            var current = typeBefore == "SnmpV3" && c.EncryptedSecret != "" ? SnmpV3Secret.Parse(vault.Unprotect(c.EncryptedSecret)) : null;
+            if (SecretOf(c, dto, current, out var plain) is { } secretError) return BadRequest(new { message = secretError });
+            c.EncryptedSecret = vault.Protect(plain!);
             c.SecretChangedAt = DateTime.UtcNow;
         }
         await db.SaveChangesAsync();
@@ -92,7 +97,36 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
         return NoContent();
     }
 
-    private static string Secret(string? type) => type == "SnmpV2c" ? "La communauté SNMP" : "Le mot de passe";
+    private static string Secret(string? type) => type switch
+    {
+        "SnmpV2c" => "La communauté SNMP", "SnmpV3" => "La phrase d'authentification", _ => "Le mot de passe"
+    };
+
+    /// <summary>Passage au chiffrement SNMP v3 sans phrase de chiffrement connue : il faut la fournir.</summary>
+    private static bool NeedsPrivacy(DiscoveryCredential c, bool hadPrivacy) =>
+        c.CredentialType == "SnmpV3" && c.PrivProtocol != "None" && !hadPrivacy;
+
+    /// <summary>
+    /// Secret à chiffrer : tel quel (communauté, mot de passe) ou, en SNMP v3, les deux phrases
+    /// (8 caractères au moins, RFC 3414), celles absentes reprises de <paramref name="current"/>.
+    /// </summary>
+    private static string? SecretOf(DiscoveryCredential c, DiscoveryCredentialDto dto, SnmpV3Secret? current, out string? plain)
+    {
+        plain = null;
+        if (c.CredentialType != "SnmpV3")
+        {
+            if (string.IsNullOrEmpty(dto.Secret)) return Secret(c.CredentialType) + " est obligatoire.";
+            plain = dto.Secret;
+            return null;
+        }
+        var auth = string.IsNullOrEmpty(dto.Secret) ? current?.Auth : dto.Secret;
+        var priv = c.PrivProtocol == "None" ? null : string.IsNullOrEmpty(dto.PrivacySecret) ? current?.Priv : dto.PrivacySecret;
+        if (auth is null || auth.Length < 8) return "La phrase d'authentification SNMP v3 compte 8 caractères au moins.";
+        if (c.PrivProtocol != "None" && (priv is null || priv.Length < 8))
+            return "La phrase de chiffrement SNMP v3 compte 8 caractères au moins (ou choisir « None » : authentification seule).";
+        plain = new SnmpV3Secret(auth, priv).Serialize();
+        return null;
+    }
 
     private static string? Apply(DiscoveryCredential c, DiscoveryCredentialDto dto)
     {
@@ -100,9 +134,15 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
         if (Allowed.Check("Type d'identifiant", dto.CredentialType, DiscoveryCredential.Types) is { } error) return error;
         if (dto.CredentialType == "WindowsDomain" && string.IsNullOrWhiteSpace(dto.Username))
             return "Un compte de domaine porte son nom de compte.";
+        var v3 = dto.CredentialType == "SnmpV3";
+        if (v3 && string.IsNullOrWhiteSpace(dto.Username)) return "Un utilisateur SNMP v3 porte son nom (securityName).";
+        if (v3 && Allowed.Check("Authentification SNMP v3", dto.AuthProtocol ?? "SHA256", SnmpAccess.AuthProtocols) is { } auth) return auth;
+        if (v3 && Allowed.Check("Chiffrement SNMP v3", dto.PrivProtocol ?? "AES", SnmpAccess.PrivProtocols) is { } priv) return priv;
         c.Name = dto.Name.Trim();
         c.CredentialType = dto.CredentialType;
-        c.Username = dto.CredentialType == "WindowsDomain" ? dto.Username?.Trim() : null;
+        c.Username = dto.CredentialType is "WindowsDomain" or "SnmpV3" ? dto.Username?.Trim() : null;
+        c.AuthProtocol = v3 ? dto.AuthProtocol ?? "SHA256" : null;
+        c.PrivProtocol = v3 ? dto.PrivProtocol ?? "AES" : null;
         c.Domain = dto.CredentialType == "WindowsDomain" && !string.IsNullOrWhiteSpace(dto.Domain) ? dto.Domain.Trim() : null;
         return Lengths.Check(c);
     }

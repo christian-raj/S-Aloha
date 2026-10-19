@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Découverte : SNMP v3 et interfaces** (CFG-51) : un scan SNMP utilise une communauté v2c ou
+  un utilisateur v3 du coffre (authentification SHA-2, chiffrement AES ; MD5 et DES refusés) et
+  lit la table des interfaces des équipements (nom, état, débit, adresse MAC), affichée sur la
+  fiche de l'actif. Le protocole SNMP passe par la bibliothèque SharpSnmpLib (licence MIT).
+
 - **Découverte : empreinte passive** (CFG-49, CFG-50) : le balayage IP lit les bannières SSH
   et HTTP des ports ouverts (système, constructeur, type plus précis), affichées sur la fiche
   de l'actif ; le constructeur d'un équipement sans SNMP se déduit du préfixe de son adresse
@@ -71,6 +76,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **SNMP v3 (CFG-51)** : la migration `SnmpV3Interfaces` ajoute trois colonnes facultatives ;
+  les communautés v2c et les tâches existantes restent valables.
 - **Constructeurs (CFG-50)** : la migration `PassiveFingerprint` crée une table vide ; pour
   en profiter, importer `oui.csv` (https://standards-oui.ieee.org/oui/oui.csv) en Admin.
 - **Catégories (ADM-52)** : la migration `Categories` reprend les catégories déjà saisies sur

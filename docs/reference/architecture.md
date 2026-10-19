@@ -26,6 +26,7 @@ Quatre containers orchestrés par `docker-compose.yml` : **web** (nginx sert le 
 | ORM | Entity Framework Core 10 (10.0.13) | Provider Npgsql ; schéma par migrations EF, appliquées au démarrage ([ADR-0008](../decisions/adr-0008-migrations-ef.md)) |
 | Base | PostgreSQL 16 (provider Npgsql EF 10.0.3) | Remplaçable par SQL Server (provider EF + image du compose) |
 | Annuaire | Novell.Directory.Ldap.NETStandard 4 (API asynchrone) | Bind de service pour la recherche, bind utilisateur pour l'authentification ; référents AD ignorés ; annuaire injoignable (serveur absent, compte de service refusé, délai `Ldap:TimeoutSeconds` dépassé) : 503 « Annuaire injoignable » à la connexion et à la recherche, jamais « identifiants invalides » (R6, R7) |
+| Découverte SNMP | Lextm.SharpSnmpLib 12.5 (licence MIT) | Codage des messages SNMP v2c et v3 et sécurité USM (authentification, chiffrement) ; envoi et attente des réponses bornés par un délai, dans `SnmpSession` (CFG-51) |
 | Auth API | JWT Bearer (HS256, JwtBearer 10.0.13) | Claims : name, displayName, role, `adgroup` (un par groupe AD direct, SOC-10) ; expiration paramétrable |
 
 Observabilité ([ADR-0017](../decisions/adr-0017-observabilite-journal-json-et-opentelemetry.md)) : journal JSON

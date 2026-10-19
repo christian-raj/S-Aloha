@@ -291,4 +291,33 @@ public class DiscoveryTests(ApiFixture api)
         // Adresse administrée localement (aléatoire) : pas de constructeur.
         Assert.Equal(JsonValueKind.Null, assets.Single(a => Str(a, "ipAddress") == "10.50.0.20").GetProperty("vendor").ValueKind);
     }
+
+    [Fact]
+    public async Task CFG_51_identifiant_SNMP_v3_au_coffre_et_interfaces_au_sas()
+    {
+        var (p, admin, manager) = await Perimeter("cfg51");
+        object V3(string? user = "saloha", string? secret = "phrase-auth-51", string? priv = "phrase-priv-51", string auth = "SHA256", string privProtocol = "AES") =>
+            new { name = "Utilisateur v3", credentialType = "SnmpV3", username = user, secret, privacySecret = priv, authProtocol = auth, privProtocol, perimeterId = p };
+        foreach (var refused in new[] { V3(user: null), V3(secret: "court"), V3(priv: null), V3(auth: "MD5"), V3(privProtocol: "DES") })
+            Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync("/api/discovery/credentials", refused)).StatusCode);
+        var cred = await Json(await admin.PostAsJsonAsync("/api/discovery/credentials", V3()));
+        Assert.Equal(("SHA256", "AES"), (Str(cred, "authProtocol"), Str(cred, "privProtocol")));
+        Assert.DoesNotContain("phrase", cred.GetRawText());
+        // Rotation de la seule phrase d'authentification : celle du chiffrement est conservée.
+        await Json(await admin.PutAsJsonAsync($"/api/discovery/credentials/{Id(cred)}", V3(secret: "nouvelle-auth-51", priv: null)));
+
+        FakeCollector.Observations["10.51.0.0/24"] =
+        [
+            new("Snmp", IpAddress: "10.51.0.2", Hostname: "sw-acces-51", Type: "Réseau",
+                Interfaces: "Gi0/1 · ethernet · active · 1000 Mb/s · 00:1A:2B:3C:51:01\nGi0/2 · ethernet · inactive"),
+        ];
+        var job = await Json(await manager.PostAsJsonAsync("/api/discovery/jobs",
+            new { name = "SNMP v3 51", scanType = "Snmp", targetRange = "10.51.0.0/24", credentialId = Id(cred), perimeterId = p }));
+        await RunAndWait(manager, Id(job));
+        var secret = SnmpV3Secret.Parse(FakeCollector.SecretsReceived["10.51.0.0/24"]!);
+        Assert.Equal(new SnmpV3Secret("nouvelle-auth-51", "phrase-priv-51"), secret);
+        var asset = Assert.Single(await Staged(manager, p));
+        var detail = (await Json(await manager.GetAsync($"/api/discovery/staging/{Id(asset)}"))).GetProperty("asset");
+        Assert.Contains("Gi0/2 · ethernet · inactive", Str(detail, "interfaces"));
+    }
 }
