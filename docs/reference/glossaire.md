@@ -31,6 +31,9 @@
 | **Plan de retour arrière** (*backout plan*) | Procédure de retour à l'état antérieur si un changement échoue. |
 | **CI** (*Configuration Item*) | Élément de configuration : composant à gérer pour délivrer un service (serveur, application, base…), relié à d'autres CI. |
 | **CMDB** | Base de données de configuration : CI et leurs relations (processus Configuration). |
+| **Portefeuille applicatif** (*application portfolio*) | Inventaire des applications, de leur gouvernance (propriétaire métier, responsable DSI, criticité) et de leur cycle de vie ; volet applications de la pratique ITIL 4 *Portfolio management*, tenu dans la CMDB ([configuration](processus/gestion-de-la-configuration.md), CFG-43). |
+| **Actifs matériels** (*IT asset management*) | Inventaire du matériel physique (constructeur, numéro de série, emplacement, garantie, fin de support) ; volet matériel de la pratique ITIL 4 *IT asset management*, tenu dans la CMDB, sans le volet financier ([configuration](processus/gestion-de-la-configuration.md), CFG-44). |
+| **Sas de staging** | Zone d'attente des actifs découverts automatiquement, rapprochés des CI existants avant toute entrée dans la CMDB (CFG-40, CFG-41). |
 | **Catalogue des services** | Liste des services délivrés aux métiers, avec leur criticité et leurs heures de service. |
 | **SLA** | *Service Level Agreement* : accord de niveau de service entre le fournisseur et un client, avec des cibles (disponibilité, délais de résolution). |
 | **Article de connaissance** | Solution, procédure, erreur connue documentée ou FAQ, publié après validation et revu périodiquement. |

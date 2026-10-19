@@ -36,6 +36,9 @@ services:
       Ldap__Groups__Manager: "GRP-SALOHA-MANAGERS"
       Ldap__Groups__User: "GRP-SALOHA-USERS"
       Jwt__Key: "CHANGEZ-CETTE-CLE-SECRETE-DE-64-CARACTERES-MINIMUM-0123456789ab"
+      # --- Découverte automatique (CFG-45) : clé du coffre d'identifiants, hors de la base ---
+      # À changer avant le premier identifiant enregistré : la changer ensuite rend les secrets illisibles.
+      Discovery__VaultKey: "CHANGEZ-CETTE-CLE-DU-COFFRE-DE-32-CARACTERES-MINIMUM-0123456789"
       # --- Recherche hybride (ADR-0013) : service d'embeddings ci-dessous ---
       # Vide : recherche par les mots seulement. L'API n'attend pas ce service.
       Embeddings__Url: "http://embeddings:11434"

@@ -88,9 +88,35 @@ restantes sont spécifiées règle par règle dans [`reference/processus/`](refe
 | F8 | Connaissances, Incidents | Suggestion d'articles et cas similaires dès la saisie, relier en un clic (rendu Markdown fait le 2026-10-12) | [INC-19](reference/processus/gestion-des-incidents.md), [RAG-09, RAG-11](reference/recherche.md) |
 | F11 | Incidents, sécurité | **Déclarations réglementaires** des incidents cyber (NIS 2 : alerte précoce 24 h, notification 72 h, rapport final ; RGPD : 72 h) associées à l'incident, échéances et alertes | [INC-40 à INC-44](reference/processus/gestion-des-incidents.md), [DRG-01 à DRG-13](reference/processus/declarations-reglementaires.md) |
 | F12 | Conformité | 🔜 **Évaluations sur référentiels définis par l'Admin** (ex. CR-CMM, ISO 27002) : l'Admin importe un référentiel en CSV depuis sa console en choisissant les colonnes (domaine ou pratique, niveau, identifiant, question, preuve attendue) et règle l'échelle (ex. Implémenté = 1, Partiel = 0,5, Non = 0 ; un niveau n'est atteint que si tous ses points de contrôle et ceux des niveaux inférieurs sont implémentés). Le contenu est importé par l'organisation et **jamais versionné** dans le dépôt, même logique que l'[ADR-0012](decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md) : CR-CMM est sous licence CC BY-NC 4.0, usage interne libre, œuvre dérivée ou revente soumises à l'accord écrit de ses auteurs (vérifié le 2026-10-12). Place : section Conformité & réglementation | À spécifier |
+| F13 | Configuration, Sécurité | 🔜 **Découverte automatique du SI et CMDB augmentée** : approche hybride (agentless & agent léger), balayage IP / ICMP sweep, fingerprinting, synchronisation annuaire (AD / LDAP / Entra ID), cartographie des dépendances, protocoles standard (ICMP/ARP, SNMP v2c/v3, WMI/WinRM, SSH, REST), Credentials Vault, zone de staging et réconciliation, détection Shadow IT et alignement NIS 2 (ReCyF) | [Chantier F13](#découverte-automatique-et-cmdb-augmentée-f13) |
 
 Ces chantiers sont décidés : leurs règles sont écrites et classées en lots
 ([plan d'implémentation du lot 1](reference/processus/readme.md#plan-dimplémentation-conseillé--lot-1)).
+
+### Découverte automatique et CMDB augmentée (F13)
+
+Ce chantier introduit le moteur de découverte automatique hybride pour alimenter la CMDB,
+historiquement hors périmètre. Il s'appuie sur la sobriété (non-intrusivité, limitation de
+bande passante), une zone de staging (tampon et réconciliation avant injection en production),
+un coffre-fort d'identifiants chiffré (Credentials Vault), la cartographie des dépendances
+et l'alignement NIS 2 (détection du Shadow IT et de l'obsolescence selon le ReCyF de l'ANSSI).
+Modèle à 3 niveaux et architecture de la découverte : [§ 3.1](reference/processus/gestion-de-la-configuration.md#31-modèle-à-trois-couches) et [§ 4.2](reference/processus/gestion-de-la-configuration.md#42-découverte-et-sas-de-staging) de la pratique Configuration.
+
+#### Principes directeurs
+
+- **Non-intrusivité et sobriété** : scans asynchrones légers, limitation de bande passante (`SemaphoreSlim`, throttling configurable) pour préserver les équipements critiques et le réseau.
+- **Approche hybride (Agent / Sans agent)** : priorité à l'agentless (ICMP, SNMP, WMI/WinRM, SSH, LDAP) pour un déploiement immédiat sans friction ; agent léger autonome pour les postes nomades ou hors réseau local.
+- **Vision « Single Source of Truth » (SSOT)** : réconciliation centralisée rattachant directement les CI découverts aux incidents, problèmes, changements et services ITIL.
+- **Traçabilité et conformité NIS 2** : identification du Shadow IT, détection des logiciels/OS obsolètes, et alimentation directe des preuves du Référentiel Cyber France (ReCyF ANSSI).
+
+#### Plan de mise en œuvre par phases
+
+| Phase | Intitulé | Description technique et livrables | Statut |
+|---|---|---|---|
+| **Phase 1** | **Socle de données, Credentials Vault & Directory Sync** | • Extension des attributs techniques des CI (CFG-16 : IP, MAC, OS, CPU, RAM, n° de série via JSONB ou colonnes dédiées).<br/>• Coffre d'identifiants chiffré AES-256 (`DiscoveryCredentials` : comptes de service Windows, clés SSH, communautés SNMP).<br/>• Extension de `LdapService` pour requêter les ordinateurs du domaine (`objectClass=computer`).<br/>• Sas de staging (`DiscoveredAssets`) et moteur de réconciliation initiale (règles de matching par n° de série, MAC, FQDN). | 🔜 |
+| **Phase 2** | **Découverte réseau & SNMP (Agentless)** | • Ordonnanceur de découverte (`DiscoveryJob` : plages IP / CIDR, calendrier hors heures de bureau).<br/>• Moteur de balayage réseau (Ping ICMP sweep, sondes TCP ciblées) et empreinte passive (OUI MAC, TTL, bannières HTTP/SSH).<br/>• Collecte SNMP v2c/v3 (MIB-II, `sysDescr`, `ifTable` pour commutateurs, routeurs, pare-feu, NAS, imprimantes). | 🔜 |
+| **Phase 3** | **Inventaire approfondi & Cartographie des dépendances** | • Connecteurs d'administration authentifiés : SSH (Linux/Unix) et WMI/WinRM (Windows) pour inventaire complet (OS, logiciels installés, services actifs).<br/>• Connecteurs REST pour hyperviseurs et Cloud (VMware, Proxmox, AWS/Azure).<br/>• Cartographie automatique des dépendances (*Dependency Mapping*) : déduction des relations *« Héberge »* (hyperviseur $\rightarrow$ VM) et *« Se connecte à »* / *« Dépend de »* (analyse des flux et ports d'écoute actifs). | 🔜 |
+| **Phase 4** | **Agent nomade, Alignement NIS 2 & Console de Staging** | • Agent léger autonome pour postes distants/nomades (`POST /api/discovery/agent-report` avec jeton d'enrôlement par périmètre).<br/>• Détection automatique du Shadow IT (actifs réseau non répertoriés) et de l'obsolescence (corrélation EOL) alimentant le module `ComplianceAssessment` (ReCyF Objectifs 4, 5, 6).<br/>• Interface utilisateur React : console de staging, tableau de réconciliation (diff avant/après) et validation par le Gestionnaire de configuration. | 🔜 |
 
 **Lot 1** : terminé le 2026-10-13 (étapes 1 à 6, périmètres compris, NIS-18), sauf RAG-10
 (calibrage de la recherche), **en attente** d'un jeu de requêtes réelles (décision du
