@@ -19,6 +19,7 @@ Ce qui est vrai en permanence, mis à jour avec le code.
 | 📊 | [Reporting](reference/reporting.md) | Lire le tableau de bord : score de santé, indicateurs par onglet, filtres, exports |
 | 🔎 | [Recherche](reference/recherche.md) | Comprendre la recherche hybride : contenu indexé, cas similaires, service d'embeddings |
 | 🧭 | [Périmètres](reference/perimetres.md) | Droits scopés par direction, site ou entité (droits, visibilité, écran d'administration) |
+| 🛠️ | [Administration et référentiels](reference/administration.md) | Utilisateurs et rôles, santé, journal d'audit global, doublons, catégories (ADM) |
 | 🛡️ | [Sécurité](reference/securite.md) | Préparer une mise en production |
 | 📖 | [Glossaire](reference/glossaire.md) | Retrouver un terme ITIL, technique ou malgache |
 

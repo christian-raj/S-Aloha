@@ -42,7 +42,7 @@ code qui doit s'y conformer.
 
 | # | Chantier | Décision à prendre |
 |---|---|---|
-| A1 | **Console d'administration inexistante** (Admin = console Manager) | Décidé le 2026-10-07 : section de menu **Administration** (Admin : utilisateurs et rôles, santé, journal d'audit, nettoyage — [SOC-26](reference/regles-metier.md#9-traçabilité-commentaires-administration)) et section **Paramétrage** (Manager, Admin : référentiels — SOC-27 — et paramétrage des pratiques) ; voir [frontend § Navigation cible](reference/frontend.md#navigation-cible) |
+| A1 | **Console d'administration** (Admin = console Manager) | Décidé le 2026-10-07 (sections Administration et Paramétrage), précisé le 2026-10-19 ([ADR-0019](decisions/adr-0019-console-d-administration.md)) : utilisateurs lus dans l'annuaire avec leur dernière connexion, santé, journal d'audit global, doublons détectés et fusionnés, catégories (SOC-27) ; règles [ADM](reference/administration.md). En cours de réalisation |
 
 ## 5. Avant une mise en production
 
@@ -104,6 +104,12 @@ Modèle à 3 niveaux et architecture de la découverte : [§ 3.1](reference/proc
 - **Approche hybride (Agent / Sans agent)** : priorité à l'agentless (ICMP, SNMP, WMI/WinRM, SSH, LDAP) pour un déploiement immédiat sans friction ; agent léger autonome pour les postes nomades ou hors réseau local.
 - **Vision « Single Source of Truth » (SSOT)** : réconciliation centralisée rattachant directement les CI découverts aux incidents, problèmes, changements et services ITIL.
 - **Traçabilité et conformité NIS 2** : identification du Shadow IT, détection des logiciels/OS obsolètes, et alimentation directe des preuves du Référentiel Cyber France (ReCyF ANSSI).
+
+**Reprise décidée le 2026-10-19** : finir la phase 2 d'abord (bannières SSH et HTTP,
+constructeur par préfixe MAC, SNMP v3, `ifTable`) ; SNMP v3 avec la bibliothèque
+`Lextm.SharpSnmpLib` (licence MIT, la cryptographie USM n'est pas réécrite) ; base OUI
+**importée par l'Admin** depuis le fichier public de l'IEEE, rien de tiers versionné (même
+logique que l'[ADR-0012](decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md)).
 
 #### Plan de mise en œuvre par phases
 
