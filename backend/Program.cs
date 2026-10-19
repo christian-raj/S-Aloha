@@ -38,6 +38,8 @@ builder.Services.AddScoped<IDiscoveryCollector, NetworkScanner>();
 builder.Services.AddScoped<IDiscoveryCollector, SnmpCollector>();
 builder.Services.AddScoped<IDiscoveryCollector, ActiveDirectoryCollector>();
 builder.Services.AddScoped<IDiscoveryCollector, SshCollector>();
+builder.Services.AddScoped<IDiscoveryCollector, ProxmoxCollector>();
+builder.Services.AddScoped<IDiscoveryCollector, VCenterCollector>();
 builder.Services.AddScoped<MatchingEngine>();
 builder.Services.AddScoped<DiscoveryRunner>();
 builder.Services.AddHostedService<DiscoveryWorker>();

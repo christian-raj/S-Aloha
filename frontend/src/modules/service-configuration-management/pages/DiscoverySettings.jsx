@@ -17,12 +17,18 @@ const SCAN_TYPES = {
   ActiveDirectory: { label: 'Active Directory', target: 'BaseDN facultatif (sinon celle de l’annuaire configuré)', credentials: ['WindowsDomain'],
     help: 'Comptes d’ordinateur actifs. Compte de domaine du coffre facultatif (sinon le compte de service de l’API).' },
   Ssh: { label: 'Inventaire SSH (Linux, Unix)', target: 'Réseau CIDR (/24 au plus) ou adresse', credentials: ['Ssh'], help: SSH_HELP },
+  Proxmox: { label: 'Proxmox VE', target: 'Adresse de l’API, ex. https://pve.corp.local:8006', credentials: ['ProxmoxToken'],
+    help: 'Nœuds, machines virtuelles et conteneurs, avec un jeton d’API en lecture seule (rôle PVEAuditor). Relation « Héberge » proposée.' },
+  VCenter: { label: 'VMware vCenter', target: 'Adresse de vCenter, ex. https://vcenter.corp.local', credentials: ['VCenter'],
+    help: 'Hôtes ESXi et machines virtuelles (vCenter 7 et suivants), avec un compte en lecture seule. Relation « Héberge » proposée.' },
 }
 const CREDENTIAL_TYPES = {
   SnmpV3: { label: 'Utilisateur SNMP v3', secret: 'Phrase d’authentification' },
   SnmpV2c: { label: 'Communauté SNMP v2c', secret: 'Communauté' },
   WindowsDomain: { label: 'Compte de domaine Windows', secret: 'Mot de passe' },
   Ssh: { label: 'Compte SSH', secret: 'Mot de passe' },
+  ProxmoxToken: { label: 'Jeton d’API Proxmox VE', secret: 'Secret du jeton' },
+  VCenter: { label: 'Compte vCenter', secret: 'Mot de passe' },
 }
 // SNMP v3 (CFG-51) : MD5 et DES, cassés, ne sont pas proposés.
 const V3_AUTH = [{ value: 'SHA256', label: 'SHA-256 (recommandé)' }, { value: 'SHA384', label: 'SHA-384' },
@@ -200,6 +206,12 @@ function CredentialForm({ credential, onSaved, onCancel }) {
           <div className="field"><label>Domaine</label>
             <input value={f.domain} onChange={e => set({ domain: e.target.value })} placeholder="MONDOMAINE" autoComplete="off" /></div>
         </>}
+        {f.credentialType === 'ProxmoxToken' && <div className="field"><label>Identifiant du jeton *</label>
+          <input value={f.username} onChange={e => set({ username: e.target.value })} placeholder="inventaire@pve!saloha" autoComplete="off" />
+          <small className="field-hint">utilisateur@royaume!nom du jeton ; rôle PVEAuditor suffisant.</small></div>}
+        {f.credentialType === 'VCenter' && <div className="field"><label>Compte *</label>
+          <input value={f.username} onChange={e => set({ username: e.target.value })} placeholder="inventaire@vsphere.local" autoComplete="off" />
+          <small className="field-hint">Rôle Lecture seule suffisant.</small></div>}
         {f.credentialType === 'Ssh' && <>
           <div className="field"><label>Compte *</label>
             <input value={f.username} onChange={e => set({ username: e.target.value })} placeholder="svc-inventaire" autoComplete="off" />
@@ -350,35 +362,39 @@ function SshHostKeys({ isAdmin }) {
   const [error, setError] = useState('')
   const load = () => api.discovery.sshHostKeys.list().then(setKeys).catch(e => setError(e.message))
   useEffect(() => { load() }, [])
-  const accept = k => window.confirm(`Accepter la nouvelle clé de ${k.host} ? Vérifier d’abord son empreinte sur le serveur (ssh-keygen -lf).`)
+  const accept = k => window.confirm(k.protocol === 'tls'
+    ? `Accepter le nouveau certificat de ${k.host} ? Vérifier d’abord son empreinte SHA-256 sur l’hyperviseur.`
+    : `Accepter la nouvelle clé de ${k.host} ? Vérifier d’abord son empreinte sur le serveur (ssh-keygen -lf).`)
     && api.discovery.sshHostKeys.accept(k.id).then(load).catch(e => setError(e.message))
   const forget = k => window.confirm(`Oublier ${k.host} ? Sa prochaine clé sera retenue sans contrôle.`)
     && api.discovery.sshHostKeys.forget(k.id).then(load).catch(e => setError(e.message))
   return (
     <>
       <p className="muted small" style={{ marginBottom: 12 }}>
-        La clé de chaque serveur est retenue au premier inventaire SSH. Si elle change (réinstallation, ou serveur usurpé), l’identifiant
-        n’est pas envoyé et l’hôte n’est plus inventorié tant que l’Admin n’a pas accepté la nouvelle clé.
+        La clé de chaque serveur SSH, et le certificat d’un hyperviseur que l’autorité de certification ne garantit pas (autosigné), sont
+        retenus au premier contact. S’ils changent (réinstallation, ou serveur usurpé), l’identifiant n’est pas envoyé et l’hôte n’est
+        plus inventorié tant que l’Admin n’a pas accepté la nouvelle clé.
       </p>
       {error && <div className="error" role="alert">{error}</div>}
       <div className="table-scroll">
         <table className="compact">
-          <thead><tr><th>Hôte</th><th>Clé retenue</th><th>État</th><th>Vue le</th><th></th></tr></thead>
+          <thead><tr><th>Hôte</th><th>Type</th><th>Clé retenue</th><th>État</th><th>Vue le</th><th></th></tr></thead>
           <tbody>
             {keys?.map(k => (
               <tr key={k.id}>
                 <td><b>{k.host}</b>{k.port !== 22 && <span className="muted">:{k.port}</span>}</td>
+                <td className="small">{k.protocol === 'tls' ? 'Certificat TLS' : 'Clé SSH'}</td>
                 <td className="small"><code>{k.algorithm} SHA256:{k.fingerprint}</code></td>
                 <td>{k.changed
-                  ? <><span className="badge t-bad">Clé changée</span><div className="small"><code>{k.pendingAlgorithm} SHA256:{k.pendingFingerprint}</code></div></>
+                  ? <><span className="badge t-bad">{k.protocol === 'tls' ? 'Certificat changé' : 'Clé changée'}</span><div className="small"><code>{k.pendingAlgorithm} SHA256:{k.pendingFingerprint}</code></div></>
                   : <span className="badge t-done">De confiance</span>}</td>
                 <td className="small">{dateTimeFr(k.changed ? k.pendingSeenAt : k.lastSeenAt)}</td>
                 <td className="row-actions">{isAdmin && <>
-                  {k.changed && <button className="btn small" onClick={() => accept(k)}>Accepter la nouvelle clé</button>}
+                  {k.changed && <button className="btn small" onClick={() => accept(k)}>{k.protocol === 'tls' ? 'Accepter le nouveau certificat' : 'Accepter la nouvelle clé'}</button>}
                   <button className="btn ghost small" onClick={() => forget(k)}>Oublier</button>
                 </>}</td>
               </tr>))}
-            {keys?.length === 0 && <tr><td colSpan={5} className="muted">Aucun hôte inventorié par SSH.</td></tr>}
+            {keys?.length === 0 && <tr><td colSpan={6} className="muted">Aucune clé ni aucun certificat retenu.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -450,7 +466,7 @@ export default function DiscoverySettings() {
     { id: 'jobs', label: 'Tâches de scan' },
     isAdmin && { id: 'credentials', label: 'Identifiants (coffre)' },
     { id: 'eol', label: 'Fins de support' },
-    { id: 'ssh', label: 'Clés d’hôte SSH' },
+    { id: 'ssh', label: 'Clés et certificats' },
     { id: 'oui', label: 'Constructeurs (OUI)' },
   ].filter(Boolean)
   const tab = tabs.find(t => t.id === params.get('tab')) ?? tabs[0]

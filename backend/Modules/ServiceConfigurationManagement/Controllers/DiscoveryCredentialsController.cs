@@ -101,7 +101,7 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
 
     private static string Secret(string? type) => type switch
     {
-        "SnmpV2c" => "La communauté SNMP", "SnmpV3" => "La phrase d'authentification", "Ssh" => "Le mot de passe ou la clé privée",
+        "SnmpV2c" => "La communauté SNMP", "SnmpV3" => "La phrase d'authentification", "Ssh" => "Le mot de passe ou la clé privée", "ProxmoxToken" => "Le secret du jeton",
         _ => "Le mot de passe"
     };
 
@@ -153,11 +153,15 @@ public class DiscoveryCredentialsController(AppDbContext db, PerimeterAccess acc
         var v3 = dto.CredentialType == "SnmpV3";
         if (v3 && string.IsNullOrWhiteSpace(dto.Username)) return "Un utilisateur SNMP v3 porte son nom (securityName).";
         if (dto.CredentialType == "Ssh" && string.IsNullOrWhiteSpace(dto.Username)) return "Un compte SSH porte son nom de compte.";
+        // CFG-54 : jeton Proxmox « utilisateur@royaume!nom » ; compte vCenter « utilisateur@domaine ».
+        if (dto.CredentialType == "ProxmoxToken" && (dto.Username is not { } tokenId || !tokenId.Contains('@') || !tokenId.Contains('!')))
+            return "Un jeton Proxmox VE porte son identifiant complet, ex. « inventaire@pve!saloha ».";
+        if (dto.CredentialType == "VCenter" && string.IsNullOrWhiteSpace(dto.Username)) return "Un compte vCenter porte son nom, ex. « inventaire@vsphere.local ».";
         if (v3 && Allowed.Check("Authentification SNMP v3", dto.AuthProtocol ?? "SHA256", SnmpAccess.AuthProtocols) is { } auth) return auth;
         if (v3 && Allowed.Check("Chiffrement SNMP v3", dto.PrivProtocol ?? "AES", SnmpAccess.PrivProtocols) is { } priv) return priv;
         c.Name = dto.Name.Trim();
         c.CredentialType = dto.CredentialType;
-        c.Username = dto.CredentialType is "WindowsDomain" or "SnmpV3" or "Ssh" ? dto.Username?.Trim() : null;
+        c.Username = dto.CredentialType is "WindowsDomain" or "SnmpV3" or "Ssh" or "ProxmoxToken" or "VCenter" ? dto.Username?.Trim() : null;
         c.AuthProtocol = v3 ? dto.AuthProtocol ?? "SHA256" : null;
         c.PrivProtocol = v3 ? dto.PrivProtocol ?? "AES" : null;
         c.Domain = dto.CredentialType == "WindowsDomain" && !string.IsNullOrWhiteSpace(dto.Domain) ? dto.Domain.Trim() : null;

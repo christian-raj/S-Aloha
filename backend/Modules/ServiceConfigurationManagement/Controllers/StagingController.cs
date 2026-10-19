@@ -65,8 +65,11 @@ public class StagingController(AppDbContext db, PerimeterAccess access, Matching
     {
         if (await ManagedAsync() is not { } query) return Forbid();
         var all = await query.AsNoTracking().Select(a => new { a.Status, a.InDirectory, a.MatchedCiId }).ToListAsync();
+        var perimeters = await query.Select(a => a.PerimeterId).Distinct().ToListAsync();
         return Ok(new
         {
+            // CFG-55 : relations proposées en attente de décision.
+            Relations = await db.RelationProposals.CountAsync(r => r.Status == RelationProposal.Proposed && perimeters.Contains(r.PerimeterId)),
             ToReconcile = all.Count(a => a.Status == DiscoveredAsset.ToReconcile),
             Conflicts = all.Count(a => a.Status == DiscoveredAsset.InConflict),
             Unknown = all.Count(a => !a.InDirectory && a.MatchedCiId == null && DiscoveredAsset.Open.Contains(a.Status)),

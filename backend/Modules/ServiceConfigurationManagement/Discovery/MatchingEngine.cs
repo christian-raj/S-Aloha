@@ -76,6 +76,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
         var staged = await db.Set<DiscoveredAsset>().Where(x => x.PerimeterId == job.PerimeterId).ToListAsync(ct);
         int seen = 0, added = 0, auto = 0, conflicts = 0;
         var touched = new HashSet<DiscoveredAsset>();
+        var hosted = new List<(DiscoveredAsset Asset, string Host, string? Reason)>();
         foreach (var raw in observations)
         {
             var o = raw with
@@ -97,6 +98,7 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
             Merge(asset, o, job.Id);
             touched.Add(asset);
             if (o.Software is not null) await ReplaceSoftwareAsync(asset, o.Software, ct);
+            if (o.HostedBy is { } host) hosted.Add((asset, host.Trim().ToLowerInvariant(), o.HostedReason));
         }
         await VendorsFromMacAsync(touched, ct);
 
@@ -126,8 +128,39 @@ public class MatchingEngine(AppDbContext db, IConfiguration config)
             auto++;
         }
         await db.SaveChangesAsync(ct);
+        if (hosted.Count > 0) await ProposeHostingAsync(job, touched, hosted, ct);
         return new IngestResult(seen, added, auto, conflicts);
     }
+
+    /// <summary>
+    /// CFG-55 : « hôte Héberge machine » proposé pour chaque machine dont l'hôte a été vu par la
+    /// même tâche (nom d'hôte ou adresse IP). Une proposition existante est seulement revue ;
+    /// écartée, elle n'est pas reproposée.
+    /// </summary>
+    private async Task ProposeHostingAsync(DiscoveryJob job, HashSet<DiscoveredAsset> touched,
+        List<(DiscoveredAsset Asset, string Host, string? Reason)> hosted, CancellationToken ct)
+    {
+        DiscoveredAsset? HostOf(string host) => touched.FirstOrDefault(a => a.Hostname == host || a.IpAddress == host
+            || a.Hostname is not null && a.Hostname.Split('.')[0] == host.Split('.')[0] && !char.IsDigit(host[0]));
+        var ids = hosted.Select(h => h.Asset.Id).ToList();
+        var existing = await db.RelationProposals.Where(r => r.Type == "Héberge" && ids.Contains(r.TargetAssetId)).ToListAsync(ct);
+        foreach (var (machine, host, reason) in hosted)
+        {
+            if (HostOf(host) is not { } server || server == machine) continue;
+            var current = existing.FirstOrDefault(r => r.SourceAssetId == server.Id && r.TargetAssetId == machine.Id);
+            if (current is not null) { current.LastSeenAt = DateTime.UtcNow; continue; }
+            var proposal = new RelationProposal
+            {
+                PerimeterId = job.PerimeterId, SourceAssetId = server.Id, TargetAssetId = machine.Id, Type = "Héberge",
+                Reason = Truncated(reason ?? $"{host} héberge {machine.Hostname ?? machine.IpAddress}", 300)
+            };
+            db.RelationProposals.Add(proposal);
+            existing.Add(proposal);
+        }
+        await db.SaveChangesAsync(ct);
+    }
+
+    private static string Truncated(string v, int max) => v.Length <= max ? v : v[..max];
 
     /// <summary>CFG-52 : le dernier relevé des logiciels remplace le précédent.</summary>
     private async Task ReplaceSoftwareAsync(DiscoveredAsset asset, IReadOnlyList<SoftwareItem> software, CancellationToken ct)

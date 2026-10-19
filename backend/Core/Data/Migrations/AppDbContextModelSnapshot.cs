@@ -2714,6 +2714,66 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.ToTable("EndOfLifeRules");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.RelationProposal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DecidedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<int?>("RelationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SourceAssetId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("TargetAssetId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
+
+                    b.HasIndex("TargetAssetId");
+
+                    b.HasIndex("SourceAssetId", "TargetAssetId", "Type")
+                        .IsUnique();
+
+                    b.ToTable("RelationProposals");
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.SshHostKey", b =>
                 {
                     b.Property<int>("Id")
@@ -2767,11 +2827,16 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<int>("Port")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Protocol")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PerimeterId");
 
-                    b.HasIndex("PerimeterId", "Host", "Port")
+                    b.HasIndex("PerimeterId", "Protocol", "Host", "Port")
                         .IsUnique();
 
                     b.ToTable("SshHostKeys");
@@ -3535,6 +3600,31 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Credential");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.RelationProposal", b =>
+                {
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveredAsset", "SourceAsset")
+                        .WithMany()
+                        .HasForeignKey("SourceAssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveredAsset", "TargetAsset")
+                        .WithMany()
+                        .HasForeignKey("TargetAssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SourceAsset");
+
+                    b.Navigation("TargetAsset");
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.SshHostKey", b =>

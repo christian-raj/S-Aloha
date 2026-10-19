@@ -12,7 +12,58 @@ const VIEWS = [
   { id: 'unknown', label: 'Actifs inconnus', count: s => s.unknown, tone: 'amber', hint: 'Ni dans l’annuaire ni en CMDB (Shadow IT)' },
   { id: 'reconciled', label: 'Rapprochés', count: s => s.reconciled, tone: 'emerald', hint: 'Reliés à un CI', status: 'Rapproché' },
   { id: 'ignored', label: 'Ignorés', count: s => s.ignored, tone: 'neutral', hint: 'Exclus de la CMDB', status: 'Ignoré' },
+  { id: 'relations', label: 'Relations proposées', count: s => s.relations ?? 0, tone: 'violet', hint: 'Hyperviseur → machine, à valider' },
 ]
+
+/** Un côté d'une relation proposée : l'actif du sas et le CI dont il est rapproché. */
+function Side({ asset }) {
+  return (
+    <>
+      <Link to={'/configuration/staging/' + asset.id}><b>{asset.hostname ?? asset.ipAddress}</b></Link>
+      <div className="small">{asset.ci
+        ? <Link to={'/configuration/' + asset.ci.id}>{asset.ci.reference} {asset.ci.title}</Link>
+        : <span className="muted">non rapproché ({asset.status})</span>}</div>
+    </>
+  )
+}
+
+/**
+ * CFG-55 : relations déduites par la découverte, proposées au gestionnaire. Accepter crée la
+ * relation dans la CMDB, une fois les deux actifs rapprochés ; écarter ne la repropose plus.
+ */
+function Relations({ onChanged }) {
+  const [rows, setRows] = useState(null)
+  const [error, setError] = useState('')
+  const load = () => api.discovery.relations.list({ status: 'Proposée' }).then(setRows).catch(e => setError(e.message))
+  useEffect(() => { load() }, [])
+  const act = (fn, r) => fn(r.id).then(() => { setError(''); load(); onChanged() }).catch(e => setError(e.message))
+  return (
+    <>
+      {error && <div className="error" role="alert">{error}</div>}
+      <div className="table-scroll">
+        <table>
+          <thead><tr><th>Source</th><th>Relation</th><th>Cible</th><th>Motif</th><th></th></tr></thead>
+          <tbody>
+            {rows?.map(r => (
+              <tr key={r.id}>
+                <td><Side asset={r.source} /></td>
+                <td><span className="badge t-progress">{r.type}</span></td>
+                <td><Side asset={r.target} /></td>
+                <td className="small">{r.reason}<div className="muted">vue le {dateTimeFr(r.lastSeenAt)}</div></td>
+                <td className="row-actions">
+                  <button className="btn small" onClick={() => act(api.discovery.relations.accept, r)} disabled={!r.ready}
+                    title={r.ready ? undefined : 'Rapprocher d’abord les deux actifs de leurs CI'}>Accepter</button>
+                  <button className="btn ghost small" onClick={() => act(api.discovery.relations.dismiss, r)}>Écarter</button>
+                </td>
+              </tr>))}
+            {rows?.length === 0 && <tr><td colSpan={5} className="muted">Aucune relation à valider.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      {!rows && !error && <p>Chargement…</p>}
+    </>
+  )
+}
 const OPEN = ['À rapprocher', 'En conflit']
 
 /**
@@ -31,6 +82,7 @@ export default function Staging() {
 
   const load = () => {
     api.discovery.staging.summary().then(setSummary).catch(e => setError(e.message))
+    if (view.id === 'relations') return
     api.discovery.staging.list({
       ...(view.status && { status: view.status }), ...(view.id === 'unknown' && { unknown: true }),
       ...(source && { source }), ...(q && { q })
@@ -67,6 +119,7 @@ export default function Staging() {
           ))}
         </div>
 
+        {view.id === 'relations' ? <Relations onChanged={load} /> : <>
         <div className="toolbar">
           <input style={{ maxWidth: 280 }} placeholder="IP, nom d’hôte, MAC, n° de série…" value={q}
             onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && load()} aria-label="Rechercher un actif" />
@@ -101,6 +154,7 @@ export default function Staging() {
           </table>
         </div>
         {!rows && !error && <p>Chargement…</p>}
+        </>}
       </>}
     </>
   )

@@ -53,8 +53,9 @@ et l'arbitrage du portefeuille (choix d'investissement entre applications ou pro
 | Créer, modifier, remplacer le secret, supprimer un identifiant du coffre | ✘ | ✘ | ✔ | ✅ CFG-45 |
 | Tenir le référentiel des fins de support | ✘ | ✔ | ✔ | ✅ CFG-47 |
 | Importer la base des constructeurs (registre OUI de l'IEEE) | ✘ | ✘ | ✔ | ✅ CFG-50 |
-| Consulter les clés d'hôte SSH retenues | ✘ | ✔ | ✔ | ✅ CFG-53 |
-| Accepter une clé d'hôte SSH changée, oublier un hôte | ✘ | ✘ | ✔ | ✅ CFG-53 |
+| Consulter les clés d'hôte SSH et certificats retenus | ✘ | ✔ | ✔ | ✅ CFG-53 |
+| Accepter une clé ou un certificat changé, oublier un hôte | ✘ | ✘ | ✔ | ✅ CFG-53 |
+| Accepter ou écarter une relation proposée par la découverte | ✘ | ✔ | ✔ | ✅ CFG-55 |
 | Importer en masse | ✘ | ✘ | ✔ | 🔜 CFG-30 |
 | Supprimer un CI | ✘ | ✘ | ✔ | ✅ |
 
@@ -165,15 +166,16 @@ L'emplacement physique précis se saisit dans `Location` (§ 3.2).
 | Objet | Champs principaux | Usage | Statut |
 |---|---|---|---|
 | Actif découvert (`DiscoveredAssets`) | `IpAddress`, `MacAddress`, `Hostname`, `SerialNumber`, `Vendor`, `Model`, `DetectedOs`, `DetectedType` (valeurs de `CiType`), `Location`, `OpenPorts`, `Banners` (bannières SSH et HTTP, CFG-49), `Interfaces` (interfaces lues par SNMP, CFG-51), `Services` et `ListeningPorts` (relevés par SSH, CFG-52), `Sources` (IpSweep, Snmp, ActiveDirectory : liste des sources qui l'ont vu), `InDirectory`, `Status` (À rapprocher, En conflit, Rapproché, Ignoré), `ConfidenceScore` (0 à 100), `MatchRule`, `SuggestedAction` (UpdateExisting, Conflict, CreateNew), `ConflictReason`, `MatchedCiId`, `JobId`, `FirstSeenAt`, `LastSeenAt`, `ReconciledAt`, `ReconciledBy`, périmètre | Sas de staging avant réconciliation (CFG-40) | ✅ |
-| Tâche de scan (`DiscoveryJobs`) | `Name`, `ScanType` (IpSweep, Snmp, ActiveDirectory, Ssh), `TargetRange` (CIDR ou IP ; BaseDN facultatif pour l'annuaire), `PortList` (balayage ; port SSH, 22 par défaut), `CredentialId`, `FrequencyHours` (0 : manuelle), `WindowStart`, `WindowEnd`, `IsActive`, `LastRunAt`, `LastStatus` (Jamais lancée, En file, En cours, Réussie, En échec), `LastError`, `LastFoundCount`, périmètre | Planification et suivi des scans (CFG-46) | ✅ |
-| Identifiant du coffre (`DiscoveryCredentials`) | `Name`, `CredentialType` (SnmpV2c, SnmpV3, WindowsDomain, Ssh), `Username` (compte de domaine, utilisateur SNMP v3, compte SSH), `Domain`, `AuthProtocol` et `PrivProtocol` (SNMP v3, CFG-51), `EncryptedSecret`, `SecretChangedAt`, périmètre | Secrets chiffrés au repos, jamais renvoyés (CFG-45) | ✅ |
+| Tâche de scan (`DiscoveryJobs`) | `Name`, `ScanType` (IpSweep, Snmp, ActiveDirectory, Ssh, Proxmox, VCenter), `TargetRange` (CIDR ou IP ; BaseDN facultatif pour l'annuaire ; URL https de l'API d'un hyperviseur), `PortList` (balayage ; port SSH, 22 par défaut), `CredentialId`, `FrequencyHours` (0 : manuelle), `WindowStart`, `WindowEnd`, `IsActive`, `LastRunAt`, `LastStatus` (Jamais lancée, En file, En cours, Réussie, En échec), `LastError`, `LastFoundCount`, périmètre | Planification et suivi des scans (CFG-46) | ✅ |
+| Identifiant du coffre (`DiscoveryCredentials`) | `Name`, `CredentialType` (SnmpV2c, SnmpV3, WindowsDomain, Ssh, ProxmoxToken, VCenter), `Username` (compte de domaine, utilisateur SNMP v3, compte SSH, identifiant du jeton Proxmox, compte vCenter), `Domain`, `AuthProtocol` et `PrivProtocol` (SNMP v3, CFG-51), `EncryptedSecret`, `SecretChangedAt`, périmètre | Secrets chiffrés au repos, jamais renvoyés (CFG-45) | ✅ |
 | Fin de support (`EndOfLifeRules`) | `Product` (unique, sans tenir compte de la casse), `EndOfSupport`, `Notes` | Référentiel partagé de l'obsolescence (CFG-47) | ✅ |
+| Relation proposée (`RelationProposals`) | `SourceAssetId`, `TargetAssetId` (actifs du sas, suppression en cascade), `Type` (« Héberge »), `Reason`, `Status` (Proposée, Acceptée, Écartée), `LastSeenAt`, `DecidedAt`, `DecidedBy`, `RelationId`, périmètre | Relation déduite, validée par le gestionnaire (CFG-55) | ✅ |
 | Logiciel découvert (`DiscoveredSoftware`) | `AssetId` (actif du sas, suppression en cascade), `Name`, `Version` | Logiciels installés relevés par SSH, remplacés à chaque relevé (CFG-52) | ✅ |
-| Clé d'hôte SSH (`SshHostKeys`) | `Host`, `Port` (uniques par périmètre), `Algorithm`, `Fingerprint` (SHA-256), `FirstSeenAt`, `LastSeenAt`, `PendingAlgorithm`, `PendingFingerprint`, `PendingSeenAt`, `AcceptedAt`, `AcceptedBy`, périmètre | Confiance au premier contact (CFG-53) | ✅ |
+| Clé d'hôte SSH ou certificat TLS (`SshHostKeys`) | `Protocol` (ssh, tls), `Host`, `Port` (uniques par périmètre et protocole), `Algorithm`, `Fingerprint` (SHA-256), `FirstSeenAt`, `LastSeenAt`, `PendingAlgorithm`, `PendingFingerprint`, `PendingSeenAt`, `AcceptedAt`, `AcceptedBy`, périmètre | Confiance au premier contact (CFG-53) | ✅ |
 | Constructeur par préfixe MAC (`MacVendors`) | `Prefix` (OUI, 6 chiffres hexadécimaux, clé), `Organization` (sans forme juridique), `ImportedAt` | Constructeur d'un actif découvert sans SNMP (CFG-50) ; base importée, non fournie | ✅ |
 
-Types de scan et d'identifiant à venir avec leurs collecteurs : hyperviseurs (Proxmox VE,
-VMware vCenter), WinRM (phase 3 du chantier F13), API cloud, agent nomade (phase 4). 🔜
+Types de scan et d'identifiant à venir avec leurs collecteurs : WinRM et cartographie des flux
+(phase 3 du chantier F13), API cloud, agent nomade (phase 4). 🔜
 
 ## 4. Cycle de vie
 
@@ -253,7 +255,7 @@ flowchart TD
         NIS["NIS 2 / ReCyF (Shadow IT, obsolescence)"]
         ITIL["Incidents / changements / problèmes"]
         MATCH -->|"Règle automatique ou validation du Manager"| CI
-        MATCH -.->|"Cartographie des dépendances, à venir"| REL
+        MATCH -.->|"Relations proposées, validées par le gestionnaire"| REL
         MATCH -->|"Écart détecté"| NIS
         CI --> ITIL
     end
@@ -263,8 +265,8 @@ Collecteurs, par phase du chantier F13 : annuaire AD et balayage IP (ping, ports
 témoins, DNS inverse, table ARP locale) ✅ ; SNMP v2c en lecture seule (MIB-II, numéro de
 série et modèle de l'ENTITY-MIB) ✅ ; bannières SSH et HTTP (CFG-49) et constructeur par
 préfixe MAC (CFG-50) ✅ ; SNMP v3 et table des interfaces (CFG-51) ✅ ;
-inventaire SSH (CFG-52, CFG-53) ✅ ; hyperviseurs, cartographie des dépendances et WinRM 🔜
-(phase 3) ; agent nomade 🔜
+inventaire SSH (CFG-52, CFG-53) ✅ ; hyperviseurs Proxmox VE et vCenter, relation « Héberge »
+proposée (CFG-54, CFG-55) ✅ ; cartographie des flux et WinRM 🔜 (phase 3) ; agent nomade 🔜
 (phase 4).
 
 ```mermaid
@@ -383,7 +385,9 @@ d'action](../../plan-action.md#découverte-automatique-et-cmdb-augmentée-f13)) 
 | CFG-50 | **Constructeur par préfixe MAC (OUI)** : un actif sans constructeur connu par SNMP reçoit celui du préfixe de son adresse MAC dans la base `MacVendors`. La base n'est pas fournie : l'Admin importe le registre MA-L public de l'IEEE (`oui.csv`), qui la remplace ; lignes d'un autre registre ou mal formées écartées et comptées. Adresse administrée localement (aléatoire) ou de groupe : pas de constructeur | ✅ | 3 |
 | CFG-51 | **SNMP v3 et interfaces** : un scan SNMP utilise une communauté v2c ou un utilisateur v3 du coffre (sécurité USM, RFC 3414 : authentification SHA-256 par défaut, SHA-384, SHA-512 ou SHA-1 ; chiffrement AES-128 par défaut, AES-192, AES-256, ou aucun). MD5 et DES, cassés, sont refusés (400). Les deux phrases secrètes (8 caractères au moins) sont chiffrées ensemble au coffre (CFG-45) ; en remplacer une conserve l'autre. Un agent qui refuse l'accès (utilisateur, phrase ou protocole) est traité comme muet. Le scan lit aussi la table des interfaces (`ifTable` : nom, nature, état, débit, adresse MAC ; boucle locale exclue, 128 au plus), gardée sur l'actif ; la première interface Ethernet à adresse attribuée par un constructeur donne l'adresse MAC de l'actif qui n'en a pas | ✅ | 3 |
 | CFG-52 | **Inventaire SSH (Linux, Unix)** : un scan SSH se connecte, avec un compte SSH du coffre (mot de passe, ou clé privée OpenSSH ou PEM et sa phrase), aux hôtes de la plage qui ouvrent le port de la tâche (22 par défaut, un seul port), et exécute un script de lecture seule, sans sudo : système (`os-release`, sinon `uname`), nom d'hôte, constructeur, modèle et numéro de série du DMI quand ils sont lisibles, logiciels installés (dpkg, rpm ou apk ; 3 000 au plus), services systemd actifs, ports TCP en écoute hors boucle locale. Le relevé entre dans le sas comme les autres sources (CFG-40) ; la liste des logiciels est remplacée à chaque relevé. Compte refusé ou hôte muet : aucun actif | ✅ | 3 |
-| CFG-53 | **Clé d'hôte SSH : confiance au premier contact** : la clé d'un hôte (algorithme, empreinte SHA-256) est retenue au premier inventaire, par périmètre, adresse et port. Une clé différente ensuite arrête la connexion avant l'envoi de l'identifiant ; l'hôte n'est plus inventorié et apparaît « Clé changée » (nouvelle empreinte affichée) jusqu'à ce que l'Admin accepte la nouvelle clé ; il peut aussi oublier l'hôte (la clé suivante est alors retenue). Les gestionnaires consultent les clés de leurs périmètres | ✅ | 3 |
+| CFG-53 | **Clé d'hôte SSH : confiance au premier contact** : la clé d'un hôte (algorithme, empreinte SHA-256) — ou le certificat TLS d'une API d'hyperviseur que l'autorité de certification ne garantit pas (CFG-54) — est retenue au premier inventaire, par périmètre, adresse et port. Une clé différente ensuite arrête la connexion avant l'envoi de l'identifiant ; l'hôte n'est plus inventorié et apparaît « Clé changée » (nouvelle empreinte affichée) jusqu'à ce que l'Admin accepte la nouvelle clé ; il peut aussi oublier l'hôte (la clé suivante est alors retenue). Les gestionnaires consultent les clés de leurs périmètres | ✅ | 3 |
+| CFG-54 | **Hyperviseurs** : un scan Proxmox VE (jeton d'API, rôle PVEAuditor) ou VMware vCenter (compte en lecture seule, API vSphere Automation, vCenter 7 et suivants) vise l'URL https de l'API et relève les nœuds ou hôtes ESXi, et les machines virtuelles et conteneurs (1 000 au plus) avec leur adresse MAC, leur système et, pour vCenter avec VMware Tools, leur nom et adresse IP ; chaque machine porte son hôte. Le certificat est vérifié par l'autorité de certification ; à défaut (autosigné), il est retenu au premier contact (CFG-53). Accès refusé : la tâche échoue avec son motif, sans le secret ; la session vCenter est fermée en fin de scan | ✅ | 3 |
+| CFG-55 | **Relations proposées** : la découverte propose « hôte Héberge machine » pour chaque machine dont l'hôte est vu par la même tâche ; rien n'entre dans la CMDB sans décision. Le gestionnaire du périmètre accepte la proposition une fois les deux actifs rapprochés de CI non retirés — la relation est alors créée (ou reconnue si elle existe) — ou l'écarte ; une proposition acceptée ou écartée n'est pas reproposée par les scans suivants | ✅ | 3 |
 
 ## 6. Délais, calculs et alertes
 
@@ -453,6 +457,8 @@ Indicateurs du tableau de bord : onglet [Configuration & inventaire](../reportin
 | `GET /api/discovery/mac-vendors` | User | État de la base des constructeurs : nombre de préfixes, dernier import (CFG-50) |
 | `GET /api/discovery/ssh-host-keys` | User, gestionnaire d'un périmètre | Clés d'hôte SSH retenues, clés changées en tête (CFG-53) |
 | `POST /api/discovery/ssh-host-keys/{id}/accept`, `DELETE …/ssh-host-keys/{id}` | Admin | Acceptation d'une clé changée, oubli d'un hôte (CFG-53) |
+| `GET /api/discovery/relations` (filtres `status`, `asset`) | User, gestionnaire du périmètre | Relations proposées, avec les CI rapprochés de chaque côté et `ready` (CFG-55) |
+| `POST /api/discovery/relations/{id}/accept`, `POST …/relations/{id}/dismiss` | User, gestionnaire du périmètre | Acceptation (relation créée dans la CMDB) ou rejet d'une proposition (CFG-55) |
 | `POST /api/discovery/mac-vendors/import` (`csv` : contenu de `oui.csv`, 12 Mo au plus) | Admin | Import du registre OUI de l'IEEE, remplace la base (CFG-50) |
 
 Configuration de l'API (section `Discovery`) : `VaultKey` (clé du coffre, à fixer avant le
@@ -485,3 +491,5 @@ premier identifiant et à ne plus changer), `IntervalMinutes` (relevé des tâch
 - **CFG-51** — *Étant donné* un agent avec un utilisateur v3 (SHA-256, AES), *quand* un scan utilise cet utilisateur du coffre, *alors* l'actif porte le nom, l'emplacement et les interfaces de l'agent ; avec une mauvaise phrase, aucun actif ; un identifiant MD5 ou DES est refusé (400).
 - **CFG-52** — *Étant donné* un serveur Linux et un compte SSH sans droits d'administration au coffre, *quand* le scan SSH s'exécute, *alors* l'actif porte le système, les logiciels installés (avec leur version), les services actifs et les ports en écoute ; avec un mauvais mot de passe, aucun actif.
 - **CFG-53** — *Étant donné* un hôte déjà inventorié, *quand* il présente une autre clé d'hôte, *alors* aucun identifiant n'est envoyé, aucun actif n'est relevé et l'hôte est « Clé changée » ; un gestionnaire ne peut pas accepter la clé (403) ; après acceptation par l'Admin, l'inventaire reprend.
+- **CFG-54** — *Étant donné* un Proxmox VE au certificat autosigné et un jeton du coffre, *quand* le scan s'exécute, *alors* le nœud, la VM et le conteneur entrent dans le sas, chaque machine avec son adresse MAC et son nœud, et le certificat est retenu ; avec un mauvais jeton, la tâche échoue (« Accès refusé ») ; si le certificat change, la connexion est refusée.
+- **CFG-55** — *Étant donné* un nœud et une VM vus par un même scan, *alors* « nœud Héberge VM » est proposé et aucune relation n'est créée ; accepter avant que la VM soit rapprochée d'un CI : 400 ; après, la relation existe dans la CMDB ; une proposition écartée n'est pas reproposée.

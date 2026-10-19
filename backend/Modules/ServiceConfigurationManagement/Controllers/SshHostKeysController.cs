@@ -18,7 +18,7 @@ public class SshHostKeysController(AppDbContext db, PerimeterAccess access) : Co
 {
     private static object View(SshHostKey k) => new
     {
-        k.Id, k.PerimeterId, k.Host, k.Port, k.Algorithm, k.Fingerprint, k.FirstSeenAt, k.LastSeenAt,
+        k.Id, k.PerimeterId, k.Protocol, k.Host, k.Port, k.Algorithm, k.Fingerprint, k.FirstSeenAt, k.LastSeenAt,
         k.PendingAlgorithm, k.PendingFingerprint, k.PendingSeenAt, k.AcceptedAt, k.AcceptedBy,
         Changed = k.PendingFingerprint != null
     };

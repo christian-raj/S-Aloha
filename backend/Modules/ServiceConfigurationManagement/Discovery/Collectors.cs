@@ -10,7 +10,8 @@ public record Observation(
     string? SerialNumber = null, string? Vendor = null, string? Model = null, string? Os = null,
     string Type = "Autre", string? OpenPorts = null, string? Location = null,
     bool InDirectory = false, string? Raw = null, string? Banners = null, string? Interfaces = null,
-    IReadOnlyList<SoftwareItem>? Software = null, string? Services = null, string? ListeningPorts = null);
+    IReadOnlyList<SoftwareItem>? Software = null, string? Services = null, string? ListeningPorts = null,
+    string? HostedBy = null, string? HostedReason = null);
 
 /// <summary>Logiciel installé relevé par un collecteur (CFG-52).</summary>
 public record SoftwareItem(string Name, string? Version);

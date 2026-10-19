@@ -78,7 +78,9 @@ public class DiscoveredAsset : IHasPerimeter
 public class DiscoveryJob : IHasPerimeter
 {
     /// <summary>Types de scan disponibles ; WinRM, hyperviseurs et agent viendront en phases 3 et 4 du chantier F13.</summary>
-    public static readonly string[] ScanTypes = ["IpSweep", "Snmp", "ActiveDirectory", "Ssh"];
+    public static readonly string[] ScanTypes = ["IpSweep", "Snmp", "ActiveDirectory", "Ssh", "Proxmox", "VCenter"];
+    /// <summary>Types dont la cible est l'URL d'une API (hyperviseurs, CFG-54), et non une plage IP.</summary>
+    public static readonly string[] ApiScanTypes = ["Proxmox", "VCenter"];
     public const string NeverRun = "Jamais lancée";
     public const string Queued = "En file";
     public const string Running = "En cours";
@@ -120,7 +122,7 @@ public class DiscoveryJob : IHasPerimeter
 public class DiscoveryCredential : IHasPerimeter
 {
     /// <summary>Types utilisables par les collecteurs actuels ; clés SSH et API cloud viendront avec leurs collecteurs.</summary>
-    public static readonly string[] Types = ["SnmpV2c", "SnmpV3", "WindowsDomain", "Ssh"];
+    public static readonly string[] Types = ["SnmpV2c", "SnmpV3", "WindowsDomain", "Ssh", "ProxmoxToken", "VCenter"];
 
     public int Id { get; set; }
     public int PerimeterId { get; set; } = Perimeter.DefaultId;
@@ -150,14 +152,19 @@ public class DiscoveredSoftware
 }
 
 /// <summary>
-/// CFG-53 : clé d'hôte SSH retenue au premier contact (confiance au premier contact). Une clé
-/// différente ensuite est refusée avant tout envoi d'identifiant, et attend dans
+/// CFG-53 : clé d'hôte SSH, ou certificat TLS d'une API d'hyperviseur que l'autorité de
+/// certification ne garantit pas (CFG-54), retenu au premier contact. Une clé différente
+/// ensuite est refusée avant tout envoi d'identifiant, et attend dans
 /// <see cref="PendingFingerprint"/> que l'Admin l'accepte.
 /// </summary>
 public class SshHostKey : IHasPerimeter
 {
+    public const string Ssh = "ssh", Tls = "tls";
+
     public int Id { get; set; }
     public int PerimeterId { get; set; } = Perimeter.DefaultId;
+    /// <summary>ssh (clé d'hôte) ou tls (certificat d'une API d'hyperviseur).</summary>
+    [MaxLength(10)] public string Protocol { get; set; } = Ssh;
     [MaxLength(45)] public string Host { get; set; } = "";
     public int Port { get; set; } = 22;
     [MaxLength(50)] public string Algorithm { get; set; } = "";
@@ -170,6 +177,33 @@ public class SshHostKey : IHasPerimeter
     public DateTime? PendingSeenAt { get; set; }
     public DateTime? AcceptedAt { get; set; }
     [MaxLength(100)] public string? AcceptedBy { get; set; }
+}
+
+/// <summary>
+/// CFG-55 : relation déduite par la découverte entre deux actifs du sas (« hyperviseur Héberge
+/// VM »). Jamais créée seule dans la CMDB : le gestionnaire l'accepte, une fois les deux actifs
+/// rapprochés de leurs CI, ou l'écarte (elle n'est alors plus reproposée).
+/// </summary>
+public class RelationProposal : IHasPerimeter
+{
+    public const string Proposed = "Proposée", Accepted = "Acceptée", Dismissed = "Écartée";
+    public static readonly string[] Statuses = [Proposed, Accepted, Dismissed];
+
+    public int Id { get; set; }
+    public int PerimeterId { get; set; } = Perimeter.DefaultId;
+    public int SourceAssetId { get; set; }
+    public DiscoveredAsset? SourceAsset { get; set; }
+    public int TargetAssetId { get; set; }
+    public DiscoveredAsset? TargetAsset { get; set; }
+    /// <summary>Type de relation de la CMDB (<see cref="CiRelationship.Types"/>).</summary>
+    [MaxLength(30)] public string Type { get; set; } = "Héberge";
+    [MaxLength(300)] public string Reason { get; set; } = "";
+    [MaxLength(20)] public string Status { get; set; } = Proposed;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime LastSeenAt { get; set; } = DateTime.UtcNow;
+    public DateTime? DecidedAt { get; set; }
+    [MaxLength(200)] public string? DecidedBy { get; set; }
+    public int? RelationId { get; set; }
 }
 
 /// <summary>
