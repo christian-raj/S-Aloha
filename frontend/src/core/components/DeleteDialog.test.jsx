@@ -41,7 +41,8 @@ it('la suppression demande confirmation, liste ce qui part avec et revient au re
   expect(dialog.textContent).toContain('CHG-2026-0007')
   expect(dialog.textContent).toContain('2 liens vers d\'autres enregistrements')
   expect(dialog.textContent).toContain('1 décisions du CAB')
-  expect(document.activeElement.textContent).toBe('Annuler')
+  // Le focus est posé par un effet, après le rendu : on l'attend.
+  await waitFor(() => expect(document.activeElement.textContent).toBe('Annuler'))
   fireEvent.click(screen.getByRole('button', { name: 'Supprimer définitivement' }))
   await waitFor(() => expect(remove).toHaveBeenCalledWith(7))
   expect(await screen.findByText('Registre')).toBeTruthy()
