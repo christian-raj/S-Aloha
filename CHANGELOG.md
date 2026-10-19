@@ -80,6 +80,14 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Corrigé
 
+- **Utilisateurs et rôles** (ADM-10) et **synchronisation de l'annuaire** (découverte) en
+  erreur 500 contre un Active Directory : les références que l'AD renvoie vers ses autres
+  partitions (Configuration, zones DNS) sont désormais sautées.
+- **Cookie de session** sans l'attribut `Secure` derrière un proxy TLS (Traefik, ingress) :
+  nginx transmet le schéma reçu du proxy amont.
+- Lignes hors JSON au démarrage (« Cannot load library libgssapi_krb5 ») : le chiffrement
+  GSS de Npgsql est désactivé, sauf choix explicite dans la chaîne de connexion.
+
 - **Fins de support** : la liste (`GET /api/discovery/end-of-life`) est de nouveau lisible par
   tous les utilisateurs, comme documenté ; elle exigeait le rôle Manager.
 

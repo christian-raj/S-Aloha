@@ -48,8 +48,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<AuditInterceptor>();
 builder.Services.AddHostedService<AuditRetention>();
 
+// Npgsql 10 tente GSSAPI (absent de l'image) et écrit hors du journal JSON : désactivé
+// sauf choix explicite dans la chaîne de connexion.
+var connection = new Npgsql.NpgsqlConnectionStringBuilder(builder.Configuration.GetConnectionString("Default"));
+if (!(builder.Configuration.GetConnectionString("Default") ?? "").Contains("GSS Encryption Mode", StringComparison.OrdinalIgnoreCase))
+    connection.GssEncryptionMode = Npgsql.GssEncryptionMode.Disable;
 builder.Services.AddDbContext<AppDbContext>((sp, o) => o
-    .UseNpgsql(builder.Configuration.GetConnectionString("Default"))
+    .UseNpgsql(connection.ConnectionString)
     .AddInterceptors(sp.GetRequiredService<SearchIndexInterceptor>(), sp.GetRequiredService<AuditInterceptor>()));
 
 builder.Services.AddSingleton<LdapService>();
