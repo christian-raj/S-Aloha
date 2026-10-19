@@ -28,6 +28,11 @@ Quatre containers orchestrés par `docker-compose.yml` : **web** (nginx sert le 
 | Annuaire | Novell.Directory.Ldap.NETStandard 4 (API asynchrone) | Bind de service pour la recherche, bind utilisateur pour l'authentification ; référents AD ignorés ; annuaire injoignable (serveur absent, compte de service refusé, délai `Ldap:TimeoutSeconds` dépassé) : 503 « Annuaire injoignable » à la connexion et à la recherche, jamais « identifiants invalides » (R6, R7) |
 | Auth API | JWT Bearer (HS256, JwtBearer 10.0.13) | Claims : name, displayName, role, `adgroup` (un par groupe AD direct, SOC-10) ; expiration paramétrable |
 
+Observabilité ([ADR-0017](../decisions/adr-0017-observabilite-journal-json-et-opentelemetry.md)) : journal JSON
+hors développement, en-tête `traceparent` sur chaque réponse, traces et métriques
+OpenTelemetry exportées en OTLP si un collecteur est configuré (`Core/Observability/Telemetry.cs`,
+`ActivitySource` et `Meter` « SAloha »).
+
 ## 3. Organisation du code : socle et modules
 
 S-Aloha est une **plateforme modulaire** : un **socle** (*Core*) transverse à tous les processus ITIL, et un **module** par processus. Les dix modules du registre sont implémentés (huit pratiques ITIL, Projets, Conformité NIS 2), tous sur un socle commun d'enregistrement (`Record`, `RecordController` ; les problèmes y sont passés le 2026-10-12, leurs analyses et actions restent des contrôleurs propres) (voir [produit.md](produit.md) et [ADR-0007](../decisions/adr-0007-pratiques-itil4-et-socle-commun-des-processus.md)).

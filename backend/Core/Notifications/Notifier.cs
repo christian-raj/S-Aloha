@@ -58,6 +58,7 @@ public class Notifier(AppDbContext db, IHttpContextAccessor http)
     {
         if (_pending.Count == 0) return;
         db.Notifications.AddRange(_pending);
+        Observability.Telemetry.Notifications.Add(_pending.Count);
         _pending.Clear();
         await db.SaveChangesAsync();
     }

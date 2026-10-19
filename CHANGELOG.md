@@ -12,19 +12,23 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ## [Non publié]
 
+### Ajouté
+
+- **Observabilité** (O2) : journal JSON hors développement, identifiant de trace sur chaque
+  ligne et dans l'en-tête `traceparent` des réponses ; traces et métriques OpenTelemetry
+  (HTTP, PostgreSQL, annuaire, découverte, notifications) exportées si
+  `OTEL_EXPORTER_OTLP_ENDPOINT` est défini.
+- **Suppressions dans l'interface** (SOC-14, M8) : un Admin supprime un enregistrement, un
+  problème compris, et un gestionnaire une analyse ou une action corrective, après une
+  confirmation qui rappelle la référence et compte ce qui part avec (liens, commentaires,
+  analyses, relations, accords…).
+
 ### Sécurité
 
 - **Jeton de session en cookie HttpOnly** (S5) : le jeton n'est plus lisible par les scripts
   de la page ; cookie `SameSite=Strict`, `Secure` en HTTPS, protection CSRF par l'en-tête
   `X-S-Aloha`, déconnexion côté serveur ; nginx sert une politique de sécurité du contenu
   (CSP) et `X-Content-Type-Options`.
-
-### Ajouté
-
-- **Suppressions dans l'interface** (SOC-14, M8) : un Admin supprime un enregistrement, un
-  problème compris, et un gestionnaire une analyse ou une action corrective, après une
-  confirmation qui rappelle la référence et compte ce qui part avec (liens, commentaires,
-  analyses, relations, accords…).
 
 ### Mise à jour
 

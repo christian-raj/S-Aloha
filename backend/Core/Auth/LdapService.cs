@@ -74,6 +74,26 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
     /// </summary>
     public async Task<(string Username, string DisplayName, string Role, IReadOnlyCollection<string> Groups)?> AuthenticateAsync(string username, string password)
     {
+        // O2 : durée et résultat de la connexion (sans identifiant ni mot de passe dans la trace).
+        using var activity = Core.Observability.Telemetry.Source.StartActivity("Annuaire : connexion");
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
+        var outcome = "injoignable";
+        try
+        {
+            var result = await AuthenticateCoreAsync(username, password);
+            outcome = result is null ? "refus" : "ok";
+            return result;
+        }
+        finally
+        {
+            activity?.SetTag("saloha.result", outcome);
+            Core.Observability.Telemetry.DirectoryLogin.Record(System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalSeconds,
+                new KeyValuePair<string, object?>("result", outcome));
+        }
+    }
+
+    private async Task<(string Username, string DisplayName, string Role, IReadOnlyCollection<string> Groups)?> AuthenticateCoreAsync(string username, string password)
+    {
         try
         {
             using var svc = await ServiceConnectAsync();
