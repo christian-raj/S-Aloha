@@ -60,6 +60,31 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
         using var _ = await ServiceConnectAsync();
     }
 
+    /// <summary>
+    /// Entrées d'une recherche en sous-arbre, <paramref name="max"/> au plus. Les références
+    /// qu'un AD renvoie depuis la racine du domaine (Configuration, DomainDnsZones,
+    /// ForestDnsZones) sont sautées : la recherche paginée de Novell les lève en exception et
+    /// les suivre exigerait de résoudre le nom du domaine. La limite de taille du serveur
+    /// (MaxPageSize, 1 000 par défaut sur un AD) arrête la lecture sans perdre les entrées lues.
+    /// </summary>
+    public static async Task<List<LdapEntry>> SearchEntriesAsync(LdapConnection conn, string baseDn, string filter, string[] attributes,
+        int max, CancellationToken ct = default)
+    {
+        var constraints = new LdapSearchConstraints(conn.SearchConstraints) { MaxResults = max, ReferralFollowing = false };
+        var search = await conn.SearchAsync(baseDn, LdapConnection.ScopeSub, filter, attributes, false, constraints, ct);
+        var entries = new List<LdapEntry>();
+        try
+        {
+            while (entries.Count < max && await search.HasMoreAsync(ct))
+            {
+                try { entries.Add(await search.NextAsync(ct)); }
+                catch (LdapReferralException) { /* référence vers une autre partition */ }
+            }
+        }
+        catch (LdapException ex) when (ex.ResultCode == LdapException.SizeLimitExceeded) { /* limite du serveur : entrées lues gardées */ }
+        return entries;
+    }
+
     /// <summary>Première entrée d'une recherche ; les référents d'un AD (Configuration, DomainDnsZones…) ne sont pas des comptes.</summary>
     private static async Task<LdapEntry?> FirstEntryAsync(ILdapSearchResults search)
     {
@@ -178,11 +203,10 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
             {
                 var name = config[$"Ldap:Groups:{role}"];
                 if (string.IsNullOrWhiteSpace(name)) continue;
-                var groups = await svc.SearchUsingSimplePagingAsync(new SearchOptions(BaseDn, LdapConnection.ScopeSub,
-                    $"(&(objectClass=group)(cn={EscapeFilter(name)}))", ["distinguishedName"]), 10);
+                var groups = await SearchEntriesAsync(svc, BaseDn, $"(&(objectClass=group)(cn={EscapeFilter(name)}))", ["distinguishedName"], 1);
                 if (groups.FirstOrDefault() is not { } group) continue;
-                var users = await svc.SearchUsingSimplePagingAsync(new SearchOptions(BaseDn, LdapConnection.ScopeSub,
-                    $"(&(objectClass=user)(memberOf={EscapeFilter(group.Dn)}))", ["sAMAccountName", "displayName", "memberOf"]), 500);
+                var users = await SearchEntriesAsync(svc, BaseDn, $"(&(objectClass=user)(memberOf={EscapeFilter(group.Dn)}))",
+                    ["sAMAccountName", "displayName", "memberOf"], 1000);
                 foreach (var u in users)
                 {
                     var account = GetAttr(u, "sAMAccountName");

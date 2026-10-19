@@ -29,8 +29,8 @@ public class ActiveDirectoryCollector(IConfiguration config) : IDiscoveryCollect
         await conn.BindAsync(dn, password);
 
         var baseDn = string.IsNullOrWhiteSpace(context.Job.TargetRange) ? config["Ldap:BaseDn"]! : context.Job.TargetRange.Trim();
-        var entries = await conn.SearchUsingSimplePagingAsync(
-            new SearchOptions(baseDn, LdapConnection.ScopeSub, Filter, Attributes), 500, ct);
+        // Références d'un AD (Configuration, zones DNS) sautées : voir LdapService.SearchEntriesAsync.
+        var entries = await Core.Auth.LdapService.SearchEntriesAsync(conn, baseDn, Filter, Attributes, 1000, ct);
         return entries.Select(e =>
         {
             var os = Attr(e, "operatingSystem");
