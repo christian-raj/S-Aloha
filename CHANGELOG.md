@@ -85,6 +85,9 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Corrigé
 
+- **Import du registre OUI** (CFG-50) refusé en 413 : nginx limitait le corps des requêtes à
+  1 Mo, quand `oui.csv` fait environ 4 Mo. La limite de `/api/` passe à 16 Mo (couvre aussi
+  le texte du référentiel NIS 2, 5 Mo) ; un refus de taille par un proxy s'affiche clairement.
 - **Utilisateurs et rôles** (ADM-10) et **synchronisation de l'annuaire** (découverte) en
   erreur 500 contre un Active Directory : les références que l'AD renvoie vers ses autres
   partitions (Configuration, zones DNS) sont désormais sautées.
@@ -107,6 +110,9 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Proxy amont** : un second nginx devant S-Aloha (ingress-nginx par exemple) garde sa propre
+  limite de 1 Mo ; la porter à 16 Mo (`nginx.ingress.kubernetes.io/proxy-body-size: 16m`) pour
+  les imports. Traefik n'en impose pas par défaut.
 - **WinRM (CFG-57)** : activer WinRM en HTTPS (port 5986) sur les hôtes à inventorier et
   placer le compte de découverte dans « Remote Management Users ». Aucune migration.
 - **Hyperviseurs (CFG-54)** : la migration `Hypervisors` ajoute une colonne (clés existantes :
