@@ -7,7 +7,7 @@ import { expect, it } from 'vitest'
 // Modifier ce script sans mettre l'empreinte à jour bloquerait le thème en production.
 it('l\'empreinte CSP de nginx correspond au script en ligne d\'index.html', () => {
   const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8')
-  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1])
+  const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)].filter(m => !/\bsrc=/i.test(m[0])).map(m => m[1])
   expect(scripts).toHaveLength(1)
   const hash = 'sha256-' + createHash('sha256').update(scripts[0]).digest('base64')
   const nginx = readFileSync(resolve(process.cwd(), 'nginx.conf'), 'utf8')
