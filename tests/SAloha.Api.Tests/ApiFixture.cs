@@ -51,6 +51,8 @@ public sealed class ApiFixture : IAsyncLifetime
                 s.AddSingleton<FakeUserDirectory>();
                 s.RemoveAll<SAloha.Api.Core.Auth.IAuthenticator>();
                 s.AddSingleton<SAloha.Api.Core.Auth.IAuthenticator, FakeAuthenticator>();
+                s.RemoveAll<SAloha.Api.Core.Auth.IDirectoryRoster>();
+                s.AddSingleton<SAloha.Api.Core.Auth.IDirectoryRoster, FakeRoster>();
                 // Collecteurs de découverte factices : ni réseau ni annuaire pendant les tests.
                 s.RemoveAll<SAloha.Api.Modules.ServiceConfigurationManagement.Discovery.IDiscoveryCollector>();
                 foreach (var type in SAloha.Api.Modules.ServiceConfigurationManagement.DiscoveryJob.ScanTypes)

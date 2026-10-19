@@ -65,6 +65,7 @@ export const api = {
   // Administration (ADM, Admin) : santé, journal d'audit global.
   admin: {
     health: () => request('/admin/health'),
+    users: (params = {}) => request('/admin/users?' + new URLSearchParams(params)),
     audit: (params = {}) => request('/admin/audit?' + new URLSearchParams(params)),
     auditExport: (params = {}) => download('/admin/audit/export?' + new URLSearchParams(params))
   },

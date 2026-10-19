@@ -14,6 +14,10 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Administration › Utilisateurs et rôles** (ADM-10 à ADM-13) : membres des groupes AD de
+  rôle lus dans l'annuaire, rôle effectif par périmètre et sa source, date de dernière
+  connexion (seule donnée retenue, 13 mois), affectations de comptes sans accès signalées.
+
 - **Administration › Santé et Journal d'audit** (ADM-20 à ADM-31) : état de la base, de
   l'annuaire, des embeddings, du coffre et des tâches de fond, version déployée ; journal
   d'audit de toutes les pratiques, filtrable par auteur, pratique, action, référence et
@@ -49,6 +53,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Mise à jour
 
+- **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
+  à mentionner au registre des traitements de l'organisation.
 - **Session (S5)** : chacun se reconnecte une fois. Un script qui appelait
   `POST /api/auth/login` et lisait `token` dans la réponse ajoute `"returnToken": true` à sa
   requête. Derrière un reverse proxy TLS, transmettre `X-Forwarded-Proto` pour un cookie

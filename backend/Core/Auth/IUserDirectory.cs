@@ -13,6 +13,16 @@ public interface IAuthenticator
     Task<(string Username, string DisplayName, string Role, IReadOnlyCollection<string> Groups)?> AuthenticateAsync(string username, string password);
 }
 
+/// <summary>Membre d'un groupe AD de rôle (ADM-10) : compte, nom, rôle le plus élevé, groupes AD directs.</summary>
+public record RosterEntry(string Username, string DisplayName, string Role, IReadOnlyList<string> RoleGroups, IReadOnlyList<string> Groups);
+
+/// <summary>ADM-10 : les membres des groupes AD de rôle, lus en direct dans l'annuaire.</summary>
+public interface IDirectoryRoster
+{
+    /// <summary>Lève <see cref="DirectoryUnavailableException"/> si l'annuaire est injoignable.</summary>
+    Task<List<RosterEntry>> RoleMembersAsync();
+}
+
 /// <summary>Annuaire des comptes, pour connaître le rôle d'un autre utilisateur que soi (INC-13).</summary>
 public interface IUserDirectory
 {

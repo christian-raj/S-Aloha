@@ -17,7 +17,7 @@ namespace SAloha.Api.Core.Administration;
 [ApiController]
 [Route("api/admin")]
 [Authorize(Policy = "Admin")]
-public class AdminController(AppDbContext db, LdapService directory, IEmbeddingClient embeddings, CredentialVault vault,
+public class AdminController(AppDbContext db, LdapService directory, IDirectoryRoster roster, IEmbeddingClient embeddings, CredentialVault vault,
     Heartbeats heartbeats, IConfiguration config, IHostEnvironment env) : ControllerBase
 {
     public const string Healthy = "OK", Degraded = "Dégradé", Down = "Hors service";
@@ -105,6 +105,58 @@ public class AdminController(AppDbContext db, LdapService directory, IEmbeddingC
         return DateTime.UtcNow - beat.At > late
             ? new Component(name, Degraded, $"En retard ({when}).", 0)
             : new Component(name, Healthy, $"À l'heure ({when}).", 0);
+    }
+
+    /// <summary>
+    /// ADM-10, ADM-11 : membres des groupes AD de rôle, avec leur rôle effectif par périmètre
+    /// (même calcul que les droits, PER-03), leur dernière connexion (ADM-12), et les affectations
+    /// de comptes absents des groupes de rôle (« sans accès »).
+    /// </summary>
+    [HttpGet("users")]
+    public async Task<IActionResult> Users([FromQuery] string? q, [FromQuery] string? role)
+    {
+        List<RosterEntry> members;
+        try { members = await roster.RoleMembersAsync(); }
+        catch (DirectoryUnavailableException)
+        {
+            // ADM-13 : pas de liste partielle.
+            return StatusCode(503, new { message = "Annuaire injoignable : la liste des utilisateurs est indisponible pour le moment." });
+        }
+        var perimeters = await db.Perimeters.AsNoTracking().Where(p => p.DeletedAt == null).ToDictionaryAsync(p => p.Id, p => p.Name);
+        var assignments = await db.PerimeterAssignments.AsNoTracking().Where(a => perimeters.Keys.Contains(a.PerimeterId)).ToListAsync();
+        var logins = await db.LastLogins.AsNoTracking().ToDictionaryAsync(l => l.Username, l => l.At);
+        var users = new List<object>();
+        foreach (var m in members)
+        {
+            if (!string.IsNullOrEmpty(role) && m.Role != role) continue;
+            if (!string.IsNullOrWhiteSpace(q) && !m.Username.Contains(q.Trim(), StringComparison.OrdinalIgnoreCase)
+                && !m.DisplayName.Contains(q.Trim(), StringComparison.OrdinalIgnoreCase)) continue;
+            var key = m.Username.ToLowerInvariant();
+            var groups = m.Groups.Select(g => g.ToLowerInvariant()).ToList();
+            var effective = m.Role == "Admin" ? null
+                : await Perimeters.PerimeterAccess.RolesAsync(db, key, groups, m.Role == "Manager" ? "Manager" : "User");
+            users.Add(new
+            {
+                m.Username, m.DisplayName, m.Role, m.RoleGroups,
+                // Admin : portée globale, jamais affecté (PER-03).
+                Perimeters = effective?.Where(p => perimeters.ContainsKey(p.Key)).Select(p => new
+                {
+                    Id = p.Key, Name = perimeters[p.Key], Role = p.Value,
+                    Via = assignments.Where(a => a.PerimeterId == p.Key && (a.PrincipalType == "User"
+                            ? a.PrincipalId.ToLower() == key : groups.Contains(a.PrincipalId.ToLower())))
+                        .Select(a => a.PrincipalType == "User" ? "affectation directe" : $"groupe {a.PrincipalDisplayName}").Distinct().ToList()
+                }).OrderBy(p => p.Name).ToList(),
+                LastLoginAt = logins.TryGetValue(key, out var at) ? at : (DateTime?)null
+            });
+        }
+        var known = members.Select(m => m.Username.ToLowerInvariant()).ToHashSet();
+        var orphans = assignments.Where(a => a.PrincipalType == "User" && !known.Contains(a.PrincipalId.ToLower()))
+            .Select(a => new { a.Id, Perimeter = perimeters[a.PerimeterId], a.PrincipalId, a.PrincipalDisplayName, a.Role }).ToList();
+        return Ok(new
+        {
+            Mapping = new[] { "Admin", "Manager", "User" }.Select(r => new { Role = r, Group = config[$"Ldap:Groups:{r}"] }),
+            Users = users, WithoutAccess = orphans
+        });
     }
 
     public record AuditQuery(string? Author, string? Type, string? Action, string? Reference, DateTime? From, DateTime? To);

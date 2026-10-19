@@ -13,7 +13,7 @@
 
 | Section | Entrée | Visible par | Règles | Statut |
 |---|---|---|---|---|
-| Administration | Utilisateurs et rôles | Admin | ADM-10 à ADM-13 | 🔜 |
+| Administration | Utilisateurs et rôles | Admin | ADM-10 à ADM-13 | ✅ |
 | Administration | Santé | Admin | ADM-20, ADM-21 | ✅ |
 | Administration | Journal d'audit | Admin | ADM-30, ADM-31 | ✅ |
 | Administration | Nettoyage des doublons | Admin | ADM-40 à ADM-43 | 🔜 |
@@ -25,10 +25,10 @@
 
 | ID | Règle | Statut |
 |---|---|---|
-| ADM-10 | **Liste** : les membres directs des trois groupes AD de rôle (`Ldap:Groups`), lus en direct dans l'annuaire par le compte de service ; pour chacun, compte, nom affiché, rôle AD (le plus élevé de ses groupes de rôle), groupes de rôle, affectations de périmètre (directes, et par ses groupes AD), date de dernière connexion. Recherche par nom ou compte, filtre par rôle | 🔜 |
-| ADM-11 | **Mapping** groupes AD → rôles affiché en lecture (réglé dans la configuration de l'API, pas dans l'interface) ; une affectation de périmètre qui désigne un compte absent des groupes de rôle est signalée « sans accès » (il ne peut pas se connecter) | 🔜 |
-| ADM-12 | **Dernière connexion** : à chaque connexion réussie, l'API retient le compte et la date, rien d'autre (donnée personnelle minimale) ; une tâche quotidienne efface les comptes sans connexion depuis **13 mois** (`Admin:LastLoginRetentionMonths`) | 🔜 |
-| ADM-13 | Annuaire injoignable : la page l'indique (503 « Annuaire injoignable »), sans liste partielle ; la dernière connexion n'est jamais affichée seule comme liste des utilisateurs | 🔜 |
+| ADM-10 | **Liste** : les membres directs des trois groupes AD de rôle (`Ldap:Groups`), lus en direct dans l'annuaire par le compte de service ; pour chacun, compte, nom affiché, rôle AD (le plus élevé de ses groupes de rôle), groupes de rôle, affectations de périmètre (directes, et par ses groupes AD), date de dernière connexion. Recherche par nom ou compte, filtre par rôle | ✅ |
+| ADM-11 | **Mapping** groupes AD → rôles affiché en lecture (réglé dans la configuration de l'API, pas dans l'interface) ; une affectation de périmètre qui désigne un compte absent des groupes de rôle est signalée « sans accès » (il ne peut pas se connecter) | ✅ |
+| ADM-12 | **Dernière connexion** : à chaque connexion réussie, l'API retient le compte et la date, rien d'autre (donnée personnelle minimale) ; une tâche quotidienne efface les comptes sans connexion depuis **13 mois** (`Admin:LastLoginRetentionMonths`) | ✅ |
+| ADM-13 | Annuaire injoignable : la page l'indique (503 « Annuaire injoignable »), sans liste partielle ; la dernière connexion n'est jamais affichée seule comme liste des utilisateurs | ✅ |
 
 ## 3. Santé
 

@@ -3,7 +3,7 @@ using SAloha.Api.Core.Directory;
 
 namespace SAloha.Api.Core.Auth;
 
-public class LdapService(IConfiguration config, ILogger<LdapService> logger) : IUserDirectory, IAuthenticator
+public class LdapService(IConfiguration config, ILogger<LdapService> logger) : IUserDirectory, IAuthenticator, IDirectoryRoster
 {
     private string Host => config["Ldap:Host"]!;
     private int Port => int.Parse(config["Ldap:Port"] ?? "389");
@@ -161,6 +161,46 @@ public class LdapService(IConfiguration config, ILogger<LdapService> logger) : I
             if (g != null && groups.Contains(g)) return role;
         }
         return null; // utilisateur hors des groupes autorisés
+    }
+
+    /// <summary>
+    /// ADM-10 : membres directs des groupes de rôle (`Ldap:Groups`), par recherche paginée sur
+    /// `memberOf` ; un compte membre de plusieurs groupes n'apparaît qu'une fois, à son rôle le
+    /// plus élevé.
+    /// </summary>
+    public async Task<List<RosterEntry>> RoleMembersAsync()
+    {
+        try
+        {
+            using var svc = await ServiceConnectAsync();
+            var members = new Dictionary<string, (string Display, HashSet<string> Groups)>(StringComparer.OrdinalIgnoreCase);
+            foreach (var role in new[] { "Admin", "Manager", "User" })
+            {
+                var name = config[$"Ldap:Groups:{role}"];
+                if (string.IsNullOrWhiteSpace(name)) continue;
+                var groups = await svc.SearchUsingSimplePagingAsync(new SearchOptions(BaseDn, LdapConnection.ScopeSub,
+                    $"(&(objectClass=group)(cn={EscapeFilter(name)}))", ["distinguishedName"]), 10);
+                if (groups.FirstOrDefault() is not { } group) continue;
+                var users = await svc.SearchUsingSimplePagingAsync(new SearchOptions(BaseDn, LdapConnection.ScopeSub,
+                    $"(&(objectClass=user)(memberOf={EscapeFilter(group.Dn)}))", ["sAMAccountName", "displayName", "memberOf"]), 500);
+                foreach (var u in users)
+                {
+                    var account = GetAttr(u, "sAMAccountName");
+                    if (account is null || members.ContainsKey(account)) continue;
+                    members[account] = (GetAttr(u, "displayName") ?? account, GetAttrValues(u, "memberOf")
+                        .Select(dn => dn.Split(',')[0].Replace("CN=", "", StringComparison.OrdinalIgnoreCase))
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase));
+                }
+            }
+            var roleGroups = new[] { "Admin", "Manager", "User" }.Select(r => config[$"Ldap:Groups:{r}"]).OfType<string>().ToList();
+            return members.Select(m => new RosterEntry(m.Key, m.Value.Display, ResolveRole(m.Value.Groups) ?? "User",
+                    roleGroups.Where(g => m.Value.Groups.Contains(g)).ToList(), m.Value.Groups.Order().ToList()))
+                .OrderBy(e => e.DisplayName, StringComparer.CurrentCultureIgnoreCase).ToList();
+        }
+        catch (LdapException ex) when (Unavailable(ex))
+        {
+            throw new DirectoryUnavailableException("Annuaire injoignable.", ex);
+        }
     }
 
     /// <summary>Recherche d'utilisateurs et de groupes pour l'affectation RACI.</summary>

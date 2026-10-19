@@ -23,6 +23,20 @@ namespace SAloha.Api.Core.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("SAloha.Api.Core.Administration.LastLogin", b =>
+                {
+                    b.Property<string>("Username")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Username");
+
+                    b.ToTable("LastLogins");
+                });
+
             modelBuilder.Entity("SAloha.Api.Core.Audit.AuditEntry", b =>
                 {
                     b.Property<long>("Id")

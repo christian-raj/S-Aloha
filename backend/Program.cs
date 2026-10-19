@@ -51,6 +51,8 @@ builder.Services.AddDbContext<AppDbContext>((sp, o) => o
 builder.Services.AddSingleton<LdapService>();
 builder.Services.AddSingleton<IUserDirectory>(sp => sp.GetRequiredService<LdapService>());
 builder.Services.AddSingleton<IAuthenticator>(sp => sp.GetRequiredService<LdapService>());
+builder.Services.AddSingleton<IDirectoryRoster>(sp => sp.GetRequiredService<LdapService>());
+builder.Services.AddHostedService<SAloha.Api.Core.Administration.LastLoginRetention>();
 builder.Services.AddSingleton<TokenService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

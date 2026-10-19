@@ -9,6 +9,7 @@ import SearchIndexAdmin from './core/pages/SearchIndexAdmin'
 import Perimeters from './core/pages/admin/Perimeters'
 import PerimeterDetail from './core/pages/admin/PerimeterDetail'
 import Health from './core/pages/admin/Health'
+import Users from './core/pages/admin/Users'
 import AuditLog from './core/pages/admin/AuditLog'
 import Problems from './modules/problem-management/pages/Problems'
 import ProblemDetail from './modules/problem-management/pages/ProblemDetail'
@@ -68,6 +69,7 @@ export default function App() {
         <Route path="admin/search" element={<SearchIndexAdmin />} />
         <Route path="admin/perimeters" element={<Perimeters />} />
         <Route path="admin/perimeters/:id" element={<PerimeterDetail />} />
+        <Route path="admin/users" element={<Users />} />
         <Route path="admin/health" element={<Health />} />
         <Route path="admin/audit" element={<AuditLog />} />
         {/* Pratique — Gestion des incidents */}
