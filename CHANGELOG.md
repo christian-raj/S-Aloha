@@ -12,6 +12,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ## [Non publié]
 
+## [0.2.0] — 2026-10-19
+
+Toutes les pratiques sortent du stade MVP ; la configuration gagne le portefeuille
+applicatif, les actifs matériels et la découverte automatique du réseau ; l'API se durcit
+(secrets d'exemple refusés, audience du jeton, annuaire injoignable signalé). **Lire la
+section Mise à jour avant d'installer** : migrations de base, nouveaux secrets à fournir.
+
 ### Ajouté
 
 - **CMDB augmentée et découverte automatique** (chantier F13) : la fiche d'un CI porte son
@@ -369,5 +376,6 @@ Première version publique.
   [liste de durcissement](docs/reference/securite.md#points-de-durcissement-avant-production)
   avant toute mise en production.
 
-[Non publié]: https://github.com/christian-raj/S-Aloha/compare/v0.1.0...HEAD
+[Non publié]: https://github.com/christian-raj/S-Aloha/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/christian-raj/S-Aloha/releases/tag/v0.2.0
 [0.1.0]: https://github.com/christian-raj/S-Aloha/releases/tag/v0.1.0
