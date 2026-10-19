@@ -90,6 +90,13 @@
 | **JWT** | Jeton signé émis à la connexion, porteur du nom et du rôle, envoyé dans l'en-tête `Authorization: Bearer`. |
 | **Policy** | Règle d'autorisation ASP.NET Core : `User`, `Manager`, `Admin`. |
 | **Jeton de design** | Variable CSS nommée (`--bg-surface`, `--accent-blue`…) redéfinie par thème. |
+| **Relation proposée** | Relation entre deux actifs du sas déduite par la découverte (« hyperviseur Héberge VM », « client Se connecte à serveur ») ; elle n'entre dans la CMDB que si le gestionnaire l'accepte ([CFG-55, CFG-56](processus/gestion-de-la-configuration.md)). |
+| **Confiance au premier contact** | *Trust on first use* : la clé SSH ou le certificat autosigné d'un hôte est retenu au premier scan ; s'il change ensuite, aucun identifiant n'est envoyé tant que l'Admin n'a pas accepté la nouvelle clé ([CFG-53](processus/gestion-de-la-configuration.md)). |
+| **OUI** | *Organizationally Unique Identifier* : les 24 premiers bits d'une adresse MAC, attribués par l'IEEE à un constructeur ; la découverte en déduit le constructeur d'un équipement ([CFG-50](processus/gestion-de-la-configuration.md)). |
+| **Bannière** | Texte qu'un service réseau annonce de lui-même (ligne d'identification SSH, en-tête `Server` HTTP), lu sans authentification pour préciser le système d'un équipement ([CFG-49](processus/gestion-de-la-configuration.md)). |
+| **SNMP v3 / USM** | Version de SNMP qui authentifie (SHA-2) et chiffre (AES) les échanges, par utilisateur (*User-based Security Model*) ; la v2c n'a qu'une communauté en clair ([CFG-51](processus/gestion-de-la-configuration.md)). |
+| **WinRM / WS-Management** | Accès d'administration à distance de Windows, par messages SOAP sur HTTPS (port 5986) ; la découverte y lit les classes WMI de l'inventaire ([CFG-57](processus/gestion-de-la-configuration.md)). |
+| **NTLM** | Protocole d'authentification Windows par défi et réponse, sans envoyer le mot de passe ; utilisé par l'inventaire WinRM. |
 | **ADR** | *Architecture Decision Record* : une décision structurante par fichier, dans [`decisions/`](../decisions/). |
 
 ## Vocabulaire malgache
