@@ -6,10 +6,14 @@ using Microsoft.IdentityModel.Tokens;
 using SAloha.Api.Core.Audit;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Auth;
+using SAloha.Api.Core.Observability;
 using SAloha.Api.Core.Search;
 using SAloha.Api.Modules.ServiceConfigurationManagement.Discovery;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// O2 (ADR-0017) : journal JSON, traces et métriques OpenTelemetry (export OTLP si configuré).
+builder.AddObservability();
 
 // Recherche hybride (ADR-0013) : index dérivé, tenu à jour en tâche de fond à
 // chaque enregistrement d'un article, d'un problème ou d'un incident.
@@ -109,6 +113,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.Use(Telemetry.TraceparentHeader);
 app.UseForwardedHeaders();
 app.UseCors();
 app.UseAuthentication();

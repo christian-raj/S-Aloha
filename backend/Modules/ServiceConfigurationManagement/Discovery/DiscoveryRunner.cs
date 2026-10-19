@@ -48,6 +48,9 @@ public class DiscoveryRunner(AppDbContext db, IEnumerable<IDiscoveryCollector> c
     {
         var job = await db.Set<DiscoveryJob>().Include(j => j.Credential).FirstOrDefaultAsync(j => j.Id == jobId, ct);
         if (job is null) return;
+        // O2 : une trace par exécution (type de scan, résultat, nombre d'équipements vus).
+        using var activity = Core.Observability.Telemetry.Source.StartActivity("Découverte : " + job.ScanType);
+        activity?.SetTag("saloha.discovery.scan_type", job.ScanType);
         job.LastStatus = DiscoveryJob.Running;
         job.LastError = null;
         await db.SaveChangesAsync(ct);
@@ -77,6 +80,10 @@ public class DiscoveryRunner(AppDbContext db, IEnumerable<IDiscoveryCollector> c
         }
         job.LastRunAt = DateTime.UtcNow;
         await db.SaveChangesAsync(CancellationToken.None);
+        activity?.SetTag("saloha.result", job.LastStatus);
+        Core.Observability.Telemetry.DiscoveryRuns.Add(1, new KeyValuePair<string, object?>("scan_type", job.ScanType),
+            new KeyValuePair<string, object?>("result", job.LastStatus));
+        if (job.LastFoundCount is { } seen) Core.Observability.Telemetry.DiscoveredAssets.Add(seen, new KeyValuePair<string, object?>("scan_type", job.ScanType));
     }
 }
 
