@@ -14,6 +14,10 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Découverte : flux réseau** (CFG-56) : l'inventaire SSH relève les connexions établies ;
+  une connexion vers ou depuis un autre actif du sas propose « client Se connecte à serveur »
+  (avec les ports vus), validée par le gestionnaire comme les relations d'hébergement.
+
 - **Découverte : hyperviseurs et relations proposées** (CFG-54, CFG-55) : scans Proxmox VE
   (jeton d'API) et VMware vCenter (compte en lecture seule) — nœuds ou hôtes ESXi, machines
   virtuelles et conteneurs avec leur adresse MAC et leur système. La relation « hôte Héberge
