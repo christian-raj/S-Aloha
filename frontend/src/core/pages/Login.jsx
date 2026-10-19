@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../../api'
+import { api, setUser } from '../../api'
 import { BrandMark, IconConsole, IconProblem, IconChange, IconReport } from '../components/icons'
 import { SOURCE_URL, LICENSE_LABEL } from '../about'
 
@@ -28,9 +28,7 @@ export default function Login() {
     e.preventDefault()
     setError(''); setBusy(true)
     try {
-      const res = await api.login(username, password)
-      sessionStorage.setItem('token', res.token)
-      sessionStorage.setItem('user', JSON.stringify(res))
+      setUser(await api.login(username, password))
       nav('/')
     } catch (e) { setError(e.message) }
     finally { setBusy(false) }

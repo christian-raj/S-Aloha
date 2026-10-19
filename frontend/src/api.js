@@ -1,22 +1,28 @@
 const API = '/api'
 
-export function getToken() { return sessionStorage.getItem('token') }
+// S5 (ADR-0018) : le jeton de session vit dans un cookie HttpOnly posé par l'API, illisible
+// par les scripts de la page ; le navigateur ne garde ici que l'utilisateur affiché (non secret).
 export function getUser() {
   const raw = sessionStorage.getItem('user')
   return raw ? JSON.parse(raw) : null
 }
+export function setUser(user) { sessionStorage.setItem('user', JSON.stringify(user)) }
+export function clearSession() { sessionStorage.clear() }
 
 async function request(path, options = {}) {
   const res = await fetch(API + path, {
     ...options,
+    credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
-      ...(getToken() ? { Authorization: 'Bearer ' + getToken() } : {}),
+      // Protection CSRF : exigé par l'API sur toute modification authentifiée par le cookie.
+      'X-S-Aloha': '1',
       ...options.headers
     }
   })
-  if (res.status === 401) {
-    sessionStorage.clear()
+  // Session expirée (sauf à la connexion et à la reprise de session, qui gèrent leur 401).
+  if (res.status === 401 && !options.quiet) {
+    clearSession()
     window.location.href = '/login'
     throw new Error('Session expirée')
   }
@@ -45,7 +51,9 @@ const records = (path) => ({
 export const api = {
   audit: { list: (type, id) => request(`/audit?type=${type}&id=${id}`) },
   login: (username, password) =>
-    request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
+    request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }), quiet: true }),
+  me: () => request('/auth/me', { quiet: true }),
+  logout: () => request('/auth/logout', { method: 'POST', quiet: true }),
   problems: {
     list: (params = {}) => request('/problems?' + new URLSearchParams(params)),
     get: (id) => request('/problems/' + id),

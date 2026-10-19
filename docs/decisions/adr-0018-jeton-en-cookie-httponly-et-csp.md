@@ -23,7 +23,10 @@ initial : [état du 2026-10-06](../archives/etat-initial-2026-10-06.md).
    PATCH, DELETE) authentifiée par le cookie doit porter l'en-tête `X-S-Aloha: 1`, qu'un site
    tiers ne peut pas ajouter sans autorisation CORS ; sinon 403.
 3. **Clients d'API** (scripts, tests, intégrations) : l'en-tête `Authorization: Bearer`
-   reste accepté, sans exigence CSRF (un navigateur ne l'envoie jamais de lui-même).
+   reste accepté, sans exigence CSRF (un navigateur ne l'envoie jamais de lui-même). Un
+   script obtient le jeton en le demandant à la connexion (`returnToken: true`) : il connaît
+   le mot de passe, ce qu'un script injecté dans la page ne connaît pas (précisé le
+   2026-10-19, à l'implémentation).
 4. **Déconnexion** : `POST /api/auth/logout` efface le cookie ; `GET /api/auth/me` rend
    l'utilisateur de la session, pour que l'interface se recharge sans stocker de secret.
 5. **CSP** servie par nginx : scripts de la seule origine (le script de thème en ligne

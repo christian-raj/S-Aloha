@@ -66,7 +66,7 @@ def connexion(role):
     nom, mdp = COMPTES[role]
     for _ in range(60):  # l'API et l'annuaire peuvent encore démarrer
         try:
-            return appel('POST', '/api/auth/login', corps={'username': nom, 'password': mdp})['token']
+            return appel('POST', '/api/auth/login', corps={'username': nom, 'password': mdp, 'returnToken': True})['token']
         except (urllib.error.URLError, ConnectionError, OSError):
             time.sleep(5)
     sys.exit('✖ API injoignable')

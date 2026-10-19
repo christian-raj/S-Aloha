@@ -446,7 +446,15 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 
 ## Session côté navigateur
 
-- Jeton JWT et profil (`token`, `user`) en `sessionStorage` : la session ne survit pas à la
-  fermeture de l'onglet. Déconnexion = `sessionStorage.clear()`.
-- Une réponse **401** de l'API vide la session et renvoie vers `/login`.
+- Le **jeton** n'est jamais accessible au frontend : l'API le pose dans un cookie `HttpOnly`
+  (S5, [ADR-0018](../decisions/adr-0018-jeton-en-cookie-httponly-et-csp.md)). Le navigateur ne
+  garde que le **profil affiché** (`user`, non secret) en `sessionStorage` ; un nouvel onglet
+  ou un rechargement retrouve la session par `GET /api/auth/me` (`Private` dans `App.jsx`).
+- Chaque requête (`api.js`) porte l'en-tête `X-S-Aloha: 1`, exigé par l'API sur toute
+  modification (protection CSRF).
+- Déconnexion : `POST /api/auth/logout` (cookie effacé), puis profil oublié.
+- Une réponse **401** de l'API (session expirée) oublie le profil et renvoie vers `/login`.
+- La CSP de `nginx.conf` autorise le script de thème en ligne d'`index.html` par son empreinte
+  SHA-256 : modifier ce script impose de mettre l'empreinte à jour (`src/security/csp.test.js`
+  le vérifie).
 - Implications de sécurité : [`securite.md`](securite.md).

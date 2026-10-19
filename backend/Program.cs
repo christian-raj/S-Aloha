@@ -45,20 +45,33 @@ builder.Services.AddDbContext<AppDbContext>((sp, o) => o
 
 builder.Services.AddSingleton<LdapService>();
 builder.Services.AddSingleton<IUserDirectory>(sp => sp.GetRequiredService<LdapService>());
+builder.Services.AddSingleton<IAuthenticator>(sp => sp.GetRequiredService<LdapService>());
 builder.Services.AddSingleton<TokenService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters
+    .AddJwtBearer(o =>
     {
-        ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        // S8 : jeton émis pour S-Aloha seulement (Jwt:Audience, l'émetteur par défaut).
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["Jwt:Audience"] ?? builder.Configuration["Jwt:Issuer"],
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            // S8 : jeton émis pour S-Aloha seulement (Jwt:Audience, l'émetteur par défaut).
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? builder.Configuration["Jwt:Issuer"],
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+        // S5 (ADR-0018) : le navigateur présente le jeton par le cookie HttpOnly de session.
+        o.Events = new JwtBearerEvents { OnMessageReceived = SessionCookie.ReadToken };
     });
+// Derrière nginx : HTTPS se lit dans X-Forwarded-Proto (cookie Secure) ; seul ce schéma est repris.
+builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    o.KnownIPNetworks.Clear();
+    o.KnownProxies.Clear();
+});
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("Admin", p => p.RequireRole("Admin"))
@@ -96,8 +109,10 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseForwardedHeaders();
 app.UseCors();
 app.UseAuthentication();
+app.Use(SessionCookie.CsrfGuard);
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

@@ -115,13 +115,13 @@ sequenceDiagram
     A->>AD: bind compte de service, recherche de l'utilisateur
     A->>AD: bind avec le DN et le mot de passe de l'utilisateur
     AD-->>A: OK + groupes memberOf
-    A-->>N: JWT (nom, rôle)
-    N->>A: requêtes avec Authorization: Bearer
+    A-->>N: cookie HttpOnly saloha_session (JWT), profil affiché
+    N->>A: requêtes avec le cookie et l'en-tête X-S-Aloha
 ```
 
 1. `POST /api/auth/login` : l'API se connecte à l'AD avec le **compte de service** (`Ldap:BindUser`), recherche l'utilisateur (`Ldap:UserFilter`), puis valide le mot de passe par un **bind avec le DN de l'utilisateur**.
 2. Les groupes `memberOf` sont comparés au mapping `Ldap:Groups` (Admin > Manager > User). Aucun groupe correspondant ⇒ connexion refusée.
-3. Un **JWT** est émis avec le rôle en claim ; il porte le `sAMAccountName` renvoyé par l'annuaire, non l'identifiant tel que tapé (de même que `LoginResponse.username`). Les comparaisons d'identifiants (console « Mes … », filtre `assignee` de `GET /api/actions`) ignorent la casse. Le jeton porte aussi les **groupes AD directs** de l'utilisateur (claims `adgroup`, nom court) : « les miens » (`owner=me`, console, actions dont je suis R, A, C ou I) comprend ce qui est confié à l'un de ses groupes (SOC-10, PRB-26 ; `Core/Auth/Principals.cs`). Le frontend le stocke en `sessionStorage` et l'envoie en `Authorization: Bearer`.
+3. Un **JWT** est émis avec le rôle en claim ; il porte le `sAMAccountName` renvoyé par l'annuaire, non l'identifiant tel que tapé (de même que `LoginResponse.username`). Les comparaisons d'identifiants (console « Mes … », filtre `assignee` de `GET /api/actions`) ignorent la casse. Le jeton porte aussi les **groupes AD directs** de l'utilisateur (claims `adgroup`, nom court) : « les miens » (`owner=me`, console, actions dont je suis R, A, C ou I) comprend ce qui est confié à l'un de ses groupes (SOC-10, PRB-26 ; `Core/Auth/Principals.cs`). Il est posé dans un **cookie** `saloha_session` `HttpOnly`, `SameSite=Strict`, limité à `/api`, `Secure` en HTTPS (`X-Forwarded-Proto` derrière nginx) : le frontend ne le lit jamais ; il ne garde que le profil affiché, et retrouve la session par `GET /api/auth/me`. Une modification portée par le cookie exige l'en-tête `X-S-Aloha: 1` (CSRF, 403 sinon). Un client d'API (script) demande le jeton à la connexion (`returnToken`) et l'envoie en `Authorization: Bearer` ([ADR-0018](../decisions/adr-0018-jeton-en-cookie-httponly-et-csp.md)).
 4. Côté API, trois policies imbriquées : `User` (tous les rôles), `Manager` (Manager + Admin), `Admin`.
 5. La console (`GET /api/console`) compose sa réponse **côté serveur** selon le rôle du jeton ; le frontend n'y reçoit que les blocs autorisés, classés pour mettre l'actionnable en premier.
 
@@ -142,7 +142,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 
 | Méthode / Route | Policy | Rôle métier | Emplacement |
 |---|---|---|---|
-| POST `/api/auth/login` | — | Authentification AD → JWT | Core/Auth |
+| POST `/api/auth/login`, POST `/logout`, GET `/me` | — (`me` : User) | Authentification AD → cookie de session (jeton dans la réponse sur `returnToken`), déconnexion, utilisateur de la session | Core/Auth |
 | GET `/api/console` | User | Console par rôle, orientée action (blocs « à traiter » / « à suivre ») | Core/Pilotage |
 | GET/POST `/api/problems`, GET `/api/problems/{id}`, GET `/api/problems/transitions` | User | Liste (filtres statut, texte, `owner`, `perimeter`), détail, déclaration | Modules/ProblemManagement (socle) |
 | PUT `/api/problems/{id}` | Manager du périmètre | Qualification, statuts, cause racine, contournement, gestionnaire du problème ; transition forcée (Admin) | Modules/ProblemManagement (socle) |

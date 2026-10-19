@@ -7,6 +7,9 @@ namespace SAloha.Api.Core.Auth;
 
 public class TokenService(IConfiguration config)
 {
+    /// <summary>Durée de validité du jeton (et du cookie de session).</summary>
+    public TimeSpan Lifetime => TimeSpan.FromHours(double.Parse(config["Jwt:ExpiryHours"] ?? "8"));
+
     /// <summary>
     /// Jeton de session : compte, nom affiché, rôle et groupes AD (SOC-10 : un
     /// enregistrement confié à un groupe apparaît pour chacun de ses membres).
@@ -23,7 +26,7 @@ public class TokenService(IConfiguration config)
                 new Claim("displayName", displayName),
                 new Claim(ClaimTypes.Role, role)
             }.Concat((groups ?? []).Select(g => new Claim(Principals.GroupClaim, g))),
-            expires: DateTime.UtcNow.AddHours(double.Parse(config["Jwt:ExpiryHours"] ?? "8")),
+            expires: DateTime.UtcNow.Add(Lifetime),
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
         return new JwtSecurityTokenHandler().WriteToken(token);
     }

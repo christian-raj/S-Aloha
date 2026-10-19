@@ -12,12 +12,26 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ## [Non publié]
 
+### Sécurité
+
+- **Jeton de session en cookie HttpOnly** (S5) : le jeton n'est plus lisible par les scripts
+  de la page ; cookie `SameSite=Strict`, `Secure` en HTTPS, protection CSRF par l'en-tête
+  `X-S-Aloha`, déconnexion côté serveur ; nginx sert une politique de sécurité du contenu
+  (CSP) et `X-Content-Type-Options`.
+
 ### Ajouté
 
 - **Suppressions dans l'interface** (SOC-14, M8) : un Admin supprime un enregistrement, un
   problème compris, et un gestionnaire une analyse ou une action corrective, après une
   confirmation qui rappelle la référence et compte ce qui part avec (liens, commentaires,
   analyses, relations, accords…).
+
+### Mise à jour
+
+- **Session (S5)** : chacun se reconnecte une fois. Un script qui appelait
+  `POST /api/auth/login` et lisait `token` dans la réponse ajoute `"returnToken": true` à sa
+  requête. Derrière un reverse proxy TLS, transmettre `X-Forwarded-Proto` pour un cookie
+  `Secure`.
 
 ## [0.2.0] — 2026-10-19
 

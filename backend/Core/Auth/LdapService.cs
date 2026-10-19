@@ -3,7 +3,7 @@ using SAloha.Api.Core.Directory;
 
 namespace SAloha.Api.Core.Auth;
 
-public class LdapService(IConfiguration config, ILogger<LdapService> logger) : IUserDirectory
+public class LdapService(IConfiguration config, ILogger<LdapService> logger) : IUserDirectory, IAuthenticator
 {
     private string Host => config["Ldap:Host"]!;
     private int Port => int.Parse(config["Ldap:Port"] ?? "389");
