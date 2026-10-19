@@ -24,6 +24,9 @@ son état actuel, et pas seulement *quel* est cet état.
 | [0013](adr-0013-recherche-hybride-service-embeddings-separe.md) | Recherche hybride : embeddings dans un service séparé, plein texte PostgreSQL, vecteurs sans pgvector | 2026-10-08 | accepté |
 | [0014](adr-0014-perimetres-droits-scopes.md) | Périmètres : droits scopés, affectations d'utilisateurs et de groupes AD | 2026-10-10 | accepté |
 | [0015](adr-0015-gestion-de-projet-methode-active-composants.md) | Gestion de projet : la méthode active des composants | 2026-10-12 | accepté |
+| [0016](adr-0016-reponses-de-l-api-en-dto.md) | Réponses de l'API : des DTO, plus d'entités EF | 2026-10-19 | accepté |
+| [0017](adr-0017-observabilite-journal-json-et-opentelemetry.md) | Observabilité : journal JSON, OpenTelemetry optionnel | 2026-10-19 | accepté |
+| [0018](adr-0018-jeton-en-cookie-httponly-et-csp.md) | Jeton de session en cookie HttpOnly, politique CSP | 2026-10-19 | accepté |
 
 Les choix fondateurs antérieurs à cette base (authentification AD LDAP → JWT, analyses
 RCA stockées en JSON) sont décrits dans [`reference/architecture.md`](../reference/architecture.md)
