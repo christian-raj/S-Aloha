@@ -67,7 +67,7 @@ réservée à l'Admin.
 | Transport | HTTP sur le port 80 | HTTPS (reverse proxy TLS) |
 | CORS | `AllowAnyOrigin` | Origine du frontend uniquement |
 | Exposition | API et Swagger publiés sur 8080 | API joignable seulement via nginx ; Swagger désactivé en production |
-| Jeton côté navigateur | `sessionStorage`, lisible par tout script de la page (XSS) | À arbitrer : cookie `HttpOnly` + protection CSRF |
+| Jeton côté navigateur | `sessionStorage`, lisible par tout script de la page (XSS) ; pas de CSP | Décidé ([ADR-0018](../decisions/adr-0018-jeton-en-cookie-httponly-et-csp.md)) : cookie `HttpOnly`, `SameSite=Strict`, en-tête anti-CSRF, CSP servie par nginx |
 | Révocation | Aucune avant expiration | Durée courte et/ou contrôle de l'appartenance AD |
 | Tentatives de connexion | Aucune limitation de débit | Limitation par IP et par compte |
 

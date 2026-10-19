@@ -42,10 +42,15 @@ code qui doit s'y conformer.
 
 | # | Chantier | Décision à prendre |
 |---|---|---|
-| M8 | Aucune suppression dans l'interface | Qui supprime quoi, avec quelle confirmation |
-| A2 | Réponses de l'API : entités EF exposées ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 5) | DTO de réponse par pratique, à l'occasion des évolutions, ou statu quo avec les champs internes masqués |
-| O2 | Observabilité : ni journal structuré, ni traces, ni métriques ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 10) | Journal JSON et OpenTelemetry, selon la plateforme d'exploitation |
 | A1 | **Console d'administration inexistante** (Admin = console Manager) | Décidé le 2026-10-07 : section de menu **Administration** (Admin : utilisateurs et rôles, santé, journal d'audit, nettoyage — [SOC-26](reference/regles-metier.md#9-traçabilité-commentaires-administration)) et section **Paramétrage** (Manager, Admin : référentiels — SOC-27 — et paramétrage des pratiques) ; voir [frontend § Navigation cible](reference/frontend.md#navigation-cible) |
+
+Décidés le 2026-10-19, à réaliser :
+
+| # | Chantier | Décision |
+|---|---|---|
+| M8 | Suppressions dans l'interface | [SOC-14](reference/regles-metier.md#5-règles-communes-aux-processus) tel qu'écrit : Admin pour un enregistrement (problème compris), Manager pour une analyse ou une action ; confirmation qui rappelle la référence et compte ce qui part avec |
+| A2 | Réponses de l'API : entités EF exposées | **Tous les DTO maintenant**, noms de champs inchangés, contrat figé par un test ([ADR-0016](decisions/adr-0016-reponses-de-l-api-en-dto.md)) |
+| O2 | Observabilité | **Journal JSON** et **OpenTelemetry optionnel** (OTLP si configuré) ([ADR-0017](decisions/adr-0017-observabilite-journal-json-et-opentelemetry.md)) |
 
 ## 5. Avant une mise en production
 
@@ -56,7 +61,7 @@ Détail : [sécurité § Points de durcissement](reference/securite.md#points-de
 | S1 | **Secrets hors du dépôt** (`Jwt:Key`, mots de passe PostgreSQL et LDAP) | code + action |
 | S2 | **LDAPS** et **HTTPS** | action |
 | S3 | **CORS** restreint ([#122](https://github.com/christian-raj/S-Aloha/issues/122)) ; API et Swagger non publiés hors de nginx | code |
-| S5 | Stockage du jeton côté navigateur (`sessionStorage` ou cookie `HttpOnly`) | décision |
+| S5 | **Jeton en cookie `HttpOnly`** et politique CSP, décidé le 2026-10-19 ([ADR-0018](decisions/adr-0018-jeton-en-cookie-httponly-et-csp.md)) | code |
 | ~~S7~~ | ~~Refus de démarrer hors développement avec les valeurs d'exemple~~ — soldé le 2026-10-16 (`SampleSecrets` ; démonstration : `Security:AllowSampleSecrets`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 1) | code |
 | ~~S8~~ | ~~Audience du jeton JWT~~ — soldé le 2026-10-16 (`Jwt:Audience`, émise et vérifiée) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 2) | code |
 | O1 | Démarrage : sondes `/health/live` et `/health/ready`, rattrapage des échéances SLA dans un service de fond, migrations pilotables (`Database:MigrateOnStartup`) ([audit du 2026-10-16](archives/audit-code-2026-10-16.md) § 4) ; sondes : [#121](https://github.com/christian-raj/S-Aloha/issues/121) | code |
