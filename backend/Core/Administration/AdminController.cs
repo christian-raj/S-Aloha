@@ -67,6 +67,13 @@ public class AdminController(AppDbContext db, LdapService directory, IDirectoryR
                 vault.Configured ? (Healthy, "Clé configurée.")
                 : await db.DiscoveryCredentials.AnyAsync() ? (Down, "Clé absente alors que des identifiants sont enregistrés : ils sont illisibles.")
                 : (Degraded, "Clé non configurée : aucun identifiant ne peut être enregistré.")),
+            // O1 : rattrapage des échéances SLA, une fois après le démarrage.
+            heartbeats.Last(Modules.IncidentManagement.SlaBackfill.Task) switch
+            {
+                null => new Component("Rattrapage des échéances SLA", Healthy, "En cours depuis le démarrage.", 0),
+                { Ok: false } b => new Component("Rattrapage des échéances SLA", Degraded, $"En échec : {b.Message}", 0),
+                var b => new Component("Rattrapage des échéances SLA", Healthy, $"Fait le {b.At:dd/MM/yyyy HH:mm} UTC : {b.Message}", 0),
+            },
             Background("Notifications datées", "notifications", TimeSpan.FromMinutes(3 * config.GetValue("Notifications:IntervalMinutes", 15)),
                 config.GetValue("Notifications:IntervalMinutes", 15) <= 0),
             Background("Planificateur de la découverte", "discovery", TimeSpan.FromMinutes(3 * config.GetValue("Discovery:IntervalMinutes", 5)),

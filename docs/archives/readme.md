@@ -20,7 +20,7 @@ Sujets traités, un fichier par jour ([format](../protocole-documentation.md#3-j
 
 | Date | Journal |
 |---|---|
-| 2026-10-08 | [journal-2026-10-08](journal-2026-10-08.md) |
+| 2026-10-21 | [journal-2026-10-21](journal-2026-10-21.md) |
 | 2026-10-19 | [journal-2026-10-19](journal-2026-10-19.md) |
 | 2026-10-16 | [journal-2026-10-16](journal-2026-10-16.md) |
 | 2026-10-14 | [journal-2026-10-14](journal-2026-10-14.md) |
@@ -28,5 +28,6 @@ Sujets traités, un fichier par jour ([format](../protocole-documentation.md#3-j
 | 2026-10-12 | [journal-2026-10-12](journal-2026-10-12.md) |
 | 2026-10-11 | [journal-2026-10-11](journal-2026-10-11.md) |
 | 2026-10-10 | [journal-2026-10-10](journal-2026-10-10.md) |
+| 2026-10-08 | [journal-2026-10-08](journal-2026-10-08.md) |
 | 2026-10-07 | [journal-2026-10-07](journal-2026-10-07.md) |
 | 2026-10-06 | [journal-2026-10-06](journal-2026-10-06.md) |

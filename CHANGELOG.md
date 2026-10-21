@@ -14,6 +14,11 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Migrations en étape de déploiement** (O1) : option `--migrate` (applique les migrations
+  et s'arrête) et réglage `Database:MigrateOnStartup` (vrai par défaut) ; l'API démarrée sans
+  migrer refuse une base en retard. Le rattrapage des échéances SLA se fait en tâche de fond,
+  visible dans Administration › Santé.
+
 - **Découverte : inventaire WinRM** (CFG-57) : serveurs et postes Windows, en WS-Management
   sur HTTPS avec un compte de domaine ou local (NTLM) : système, constructeur, numéro de
   série, logiciels, services actifs, ports en écoute et flux réseau. **À valider sur un
