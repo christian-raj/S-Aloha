@@ -305,6 +305,11 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 SuccessRate = Pct(outcomes.Count(c => c.Outcome == "Réussi"), outcomes.Count),                       // REP-30
                 Implemented = outcomes.Count,
                 ByType = Change.Types.Select(t => new { Type = t, Count = period.Count(c => c.ChangeType == t) }),     // REP-31
+                // CHG-32 : part des changements urgents, sur la période et mois par mois.
+                UrgentShare = Pct(period.Count(c => c.ChangeType == "Urgent"), period.Count),
+                UrgentByMonth = period.GroupBy(c => new DateTime(c.CreatedAt.Year, c.CreatedAt.Month, 1)).OrderBy(g => g.Key)
+                    .Select(g => new { Month = g.Key.ToString("yyyy-MM"), Urgent = g.Count(c => c.ChangeType == "Urgent"), Total = g.Count(),
+                        Percent = Pct(g.Count(c => c.ChangeType == "Urgent"), g.Count()) }),
                 ProjectsProgress = Avg(progress.Where(p => p.Progress != null).Select(p => p.Progress!.Value)),       // REP-32
                 ActiveProjects = projects.Count,
             },

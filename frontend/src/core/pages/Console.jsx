@@ -101,8 +101,8 @@ export default function Console() {
   // Les quatre temps de la console, dans l'ordre où l'on doit les traiter.
   const urgent = myOverdue.length + L('majorIncidents') + (c.mySlaIncidents?.length ?? 0) + L('slaIncidents') + L('regulatory')
   const decide = L('decisions') + L('toQualify') + staging.length
-  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts')
-  const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0)
+  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps')
+  const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0) + (c.myChangeFollowUps?.length ?? 0)
   const follow = c.myProblems.length + L('inAnalysisNoRootCause')
 
   const tiles = [
@@ -199,6 +199,9 @@ export default function Console() {
         {/* PRJ-34 */}
         <List title="Projets à relancer" tone="amber" rows={m.projectAlerts ?? []} onRow={goItem}
           hint="Hors tolérance (délai, coût, fin prévue) ou jalons en retard." render={itemRow} />
+        {/* CHG-30, CHG-31 */}
+        <List title="Changements à relancer" tone="amber" rows={m.changeFollowUps ?? []} onRow={goItem}
+          hint="Fin planifiée passée sans mise en œuvre, ou mis en œuvre depuis plus de 2 jours ouvrés sans clôture." render={itemRow} />
       </Group>}
 
       <Group id="travail" title="Mon travail" total={work}>
@@ -210,6 +213,9 @@ export default function Console() {
         {/* PRJ-34 : relances du chef de projet. */}
         <List title="Mes projets à relancer" tone="amber" rows={c.myProjectAlerts ?? []} onRow={goItem}
           hint="Vos projets hors tolérance ou à jalons en retard." render={itemRow} />
+        {/* CHG-30, CHG-31 : relances du responsable d'un changement. */}
+        <List title="Mes changements à relancer" tone="amber" rows={c.myChangeFollowUps ?? []} onRow={goItem}
+          hint="Mettre en œuvre ou replanifier ; renseigner le résultat et clore." render={itemRow} />
       </Group>
 
       <Group id="suivi" title="À suivre" total={follow}>

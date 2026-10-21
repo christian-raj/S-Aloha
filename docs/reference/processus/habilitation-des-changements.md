@@ -53,6 +53,8 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `ClosedAt` | date UTC | auto | | ✅ |
 | `ActualStart`, `ActualEnd` | date UTC | à la mise en œuvre | Dates réelles ; `overrun` (calculé) signale un dépassement de la fin planifiée | ✅ CHG-14 |
 | `PirNotes` | texte | selon CHG-15 | Revue post-implémentation (sa date est celle de l'historique) | ✅ CHG-15 |
+| `ConflictComment` | texte | selon CHG-22 | Commentaire de l'autorité qui autorise un changement en conflit de calendrier | ✅ CHG-22 |
+| `ImplementedAt` | date UTC | auto | Entrée dans Mis en œuvre (relance CHG-31 ; à défaut, le début réel) | ✅ CHG-31 |
 | `StandardModelId` | lien | si Standard | Modèle de changement standard, choisi à la création ; plans et risque en sont repris | ✅ CHG-26 |
 | Décisions du CAB (`ChangeApprovals`) | liste | si CAB | Approbateur, décision, date, commentaire ; une par gestionnaire ; effacées à une nouvelle évaluation | ✅ CHG-20 |
 
@@ -123,7 +125,7 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 |---|---|---|---|
 | CHG-20 | **Autorité selon le risque** : Normal à risque Faible ou Moyen → un Manager ; Normal à risque **Élevé** → **CAB** : deux Managers distincts approuvent (`Approvals`), un seul rejet suffit à rejeter ; Urgent → un Manager (autorisation accélérée), revue obligatoire (CHG-15) | ✅ (`POST /api/changes/{id}/approvals` ; autorisation directe refusée à risque Élevé ; Urgent : un Manager, revue CHG-15 ; encadré « CAB » de la fiche) | |
 | CHG-21 | Le demandeur d'un changement ne peut pas l'autoriser lui-même (séparation des tâches), sauf Admin | ✅ (le demandeur est le créateur du changement) | |
-| CHG-22 | **Conflit non résolu** : autoriser un changement en conflit de calendrier (CHG-09) exige un commentaire de l'autorité | 🔜 | 2 |
+| CHG-22 | **Conflit non résolu** : autoriser un changement en conflit de calendrier (CHG-09) exige un commentaire de l'autorité (`ConflictComment` ; au CAB, le commentaire de l'approbation) ; le refus cite les changements en conflit | ✅ | 2 |
 | CHG-23 | Un changement peut être **créé depuis un problème ou une action corrective** (PRB-27) : titre, description et lien repris | ✅ (depuis une action) / 🔜 (depuis le problème : lien manuel) | 2 |
 | CHG-24 | Notifications (SOC-21) : changement Évalué → autorité (ou CAB) ; autorisation ou rejet → demandeur et responsable ; J-1 de la mise en œuvre → responsable | ✅ | |
 
@@ -139,8 +141,8 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| CHG-30 | Un changement **Planifié** dont la fin planifiée est passée sans être Mis en œuvre est signalé en relance au responsable | 🔜 | 2 |
-| CHG-31 | Un changement **Mis en œuvre** depuis plus de 2 jours ouvrés sans être Clos (résultat non renseigné) remonte en relance | 🔜 | 2 |
+| CHG-30 | Un changement **Planifié** dont la fin planifiée est passée sans être Mis en œuvre est signalé en relance au responsable | ✅ | 2 |
+| CHG-31 | Un changement **Mis en œuvre** depuis plus de 2 jours ouvrés sans être Clos (résultat non renseigné) remonte en relance | ✅ | 2 |
 
 ## 7. Liens avec les autres pratiques
 
@@ -155,14 +157,15 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 ## 8. Console et indicateurs
 
 Console ✅ : changements Demandé et Évalué dans « Décisions » (gestionnaires) ; mes
-changements ouverts (Mon travail). À venir : mises en œuvre du jour (Mon travail),
-relances CHG-30 et CHG-31, changements Urgent sans revue (Relances).
+changements ouverts (Mon travail) ; relances CHG-30 et CHG-31 du responsable (Mon travail),
+et de l'équipe (Relances, gestionnaires), avec une notification au responsable par motif.
+À venir : mises en œuvre du jour (Mon travail), changements Urgent sans revue (Relances).
 
 | Indicateur | Calcul | Statut |
 |---|---|---|
 | Taux de changements réussis | Réussi / résultats renseignés | ✅ |
 | Volumétrie par statut | | ✅ |
-| Part des changements urgents | Urgent / total, par mois | 🔜 CHG-32 (lot 2) |
+| Part des changements urgents | Urgent / changements créés, sur la période et par mois (reporting, onglet Changements & projets) | ✅ CHG-32 (lot 2) |
 | Changements ayant causé un incident | Changements reliés à un incident créé dans les 7 jours suivant leur mise en œuvre | 🔜 CHG-33 (lot 2) |
 | Délai moyen d'autorisation | `AuthorizedAt − CreatedAt`, Normal et Urgent | 🔜 CHG-34 (lot 2) |
 | Respect des créneaux | Changements mis en œuvre dans leur créneau planifié | 🔜 CHG-35 (lot 3) |

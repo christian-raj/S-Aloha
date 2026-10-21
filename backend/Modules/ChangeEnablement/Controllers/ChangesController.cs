@@ -36,6 +36,7 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
             return "La fin réelle précède le début réel.";
         e.ActualStart = Dates.Utc(dto.ActualStart); e.ActualEnd = Dates.Utc(dto.ActualEnd);
         e.PirNotes = string.IsNullOrWhiteSpace(dto.PirNotes) ? null : dto.PirNotes.Trim();
+        e.ConflictComment = string.IsNullOrWhiteSpace(dto.ConflictComment) ? null : dto.ConflictComment.Trim();
         if (creating) e.StandardModelId = dto.StandardModelId;   // CHG-26 : choisi à la création
         return null;
     }
@@ -125,6 +126,11 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
             if (freeze is not null)
                 return $"Créneau dans une période de gel ({freeze.Reason}, du {freeze.Start:dd/MM/yyyy HH:mm} au {freeze.End:dd/MM/yyyy HH:mm} UTC) : seul un changement urgent s'y planifie.";
         }
+        // CHG-22 : autoriser un changement en conflit de calendrier exige un commentaire de l'autorité.
+        if (entering && status == "Autorisé" && e.Id != 0 && e.ConflictComment is null
+            && (await ConflictsAsync()).GetValueOrDefault(e.Id) is { Count: > 0 } conflicts)
+            return $"Conflit de calendrier avec {string.Join(", ", conflicts.Select(c => $"{c.ChangeReference} (CI {c.CiReference})").Distinct())} : "
+                   + "commenter l'autorisation (pourquoi le conflit est acceptable ou comment il sera géré).";
         // CHG-21 : séparation des tâches — le demandeur n'autorise pas son propre changement (sauf Admin).
         if (entering && status == "Autorisé" && e.Id != 0 && !User.IsInRole("Admin")
             && string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase))
@@ -171,6 +177,8 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         }
         else if (e.Status is "Demandé" or "Évalué" or "Rejeté") { e.AuthorizedAt = null; e.AuthorizedBy = null; }
         e.ClosedAt = e.Status == "Clos" ? DateTime.UtcNow : null;
+        // CHG-31 : point de départ de la relance d'un changement mis en œuvre, non clos.
+        if (e.Status == "Mis en œuvre" && from != "Mis en œuvre") e.ImplementedAt = DateTime.UtcNow;
     }
 
     // Le registre n'affiche pas les plans : ils restent dans la fiche.
@@ -213,6 +221,9 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
             return BadRequest(new { message = "Le demandeur ne siège pas au CAB pour son propre changement." });
         var comment = dto.Comment?.Trim() ?? "";
         if (!dto.Approve && comment == "") return BadRequest(new { message = "Motiver le rejet : le motif est communiqué au demandeur." });
+        // CHG-22 : approuver un changement en conflit de calendrier se commente.
+        if (dto.Approve && comment == "" && (await ConflictsAsync()).GetValueOrDefault(id) is { Count: > 0 })
+            return BadRequest(new { message = "Changement en conflit de calendrier : commenter l'approbation (pourquoi le conflit est acceptable)." });
         if (await Db.ChangeApprovals.AnyAsync(a => a.ChangeId == id && a.Approver == Me))
             return Conflict(new { message = "Vous avez déjà donné votre décision sur ce changement." });
         var decision = new ChangeApproval { ChangeId = id, Approver = Me, ApproverDisplayName = MyDisplay, Approved = dto.Approve, Comment = comment };
