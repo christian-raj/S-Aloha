@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Records;
 using SAloha.Api.Core.Notifications;
+using SAloha.Api.Core.Links;
 
 namespace SAloha.Api.Modules.ServiceRequestManagement;
 
@@ -22,9 +23,11 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         if (creating) e.CatalogItemId = dto.CatalogItemId;
         if (string.IsNullOrWhiteSpace(dto.RequestedItem) && e.CatalogItemId is null) return "Préciser l'objet demandé, ou choisir un modèle du catalogue.";
         e.RequestedItem = dto.RequestedItem?.Trim() ?? "";
-        var hasBeneficiary = !string.IsNullOrWhiteSpace(dto.RequestedFor);
-        e.RequestedFor = hasBeneficiary ? dto.RequestedFor : null;
-        e.RequestedForDisplayName = hasBeneficiary ? dto.RequestedForDisplayName ?? dto.RequestedFor : null;
+        // REQ-07 : le bénéficiaire vaut le demandeur par défaut ; une demande pour autrui garde les deux.
+        if (!string.IsNullOrWhiteSpace(dto.RequestedFor))
+            (e.RequestedFor, e.RequestedForDisplayName) = (dto.RequestedFor.Trim(), dto.RequestedForDisplayName ?? dto.RequestedFor.Trim());
+        else if (creating) (e.RequestedFor, e.RequestedForDisplayName) = (Me, MyDisplay);
+        e.ContestReason = string.IsNullOrWhiteSpace(dto.ContestReason) ? null : dto.ContestReason.Trim();
         // REQ-22 : l'échéance d'une demande issue d'un modèle à délai cible est calculée ; seul un
         // gestionnaire la modifie ensuite. Sans délai cible, l'échéance souhaitée reste libre.
         var due = Dates.Utc(dto.DueDate);
@@ -104,6 +107,17 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         // REQ-09 : annulation par le demandeur ou un gestionnaire.
         if (status == "Annulée" && !IsManager && !string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase))
             return "Seul le demandeur ou un gestionnaire peut annuler la demande.";
+        // REQ-10 : contestation d'une demande satisfaite — demandeur, bénéficiaire ou gestionnaire,
+        // motivée, dans les 5 jours ouvrés.
+        if (e.Status == "Satisfaite" && status == "En cours")
+        {
+            if (!IsManager && !string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(e.RequestedFor, Me, StringComparison.OrdinalIgnoreCase))
+                return "Seul le demandeur, le bénéficiaire ou un gestionnaire peut contester une demande satisfaite.";
+            if (e.ContestReason is null) return "Motiver la contestation : ce qui n'est pas conforme à la demande.";
+            if (e.FulfilledAt is { } at && DateTime.UtcNow > Dates.AddBusinessDays(at, ServiceRequest.ContestBusinessDays))
+                return $"Délai de contestation dépassé ({ServiceRequest.ContestBusinessDays} jours ouvrés) : soumettre une nouvelle demande.";
+        }
         return null;
     }
 
@@ -113,6 +127,8 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         // REQ-21 : une demande pré-approuvée n'attend aucun approbateur.
         if (from == "") { if (e.Status == "Soumise") n.ToManagers(e, LinkType, "Demande à approuver"); return; }
         if (from is null) return;
+        // REQ-10 : une contestation → responsable.
+        if (from == "Satisfaite" && e.Status == "En cours") { n.ToOwner(e, LinkType, "Demande contestée"); return; }
         var ev = e.Status switch { "Approuvée" => "Demande approuvée", "Rejetée" => "Demande rejetée", "Satisfaite" => "Demande satisfaite", _ => null };
         if (ev is null) return;
         n.ToCreator(e, LinkType, ev);
@@ -127,5 +143,53 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
             ? e.FulfilledAt ?? DateTime.UtcNow : null;
         e.ClosedAt = e.Status == "Close" ? DateTime.UtcNow : null;
         e.CancelledAt = e.Status == "Annulée" ? DateTime.UtcNow : null;
+        // REQ-10 : le motif d'une contestation vaut jusqu'à la satisfaction suivante (l'historique le garde).
+        if (e.Status == "Satisfaite") e.ContestReason = null;
+    }
+
+    /// <summary>
+    /// REQ-12 : une demande qui révèle un besoin non standard se requalifie — un changement (ou
+    /// un incident) est créé, relié à la demande, puis la demande est annulée avec ce motif.
+    /// Mêmes droits et statuts que l'annulation (REQ-09) : demandeur ou gestionnaire, avant En cours.
+    /// </summary>
+    [HttpPost("{id:int}/requalify")]
+    public async Task<IActionResult> Requalify(int id, RequalifyDto dto)
+    {
+        var e = await Db.ServiceRequests.FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        await ScopeAsync();
+        ActOn(e.PerimeterId);
+        if (!IsManager && !string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase)) return Forbid();
+        if (dto.Target is not ("change" or "incident")) return BadRequest(new { message = "Requalifier en changement (« change ») ou en incident (« incident »)." });
+        if (e.Status is not ("Soumise" or "Approuvée"))
+            return BadRequest(new { message = $"Demande {e.Status.ToLowerInvariant()} : seule une demande Soumise ou Approuvée se requalifie." });
+        var reason = dto.Reason?.Trim();
+        if (string.IsNullOrEmpty(reason)) return BadRequest(new { message = "Motiver la requalification : ce qui rend le besoin non standard." });
+
+        Core.Records.Record target = dto.Target == "change"
+            ? await References.CreateAsync(Db, "CHG", () => new ChangeEnablement.Change
+            {
+                PerimeterId = e.PerimeterId, Title = e.Title, Description = $"{e.Description}\n\nRequalifié depuis {e.Reference} : {reason}".Trim(),
+                Status = "Demandé", ChangeType = "Normal", Risk = "Moyen", CreatedBy = Me, CreatedByDisplayName = MyDisplay
+            })
+            : await References.CreateAsync(Db, "INC", () => new IncidentManagement.Incident
+            {
+                PerimeterId = e.PerimeterId, Title = e.Title, Description = $"{e.Description}\n\nRequalifié depuis {e.Reference} : {reason}".Trim(),
+                Status = "Nouveau", Impact = "Moyen", Urgency = "Moyenne", Priority = Priority.Compute("Moyen", "Moyenne"),
+                ServiceId = e.ServiceId, AffectedService = e.AffectedService, CreatedBy = Me, CreatedByDisplayName = MyDisplay
+            });
+        Db.ItemLinks.Add(new ItemLink { FromType = LinkType, FromId = e.Id, ToType = dto.Target, ToId = target.Id, CreatedBy = Me });
+        var from = e.Status;
+        e.Status = "Annulée";
+        e.CancelReason = $"Requalifiée en {(dto.Target == "change" ? "changement" : "incident")} {target.Reference} : {reason}";
+        if (e.CancelReason.Length > 2000) e.CancelReason = e.CancelReason[..2000];
+        OnStatusChanged(e, from);
+        e.UpdatedAt = DateTime.UtcNow;
+        await Db.SaveChangesAsync();
+        var n = Notify;
+        n.ToCreator(e, LinkType, "Demande requalifiée");
+        if (dto.Target == "change") n.ToManagers(target, "change", "Changement demandé");
+        await n.SaveAsync();
+        return Ok(new { Request = View(e), Target = new { Type = dto.Target, target.Id, target.Reference } });
     }
 }

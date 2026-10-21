@@ -105,7 +105,11 @@ export const api = {
     qualify: (id, dto) => request(`/incidents/${id}/qualification`, { method: 'POST', body: JSON.stringify(dto) })
   },
   regulatoryNotifications: records('/regulatory-notifications'),
-  requests: records('/requests'),
+  requests: {
+    ...records('/requests'),
+    // REQ-12 : requalification en changement ou en incident (la demande est annulée).
+    requalify: (id, dto) => request(`/requests/${id}/requalify`, { method: 'POST', body: JSON.stringify(dto) })
+  },
   changes: {
     ...records('/changes'),
     schedule: () => request('/changes/schedule'),
