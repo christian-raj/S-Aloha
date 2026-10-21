@@ -16,6 +16,41 @@
 **Qui** débloque : *code* (réalisable sans arbitrage), *décision* (à trancher d'abord),
 *action* (geste d'exploitation hors du dépôt).
 
+## Prochaine séance
+
+*Préparée le 2026-10-21, à la fin du lot 2 : rien n'est engagé.* État : 320 règles ✅, une en
+lot 1 ([RAG-10](reference/recherche.md), en attente d'un jeu de requêtes réelles), aucune en
+lot 2, 18 en lot 3 ([synthèse](reference/processus/readme.md)).
+
+**Réalisable sans arbitrage (code)** — règles du lot 3, une PR par pratique, dans cet ordre :
+
+| Ordre | Pratique | Règles | Chantier |
+|---|---|---|---|
+| 1 | Demandes | REQ-24, REQ-25 (tâches d'exécution du modèle), REQ-11 (clôture à la confirmation ou après 5 jours ouvrés), REQ-32 (enquête de satisfaction) | F3 |
+| 2 | Incidents | INC-16 (incidents enfants), INC-26 (relance après 5 jours ouvrés En attente) | |
+| 3 | Problèmes, changements | PRB-32 (problème sans activité depuis 30 jours), CHG-27 (modèle standard suspendu après un échec) | |
+| 4 | Connaissances | KB-13 (retour des lecteurs), KB-15 (versions), KB-16 (quatre yeux) | |
+| 5 | Configuration | CFG-30 (import en masse), CFG-16 (attributs par type) | F5 |
+| 6 | Niveaux de service, amélioration, déclarations | SLM-21 (disponibilité mesurée), CSI-15 (durabilité), DRG-08 (modèle de contenu par régime) | |
+
+**À arbitrer avant de commencer** :
+
+| Chantier | Décision à prendre |
+|---|---|
+| [F7](#7-feuille-de-route-fonctionnelle) — courriel (SOC-22) | Serveur d'envoi (SMTP de l'organisation, avec ou sans authentification), adresse d'expéditeur, préférences par utilisateur (aucun, immédiat, résumé quotidien) |
+| F7 — pièces jointes (SOC-25, puis RAG-12) | Stockage hors base (volume monté ou stockage objet), limite de taille (10 Mo prévus), types admis, antivirus éventuel ; indexation du texte (RAG-12) plus tard |
+| F12 — référentiels définis par l'Admin | Spécifier d'abord (format d'import, échelle, calcul des niveaux), sur le modèle de l'[ADR-0012](decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md) |
+| F13 phase 4 — agent nomade | Forme de l'agent (service Windows et Linux, langage, signature du binaire), jeton d'enrôlement par périmètre, fréquence d'envoi ; preuves NIS 2 nourries par la découverte |
+
+**Actions en attente (hors dépôt)** :
+
+- **Recette AMD** : main y est à 85be86c ; #148 à #153 n'y sont pas déployés (« pas de
+  déploiement en local pour l'instant », 2026-10-21). Migrations à venir, après `pg_dump` :
+  `RegulatoryNotifications`, `ChangeFollowUps`, `RequestContestRequalify`, `IncidentProblemLot2`.
+- **WinRM** ([CFG-57](reference/processus/gestion-de-la-configuration.md)) à valider sur un
+  Windows réel (aucun au laboratoire).
+- **Avant la production** : S1, S2 (section 5) ; issues de la communauté #120 à #126 ouvertes.
+
 ## 1. Bloquants fonctionnels — le processus est inutilisable
 
 Aucun bloquant ouvert : B1 à B3 corrigés et couverts par des tests le 2026-10-06
