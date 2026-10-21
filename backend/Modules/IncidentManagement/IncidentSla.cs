@@ -61,7 +61,8 @@ public static class IncidentSla
             : (await db.Services.AsNoTracking().FirstOrDefaultAsync(s => s.Id == serviceId))?.Calendar() ?? ServiceCalendar.AlwaysOpen;
 
     /// <summary>Au démarrage : échéance des incidents antérieurs à INC-21 (ou dont le SLA est apparu depuis).</summary>
-    public static async Task BackfillAsync(AppDbContext db)
+    /// <summary>Échéances manquantes calculées ; renvoie le nombre d'incidents mis à jour.</summary>
+    public static async Task<int> BackfillAsync(AppDbContext db)
     {
         var pending = await db.Incidents.Where(i => i.ResolutionDueAt == null && i.ServiceId != null).ToListAsync();
         foreach (var i in pending) { i.ResolutionDueAt = await DueAsync(db, i); i.ResponseDueAt = await ResponseDueAsync(db, i); }
@@ -70,5 +71,33 @@ public static class IncidentSla
                                                     && i.ServiceId != null && !Incident.Done.Contains(i.Status)).ToListAsync();
         foreach (var i in waiting.Except(pending)) i.ResponseDueAt = await ResponseDueAsync(db, i);
         if (pending.Count > 0 || waiting.Count > 0) await db.SaveChangesAsync();
+        return pending.Count + waiting.Except(pending).Count();
+    }
+}
+
+/// <summary>
+/// O1 : rattrapage des échéances SLA (INC-21, SLM-13) une fois, en tâche de fond après le
+/// démarrage : une grosse base ne retarde plus l'écoute, et un échec n'empêche plus l'API de
+/// démarrer. Le résultat paraît dans Administration › Santé.
+/// </summary>
+public class SlaBackfill(IServiceScopeFactory scopes, Core.Administration.Heartbeats heartbeats, ILogger<SlaBackfill> logger)
+    : BackgroundService
+{
+    public const string Task = "sla-backfill";
+
+    protected override async System.Threading.Tasks.Task ExecuteAsync(CancellationToken ct)
+    {
+        try
+        {
+            await using var scope = scopes.CreateAsyncScope();
+            var updated = await IncidentSla.BackfillAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>());
+            heartbeats.Record(Task, true, $"{updated} incident(s) mis à jour.");
+            if (updated > 0) logger.LogInformation("Échéances SLA rattrapées : {Count} incident(s).", updated);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "Rattrapage des échéances SLA en échec.");
+            heartbeats.Record(Task, false, ex.Message.Split('\n')[0]);
+        }
     }
 }

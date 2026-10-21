@@ -48,6 +48,8 @@ builder.Services.AddHostedService<DiscoveryWorker>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<AuditInterceptor>();
 builder.Services.AddHostedService<AuditRetention>();
+// O1 : rattrapage des échéances SLA en tâche de fond, sans retarder le démarrage (INC-21).
+builder.Services.AddHostedService<SAloha.Api.Modules.IncidentManagement.SlaBackfill>();
 
 // Npgsql 10 tente GSSAPI (absent de l'image) et écrit hors du journal JSON : désactivé
 // sauf choix explicite dans la chaîne de connexion.
@@ -117,15 +119,14 @@ SampleSecrets.Check(app.Configuration, app.Environment, app.Logger);
 
 // Schéma par migrations EF ; une base créée par l'ancien EnsureCreated est reprise telle quelle.
 // Puis structure du référentiel NIS 2 embarquée (ADR-0012), alignée à chaque démarrage.
+// O1 : « --migrate » prépare la base et s'arrête (étape de déploiement : Job, conteneur d'init).
+var migrateOnly = args.Contains("--migrate");
 using (var scope = app.Services.CreateScope())
+    DatabaseSchema.Prepare(scope.ServiceProvider.GetRequiredService<AppDbContext>(), app.Configuration, app.Logger, migrateOnly);
+if (migrateOnly)
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    DatabaseSchema.Migrate(db, app.Logger);
-    // NIS-18 : figer les évaluations validées avant d'aligner la structure embarquée.
-    SAloha.Api.Modules.ComplianceAssessment.AssessmentReferential.FreezeValidated(db);
-    SAloha.Api.Modules.ComplianceAssessment.ReferentialStore.EnsureStructure(db);
-    // INC-21 : échéances SLA des incidents enregistrés avant le calcul.
-    SAloha.Api.Modules.IncidentManagement.IncidentSla.BackfillAsync(db).GetAwaiter().GetResult();
+    app.Logger.LogInformation("Base préparée (--migrate) : arrêt sans servir l'API.");
+    return;
 }
 
 app.UseSwagger();

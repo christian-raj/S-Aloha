@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SAloha.Api.Core.Data;
 
 /// <summary>
-/// Schéma tenu par les migrations EF (Core/Data/Migrations), appliquées au démarrage.
+/// Schéma tenu par les migrations EF (Core/Data/Migrations), appliquées au démarrage ou par
+/// une étape de déploiement (O1).
 /// </summary>
 public static class DatabaseSchema
 {
@@ -35,6 +36,24 @@ public static class DatabaseSchema
                 db.Database.ExecuteSqlRaw(history.GetInsertScript(new HistoryRow(id, ProductInfo.GetVersion())));
         }
         db.Database.Migrate();
+    }
+
+    /// <summary>
+    /// O1 : préparation de la base au démarrage, ou seule (option <c>--migrate</c> : étape de
+    /// déploiement, puis arrêt). <c>Database:MigrateOnStartup</c> (vrai par défaut) faux : l'API
+    /// n'applique pas les migrations et refuse de démarrer s'il en reste, plutôt que de servir
+    /// un schéma périmé. Puis alignement des données de référence embarquées (NIS 2).
+    /// </summary>
+    public static void Prepare(AppDbContext db, IConfiguration config, ILogger logger, bool migrateOnly)
+    {
+        if (migrateOnly || config.GetValue("Database:MigrateOnStartup", true)) Migrate(db, logger);
+        else if (db.Database.GetPendingMigrations().ToList() is { Count: > 0 } pending)
+            throw new InvalidOperationException(
+                $"{pending.Count} migration(s) en attente (dernière : {pending[^1]}) et Database:MigrateOnStartup désactivé : " +
+                "appliquer d'abord les migrations (dotnet SAloha.Api.dll --migrate).");
+        // NIS-18 : figer les évaluations validées avant d'aligner la structure embarquée (ADR-0012).
+        Modules.ComplianceAssessment.AssessmentReferential.FreezeValidated(db);
+        Modules.ComplianceAssessment.ReferentialStore.EnsureStructure(db);
     }
 
     private static bool TableExists(AppDbContext db, string table) =>
