@@ -16,7 +16,7 @@
 | [Gestion des problèmes](gestion-des-problemes.md) | PRB | 26 | 0 | 3 | 1 |
 | [Gestion des incidents](gestion-des-incidents.md) | INC | 25 | 0 | 5 | 2 |
 | [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 14 | 0 | 3 | 4 |
-| [Habilitation des changements](habilitation-des-changements.md) | CHG | 23 | 0 | 3 | 1 |
+| [Habilitation des changements](habilitation-des-changements.md) | CHG | 26 | 0 | 0 | 1 |
 | [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 17 | 0 | 1 | 2 |
 | [Gestion des niveaux de service](gestion-des-niveaux-de-service.md) | SLM | 15 | 0 | 0 | 1 |
 | [Gestion des connaissances](gestion-des-connaissances.md) | KB | 13 | 0 | 0 | 3 |
@@ -27,7 +27,7 @@
 | [Périmètres](../perimetres.md) | PER | 12 | 0 | 0 | 0 |
 | [Recherche](../recherche.md) | RAG | 9 | 1 | 2 | 1 |
 | [Reporting](../reporting.md) | REP | 30 | 0 | 0 | 0 |
-| **Total** | | **275** | **1** | **23** | **19** |
+| **Total** | | **278** | **1** | **20** | **19** |
 
 *Comptes au 2026-10-16 (main `af38031`), sur les tableaux de règles (hors indicateurs). Une
 règle faite en partie compte ✅ (7 règles, la part restante est décrite dans son statut).

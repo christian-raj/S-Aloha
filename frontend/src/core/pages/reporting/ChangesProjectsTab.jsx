@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Kpi, Tolerance } from './charts'
+import { HBars, Kpi, Tolerance } from './charts'
 import { date, dateTime, fmt } from './exportCsv'
 
 const DAY = 86400000
@@ -83,7 +83,7 @@ export default function ChangesProjectsTab({ data }) {
         <Kpi value={fmt(kpis.successRate)} suffix=" %" label="Taux de succès des changements"
           sub={kpis.implemented ? `sur ${kpis.implemented} changement(s) mis en œuvre` : 'Aucun changement mis en œuvre'} />
         <Kpi value={type('Urgent')} label="Changements urgents"
-          sub={`contre ${type('Standard')} standard(s) et ${type('Normal')} normal(aux)`} />
+          sub={`${kpis.urgentShare == null ? '—' : fmt(kpis.urgentShare) + ' %'} des changements créés · ${type('Standard')} standard(s), ${type('Normal')} normal(aux)`} />
         <Kpi value={fmt(kpis.projectsProgress, 0)} suffix=" %" label="Avancement moyen des projets"
           sub={`${kpis.activeProjects} projet(s) en cours ou suspendu(s)`} />
         <Kpi value={data.projects.filter(p => p.tolerance.time === 'Hors tolérance' || p.tolerance.cost === 'Hors tolérance').length}
@@ -93,6 +93,13 @@ export default function ChangesProjectsTab({ data }) {
       <div className="report-grid">
         <Gantt items={data.upcoming} />
         <RiskMatrix cells={data.riskMatrix} />
+      </div>
+
+      {/* CHG-32 : part des changements urgents, mois par mois. */}
+      <div className="report-grid">
+        <HBars title="Part des changements urgents, par mois" unit=" %" max={100}
+          data={(kpis.urgentByMonth ?? []).map(m => ({ label: m.month, count: m.percent ?? 0 }))}
+          note="Changements urgents / changements créés dans le mois." />
       </div>
 
       <div className="card">
@@ -122,6 +129,8 @@ export const changesProjectsCsv = (d) => [
   { title: 'Indicateurs', header: ['Indicateur', 'Valeur'], rows: [
     ['Taux de succès des changements (%)', d.kpis.successRate], ['Changements mis en œuvre', d.kpis.implemented],
     ...d.kpis.byType.map(t => [`Changements ${t.type.toLowerCase()}s créés`, t.count]),
+    ['Part des changements urgents (%)', d.kpis.urgentShare ?? ''],
+    ...(d.kpis.urgentByMonth ?? []).map(m => [`Changements urgents, ${m.month} (%)`, m.percent ?? '']),
     ['Avancement moyen des projets (%)', d.kpis.projectsProgress], ['Projets en cours', d.kpis.activeProjects]] },
   { title: 'Changements des 30 prochains jours', header: ['Référence', 'Titre', 'Type', 'Risque', 'Statut', 'Début', 'Fin'],
     rows: d.upcoming.map(c => [c.reference, c.title, c.changeType, c.risk, c.status, dateTime(c.plannedStart), dateTime(c.plannedEnd)]) },

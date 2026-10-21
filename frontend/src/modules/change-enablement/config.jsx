@@ -33,6 +33,9 @@ export const changeConfig = {
     // CHG-15 : exigée avant de clore un changement urgent ou échoué.
     { key: 'pirNotes', label: 'Revue post-implémentation', type: 'textarea', rows: 3, create: false,
       placeholder: 'Ce qui s\'est passé, causes, enseignements. Obligatoire pour clore un changement urgent ou échoué.' },
+    // CHG-22 : exigé de l'autorité qui autorise un changement en conflit de calendrier.
+    { key: 'conflictComment', label: 'Commentaire sur le conflit de calendrier', type: 'textarea', rows: 2, create: false, managerOnly: true,
+      placeholder: 'Obligatoire pour autoriser un changement en conflit : pourquoi le conflit est acceptable, ou comment il sera géré.' },
     { key: 'rejectionReason', label: 'Motif de rejet', type: 'textarea', rows: 2, create: false,
       placeholder: 'Obligatoire pour rejeter : communiqué au demandeur.' },
   ],
@@ -42,8 +45,10 @@ export const changeConfig = {
     { h: 'Début planifié', v: r => <>{dateTimeFr(r.plannedStart)}{r.overrun && <span className="badge t-bad" style={{ marginLeft: 6 }}>Dépassement</span>}</>},
   ],
   meta: r => [r.authorizedAt && `Autorisé par ${r.authorizedBy} le ${dateTimeFr(r.authorizedAt)}`,
-    r.overrun && `Dépassement : fin planifiée le ${dateTimeFr(r.plannedEnd)}${r.actualEnd ? `, fin réelle le ${dateTimeFr(r.actualEnd)}` : ''}`],
-  help: 'Standard : pré-autorisé. Normal et urgent : plans de mise en œuvre et de retour arrière pour l\'évaluation, puis autorisation par un gestionnaire. Planifié : début et fin. Un rejet se motive. Modifier le type, le risque, les plans ou le créneau d\'un changement autorisé redemande une autorisation. Standard : créé depuis un modèle standard, dont il reprend les plans et le risque. Normal à risque élevé : autorisé par le CAB (deux gestionnaires). Planification refusée dans une période de gel, sauf urgent. Normal et urgent : au moins un CI relié (onglet Liens) pour l\'évaluation ; le demandeur n\'autorise pas son propre changement. Mis en œuvre : début réel ; Clos : fin réelle et résultat, revue post-implémentation pour un changement urgent ou échoué.',
+    r.overrun && `Dépassement : fin planifiée le ${dateTimeFr(r.plannedEnd)}${r.actualEnd ? `, fin réelle le ${dateTimeFr(r.actualEnd)}` : ''}`,
+    // CHG-30, CHG-31 : relance en cours.
+    r.followUp && `À relancer : ${r.followUp.toLowerCase()}`],
+  help: 'Standard : pré-autorisé. Normal et urgent : plans de mise en œuvre et de retour arrière pour l\'évaluation, puis autorisation par un gestionnaire. Planifié : début et fin. Un rejet se motive. Modifier le type, le risque, les plans ou le créneau d\'un changement autorisé redemande une autorisation. Standard : créé depuis un modèle standard, dont il reprend les plans et le risque. Normal à risque élevé : autorisé par le CAB (deux gestionnaires). Planification refusée dans une période de gel, sauf urgent. Normal et urgent : au moins un CI relié (onglet Liens) pour l\'évaluation ; le demandeur n\'autorise pas son propre changement. Mis en œuvre : début réel ; Clos : fin réelle et résultat, revue post-implémentation pour un changement urgent ou échoué. Un changement en conflit de calendrier s\'autorise avec un commentaire. Relancé quand sa fin planifiée passe sans mise en œuvre, ou s\'il reste mis en œuvre plus de 2 jours ouvrés sans être clos.',
   linkHint: 'Problème ou demande à l\'origine, CI modifiés…',
 }
 

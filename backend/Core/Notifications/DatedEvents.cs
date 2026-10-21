@@ -68,6 +68,11 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             notify.ToManagers(d, "notification", ev);
         }
 
+        // CHG-30, CHG-31 : changement à relancer → responsable (une fois par motif).
+        foreach (var c in await db.Changes.AsNoTracking().Where(c => c.Status == "Planifié" || c.Status == "Mis en œuvre").ToListAsync())
+            if (c.FollowUp(now) is { } reason && Fresh("change", c.Id, reason))
+                notify.ToOwner(c, "change", reason);
+
         // CHG-24 : la veille de la mise en œuvre → responsable.
         foreach (var c in await db.Changes.AsNoTracking()
                      .Where(c => (c.Status == "Autorisé" || c.Status == "Planifié") && c.PlannedStart > now && c.PlannedStart <= now.AddDays(1))

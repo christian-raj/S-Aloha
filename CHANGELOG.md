@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Changements : conflit commenté et relances** (CHG-22, CHG-30 à CHG-32) : autoriser un
+  changement en conflit de calendrier exige un commentaire de l'autorité (au CAB aussi) ; un
+  changement planifié dont la fin est passée sans mise en œuvre, ou mis en œuvre depuis plus
+  de 2 jours ouvrés sans clôture, est relancé (console du responsable et des gestionnaires,
+  notification) ; part des changements urgents par mois au reporting.
+
 - **Déclarations réglementaires des incidents de sécurité** (INC-40 à INC-44, DRG-01 à
   DRG-13, REP-44) : tout rôle marque un incident « sécurité » ; un gestionnaire le qualifie
   (incident important au sens de NIS 2, violation de données personnelles), ce qui crée une
@@ -125,6 +131,7 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Changements** : la migration `ChangeFollowUps` ajoute deux colonnes facultatives.
 - **Déclarations réglementaires** : la migration `RegulatoryNotifications` ajoute sept colonnes
   facultatives aux incidents et une table.
 - **Proxy amont** : un second nginx devant S-Aloha (ingress-nginx par exemple) garde sa propre

@@ -121,6 +121,15 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                 ? groups.Contains(x.i.OwnerId.ToLower()) : x.i.OwnerId.ToLower() == meKey))
             .Select(x => new Item("incident", x.i.Id, x.i.Reference, x.i.Title, x.State)).ToList();
 
+        // CHG-30, CHG-31 : changements à relancer — les miens (responsable).
+        var followUps = (await db.Changes.AsNoTracking()
+                .Where(c => (c.Status == "Planifié" || c.Status == "Mis en œuvre") && (all || seen.Contains(c.PerimeterId)))
+                .ToListAsync())
+            .Select(c => (c, Reason: c.FollowUp(now))).Where(x => x.Reason is not null).ToList();
+        var myFollowUps = followUps.Where(x => x.c.OwnerId != null && (x.c.OwnerType == "Group"
+                ? groups.Contains(x.c.OwnerId.ToLower()) : x.c.OwnerId.ToLower() == meKey))
+            .Select(x => new Item("change", x.c.Id, x.c.Reference, x.c.Title, x.Reason!)).ToList();
+
         object? management = null;
         // ADR-0014 D4 : le pilotage revient à qui est gestionnaire d'au moins un périmètre.
         if (all || managed.Count > 0)
@@ -231,6 +240,9 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                                KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue,
                                MajorIncidents = majorIncidents, Decisions = decisions, ReviewsDue = reviewsDue,
                                OverdueRequests = overdueRequests, Regulatory = regulatory,
+                               // CHG-30, CHG-31 : changements à relancer des périmètres gérés.
+                               ChangeFollowUps = followUps.Where(x => all || managed.Contains(x.c.PerimeterId))
+                                   .Select(x => new Item("change", x.c.Id, x.c.Reference, x.c.Title, x.Reason!)).ToList(),
                                // PRJ-34 : projets des périmètres gérés hors tolérance ou à jalons en retard.
                                ProjectAlerts = projectAlerts.Where(x => all || managed.Contains(x.Project.PerimeterId)).Select(AlertItem).ToList(),
                                // INC-24 : incidents en risque ou hors délai des périmètres gérés.
@@ -239,7 +251,8 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
         }
 
         return Ok(new { Role = role, Username = me, MyProblems = myProblems, MyActions = myActions,
-                        MyAssignments = myAssignments, MySlaIncidents = mySla, MyProjectAlerts = myProjectAlerts, Management = management });
+                        MyAssignments = myAssignments, MySlaIncidents = mySla, MyProjectAlerts = myProjectAlerts,
+                        MyChangeFollowUps = myFollowUps, Management = management });
     }
 
     /// <summary>Ligne de console désignant un enregistrement d'un processus.</summary>

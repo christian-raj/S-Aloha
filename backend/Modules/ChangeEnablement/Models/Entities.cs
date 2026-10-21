@@ -42,6 +42,10 @@ public class Change : Record
     public DateTime? ActualEnd { get; set; }
     /// <summary>CHG-15 : revue post-implémentation (ce qui s'est passé, causes, enseignements).</summary>
     public string? PirNotes { get; set; }
+    /// <summary>CHG-22 : commentaire de l'autorité qui autorise un changement en conflit de calendrier.</summary>
+    public string? ConflictComment { get; set; }
+    /// <summary>CHG-31 : entrée dans Mis en œuvre (relance après 2 jours ouvrés sans clôture).</summary>
+    public DateTime? ImplementedAt { get; set; }
     /// <summary>CHG-26 : modèle standard dont un changement Standard reprend les plans.</summary>
     public int? StandardModelId { get; set; }
 
@@ -53,13 +57,24 @@ public class Change : Record
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     public bool Overrun => PlannedEnd is { } end
         && (ActualEnd is { } actual ? actual > end : Status == "Mis en œuvre" && DateTime.UtcNow > end);
+
+    /// <summary>
+    /// CHG-30, CHG-31 : relance due — Planifié dont la fin planifiée est passée sans mise en œuvre ;
+    /// Mis en œuvre depuis plus de 2 jours ouvrés sans être Clos. Null sinon.
+    /// </summary>
+    public string? FollowUp(DateTime now) =>
+        Status == "Planifié" && PlannedEnd is { } end && end < now ? "Fin planifiée passée sans mise en œuvre"
+        : Status == "Mis en œuvre" && (ImplementedAt ?? ActualStart ?? UpdatedAt) is var since
+          && now > Core.Records.Dates.AddBusinessDays(since, 2) ? "Mis en œuvre depuis plus de 2 jours ouvrés, sans clôture"
+        : null;
 }
 
 public record ChangeDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? ChangeType, string? Risk, DateTime? PlannedStart, DateTime? PlannedEnd,
     string? ImplementationPlan, string? BackoutPlan, string? Outcome, string? RejectionReason = null, int? PerimeterId = null,
-    DateTime? ActualStart = null, DateTime? ActualEnd = null, string? PirNotes = null, int? StandardModelId = null) : IRecordDto;
+    DateTime? ActualStart = null, DateTime? ActualEnd = null, string? PirNotes = null, int? StandardModelId = null,
+    string? ConflictComment = null) : IRecordDto;
 
 /// <summary>CHG-20 : décision d'un membre du CAB sur un changement Normal à risque Élevé.</summary>
 public class ChangeApproval

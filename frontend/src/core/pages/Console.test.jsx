@@ -9,11 +9,14 @@ const data = {
   role: 'Manager', username: 'chef', myProblems: [], myActions: [], mySlaIncidents: [],
   myAssignments: [item('project', 4, 'PRJ-2026-0004', 'Portail RH', 'En cours')],
   myProjectAlerts: [item('project', 4, 'PRJ-2026-0004', 'Portail RH', '1 jalon(s) en retard')],
+  myChangeFollowUps: [item('change', 9, 'CHG-2026-0009', 'Mise à jour du pare-feu', 'Fin planifiée passée sans mise en œuvre')],
   management: {
     toQualify: [], inAnalysisNoRootCause: [], knownErrorsNoAction: [], overdueActions: [], majorIncidents: [], slaIncidents: [],
     decisions: [item('project', 5, 'PRJ-2026-0005', 'Refonte intranet', 'À valider')], reviewsDue: [],
     overdueRequests: [item('request', 2, 'REQ-2026-0002', 'Badge', 'Approuvée')],
-    projectAlerts: [item('project', 4, 'PRJ-2026-0004', 'Portail RH', 'délai hors tolérance')]
+    projectAlerts: [item('project', 4, 'PRJ-2026-0004', 'Portail RH', 'délai hors tolérance')],
+    changeFollowUps: [item('change', 8, 'CHG-2026-0008', 'Migration DNS', 'Mis en œuvre depuis plus de 2 jours ouvrés, sans clôture')],
+    regulatory: [item('notification', 3, 'DRG-2026-0003', 'NIS 2 — INC-2026-0040', 'Alerte précoce : 4 h 10 restantes')]
   }
 }
 vi.mock('../../api', () => ({
@@ -33,5 +36,17 @@ describe('Console : projets et demandes en retard (PRJ-34, REQ-30)', () => {
     expect(screen.getByText('À valider')).toBeTruthy()
     expect(screen.getByText('délai hors tolérance')).toBeTruthy()
     expect(screen.getByText('1 jalon(s) en retard')).toBeTruthy()
+  })
+})
+
+describe('Console : changements à relancer (CHG-30, CHG-31), déclarations réglementaires (DRG-11)', () => {
+  it('montre les changements à relancer du responsable et de l’équipe, et les échéances légales en Urgent', async () => {
+    render(<MemoryRouter><Console /></MemoryRouter>)
+    expect(await screen.findByText('Mes changements à relancer')).toBeTruthy()
+    expect(screen.getByText('Fin planifiée passée sans mise en œuvre')).toBeTruthy()
+    expect(screen.getByText('Changements à relancer')).toBeTruthy()
+    expect(screen.getByText('Mis en œuvre depuis plus de 2 jours ouvrés, sans clôture')).toBeTruthy()
+    expect(screen.getByText('Déclarations réglementaires')).toBeTruthy()
+    expect(screen.getByText('Alerte précoce : 4 h 10 restantes')).toBeTruthy()
   })
 })

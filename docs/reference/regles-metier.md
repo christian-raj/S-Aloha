@@ -63,7 +63,7 @@ Chaque rôle dispose de sa propre console (page d'accueil « Ma console »), **o
 | | Incidents dont le SLA est en risque ou dépassé (INC-24) : les miens ; ceux des périmètres gérés | Tous ; Manager, Admin |
 | **Décisions** | Décisions en attente : changements Demandé/Évalué, demandes Soumise, améliorations Proposée | Manager, Admin |
 | | Problèmes à qualifier (statut Nouveau) | Manager, Admin |
-| **Relances** | Actions en retard toutes équipes (à relancer) | Manager, Admin |
+| **Relances** | Actions en retard toutes équipes, changements à relancer (CHG-30, CHG-31), demandes et projets en retard (à relancer) | Manager, Admin |
 | | Erreurs connues sans action corrective | Manager, Admin |
 | | Demandes en retard (REQ-30) | Manager, Admin |
 | | Projets hors tolérance (délai, coût, fin prévue) ou à jalons en retard (PRJ-34) | Manager, Admin ; le chef de projet pour les siens |
