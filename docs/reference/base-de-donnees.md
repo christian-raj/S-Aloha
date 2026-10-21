@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `DuplicateDismissals` | Table `DuplicateDismissals` : paires écartées (« pas un doublon », ADM-42) — type, identifiants dans l'ordre croissant (unique), auteur, date |
+| `IncidentProblemLot2` | Colonnes `Incidents.Channel`, `CallerId`, `CallerDisplayName` (INC-04, INC-05), `EscalationReason` (INC-17) ; `Problems.Source` (PRB-20, « Proactif » pour les problèmes existants) ; `Analyses.ValidatedAt`, `ValidatedBy` (PRB-07) |
 | `RequestContestRequalify` | Colonnes `ServiceRequests.ContestReason` (REQ-10) et `ServiceRequests.CancelReason` (REQ-12) |
 | `ChangeFollowUps` | Colonnes `Changes.ConflictComment` (CHG-22) et `Changes.ImplementedAt` (CHG-31) |
 | `RegulatoryNotifications` | Colonnes de l'incident de sécurité : `Incidents.IsSecurity`, `QualifiedAt`, `QualifiedBy`, `Nis2Important`, `Nis2Reason`, `PersonalDataBreach`, `PersonalDataBreachReason` (INC-40, INC-41) ; table `RegulatoryNotifications` (`DRG-AAAA-NNNN`) : incident (clé étrangère, suppression en cascade), régime, autorité, prise de connaissance, échéances et envois, contenu, versions envoyées ; unique par incident et régime (DRG-03) |

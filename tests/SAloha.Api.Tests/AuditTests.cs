@@ -88,7 +88,7 @@ public class AuditTests(ApiFixture api)
         var m = api.Client("Manager");
         var p = await Json(await m.PostAsJsonAsync("/api/problems", new
         {
-            title = "Audit PRB", description = "d", impact = "Moyen", urgency = "Moyenne", category = "c", affectedService = "s"
+            title = "Audit PRB", description = "d", impact = "Moyen", urgency = "Moyenne", category = "c", affectedService = "s", source = "Proactif"
         }));
         await Json(await m.PostAsJsonAsync($"/api/problems/{Id(p)}/actions", new
         {
@@ -133,7 +133,8 @@ public class AuditTests(ApiFixture api)
         object Dto(string? status) => new
         {
             title = "Audit PRB forcé", description = "d", status, impact = "Moyen", urgency = "Moyenne",
-            category = "c", affectedService = "s", knownErrorWorkaround = (string?)null, rootCause = "Cause établie"
+            category = "c", affectedService = "s", knownErrorWorkaround = (string?)null, rootCause = "Cause établie",
+            source = "Proactif"
         };
         var p = await Json(await admin.PostAsJsonAsync("/api/problems", Dto(null)));
         Assert.Equal(HttpStatusCode.BadRequest, (await admin.PutAsJsonAsync($"/api/problems/{Id(p)}", Dto("Résolu"))).StatusCode);

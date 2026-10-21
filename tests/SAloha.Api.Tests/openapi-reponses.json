@@ -181,12 +181,16 @@
   },
   "IncidentView": {
     "affectedService": "string",
+    "callerDisplayName": "string",
+    "callerId": "string",
     "category": "string",
+    "channel": "string",
     "closedAt": "string:date-time",
     "createdAt": "string:date-time",
     "createdBy": "string",
     "createdByDisplayName": "string",
     "description": "string",
+    "escalationReason": "string",
     "firstContactResolution": "boolean",
     "firstResponseAt": "string:date-time",
     "heldMinutes": "integer:int32",
@@ -299,6 +303,7 @@
     "resolvedAt": "string:date-time",
     "rootCause": "string",
     "serviceId": "integer:int32",
+    "source": "string",
     "status": "string",
     "title": "string",
     "updatedAt": "string:date-time",
@@ -353,7 +358,9 @@
     "id": "integer:int32",
     "method": "string",
     "problemId": "integer:int32",
-    "updatedAt": "string:date-time"
+    "updatedAt": "string:date-time",
+    "validatedAt": "string:date-time",
+    "validatedBy": "string"
   },
   "RegulatoryNotificationView": {
     "authority": "string",

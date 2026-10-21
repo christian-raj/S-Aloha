@@ -57,7 +57,7 @@ proactive, depuis une tendance), **contrôle** (analyse, contournement, erreur c
 | `RootCause` | texte | | Cause racine **validée** | ✅ |
 | `CreatedBy`, `CreatedByDisplayName` | texte | auto | Déclarant AD | ✅ |
 | `CreatedAt`, `UpdatedAt`, `ClosedAt` | date UTC | auto | `ClosedAt` : SOC-08 | ✅ |
-| `Source` | texte 10 | ✔ | Réactif (défaut), Proactif | 🔜 PRB-20 |
+| `Source` | texte 10 | ✔ | Réactif (défaut), Proactif ; problèmes antérieurs à la règle : Proactif | ✅ PRB-20 |
 | `OwnerType/Id/DisplayName` | AD | | Gestionnaire du problème (responsable du socle) ; par défaut le gestionnaire qui qualifie | ✅ PRB-21 |
 | `ClosureCode` | texte 30 | à la clôture | Corrigé, Erreur connue acceptée, Doublon, Non retenu | ✅ |
 | `ReopenReason` | texte | à la réouverture | Motif de la réouverture en cours ; effacé à la résolution ou à la clôture suivante (l'historique le garde) | ✅ PRB-10 |
@@ -125,7 +125,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | PRB-04 | La création d'une **première analyse** fait passer un problème Nouveau à **En analyse** | ✅ | |
 | PRB-05 | Plusieurs analyses, de méthodes différentes, peuvent coexister sur un problème. Méthodes : **5 Pourquoi**, **Ishikawa (6M)**, **arbre des défaillances (FTA)** avec portes ET/OU | ✅ | |
 | PRB-06 | La « cause racine identifiée » d'une analyse alimente sa **conclusion** ; la cause racine **validée** du problème est saisie par un Manager | ✅ | |
-| PRB-07 | Un Manager peut **valider la conclusion** d'une analyse comme cause racine du problème en un clic (copie dans `RootCause`) | 🔜 | 2 |
+| PRB-07 | Un Manager peut **valider la conclusion** d'une analyse comme cause racine du problème en un clic (copie dans `RootCause` ; l'analyse retenue est marquée, une seule à la fois ; pas sur un problème résolu ou clos) | ✅ | 2 |
 | PRB-08 | Le passage à **Clos** horodate `ClosedAt` ; quitter Clos l'efface (SOC-08) ; seul un problème actuellement clos compte dans le MTTR | ✅ | |
 | PRB-09 | Recherche (titre, référence) insensible à la casse | ✅ | |
 | PRB-10 | **Transitions contraintes** selon le tableau du § 4 (SOC-05) ; une réouverture exige un motif — résout R4 | ✅ | 1 |
@@ -138,9 +138,9 @@ seules les transitions ci-dessous sont permises (SOC-05).
 | PRB-17 | Les règles RACI s'appliquent aussi **à la modification** d'une action | ✅ | 1 |
 | PRB-18 | `CompletedAt` posé **uniquement** au passage à Terminée, effacé si l'action en sort ; renommer une action terminée ne le change pas | ✅ | 1 |
 | PRB-19 | Une action est **en retard** si son échéance est dépassée et son statut ni Terminée ni Annulée ; l'échéance est une date : en retard à partir du **lendemain**, jamais le jour même | ✅ | |
-| PRB-20 | **Source** du problème : *Réactif* (issu d'incidents) ou *Proactif* (tendance, analyse de risque) ; un problème réactif doit être relié à au moins un incident avant de quitter Nouveau | 🔜 | 2 |
+| PRB-20 | **Source** du problème : *Réactif* (issu d'incidents) ou *Proactif* (tendance, analyse de risque) ; un problème réactif doit être relié à au moins un incident avant de quitter Nouveau (sauf vers Clos) ; une première analyse ne le fait passer En analyse qu'à cette condition | ✅ | 2 |
 | PRB-21 | **Gestionnaire du problème** (responsable AD, utilisateur ou groupe) : par défaut le Manager qui qualifie ; « Mon travail » de ce gestionnaire (ou des membres du groupe) | ✅ | |
-| PRB-22 | Un **incident majeur** résolu sans problème relié crée une alerte « problème à ouvrir » (voir INC-15) | 🔜 | 2 |
+| PRB-22 | Un **incident majeur** résolu sans problème relié crée une alerte « problème à ouvrir » (Décisions des gestionnaires ; voir INC-15, qui l'empêche désormais à la résolution) | ✅ | 2 |
 | PRB-23 | **Récurrence** : un problème Résolu ou Clos qui reçoit un nouvel incident relié est signalé aux gestionnaires (« récurrence après correctif ») | ✅ (alerte « Récurrence après correctif » aux gestionnaires du périmètre, amélioration proposée, CSI-20) | |
 | PRB-24 | **Modifier une action** (titre, description, échéance, RACI) : son R, son A (en personne ou par un groupe AD, PRB-26) ou un Manager — résout M7 | ✅ | 1 |
 | PRB-25 | Une action ne passe à **Terminée** que si son A l'approuve (ou un Manager) : un R la passe à *En cours*, puis demande l'approbation | ✅ (403 sinon ; la demande notifie l'A) | |
@@ -159,7 +159,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
-| Incident → Problème | Un ou plusieurs incidents causés par le problème | Ouverture depuis l'incident (INC-14) ; PRB-20 | ✅ / 🔜 |
+| Incident → Problème | Un ou plusieurs incidents causés par le problème | Ouverture depuis l'incident (INC-14) ; PRB-20 | ✅ |
 | Problème → Article | Erreur connue publiée comme article | PRB-30, KB-12 | ✅ |
 | Problème → Changement | Correctif mis en œuvre | PRB-27, CHG-23 | ✅ (lien manuel, ou créé depuis une action) |
 | Problème → CI | CI en cause | Lien manuel | ✅ |
@@ -189,6 +189,7 @@ mes problèmes déclarés, mes actions (en retard, en cours), actions en retard 
 | `PUT /api/problems/{id}` | Manager du périmètre | Qualification, statut, gestionnaire du problème ; `?force=true&reason=` (Admin, SOC-05) |
 | `DELETE /api/problems/{id}` | Admin | Suppression (liens compris) |
 | `GET/POST/PUT /api/problems/{id}/analyses[/{id}]`, `DELETE` : Manager | User | Analyses RCA |
+| `POST /api/problems/{id}/analyses/{analysisId}/validate` | Manager | Conclusion de l'analyse retenue comme cause racine (PRB-07) |
 | `GET /api/actions`, `POST /api/problems/{id}/actions`, `PUT /api/actions/{id}`, `DELETE` : Manager | User | Actions et RACI ; Terminée : A ou Manager (PRB-25) |
 | `POST /api/actions/{id}/request-approval` | R de l'action ou Manager | Demande d'approbation à l'A (PRB-25) |
 | `PUT /api/actions/{id}/change` (`{ reference }`) | R ou A de l'action, ou Manager | Rattache le changement du correctif, relié au problème (PRB-27) |

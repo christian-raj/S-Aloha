@@ -13,8 +13,8 @@
 | Pratique | Préfixe | ✅ | 🔜 lot 1 | 🔜 lot 2 | 🔜 lot 3 |
 |---|---|---|---|---|---|
 | [Socle commun](../regles-metier.md) | SOC | 21 | 0 | 4 | 2 |
-| [Gestion des problèmes](gestion-des-problemes.md) | PRB | 26 | 0 | 3 | 1 |
-| [Gestion des incidents](gestion-des-incidents.md) | INC | 25 | 0 | 5 | 2 |
+| [Gestion des problèmes](gestion-des-problemes.md) | PRB | 29 | 0 | 0 | 1 |
+| [Gestion des incidents](gestion-des-incidents.md) | INC | 29 | 0 | 1 | 2 |
 | [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 17 | 0 | 0 | 4 |
 | [Habilitation des changements](habilitation-des-changements.md) | CHG | 26 | 0 | 0 | 1 |
 | [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 17 | 0 | 1 | 2 |
@@ -27,7 +27,7 @@
 | [Périmètres](../perimetres.md) | PER | 12 | 0 | 0 | 0 |
 | [Recherche](../recherche.md) | RAG | 9 | 1 | 2 | 1 |
 | [Reporting](../reporting.md) | REP | 30 | 0 | 0 | 0 |
-| **Total** | | **281** | **1** | **17** | **19** |
+| **Total** | | **288** | **1** | **10** | **19** |
 
 *Comptes au 2026-10-16 (main `af38031`), sur les tableaux de règles (hors indicateurs). Une
 règle faite en partie compte ✅ (7 règles, la part restante est décrite dans son statut).

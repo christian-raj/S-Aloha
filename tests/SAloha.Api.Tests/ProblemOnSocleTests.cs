@@ -21,7 +21,7 @@ public class ProblemOnSocleTests(ApiFixture api)
     private static object Problem(string title, string? status = null, string? ownerType = null, string? ownerId = null) => new
     {
         title, description = "d", status, impact = "Moyen", urgency = "Moyenne", category = "c", affectedService = "s",
-        knownErrorWorkaround = (string?)null, rootCause = (string?)null, ownerType, ownerId, ownerDisplayName = ownerId
+        knownErrorWorkaround = (string?)null, rootCause = (string?)null, ownerType, ownerId, ownerDisplayName = ownerId, source = "Proactif"
     };
 
     [Fact]

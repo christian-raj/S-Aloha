@@ -136,7 +136,7 @@ function Infos({ p, isManager, onSaved }) {
     title: p.title, description: p.description, status: p.status, impact: p.impact,
     urgency: p.urgency, category: p.category, affectedService: p.affectedService, serviceId: p.serviceId ?? '',
     knownErrorWorkaround: p.knownErrorWorkaround || '', rootCause: p.rootCause || '',
-    closureCode: p.closureCode || '', reopenReason: p.reopenReason || '',
+    closureCode: p.closureCode || '', reopenReason: p.reopenReason || '', source: p.source || 'Réactif',
     ownerType: p.ownerType || '', ownerId: p.ownerId || '', ownerDisplayName: p.ownerDisplayName || ''
   })
   const [msg, setMsg] = useState('')
@@ -172,6 +172,11 @@ function Infos({ p, isManager, onSaved }) {
       <div className="row2">
         <div className="field"><label>Catégorie</label>
           <CategoryInput categories={categories} value={f.category} onChange={set('category')} disabled={!isManager} /></div>
+        <div className="field"><label>Source</label>
+          <select value={f.source} onChange={set('source')} disabled={!isManager} aria-label="Source">
+            <option value="Réactif">Réactif — issu d’incidents</option>
+            <option value="Proactif">Proactif — tendance, analyse de risque</option>
+          </select></div>
         <div className="field"><label>Service affecté</label>
           <ServiceSelect services={services} value={f.serviceId} onChange={set('serviceId')} disabled={!isManager}
             legacy={!p.serviceId && p.affectedService} /></div>
@@ -223,6 +228,9 @@ function Rca({ p, isManager, onSaved }) {
   // SOC-14 : un gestionnaire supprime une analyse (doublon, méthode abandonnée).
   const remove = () => api.analyses.remove(p.id, current.id).then(() => { setDeleting(false); setCurrent(null); setMsg(''); onSaved() })
   const open = (a) => { setCurrent(a); setData(JSON.parse(a.dataJson)) }
+  // PRB-07 : un gestionnaire retient la conclusion de l'analyse comme cause racine du problème.
+  const validate = () => api.analyses.validate(p.id, current.id)
+    .then(a => { setCurrent(a); setMsg('Conclusion retenue comme cause racine du problème.'); onSaved() }).catch(e => setMsg(e.message))
 
   const save = async () => {
     const dto = { method: current.method, dataJson: JSON.stringify(data), conclusion: data.rootCause || null }
@@ -260,6 +268,10 @@ function Rca({ p, isManager, onSaved }) {
           {current.method === 'FTA' && <FtaTree data={data} onChange={setData} />}
           <div className="actions" style={{ marginTop: 16 }}>
             <button className="btn" onClick={save}>Enregistrer l'analyse</button>
+            {isManager && current.id && current.conclusion && !['Résolu', 'Clos'].includes(p.status) && (
+              current.validatedAt
+                ? <span className="badge t-done" title={`Validée par ${current.validatedBy}`}>Cause racine retenue</span>
+                : <button className="btn ghost" onClick={validate}>Valider comme cause racine</button>)}
             {isManager && current.id && <button className="btn ghost" style={{ marginLeft: 'auto' }} onClick={() => setDeleting(true)}>Supprimer l'analyse</button>}
           </div>
           {deleting && <DeleteDialog reference={`${METHODS[current.method]} du ${new Date(current.createdAt).toLocaleDateString('fr-FR')}`}
