@@ -164,8 +164,11 @@ public class RegulatoryNotificationsTests(ApiFixture api)
         var notification = gdprStats.GetProperty("steps").EnumerateArray().Single(x => Str(x, "step") == "Notification");
         Assert.True(notification.GetProperty("sent").GetInt32() > notification.GetProperty("onTime").GetInt32());
         d = await Json(await Manager.PutAsJsonAsync($"/api/regulatory-notifications/{Id(d)}", Update(d, new { status = "Close" })));
-        // DRG-07 : close, la déclaration ne se modifie plus.
-        Assert.Equal(HttpStatusCode.BadRequest, (await User.PutAsJsonAsync($"/api/regulatory-notifications/{Id(d)}",
+        // DRG-07 : close, la déclaration ne se modifie plus — SOC-15 l'interdit à un User (403),
+        // DRG-07 à un gestionnaire (400).
+        Assert.Equal(HttpStatusCode.Forbidden, (await User.PutAsJsonAsync($"/api/regulatory-notifications/{Id(d)}",
+            Update(d, new { summary = "Autre" }))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await Manager.PutAsJsonAsync($"/api/regulatory-notifications/{Id(d)}",
             Update(d, new { summary = "Autre" }))).StatusCode);
 
         // DRG-04 : « non requise » se motive.

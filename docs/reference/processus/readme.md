@@ -12,22 +12,22 @@
 
 | Pratique | Préfixe | ✅ | 🔜 lot 1 | 🔜 lot 2 | 🔜 lot 3 |
 |---|---|---|---|---|---|
-| [Socle commun](../regles-metier.md) | SOC | 21 | 0 | 4 | 2 |
+| [Socle commun](../regles-metier.md) | SOC | 25 | 0 | 0 | 2 |
 | [Gestion des problèmes](gestion-des-problemes.md) | PRB | 29 | 0 | 0 | 1 |
-| [Gestion des incidents](gestion-des-incidents.md) | INC | 29 | 0 | 1 | 2 |
+| [Gestion des incidents](gestion-des-incidents.md) | INC | 29 | 0 | 0 | 2 |
 | [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 17 | 0 | 0 | 4 |
 | [Habilitation des changements](habilitation-des-changements.md) | CHG | 26 | 0 | 0 | 1 |
-| [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 17 | 0 | 1 | 2 |
+| [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 37 | 0 | 0 | 2 |
 | [Gestion des niveaux de service](gestion-des-niveaux-de-service.md) | SLM | 15 | 0 | 0 | 1 |
 | [Gestion des connaissances](gestion-des-connaissances.md) | KB | 13 | 0 | 0 | 3 |
-| [Amélioration continue](amelioration-continue.md) | CSI | 14 | 0 | 1 | 1 |
-| [Conformité NIS 2](conformite-nis2.md) | NIS | 22 | 0 | 1 | 0 |
+| [Amélioration continue](amelioration-continue.md) | CSI | 15 | 0 | 0 | 1 |
+| [Conformité NIS 2](conformite-nis2.md) | NIS | 23 | 0 | 0 | 0 |
 | [Déclarations réglementaires](declarations-reglementaires.md) | DRG | 11 | 0 | 0 | 1 |
 | [Gestion de projet](gestion-de-projet.md) | PRJ | 23 | 0 | 0 | 0 |
 | [Périmètres](../perimetres.md) | PER | 12 | 0 | 0 | 0 |
-| [Recherche](../recherche.md) | RAG | 9 | 1 | 2 | 1 |
-| [Reporting](../reporting.md) | REP | 30 | 0 | 0 | 0 |
-| **Total** | | **288** | **1** | **10** | **19** |
+| [Recherche](../recherche.md) | RAG | 11 | 1 | 0 | 1 |
+| [Reporting](../reporting.md) | REP | 34 | 0 | 0 | 0 |
+| **Total** | | **320** | **1** | **0** | **19** |
 
 *Comptes au 2026-10-16 (main `af38031`), sur les tableaux de règles (hors indicateurs). Une
 règle faite en partie compte ✅ (7 règles, la part restante est décrite dans son statut).
@@ -141,8 +141,9 @@ PER-07, 2026-10-12), **liens, console, reporting et recherche** (PER-08, PER-09,
 terminé, sauf [RAG-10](../recherche.md) (calibrage de la recherche), **en attente** d'un jeu
 de requêtes réelles de l'organisation (décision du 2026-10-13). Le cœur du lot 2 a suivi :
 toutes les pratiques ont quitté le stade MVP le 2026-10-16
-([plan d'action](../../plan-action.md#sortie-du-mvp)). Restent les règles 🔜 des lots 2 et 3
-du tableau ci-dessus, et les [déclarations réglementaires](declarations-reglementaires.md).
+([plan d'action](../../plan-action.md#sortie-du-mvp)). Le **lot 2 est terminé** le 2026-10-21,
+[déclarations réglementaires](declarations-reglementaires.md) comprises ; restent les règles 🔜
+du lot 3 du tableau ci-dessus.
 
 ### Hors étapes
 

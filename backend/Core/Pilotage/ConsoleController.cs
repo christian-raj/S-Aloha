@@ -176,7 +176,11 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                 .Select(i => new Item("incident", i.Id, i.Reference, i.Title, "Problème à ouvrir")).ToListAsync());
             decisions.AddRange(await InStatus(db.Changes, "change", all, managed, "Demandé", "Évalué"));
             decisions.AddRange(await InStatus(db.ServiceRequests, "request", all, managed, "Soumise"));
-            decisions.AddRange(await InStatus(db.Improvements, "improvement", all, managed, "Proposée"));
+            // CSI-22 : revue du registre — une amélioration proposée depuis plus de 30 jours est signalée comme telle.
+            decisions.AddRange((await db.Improvements.AsNoTracking()
+                    .Where(x => x.Status == "Proposée" && (all || managed.Contains(x.PerimeterId))).OrderBy(x => x.CreatedAt).ToListAsync())
+                .Select(x => new Item("improvement", x.Id, x.Reference, x.Title, (now - x.CreatedAt).TotalDays > 30
+                    ? $"Proposée depuis {(int)(now - x.CreatedAt).TotalDays} jours : revue du registre" : x.Status)));
             // Connaissances : brouillons soumis à publication (KB-21), archivages demandés à la revue (KB-17).
             decisions.AddRange(await db.KnowledgeArticles.AsNoTracking()
                 .Where(a => a.Status == "Brouillon" && a.SubmittedAt != null && (all || managed.Contains(a.PerimeterId))).OrderBy(a => a.SubmittedAt)
@@ -247,6 +251,9 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                                KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue,
                                MajorIncidents = majorIncidents, Decisions = decisions, ReviewsDue = reviewsDue,
                                OverdueRequests = overdueRequests, Regulatory = regulatory,
+                               // NIS-23 : exigences du référentiel NIS 2 encore sans texte (Admin, qui l'importe).
+                               ReferentialWithoutText = User.IsInRole("Admin")
+                                   ? await db.SecurityRequirements.CountAsync(r => r.Text == null || r.Text == "") : 0,
                                // CHG-30, CHG-31 : changements à relancer des périmètres gérés.
                                ChangeFollowUps = followUps.Where(x => all || managed.Contains(x.c.PerimeterId))
                                    .Select(x => new Item("change", x.c.Id, x.c.Reference, x.c.Title, x.Reason!)).ToList(),

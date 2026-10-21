@@ -7,7 +7,7 @@ import SearchHits from './SearchHits'
  * proches de cet enregistrement — pour ne pas réinventer une solution déjà
  * trouvée. Échec silencieux : la fiche reste utilisable sans la recherche.
  */
-export default function SimilarCases({ type, id, refreshKey }) {
+export default function SimilarCases({ type, id, refreshKey, linkable = type === 'incident' }) {
   const [hits, setHits] = useState(null)
   useEffect(() => { api.search.similar(type, id).then(setHits).catch(() => setHits([])) }, [type, id, refreshKey])
   return (
@@ -15,7 +15,7 @@ export default function SimilarCases({ type, id, refreshKey }) {
       <h3 style={{ marginBottom: 4 }}>Cas similaires</h3>
       <p className="muted small" style={{ marginBottom: 10 }}>Solutions publiées, erreurs connues et incidents résolus proches de celui-ci.</p>
       {hits === null ? <p className="muted small">Recherche…</p>
-        : <SearchHits hits={hits} empty="Aucun cas similaire dans la base de connaissances." />}
+        : <SearchHits hits={hits} empty="Aucun cas similaire dans la base de connaissances." linkFrom={linkable ? { type, id } : null} />}
     </div>
   )
 }

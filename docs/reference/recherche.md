@@ -46,9 +46,9 @@ dans S-Aloha, tous les rôles lisent tous les enregistrements.
 | RAG-07 | **Plancher de similarité** cosinus `Search:MinSimilarity` = 0,5 par défaut. **Non mesuré** : à calibrer sur un jeu de requêtes réel avec `bge-m3` (RAG-10) | ✅ (valeur provisoire) | |
 | RAG-08 | **Administration › Index de recherche** (Admin) : état du service (configuré, joignable, modèle, vecteurs en mémoire), et par source : enregistrements, passages, passages avec vecteur, dernière indexation ; **reconstruction** de l'index en tâche de fond | ✅ | |
 | RAG-13 | **Périmètres** ([PER-09](perimetres.md)) : la recherche et les cas similaires ne renvoient que les enregistrements visibles de l'utilisateur (ses périmètres, articles publiés de tous) ; filtrés après le classement, sur trois fois plus de candidats ; les cas similaires d'un enregistrement invisible répondent 404 | ✅ | |
-| RAG-09 | Depuis les cas similaires d'un incident, **relier** l'article ou le problème retenu à l'incident en un clic (achève INC-19) | 🔜 | 2 |
+| RAG-09 | Depuis les cas similaires d'un incident, **relier** l'article ou le problème retenu à l'incident en un clic (achève INC-19) : bouton « Relier » sur les articles et les problèmes des cas similaires d'un incident | ✅ | 2 |
 | RAG-10 | **Calibrage** : jeu d'au moins 30 requêtes réelles avec leurs réponses attendues ; plancher et nombre de résultats fixés d'après la précision mesurée, consignés ici | ⏸️ en attente (2026-10-13, décision de l'utilisateur : jeu de requêtes réelles à fournir) | 1 |
-| RAG-11 | **Suggestions à la saisie** : à la création d'un incident ou d'une demande, les cas similaires s'affichent dès que le titre est saisi | 🔜 | 2 |
+| RAG-11 | **Suggestions à la saisie** : à la création d'un incident ou d'une demande, les cas similaires s'affichent dès que le titre est saisi (4 caractères au moins, après une courte pause de frappe ; 5 résultats) | ✅ | 2 |
 | RAG-12 | **Pièces jointes** indexées (texte extrait des documents déposés, SOC-25) — phase 2, hors décision actuelle | 🔜 | 3 |
 
 ## 4. Interface

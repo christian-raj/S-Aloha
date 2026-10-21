@@ -109,6 +109,16 @@ public abstract class RecordController<T, TDto, TView>(AppDbContext db) : Contro
     /// retours décidés par l'API (StatusAfterEdit) ne passent pas par ce graphe.
     /// </summary>
     protected virtual IReadOnlyDictionary<string, string[]>? Transitions => null;
+
+    private static readonly string[] ClosedNames = ["Clos", "Close", "Rejeté", "Rejetée", "Annulée", "Réalisée", "Abandonnée", "Retiré"];
+
+    /// <summary>
+    /// SOC-15 : statuts finaux de la pratique — sans transition sortante, ou de clôture (Clos,
+    /// Rejeté, Annulée…). Un enregistrement terminé ne se modifie que par un gestionnaire ; un
+    /// User le rouvre par une transition permise.
+    /// </summary>
+    protected virtual IReadOnlyCollection<string> FinalStatuses => Transitions is null ? []
+        : Statuses.Where(s => ClosedNames.Contains(s) || Transitions.TryGetValue(s, out var next) && next.Length == 0).ToList();
     /// <summary>Statuts que seul un gestionnaire peut poser (autoriser, approuver, publier…).</summary>
     protected virtual bool RequiresManager(string status) => false;
     /// <summary>
@@ -261,6 +271,9 @@ public abstract class RecordController<T, TDto, TView>(AppDbContext db) : Contro
         if (!scope.Sees(e.PerimeterId)) return Forbid();
         ActOn(e.PerimeterId);
         if (!CanEdit(e)) return Forbid();
+        // SOC-15 : un enregistrement terminé se modifie par un gestionnaire ; un User le rouvre.
+        if (!IsManager && FinalStatuses.Contains(e.Status) && (dto.Status is null || dto.Status == e.Status))
+            return StatusCode(403, new { message = $"{e.Reference} est {e.Status.ToLowerInvariant()} : seul un gestionnaire le modifie ; le rouvrir pour le reprendre, si la pratique le permet." });
         // PER-07 : changer de périmètre exige d'être gestionnaire des deux (ou Admin).
         var moveTo = dto.PerimeterId is { } wanted && wanted != e.PerimeterId ? wanted : (int?)null;
         if (moveTo is not null)

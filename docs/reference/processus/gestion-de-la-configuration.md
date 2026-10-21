@@ -365,7 +365,7 @@ d'un actif :
 | CFG-15 | **Vérification** : le propriétaire ou un Manager atteste que la fiche est exacte (`LastVerifiedAt`) ; un CI En service non vérifié depuis **12 mois** remonte en relance au propriétaire. Vérification par `POST /api/configuration-items/{id}/verify` ; relance par notification (relevé périodique). | ✅ | |
 | CFG-16 | **Attributs par type** : chaque type de CI définit des attributs facultatifs (Serveur : CPU, mémoire ; Application : version, éditeur, URL ; Poste de travail : utilisateur…). L'identification technique, le portefeuille applicatif et les actifs matériels (§ 3.2 à 3.4) sont des colonnes dédiées, hors de ces attributs | 🔜 | 3 |
 | CFG-17 | **Unicité** : deux CI non retirés ne peuvent pas avoir le même nom dans le même environnement (409) | ✅ | 1 |
-| CFG-18 | Un CI **Hors service** relié à un service En service signale ce service « dégradé » sur la fiche du service | 🔜 | 2 |
+| CFG-18 | Un CI **Hors service** relié à un service En service signale ce service « dégradé » sur la fiche du service, avec les CI en cause (`GET /api/services/{id}/degradation`) | ✅ | 2 |
 
 Règles du chantier F13 (découverte automatique et CMDB augmentée, [plan
 d'action](../../plan-action.md#découverte-automatique-et-cmdb-augmentée-f13)) :
