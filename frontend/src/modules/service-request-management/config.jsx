@@ -39,6 +39,7 @@ export const requestConfig = {
     r.overdue && `En retard : échéance du ${dateFr(r.dueDate)} dépassée`,
     r.contestReason && `Contestée : ${r.contestReason}`, r.cancelReason && `Annulée — ${r.cancelReason}`],
   help: 'Une demande se crée depuis un modèle du catalogue, qui en donne l\'objet, le service, le délai et le groupe qui la traite. Elle est approuvée (ou rejetée) par un gestionnaire avant d\'être traitée, sauf modèle pré-approuvé. Le bénéficiaire est par défaut le demandeur. Satisfaite, elle se conteste dans les 5 jours ouvrés, avec un motif. Un besoin non standard se requalifie en changement ou en incident.',
+  suggestOnTyping: true,
   linkHint: 'Service du catalogue concerné, changement standard déclenché…',
 }
 

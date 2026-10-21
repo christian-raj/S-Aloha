@@ -328,8 +328,11 @@ public class ItilModulesTests(ApiFixture api)
         await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Planifié", null, risk: "Faible")));
         await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Mis en œuvre", null, risk: "Faible")));
         await Json(await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos", "Réussi", risk: "Faible")));
+        // SOC-15 : un changement clos ne se modifie que par un gestionnaire ; l'invariant tient aussi pour lui.
+        Assert.Equal(HttpStatusCode.Forbidden,
+            (await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos", "Réussi", risk: "Faible"))).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest,
-            (await Put(user, "/api/changes", Id(c), Change("Invariant", "Standard", "Clos", null, risk: "Faible"))).StatusCode);
+            (await Put(api.Client("Manager", "chef.invariant"), "/api/changes", Id(c), Change("Invariant", "Standard", "Clos", null, risk: "Faible"))).StatusCode);
     }
 
     [Theory]

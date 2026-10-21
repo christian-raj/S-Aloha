@@ -5,6 +5,7 @@ import RecordForm, { toForm, toPayload, applies } from './RecordForm'
 import StatusBadge from './StatusBadge'
 import PerimeterSelect from './PerimeterSelect'
 import usePerimeters from '../usePerimeters'
+import TypingSuggestions from './TypingSuggestions'
 
 const isManagerRole = () => ['Admin', 'Manager'].includes(getUser()?.role)
 
@@ -33,6 +34,8 @@ function NewRecord({ config, onCreated }) {
           </select></div>
       )}
       <RecordForm fields={config.fields} form={f} onChange={merge} creating />
+      {/* RAG-11 : cas similaires dès la saisie du titre (incidents, demandes). */}
+      {config.suggestOnTyping && <TypingSuggestions text={f.title} />}
       <button className="btn" onClick={submit} disabled={missing}>Enregistrer</button>
     </div>
   )

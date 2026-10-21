@@ -191,7 +191,11 @@ export const api = {
       remove: (id) => request('/discovery/end-of-life/' + id, { method: 'DELETE' })
     }
   },
-  services: records('/services'),
+  services: {
+    ...records('/services'),
+    // CFG-18 : CI hors service qui dégradent le service.
+    degradation: id => request(`/services/${id}/degradation`)
+  },
   // ADM-50 : catégories d'incident et de problème (lecture par tous, tenue par les gestionnaires).
   categories: {
     list: practice => request('/categories?practice=' + practice),

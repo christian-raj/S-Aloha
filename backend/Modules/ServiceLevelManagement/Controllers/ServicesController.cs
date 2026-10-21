@@ -40,6 +40,24 @@ public class ServicesController(AppDbContext db) : RecordController<ItService, I
     }
 
     protected override IQueryable<ItService> WithDetails(IQueryable<ItService> q) => q.Include(s => s.Agreements);
+
+    /// <summary>
+    /// CFG-18 : un service En service dont un CI relié est Hors service est « dégradé » ; la
+    /// fiche du service le signale, avec les CI en cause.
+    /// </summary>
+    [HttpGet("{id:int}/degradation")]
+    public async Task<IActionResult> Degradation(int id)
+    {
+        var service = await Db.Services.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id);
+        if (service is null || !await VisibleAsync(service)) return NotFound();
+        var ciIds = await Db.ItemLinks.AsNoTracking()
+            .Where(l => (l.FromType == "service" && l.FromId == id && l.ToType == "ci") || (l.ToType == "service" && l.ToId == id && l.FromType == "ci"))
+            .Select(l => l.FromType == "ci" ? l.FromId : l.ToId).ToListAsync();
+        var outOfService = service.Status != "En service" ? []
+            : await Db.ConfigurationItems.AsNoTracking().Where(c => ciIds.Contains(c.Id) && c.Status == "Hors service")
+                .OrderBy(c => c.Reference).Select(c => new { c.Id, c.Reference, c.Title }).ToListAsync();
+        return Ok(new { Degraded = outOfService.Count > 0, Cis = outOfService });
+    }
 }
 
 /// <summary>Accords de niveau de service (SLA), rattachés à un service du catalogue.</summary>

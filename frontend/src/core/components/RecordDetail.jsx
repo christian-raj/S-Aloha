@@ -14,6 +14,9 @@ import PerimeterSelect from './PerimeterSelect'
 import usePerimeters, { perimeterName } from '../usePerimeters'
 
 /** Édition : statut + champs ; recréé (clé) à chaque rechargement de l'enregistrement. */
+/** SOC-15 : statuts de clôture des pratiques (avec ceux sans transition sortante). */
+const CLOSED = ['Clos', 'Close', 'Rejeté', 'Rejetée', 'Annulée', 'Réalisée', 'Abandonnée', 'Retiré']
+
 function Editor({ config, record, onSaved }) {
   const role = getUser()?.role
   const perimeters = usePerimeters()
@@ -33,6 +36,10 @@ function Editor({ config, record, onSaved }) {
   const [deleting, setDeleting] = useState(null)   // aperçu SOC-14 de la suppression
   const merge = patch => setF(prev => ({ ...prev, ...patch }))
   const force = forceOptions(graph, record.status, f.status, reason)
+  // SOC-15 : un enregistrement terminé se modifie par un gestionnaire ; un User peut seulement
+  // le rouvrir (statut), si la pratique le permet.
+  const finished = !!graph && (CLOSED.includes(record.status) || (graph[record.status] ?? []).length === 0)
+  const locked = finished && !isManager
 
   // `config.keep(record)` : champs que le formulaire ne montre pas mais que la
   // modification doit renvoyer tels quels (business case d'un projet, édité dans
@@ -53,14 +60,18 @@ function Editor({ config, record, onSaved }) {
   return (
     <div className="card">
       {msg && <div className="error" style={msg.ok ? { background: 'var(--blue-soft)', color: 'var(--navy)' } : undefined}>{msg.text}</div>}
+      {locked && <div className="notice" role="note">
+        Enregistrement {record.status.toLowerCase()} : seul un gestionnaire le modifie.
+        {(graph[record.status] ?? []).length > 0 ? ' Pour le reprendre, le rouvrir (statut).' : ''}
+      </div>}
       <StatusField statuses={config.statuses} current={record.status} value={f.status}
         onChange={status => merge({ status })} graph={graph} isManager={isManager} isAdmin={role === 'Admin'}
         disabled={readOnly} reason={reason} onReason={setReason} />
       {isManager && targets.some(p => p.id === record.perimeterId) &&
         <PerimeterSelect perimeters={targets} value={perimeterId} onChange={setPerimeterId} disabled={readOnly} />}
-      <RecordForm fields={config.fields} form={f} onChange={merge} disabled={readOnly} />
+      <RecordForm fields={config.fields} form={f} onChange={merge} disabled={readOnly || (locked && f.status === record.status)} />
       <div style={{ display: 'flex', gap: 10 }}>
-        {!readOnly && <button className="btn" onClick={save} disabled={!f.title || (force && !reason.trim())}>Enregistrer</button>}
+        {!readOnly && <button className="btn" onClick={save} disabled={!f.title || (force && !reason.trim()) || (locked && f.status === record.status)}>Enregistrer</button>}
         {role === 'Admin' && <button className="btn danger" style={{ marginLeft: 'auto' }} onClick={askRemove}>Supprimer</button>}
       </div>
       {deleting && <DeleteDialog reference={deleting.reference} title={deleting.title} impacts={deleting.impacts}

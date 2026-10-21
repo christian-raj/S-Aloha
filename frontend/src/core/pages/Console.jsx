@@ -101,7 +101,10 @@ export default function Console() {
   // Les quatre temps de la console, dans l'ordre où l'on doit les traiter.
   const urgent = myOverdue.length + L('majorIncidents') + (c.mySlaIncidents?.length ?? 0) + L('slaIncidents') + L('regulatory')
   const decide = L('decisions') + L('toQualify') + staging.length
-  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps')
+  // NIS-23 : exigences du référentiel NIS 2 sans texte (Admin).
+  const referential = m?.referentialWithoutText > 0
+    ? [{ id: 'nis2', reference: 'Référentiel NIS 2', title: `${m.referentialWithoutText} exigence(s) encore sans texte : importer le texte de l’ANSSI`, href: '/settings/nis2' }] : []
+  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps') + referential.length
   const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0) + (c.myChangeFollowUps?.length ?? 0)
   const follow = c.myProblems.length + L('inAnalysisNoRootCause')
 
@@ -199,6 +202,10 @@ export default function Console() {
         {/* PRJ-34 */}
         <List title="Projets à relancer" tone="amber" rows={m.projectAlerts ?? []} onRow={goItem}
           hint="Hors tolérance (délai, coût, fin prévue) ou jalons en retard." render={itemRow} />
+        {/* NIS-23 */}
+        <List title="Référentiel NIS 2 incomplet" tone="amber" rows={referential} onRow={r => nav(r.href)}
+          hint="Les évaluations portent sur des exigences dont le texte n’a pas été importé."
+          render={r => <Row reference={r.reference} title={r.title} />} />
         {/* CHG-30, CHG-31 */}
         <List title="Changements à relancer" tone="amber" rows={m.changeFollowUps ?? []} onRow={goItem}
           hint="Fin planifiée passée sans mise en œuvre, ou mis en œuvre depuis plus de 2 jours ouvrés sans clôture." render={itemRow} />

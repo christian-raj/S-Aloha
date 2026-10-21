@@ -136,7 +136,7 @@ stateDiagram-v2
 | NIS-20 | Tout rôle consulte le référentiel (objectifs, exigences, structure et texte importé) | ✅ | |
 | NIS-21 | **Import du texte** réservé à l'Admin (section Paramétrage) : CSV séparé par `;` ou `,`, avec une colonne d'identifiant (« Référence » ou « Code ») et une colonne de texte (« Contenu » ou « Texte ») ; BOM et champs multilignes acceptés ; compte rendu : exigences mises à jour, inchangées, codes inconnus, exigences encore sans texte | ✅ | |
 | NIS-22 | L'**alignement au démarrage** ajoute ce qui manque, met à jour thématique, cibles et mesures ISO, **n'écrase jamais le texte importé**, et garde en base une exigence retirée de la structure (des réponses peuvent la viser) | ✅ | |
-| NIS-23 | Les exigences **encore sans texte** sont signalées à l'Admin (console, Relances) tant que l'import n'est pas complet | 🔜 | 2 |
+| NIS-23 | Les exigences **encore sans texte** sont signalées à l'Admin (console, Relances : nombre d'exigences sans texte, lien vers l'import) tant que l'import n'est pas complet | ✅ | 2 |
 
 ## 6. Délais, calculs et alertes
 

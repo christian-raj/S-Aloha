@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { api } from '../../../api'
 import RecordDetail from '../../../core/components/RecordDetail'
 import { dateFr } from '../../../core/fields'
 import { serviceConfig } from '../config'
@@ -22,6 +23,21 @@ function Agreements({ service }) {
   )
 }
 
+/** CFG-18 : un service En service dont un CI relié est Hors service est signalé « dégradé ». */
+export function Degradation({ service }) {
+  const [d, setD] = useState(null)
+  useEffect(() => { Promise.resolve().then(() => api.services.degradation(service.id)).then(setD).catch(() => setD(null)) }, [service.id, service.status])
+  if (!d?.degraded) return null
+  return (
+    <div className="notice warn" role="alert" style={{ marginTop: 16 }}>
+      <b>Service dégradé</b> : {d.cis.length === 1 ? 'un CI qui le supporte est' : `${d.cis.length} CI qui le supportent sont`} hors service —{' '}
+      {d.cis.map((c, i) => <React.Fragment key={c.id}>{i > 0 && ', '}<Link to={'/configuration/' + c.id}>{c.reference}</Link> {c.title}</React.Fragment>)}.
+    </div>
+  )
+}
+
 export default function ServiceDetail() {
-  return <RecordDetail config={serviceConfig} tab={{ label: 'Accords (SLA)', render: r => <Agreements service={r} /> }} />
+  return <RecordDetail config={serviceConfig} tab={{ label: 'Accords (SLA)', render: r => <Agreements service={r} /> }}>
+    {r => <Degradation service={r} />}
+  </RecordDetail>
 }

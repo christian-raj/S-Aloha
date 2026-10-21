@@ -14,6 +14,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Fin du lot 2** (RAG-09, RAG-11, SOC-15, NIS-23, CSI-22, CFG-18) : cas similaires proposés
+  dès la saisie du titre d'un incident ou d'une demande, et article ou problème relié en un
+  clic depuis les cas similaires ; un enregistrement terminé ne se modifie que par un
+  gestionnaire (un User le rouvre) ; exigences NIS 2 sans texte signalées à l'Admin ;
+  améliorations proposées depuis plus de 30 jours signalées pour la revue du registre ;
+  service « dégradé » quand un CI qui le supporte est hors service.
+
 - **Incidents et problèmes** (INC-04, INC-05, INC-15, INC-17, PRB-07, PRB-20, PRB-22) : canal
   de signalement et utilisateur affecté (notifié de la résolution) ; un incident majeur se
   résout relié à un problème, et un incident majeur déjà résolu sans problème est signalé

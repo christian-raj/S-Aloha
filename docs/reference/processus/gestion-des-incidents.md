@@ -162,7 +162,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | Incident → Problème | Cause à rechercher | INC-14, INC-15 | ✅ |
 | Incident → CI | CI affecté | Lien manuel ; CI Retiré refusé (CFG-14) | ✅ / 🔜 |
 | Incident → Service / SLA | Service affecté, cibles | INC-20, INC-21 | ✅ |
-| Incident → Article | Solution utilisée, cas similaires | INC-19, RAG-06, RAG-09 | ✅ (suggestion) / 🔜 (lien en un clic) |
+| Incident → Article | Solution utilisée, cas similaires | INC-19, RAG-06, RAG-09 | ✅ (suggestion, lien en un clic) |
 | Incident → Changement | Changement à l'origine de l'incident | Lien manuel ; indicateur CHG-33 | ✅ / 🔜 |
 | Incident → Déclaration réglementaire | Incident cyber à déclarer (NIS 2, RGPD) | INC-40 à INC-44, [DRG-01](declarations-reglementaires.md) | ✅ |
 
