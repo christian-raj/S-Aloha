@@ -33,6 +33,9 @@ public class Problem : Record, IServiceBound
     public int? ServiceId { get; set; }                             // SLM-10 : service du catalogue
     public string? KnownErrorWorkaround { get; set; }               // contournement (Known Error)
     public string? RootCause { get; set; }                          // cause racine validée
+    /// <summary>PRB-20 : Réactif (issu d'incidents, défaut) ou Proactif (tendance, analyse de risque).</summary>
+    [MaxLength(10)] public string Source { get; set; } = "Réactif";
+    public static readonly string[] Sources = ["Réactif", "Proactif"];
     [MaxLength(30)] public string? ClosureCode { get; set; }        // code de clôture (PRB-13)
     public DateTime? ResolvedAt { get; set; }                       // entrée en Résolu (PRB-14)
     public string? ReopenReason { get; set; }                       // motif de la dernière réouverture (PRB-10)
@@ -49,6 +52,9 @@ public class RcaAnalysis
     [MaxLength(20)] public string Method { get; set; } = "FIVE_WHYS"; // FIVE_WHYS, ISHIKAWA, FTA
     public string DataJson { get; set; } = "{}";                      // structure propre à la méthode
     public string? Conclusion { get; set; }
+    /// <summary>PRB-07 : conclusion validée comme cause racine du problème.</summary>
+    public DateTime? ValidatedAt { get; set; }
+    [MaxLength(200)] public string? ValidatedBy { get; set; }
     [MaxLength(100)] public string CreatedBy { get; set; } = "";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

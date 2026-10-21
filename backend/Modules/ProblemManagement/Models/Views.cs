@@ -12,6 +12,7 @@ public record ProblemView(
     int? ServiceId,
     string? KnownErrorWorkaround,
     string? RootCause,
+    string? Source,
     string? ClosureCode,
     DateTime? ResolvedAt,
     string? ReopenReason,
@@ -41,6 +42,7 @@ public record ProblemView(
         e.ServiceId,
         e.KnownErrorWorkaround,
         e.RootCause,
+        e.Source,
         e.ClosureCode,
         e.ResolvedAt,
         e.ReopenReason,
@@ -70,7 +72,9 @@ public record RcaAnalysisView(
     string? Conclusion,
     string? CreatedBy,
     DateTime CreatedAt,
-    DateTime UpdatedAt)
+    DateTime UpdatedAt,
+    DateTime? ValidatedAt = null,
+    string? ValidatedBy = null)
 {
     public static RcaAnalysisView From(RcaAnalysis e) => new(
         e.Id,
@@ -80,7 +84,9 @@ public record RcaAnalysisView(
         e.Conclusion,
         e.CreatedBy,
         e.CreatedAt,
-        e.UpdatedAt);
+        e.UpdatedAt,
+        e.ValidatedAt,
+        e.ValidatedBy);
 }
 
 public record CorrectiveActionView(

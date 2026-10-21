@@ -35,9 +35,11 @@ public class AnalysesController(AppDbContext db, PerimeterAccess access) : Contr
         var error = Lengths.Check(a);
         if (error is not null) return BadRequest(new { message = error });
         db.Analyses.Add(a);
-        // un problème avec analyse en cours passe "En analyse" s'il était Nouveau
+        // un problème avec analyse en cours passe "En analyse" s'il était Nouveau — sauf un
+        // problème réactif encore sans incident relié (PRB-20), qui reste Nouveau.
         var p = await db.Problems.FindAsync(problemId);
-        if (p!.Status == "Nouveau") { p.Status = "En analyse"; p.UpdatedAt = DateTime.UtcNow; }
+        if (p!.Status == "Nouveau" && (p.Source != "Réactif" || await Core.Links.ItemLinks.IsLinkedToAsync(db, "problem", p.Id, "incident")))
+        { p.Status = "En analyse"; p.UpdatedAt = DateTime.UtcNow; }
         await db.SaveChangesAsync();
         return Ok(RcaAnalysisView.From(a));
     }
@@ -49,6 +51,27 @@ public class AnalysesController(AppDbContext db, PerimeterAccess access) : Contr
         var a = await db.Analyses.FirstOrDefaultAsync(x => x.Id == id && x.ProblemId == problemId);
         if (a is null) return NotFound();
         a.DataJson = dto.DataJson; a.Conclusion = dto.Conclusion; a.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return Ok(RcaAnalysisView.From(a));
+    }
+
+    /// <summary>PRB-07 : un gestionnaire valide la conclusion d'une analyse comme cause racine du problème.</summary>
+    [HttpPost("{id:int}/validate")]
+    public async Task<IActionResult> Validate(int problemId, int id)
+    {
+        var perimeter = await VisiblePerimeterAsync(problemId);
+        if (perimeter is null) return NotFound();
+        if (!(await access.GetAsync()).ManagerOn(perimeter.Value)) return Forbid();
+        var a = await db.Analyses.FirstOrDefaultAsync(x => x.Id == id && x.ProblemId == problemId);
+        if (a is null) return NotFound();
+        if (string.IsNullOrWhiteSpace(a.Conclusion)) return BadRequest(new { message = "Cette analyse n'a pas encore de conclusion à valider." });
+        var p = await db.Problems.FirstAsync(x => x.Id == problemId);
+        if (p.Status is "Résolu" or "Clos") return BadRequest(new { message = $"Problème {p.Status.ToLowerInvariant()} : sa cause racine ne change plus." });
+        p.RootCause = a.Conclusion.Trim();
+        p.UpdatedAt = DateTime.UtcNow;
+        foreach (var other in await db.Analyses.Where(x => x.ProblemId == problemId && x.ValidatedAt != null).ToListAsync())
+            (other.ValidatedAt, other.ValidatedBy) = (null, null);
+        (a.ValidatedAt, a.ValidatedBy) = (DateTime.UtcNow, User.FindFirst("displayName")?.Value ?? User.Identity?.Name);
         await db.SaveChangesAsync();
         return Ok(RcaAnalysisView.From(a));
     }

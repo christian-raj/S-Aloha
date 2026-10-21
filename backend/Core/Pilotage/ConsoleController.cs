@@ -167,6 +167,13 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
 
             // Décisions de gestionnaire en attente : autoriser, approuver, valider.
             var decisions = new List<Item>();
+            // PRB-22 : incident majeur résolu sans problème relié — un problème est à ouvrir.
+            var withProblem = db.ItemLinks.Where(l => l.FromType == "incident" && l.ToType == "problem").Select(l => l.FromId)
+                .Union(db.ItemLinks.Where(l => l.ToType == "incident" && l.FromType == "problem").Select(l => l.ToId));
+            decisions.AddRange(await db.Incidents.AsNoTracking()
+                .Where(i => i.IsMajor && Incident.Done.Contains(i.Status) && !withProblem.Contains(i.Id) && (all || managed.Contains(i.PerimeterId)))
+                .OrderBy(i => i.ResolvedAt)
+                .Select(i => new Item("incident", i.Id, i.Reference, i.Title, "Problème à ouvrir")).ToListAsync());
             decisions.AddRange(await InStatus(db.Changes, "change", all, managed, "Demandé", "Évalué"));
             decisions.AddRange(await InStatus(db.ServiceRequests, "request", all, managed, "Soumise"));
             decisions.AddRange(await InStatus(db.Improvements, "improvement", all, managed, "Proposée"));

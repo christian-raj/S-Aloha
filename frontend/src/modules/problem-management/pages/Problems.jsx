@@ -75,7 +75,7 @@ export default function Problems() {
 }
 
 function NewProblem({ onCreated }) {
-  const [f, setF] = useState({ title: '', description: '', impact: 'Moyen', urgency: 'Moyenne', category: '', affectedService: '', serviceId: '' })
+  const [f, setF] = useState({ title: '', description: '', impact: 'Moyen', urgency: 'Moyenne', category: '', affectedService: '', serviceId: '', source: 'Réactif' })
   const services = useServices() ?? []
   const categories = useCategories('problem')
   const [error, setError] = useState('')
@@ -93,6 +93,12 @@ function NewProblem({ onCreated }) {
       <div className="field"><label>Description</label>
         <textarea rows={4} value={f.description} onChange={set('description')}
           placeholder="Symptômes observés, incidents liés, périmètre impacté…" /></div>
+      {/* PRB-20 : réactif (issu d'incidents, à relier avant l'analyse) ou proactif. */}
+      <div className="field"><label>Source</label>
+        <select value={f.source} onChange={set('source')} aria-label="Source">
+          <option value="Réactif">Réactif — issu d’incidents (à relier avant l’analyse)</option>
+          <option value="Proactif">Proactif — tendance, analyse de risque</option>
+        </select></div>
       <div className="row2">
         <div className="field"><label>Catégorie</label>
           <CategoryInput categories={categories} value={f.category} onChange={set('category')}

@@ -117,7 +117,7 @@ public class SearchTests(ApiFixture api)
         // Problème établi puis rouvert.
         var p = await Json(await manager.PostAsJsonAsync("/api/problems", new
         {
-            title = "Problème QW-ROUVERT", description = "d", impact = "Moyen", urgency = "Moyenne", category = "Test", affectedService = "Test"
+            title = "Problème QW-ROUVERT", description = "d", impact = "Moyen", urgency = "Moyenne", category = "Test", affectedService = "Test", source = "Proactif"
         }));
         var pid = p.GetProperty("id").GetInt32();
         var pref = p.GetProperty("reference").GetString()!;

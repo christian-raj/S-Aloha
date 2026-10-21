@@ -132,7 +132,8 @@ public class KnowledgeTests(ApiFixture api)
         object P(string? status, string? closure = null) => new
         {
             title = "KB-12", description = "d", status, impact = "Moyen", urgency = "Moyenne", category = "c", affectedService = "s",
-            knownErrorWorkaround = "Relancer", rootCause = status is "Résolu" or "Clos" ? "Fuite" : null, closureCode = closure
+            knownErrorWorkaround = "Relancer", rootCause = status is "Résolu" or "Clos" ? "Fuite" : null, closureCode = closure,
+            source = "Proactif"
         };
         var p = await Json(await m.PostAsJsonAsync("/api/problems", P(null)));
         var url = $"/api/problems/{Id(p)}";

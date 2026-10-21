@@ -11,7 +11,7 @@ public record ProblemDto(string Title, string? Description, string? Status, stri
     string Urgency, string Category, string AffectedService,
     string? KnownErrorWorkaround, string? RootCause, string? ClosureCode = null, int? PerimeterId = null,
     string? OwnerType = null, string? OwnerId = null, string? OwnerDisplayName = null,
-    string? ReopenReason = null, int? ServiceId = null) : IRecordDto;
+    string? ReopenReason = null, int? ServiceId = null, string? Source = null) : IRecordDto;
 
 /// <summary>Changement qui met en œuvre le correctif d'une action (PRB-27).</summary>
 public record ActionChangeDto(string Reference);

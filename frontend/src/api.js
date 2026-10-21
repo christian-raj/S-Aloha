@@ -89,7 +89,9 @@ export const api = {
   analyses: {
     create: (pid, dto) => request(`/problems/${pid}/analyses`, { method: 'POST', body: JSON.stringify(dto) }),
     update: (pid, id, dto) => request(`/problems/${pid}/analyses/${id}`, { method: 'PUT', body: JSON.stringify(dto) }),
-    remove: (pid, id) => request(`/problems/${pid}/analyses/${id}`, { method: 'DELETE' })
+    remove: (pid, id) => request(`/problems/${pid}/analyses/${id}`, { method: 'DELETE' }),
+    // PRB-07 : conclusion validée comme cause racine (gestionnaire).
+    validate: (pid, id) => request(`/problems/${pid}/analyses/${id}/validate`, { method: 'POST' })
   },
   actions: {
     all: (params = {}) => request('/actions?' + new URLSearchParams(params)),

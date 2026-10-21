@@ -32,11 +32,14 @@ public class ProblemsController(AppDbContext db) : RecordController<Problem, Pro
         // Impact et urgence : valeurs fermées (PRB-02, #28) ; code de clôture fermé (PRB-13).
         var error = Allowed.Check("Impact", dto.Impact, Priority.Impacts)
                     ?? Allowed.Check("Urgence", dto.Urgency, Priority.Urgencies)
-                    ?? Allowed.Check("Code de clôture", dto.ClosureCode, ProblemRules.ClosureCodes, optional: true);
+                    ?? Allowed.Check("Code de clôture", dto.ClosureCode, ProblemRules.ClosureCodes, optional: true)
+                    ?? Allowed.Check("Source", dto.Source, ProblemManagement.Problem.Sources, optional: true);
         if (error is not null) return error;
         e.Impact = dto.Impact; e.Urgency = dto.Urgency;
         e.Priority = Priority.Compute(dto.Impact, dto.Urgency);
         e.Category = dto.Category ?? ""; e.AffectedService = dto.AffectedService ?? ""; e.ServiceId = dto.ServiceId;
+        // PRB-20 : source du problème, réactive par défaut.
+        if (dto.Source is not null) e.Source = dto.Source;
         // La déclaration ne qualifie pas : contournement, cause et clôture viennent ensuite.
         if (creating) return null;
         // PRB-21 : sans gestionnaire désigné, le gestionnaire qui qualifie le devient.
@@ -62,6 +65,10 @@ public class ProblemsController(AppDbContext db) : RecordController<Problem, Pro
         // PRB-10 : rouvrir un problème résolu ou clos exige un motif.
         if (changing && target == "En analyse" && p.Status is "Résolu" or "Clos" && string.IsNullOrWhiteSpace(p.ReopenReason))
             return "Motiver la réouverture du problème.";
+        // PRB-20 : un problème réactif quitte Nouveau relié à au moins un incident (sauf clôture).
+        if (changing && p.Status == "Nouveau" && target != "Clos" && p.Source == "Réactif"
+            && (p.Id == 0 || !await ItemLinks.IsLinkedToAsync(Db, "problem", p.Id, "incident")))
+            return "Problème réactif : le relier à au moins un incident (onglet Liens) avant de l'analyser, ou le déclarer proactif.";
         switch (target)
         {
             case "Erreur connue" when string.IsNullOrWhiteSpace(p.KnownErrorWorkaround):

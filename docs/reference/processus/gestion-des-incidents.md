@@ -49,8 +49,9 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `Resolution` | texte | à la résolution | Description de la résolution | ✅ |
 | `ResolvedAt`, `ClosedAt` | date UTC | auto | SOC-08 | ✅ |
 | `ServiceId` | lien | | Service du catalogue ([SLM-10](gestion-des-niveaux-de-service.md)) ; un service retiré ne se choisit plus (SLM-15) | ✅ INC-20 |
-| `Channel` | texte 20 | | Portail, Téléphone, Courriel, Supervision, Sur place | 🔜 INC-04 |
-| `CallerId`, `CallerDisplayName` | AD | | Utilisateur affecté (déclarant métier) | 🔜 INC-05 |
+| `Channel` | texte 20 | | Portail, Téléphone, Courriel, Supervision, Sur place | ✅ INC-04 |
+| `CallerId`, `CallerDisplayName` | AD | | Utilisateur affecté (déclarant métier), notifié comme le déclarant | ✅ INC-05 |
+| `EscalationReason` | texte | à l'escalade | Motif de la dernière escalade vers un autre groupe ; l'historique garde chacun | ✅ INC-17 |
 | `OnHoldReason` | texte 30 | si En attente | Attente utilisateur, Attente fournisseur, Attente changement ; effacé à la sortie de l'attente | ✅ INC-07 |
 | `OnHoldSince`, `HeldMinutes` | date UTC, entier | auto | Début de l'attente en cours ; attente cumulée en minutes de service (INC-22) | ✅ |
 | `ResolutionCode` | texte 30 | à la résolution | Correctif appliqué, Contournement, Résolu sans action, Non reproductible, Doublon | ✅ |
@@ -106,8 +107,8 @@ stateDiagram-v2
 | INC-01 | Incident créé au statut **Nouveau**, référence `INC-AAAA-NNNN` | ✅ | |
 | INC-02 | Priorité **P1–P4** calculée par la matrice impact × urgence ([socle § 6](../regles-metier.md#6-priorité)) | ✅ | |
 | INC-03 | **Résolu** ou **Clos** exige une résolution décrite, y compris aux modifications ultérieures (SOC-06) | ✅ | |
-| INC-04 | **Canal** de signalement enregistré (Portail, Téléphone, Courriel, Supervision, Sur place) | 🔜 | 2 |
-| INC-05 | **Utilisateur affecté** (AD) distinct du créateur : un agent enregistre pour un utilisateur ; l'utilisateur affecté reçoit les notifications publiques | 🔜 | 2 |
+| INC-04 | **Canal** de signalement enregistré (Portail, Téléphone, Courriel, Supervision, Sur place) | ✅ | 2 |
+| INC-05 | **Utilisateur affecté** (AD) distinct du créateur : un agent enregistre pour un utilisateur ; l'utilisateur affecté reçoit les notifications publiques (résolution) | ✅ | 2 |
 | INC-06 | **Prise en charge** : passer à En cours exige un responsable ; horodate `FirstResponseAt` (délai de prise en charge, INC-21) | ✅ | 1 |
 | INC-07 | **En attente** exige un motif fermé ; le temps passé En attente ne compte pas dans les délais SLA | ✅ (motif vérifié à l'entrée En attente : un incident déjà en attente avant la règle reste modifiable) | |
 | INC-08 | La résolution exige un **code de résolution** fermé ; *Doublon* exige un lien vers l'incident conservé | ✅ | 1 |
@@ -117,9 +118,9 @@ stateDiagram-v2
 | INC-12 | **Incident majeur** : remonte dans la console des gestionnaires tant qu'il n'est ni Résolu ni Clos | ✅ | |
 | INC-13 | Seul un **Manager** déclare ou retire le caractère majeur ; un incident majeur a toujours priorité P1 et un Manager pour responsable | ✅ (responsable nominatif, désigné par un Manager ; il est gestionnaire du périmètre de l'incident — rôle par périmètre, PER-03, lu dans l'annuaire — vérifié quand il est désigné ou que l'incident devient majeur ; annuaire injoignable : désignation acceptée et tracée au journal de l'API) | 1 |
 | INC-14 | **Ouvrir un problème lié** depuis l'incident : crée le problème avec les mêmes titre, description, impact, urgence, catégorie et service, puis relie les deux | ✅ | |
-| INC-15 | Un incident **majeur** ne passe à Résolu que relié à un **problème** (existant ou créé, INC-14) : la revue de l'incident majeur s'y conduit | 🔜 | 2 |
+| INC-15 | Un incident **majeur** ne passe à Résolu que relié à un **problème** (existant ou créé, INC-14) : la revue de l'incident majeur s'y conduit | ✅ | 2 |
 | INC-16 | **Incidents enfants** : un incident peut être rattaché à un incident parent (même panne) ; résoudre le parent résout ses enfants avec la même résolution | 🔜 | 3 |
-| INC-17 | **Escalade fonctionnelle** : changer le responsable vers un autre groupe est tracé (SOC-20) avec un motif | 🔜 | 2 |
+| INC-17 | **Escalade fonctionnelle** : changer le responsable vers un autre groupe est tracé (SOC-20) avec un motif (`EscalationReason`, nouveau à chaque escalade) | ✅ | 2 |
 | INC-18 | **Escalade hiérarchique** : un P1, ou un incident dont l'échéance de résolution est dépassée, notifie les gestionnaires (SOC-21) | ✅ (notification des gestionnaires, relevé périodique) | |
 | INC-19 | **Suggestion de connaissance** : l'onglet Informations de la fiche présente les « **Cas similaires** » (articles publiés, problèmes établis, incidents résolus) par la recherche hybride ([RAG-06](../recherche.md)) ; relier en un clic l'élément retenu à l'incident : [RAG-09](../recherche.md) | ✅ (relier : 🔜 RAG-09) | 2 |
 
@@ -158,7 +159,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
-| Incident → Problème | Cause à rechercher | INC-14, INC-15 | ✅ / 🔜 |
+| Incident → Problème | Cause à rechercher | INC-14, INC-15 | ✅ |
 | Incident → CI | CI affecté | Lien manuel ; CI Retiré refusé (CFG-14) | ✅ / 🔜 |
 | Incident → Service / SLA | Service affecté, cibles | INC-20, INC-21 | ✅ |
 | Incident → Article | Solution utilisée, cas similaires | INC-19, RAG-06, RAG-09 | ✅ (suggestion) / 🔜 (lien en un clic) |

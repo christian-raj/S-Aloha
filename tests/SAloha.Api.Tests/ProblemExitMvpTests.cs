@@ -20,7 +20,7 @@ public class ProblemExitMvpTests(ApiFixture api)
     private static object Problem(string title, string status, string? closureCode = null, string? reopenReason = null) => new
     {
         title, description = "d", status, impact = "Moyen", urgency = "Moyenne", category = "Test", affectedService = "Test",
-        knownErrorWorkaround = (string?)null, rootCause = "Cause", closureCode, reopenReason
+        knownErrorWorkaround = (string?)null, rootCause = "Cause", closureCode, reopenReason, source = "Proactif"
     };
 
     private static object Action(string title, string? status, string r, string a) => new

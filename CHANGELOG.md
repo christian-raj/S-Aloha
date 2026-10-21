@@ -14,6 +14,13 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Incidents et problèmes** (INC-04, INC-05, INC-15, INC-17, PRB-07, PRB-20, PRB-22) : canal
+  de signalement et utilisateur affecté (notifié de la résolution) ; un incident majeur se
+  résout relié à un problème, et un incident majeur déjà résolu sans problème est signalé
+  « problème à ouvrir » ; escalade vers un autre groupe motivée ; source du problème
+  (réactif, à relier à un incident avant l'analyse, ou proactif) ; conclusion d'une analyse
+  validée comme cause racine en un clic.
+
 - **Demandes : bénéficiaire, contestation, requalification** (REQ-07, REQ-10, REQ-12) : le
   bénéficiaire vaut le demandeur par défaut ; une demande satisfaite se conteste dans les 5
   jours ouvrés, avec un motif, par le demandeur, le bénéficiaire ou un gestionnaire ; un
@@ -137,6 +144,9 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Incidents et problèmes** : la migration `IncidentProblemLot2` ajoute sept colonnes ; les
+  problèmes existants sont proactifs (aucun n'est bloqué après coup), les nouveaux réactifs
+  par défaut.
 - **Demandes** : la migration `RequestContestRequalify` ajoute deux colonnes facultatives.
 - **Changements** : la migration `ChangeFollowUps` ajoute deux colonnes facultatives.
 - **Déclarations réglementaires** : la migration `RegulatoryNotifications` ajoute sept colonnes

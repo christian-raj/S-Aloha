@@ -26,7 +26,13 @@ export const incidentConfig = {
     { key: 'urgency', label: 'Urgence', type: 'select', options: ['Faible', 'Moyenne', 'Élevée'], required: true, default: 'Moyenne' },
     { key: 'category', label: 'Catégorie', placeholder: 'Réseau, Poste de travail, Application…' },
     { key: 'affectedService', label: 'Service affecté', placeholder: 'Ex. : Messagerie' },
+    // INC-04, INC-05 : canal de signalement et utilisateur affecté (déclarant métier).
+    { key: 'channel', label: 'Canal', type: 'select', options: ['Portail', 'Téléphone', 'Courriel', 'Supervision', 'Sur place'] },
+    { key: 'callerId', nameKey: 'callerDisplayName', label: 'Utilisateur affecté', type: 'person' },
     ownerField('Assigné à'),
+    // INC-17 : changer de groupe responsable (escalade fonctionnelle) se motive.
+    { key: 'escalationReason', label: 'Motif d’escalade', type: 'textarea', rows: 2, create: false,
+      placeholder: 'Obligatoire pour confier l’incident à un autre groupe.' },
     { key: 'isMajor', label: 'Gravité', type: 'checkbox', checkboxLabel: 'Incident majeur', managerOnly: true },
     // INC-40 : tout rôle marque un incident de sécurité (cyber), qui peut appeler des déclarations réglementaires.
     { key: 'isSecurity', label: 'Sécurité', type: 'checkbox', checkboxLabel: 'Incident de sécurité (cyber)' },
@@ -60,6 +66,6 @@ export const incidentConfig = {
     r.reopenCount > 0 && `Rouvert ${r.reopenCount} fois`,
     r.status === 'En attente' && r.onHoldSince && `En attente depuis le ${dateTimeFr(r.onHoldSince)} (horloge SLA suspendue)`,
     r.heldMinutes > 0 && `Attente cumulée : ${Math.round(r.heldMinutes / 6) / 10} h de service`],
-  help: 'Prise en charge (En cours) : un responsable. Attente : un motif ; l\'horloge SLA s\'arrête et reprend au retour En cours. Résolution : description et code ; un doublon est relié à l\'incident conservé (onglet Liens). Réouverture : un motif, dans les 10 jours ouvrés. Incident majeur : déclaré par un gestionnaire.',
+  help: 'Prise en charge (En cours) : un responsable. Attente : un motif ; l\'horloge SLA s\'arrête et reprend au retour En cours. Résolution : description et code ; un doublon est relié à l\'incident conservé (onglet Liens). Réouverture : un motif, dans les 10 jours ouvrés. Incident majeur : déclaré par un gestionnaire ; il se résout relié à un problème. Confier l\'incident à un autre groupe se motive.',
   linkHint: 'Problème sous-jacent, CI touchés, article de connaissance appliqué…',
 }

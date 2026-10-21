@@ -22,7 +22,8 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         var error = Allowed.Check("Impact", dto.Impact, Priority.Impacts)
                     ?? Allowed.Check("Urgence", dto.Urgency, Priority.Urgencies)
                     ?? Allowed.Check("Code de résolution", dto.ResolutionCode, Incident.ResolutionCodes, optional: true)
-                    ?? Allowed.Check("Motif d'attente", dto.OnHoldReason, Incident.OnHoldReasons, optional: true);
+                    ?? Allowed.Check("Motif d'attente", dto.OnHoldReason, Incident.OnHoldReasons, optional: true)
+                    ?? Allowed.Check("Canal", dto.Channel, Incident.Channels, optional: true);
         if (error is not null) return error;
 
         // INC-13 : seul un gestionnaire déclare ou retire le caractère majeur.
@@ -62,6 +63,17 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
             return "Le début constaté ne peut pas être postérieur à la déclaration de l'incident.";
         // INC-23 : un changement de responsable exclut la résolution au premier contact.
         if (!creating && e.OwnerId != OriginalOwner(e, creating)) e.OwnerChanged = true;
+        // INC-04, INC-05 : canal et utilisateur affecté ; INC-17 : escalade vers un autre groupe motivée.
+        e.Channel = string.IsNullOrEmpty(dto.Channel) ? null : dto.Channel;
+        var caller = string.IsNullOrWhiteSpace(dto.CallerId) ? null : dto.CallerId.Trim();
+        (e.CallerId, e.CallerDisplayName) = (caller, caller is null ? null : dto.CallerDisplayName ?? caller);
+        var reason = string.IsNullOrWhiteSpace(dto.EscalationReason) ? null : dto.EscalationReason.Trim();
+        if (!creating && e.OwnerType == "Group" && e.OwnerId != OriginalOwner(e, creating))
+        {
+            if (reason is null || reason == Db.Entry(e).Property(x => x.EscalationReason).OriginalValue)
+                return "Motiver l'escalade vers un autre groupe : le motif est tracé dans l'historique.";
+        }
+        e.EscalationReason = reason;
         return null;
     }
 
@@ -136,6 +148,9 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         }
         if (string.IsNullOrWhiteSpace(e.Resolution))
             return "Décrire la résolution avant de résoudre ou clore l'incident.";
+        // INC-15 : un incident majeur se résout relié à un problème (la revue s'y conduit).
+        if (status == "Résolu" && e.Status != "Résolu" && e.IsMajor && !await ItemLinks.IsLinkedToAsync(Db, "incident", e.Id, "problem"))
+            return "Incident majeur : le relier à un problème (existant, ou « Ouvrir un problème lié ») avant de le résoudre : la revue de l'incident majeur s'y conduit.";
         // INC-08 : code de résolution ; un doublon est relié à l'incident conservé.
         if (e.ResolutionCode is null)
             return $"Choisir un code de résolution : {string.Join(", ", Incident.ResolutionCodes)}.";
@@ -179,7 +194,8 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
     protected override void OnNotify(Incident e, string? from, Notifier n)
     {
         if (_becameMajor) n.ToManagers(e, LinkType, "Incident majeur déclaré");
-        if (from is not null && e.Status == "Résolu") n.ToCreator(e, LinkType, "Incident résolu");
+        // INC-05 : l'utilisateur affecté reçoit les notifications publiques, comme le déclarant.
+        if (from is not null && e.Status == "Résolu") { n.ToCreator(e, LinkType, "Incident résolu"); n.ToUser(e, LinkType, e.CallerId, "Incident résolu"); }
     }
 
     protected override void OnStatusChanged(Incident e, string from)
