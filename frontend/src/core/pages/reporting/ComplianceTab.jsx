@@ -11,7 +11,7 @@ const rateTone = (r) => r == null ? 't-closed' : r >= 95 ? 't-done' : r >= 80 ? 
  * prendront place avec leur module.
  */
 export default function ComplianceTab({ data }) {
-  const { nis2, nis2Pending = [], sla, improvements, knowledge } = data
+  const { nis2, nis2Pending = [], sla, improvements, knowledge, regulatory = [] } = data
   return (
     <div className="report-body">
       <div className="card">
@@ -61,6 +61,22 @@ export default function ComplianceTab({ data }) {
           note={`${improvements.completed} amélioration(s) réalisée(s) sur la période.`} />
       </div>
 
+      {/* REP-44, DRG-20 : déclarations réglementaires de la période et respect des délais légaux. */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3 className="card-title">Déclarations réglementaires</h3>
+        {regulatory.every(r => r.total === 0) ? <p className="muted small">Aucune déclaration sur la période.</p> : (
+          <div className="table-scroll">
+            <table className="compact">
+              <thead><tr><th>Régime</th><th>Déclarations</th><th>En cours</th><th>Non requises</th><th>Délais tenus</th></tr></thead>
+              <tbody>{regulatory.map(r => (
+                <tr key={r.regime}>
+                  <td><b>{r.regime}</b></td><td>{r.total}</td><td>{r.inProgress}</td><td>{r.notRequired}</td>
+                  <td className="small">{r.steps.length === 0 ? '—' : r.steps.map(s => `${s.step} : ${s.onTime}/${s.sent} (${s.percent} %)`).join(' · ')}</td>
+                </tr>))}</tbody>
+            </table>
+          </div>)}
+      </div>
+
       <div className="kpi-row">
         <Kpi value={knowledge.published} label="Articles publiés" />
         <Kpi value={knowledge.publishedInPeriod} label="Publiés sur la période" />
@@ -72,6 +88,9 @@ export default function ComplianceTab({ data }) {
 }
 
 export const complianceCsv = (d) => [
+  { title: 'Déclarations réglementaires', header: ['Régime', 'Déclarations', 'En cours', 'Non requises', 'Étape', 'Envois', 'Dans les délais', '%'],
+    rows: (d.regulatory ?? []).flatMap(r => (r.steps.length ? r.steps : [{ step: '', sent: 0, onTime: 0, percent: '' }])
+      .map(s => [r.regime, r.total, r.inProgress, r.notRequired, s.step, s.sent, s.onTime, s.percent])) },
   ...(d.nis2 ? [
     { title: `NIS 2 — ${d.nis2.reference} ${d.nis2.title}`, header: ['Indicateur', 'Valeur'], rows: [
       ['Score (%)', d.nis2.percent], ['Maturité', d.nis2.maturity ? `${d.nis2.maturity.level} — ${d.nis2.maturity.name}` : ''],

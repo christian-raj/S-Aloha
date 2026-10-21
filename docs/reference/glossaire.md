@@ -44,6 +44,7 @@
 | **EI / EE** | Entité importante / entité essentielle au sens de NIS 2 ; une exigence « EI/EE » s'applique aux deux, « EE » aux seules entités essentielles. |
 | **Déclaration réglementaire** | Déclaration d'un incident cyber à une autorité dans un délai légal (NIS 2 : ANSSI ; RGPD : CNIL), associée à l'incident ; voir [déclarations réglementaires](processus/declarations-reglementaires.md). |
 | **Incident important** | Au sens de NIS 2, incident dont l'impact sur la fourniture des services oblige à le déclarer ; la qualification revient au gestionnaire (INC-41). |
+| **Prise de connaissance** | Moment où l'organisation apprend l'incident de sécurité : point de départ des délais légaux de déclaration, en heures calendaires ; par défaut, la déclaration de l'incident (DRG-10). |
 | **Alerte précoce** | Premier envoi NIS 2 à l'autorité, sous 24 h après la prise de connaissance d'un incident important (DRG-10). |
 | **Maturité** | Niveau de 1 (Initial) à 5 (Optimisé) déduit du score d'une évaluation NIS 2, sur une échelle inspirée du CMMI (NIS-12). |
 | **Écart** | Pour une exigence évaluée : 3 moins le score obtenu ; base des actions d'amélioration (NIS-13, NIS-15). |

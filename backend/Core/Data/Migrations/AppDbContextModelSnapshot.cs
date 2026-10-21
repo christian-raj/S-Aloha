@@ -1176,6 +1176,15 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<bool>("IsMajor")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsSecurity")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("Nis2Important")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Nis2Reason")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("OccurredAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1204,10 +1213,23 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<int>("PerimeterId")
                         .HasColumnType("integer");
 
+                    b.Property<bool?>("PersonalDataBreach")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PersonalDataBreachReason")
+                        .HasColumnType("text");
+
                     b.Property<string>("Priority")
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
+
+                    b.Property<DateTime?>("QualifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("QualifiedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Reference")
                         .IsRequired()
@@ -2151,6 +2173,151 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.HasIndex("SprintId");
 
                     b.ToTable("WorkItems");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.RegulatoryNotifications.RegulatoryNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Authority")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("AuthorityCaseRef")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("AwareAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("AwareAtReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("CreatedByDisplayName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool?>("CrossBorderImpact")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("DataSubjectsCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("EarlyWarningDueAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("EarlyWarningSentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FinalReportDueAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FinalReportSentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Impact")
+                        .HasColumnType("text");
+
+                    b.Property<int>("IncidentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LateReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MeasuresTaken")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NotRequiredReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("NotificationDueAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("NotificationSentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OwnerDisplayName")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("OwnerId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("OwnerType")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int>("PerimeterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PersonalDataCategories")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Regime")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("SentVersions")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Summary")
+                        .HasColumnType("text");
+
+                    b.Property<bool?>("SuspectedMalicious")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerimeterId");
+
+                    b.HasIndex("Reference")
+                        .IsUnique();
+
+                    b.HasIndex("IncidentId", "Regime")
+                        .IsUnique();
+
+                    b.ToTable("RegulatoryNotifications");
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.CiRelationship", b =>
@@ -3517,6 +3684,23 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.RegulatoryNotifications.RegulatoryNotification", b =>
+                {
+                    b.HasOne("SAloha.Api.Modules.IncidentManagement.Incident", "Incident")
+                        .WithMany()
+                        .HasForeignKey("IncidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
+                        .WithMany()
+                        .HasForeignKey("PerimeterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Incident");
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ServiceConfigurationManagement.CiRelationship", b =>

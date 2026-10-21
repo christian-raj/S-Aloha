@@ -200,6 +200,22 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                 .Where(a => a.Status == "Validée" && a.NextAssessmentDate != null && a.NextAssessmentDate <= today && (all || managed.Contains(a.PerimeterId)))
                 .Select(a => new Item("assessment", a.Id, a.Reference, a.Title, "À renouveler")).ToListAsync());
 
+            // INC-41 : incidents cyber pas encore qualifiés ; DRG-11 : échéances légales proches (moins de 6 h) ou dépassées.
+            var regulatory = (await db.Incidents.AsNoTracking()
+                    .Where(i => i.IsSecurity && i.QualifiedAt == null && i.Status != "Clos" && (all || managed.Contains(i.PerimeterId)))
+                    .OrderBy(i => i.CreatedAt).ToListAsync())
+                .Select(i => new Item("incident", i.Id, i.Reference, i.Title, $"À qualifier ({Elapsed(now - i.CreatedAt)} depuis la déclaration)"))
+                .ToList();
+            regulatory.AddRange((await db.RegulatoryNotifications.AsNoTracking()
+                    .Where(d => !Modules.RegulatoryNotifications.RegulatoryNotification.Done.Contains(d.Status) && (all || managed.Contains(d.PerimeterId)))
+                    .ToListAsync())
+                .Select(d => (d, Next: d.NextDue()))
+                .Where(x => x.Next is { } n && n.Due - now < TimeSpan.FromHours(6))
+                .OrderBy(x => x.Next!.Value.Due)
+                .Select(x => new Item("notification", x.d.Id, x.d.Reference, x.d.Title, x.Next!.Value.Due < now
+                    ? $"{x.Next.Value.Step} : échéance dépassée de {Elapsed(now - x.Next.Value.Due)}"
+                    : $"{x.Next.Value.Step} : {Elapsed(x.Next.Value.Due - now)} restantes")));
+
             // CFG-40 : sas de staging des périmètres gérés — actifs à rapprocher, en conflit, inconnus (CFG-42).
             var staged = await db.DiscoveredAssets.AsNoTracking()
                 .Where(a => Modules.ServiceConfigurationManagement.DiscoveredAsset.Open.Contains(a.Status) && (all || managed.Contains(a.PerimeterId)))
@@ -214,7 +230,7 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
             management = new { Staging = staging, ToQualify = toQualify, InAnalysisNoRootCause = inAnalysisNoRootCause,
                                KnownErrorsNoAction = knownErrorsNoAction, OverdueActions = overdue,
                                MajorIncidents = majorIncidents, Decisions = decisions, ReviewsDue = reviewsDue,
-                               OverdueRequests = overdueRequests,
+                               OverdueRequests = overdueRequests, Regulatory = regulatory,
                                // PRJ-34 : projets des périmètres gérés hors tolérance ou à jalons en retard.
                                ProjectAlerts = projectAlerts.Where(x => all || managed.Contains(x.Project.PerimeterId)).Select(AlertItem).ToList(),
                                // INC-24 : incidents en risque ou hors délai des périmètres gérés.
@@ -228,6 +244,10 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
 
     /// <summary>Ligne de console désignant un enregistrement d'un processus.</summary>
     public record Item(string Type, int Id, string Reference, string Title, string Status);
+
+    /// <summary>Durée lisible : « 5 h 20 », « 2 j 3 h ».</summary>
+    public static string Elapsed(TimeSpan t) => t.TotalHours >= 48 ? $"{(int)t.TotalDays} j {t.Hours} h"
+        : t.TotalHours >= 1 ? $"{(int)t.TotalHours} h {t.Minutes:00}" : $"{Math.Max(0, t.Minutes)} min";
 
     private static Task<List<Item>> Mine<T>(DbSet<T> set, string type, string meKey, List<string> groups, string[] done,
         bool all, List<int> seen) where T : Record =>

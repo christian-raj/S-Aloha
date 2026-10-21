@@ -366,9 +366,37 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
         // REP-42 : amélioration continue ; REP-43 : connaissances.
         var improvementsAll = await In(db.Improvements.AsNoTracking()).ToListAsync();
         var articles = await In(db.KnowledgeArticles.AsNoTracking()).ToListAsync();
+        // REP-44, DRG-20 : déclarations des incidents dont la prise de connaissance tombe dans la
+        // période — en cours, et respect des délais : envois faits avant leur échéance / envois, par étape.
+        var declarations = await In(db.RegulatoryNotifications.AsNoTracking()).Where(d => d.AwareAt >= f.From && d.AwareAt < f.To).ToListAsync();
+        var regulatory = Modules.RegulatoryNotifications.RegulatoryNotification.Regimes.Select(regime =>
+        {
+            var list = declarations.Where(d => d.Regime == regime).ToList();
+            var steps = new List<(string Step, DateTime? Due, DateTime? Sent)>();
+            foreach (var d in list)
+            {
+                if (regime == Modules.RegulatoryNotifications.RegulatoryNotification.Nis2) steps.Add(("Alerte précoce", d.EarlyWarningDueAt, d.EarlyWarningSentAt));
+                steps.Add(("Notification", d.NotificationDueAt, d.NotificationSentAt));
+                if (regime == Modules.RegulatoryNotifications.RegulatoryNotification.Nis2) steps.Add(("Rapport final", d.FinalReportDueAt, d.FinalReportSentAt));
+            }
+            return new
+            {
+                Regime = regime,
+                Total = list.Count,
+                InProgress = list.Count(d => !Modules.RegulatoryNotifications.RegulatoryNotification.Done.Contains(d.Status)),
+                NotRequired = list.Count(d => d.Status == Modules.RegulatoryNotifications.RegulatoryNotification.NotRequired),
+                Steps = steps.Where(s => s.Sent is not null).GroupBy(s => s.Step).Select(g => new
+                {
+                    Step = g.Key, Sent = g.Count(), OnTime = g.Count(s => s.Sent <= s.Due),
+                    Percent = (int)Math.Round(100.0 * g.Count(s => s.Sent <= s.Due) / g.Count())
+                }).ToList(),
+            };
+        }).ToList();
+
         return Ok(new
         {
             Nis2 = nis2,
+            Regulatory = regulatory,
             // Évaluations non validées : signalées, sans score (seul un score validé engage).
             Nis2Pending = await In(db.Assessments.AsNoTracking()).Where(a => a.Status != "Validée")
                 .OrderByDescending(a => a.CreatedAt).Select(a => new { a.Id, a.Reference, a.Title, a.Status }).ToListAsync(),
@@ -385,7 +413,6 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 ReviewOverdue = articles.Count(a => a.Status == "Publié" && a.ReviewDate < today),
                 PublishedInPeriod = articles.Count(a => a.PublishedAt >= f.From && a.PublishedAt < f.To),
             },
-            // Déclarations réglementaires (DRG) : ajoutées à cet onglet avec leur module.
         });
     }
 

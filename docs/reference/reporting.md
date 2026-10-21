@@ -34,7 +34,7 @@ Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=&perime
 | Incidents | `GET /api/reports/dashboard/incidents` | REP-10 à REP-15 |
 | Problèmes | `GET /api/reports/dashboard/problems` | REP-20 à REP-25 |
 | Changements & projets | `GET /api/reports/dashboard/changes-projects` | REP-30 à REP-34 |
-| Conformité & métriques | `GET /api/reports/dashboard/compliance` | REP-40 à REP-43 |
+| Conformité & métriques | `GET /api/reports/dashboard/compliance` | REP-40 à REP-44 |
 | Configuration & inventaire | `GET /api/reports/dashboard/configuration` | REP-50 à REP-53 |
 
 Paramètres : `from`, `to` (dates, incluses), `service` (facultatif, sans tenir compte de la
@@ -93,7 +93,7 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 | REP-41 | **Respect des SLA par service** (incidents résolus sur la période ayant une échéance) et **SLA à revoir** (En vigueur, date de revue passée) | ✅ | |
 | REP-42 | **Amélioration continue** : registre par statut, améliorations réalisées sur la période | ✅ | |
 | REP-43 | **Connaissances** : articles publiés, brouillons, revues en retard, publications de la période | ✅ | |
-| REP-44 | **Déclarations réglementaires** (échéances tenues, en cours) ajoutées avec leur module ([DRG](processus/declarations-reglementaires.md)) | 🔜 | 2 |
+| REP-44 | **Déclarations réglementaires** : par régime, déclarations de la période (prise de connaissance), en cours, non requises, et respect des délais par étape — envois faits avant leur échéance / envois (DRG-20, [DRG](processus/declarations-reglementaires.md)) ; export CSV | ✅ | 2 |
 
 ## 8. Configuration et inventaire
 

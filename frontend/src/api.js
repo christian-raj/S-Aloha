@@ -99,7 +99,12 @@ export const api = {
     requestApproval: id => request(`/actions/${id}/request-approval`, { method: 'POST' }),
     setChange: (id, reference) => request(`/actions/${id}/change`, { method: 'PUT', body: JSON.stringify({ reference }) })
   },
-  incidents: records('/incidents'),
+  incidents: {
+    ...records('/incidents'),
+    // INC-41 : qualification réglementaire d'un incident de sécurité (gestionnaire).
+    qualify: (id, dto) => request(`/incidents/${id}/qualification`, { method: 'POST', body: JSON.stringify(dto) })
+  },
+  regulatoryNotifications: records('/regulatory-notifications'),
   requests: records('/requests'),
   changes: {
     ...records('/changes'),

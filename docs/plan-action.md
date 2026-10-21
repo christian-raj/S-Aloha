@@ -82,7 +82,7 @@ restantes sont spécifiées règle par règle dans [`reference/processus/`](refe
 | F5 | Configuration | Import en masse, attributs par type de CI, service signalé « dégradé » (rattachement CI ↔ service fait le 2026-10-13) ; exactitude de la CMDB ([#124](https://github.com/christian-raj/S-Aloha/issues/124)), CI à vérifier dans la console ([#125](https://github.com/christian-raj/S-Aloha/issues/125)) | [CFG-16, CFG-18, CFG-30](reference/processus/gestion-de-la-configuration.md) |
 | F7 | Tous | Pièces jointes, notifications par courriel (notifications dans l'application et commentaires faits le 2026-10-13) | [SOC-22, SOC-25](reference/regles-metier.md#8-notifications) |
 | F8 | Connaissances, Incidents | Suggestion d'articles et cas similaires dès la saisie, relier en un clic (rendu Markdown fait le 2026-10-12) | [INC-19](reference/processus/gestion-des-incidents.md), [RAG-09, RAG-11](reference/recherche.md) |
-| F11 | Incidents, sécurité | **Déclarations réglementaires** des incidents cyber (NIS 2 : alerte précoce 24 h, notification 72 h, rapport final ; RGPD : 72 h) associées à l'incident, échéances et alertes | [INC-40 à INC-44](reference/processus/gestion-des-incidents.md), [DRG-01 à DRG-13](reference/processus/declarations-reglementaires.md) |
+| F11 | Incidents, sécurité | **Déclarations réglementaires** des incidents cyber (NIS 2 : alerte précoce 24 h, notification 72 h, rapport final ; RGPD : 72 h) : lot 2 fait le 2026-10-21 (qualification de l'incident, déclarations, échéances, console, notifications, respect des délais) ; reste le modèle de contenu par régime et deux indicateurs (lot 3) | [DRG-08, DRG-21, DRG-22](reference/processus/declarations-reglementaires.md) |
 | F12 | Conformité | 🔜 **Évaluations sur référentiels définis par l'Admin** (ex. CR-CMM, ISO 27002) : l'Admin importe un référentiel en CSV depuis sa console en choisissant les colonnes (domaine ou pratique, niveau, identifiant, question, preuve attendue) et règle l'échelle (ex. Implémenté = 1, Partiel = 0,5, Non = 0 ; un niveau n'est atteint que si tous ses points de contrôle et ceux des niveaux inférieurs sont implémentés). Le contenu est importé par l'organisation et **jamais versionné** dans le dépôt, même logique que l'[ADR-0012](decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md) : CR-CMM est sous licence CC BY-NC 4.0, usage interne libre, œuvre dérivée ou revente soumises à l'accord écrit de ses auteurs (vérifié le 2026-10-12). Place : section Conformité & réglementation | À spécifier |
 | F13 | Configuration, Sécurité | **Découverte automatique du SI et CMDB augmentée** (phases 1 et 2, console de staging, Shadow IT et obsolescence faites le 2026-10-19, bannières, constructeur par préfixe MAC, SNMP v3, interfaces, inventaire SSH, hyperviseurs, flux réseau et WinRM le 2026-10-19 ; agent et preuves NIS 2 à venir) : approche hybride (agentless & agent léger), balayage IP / ICMP sweep, fingerprinting, synchronisation annuaire (AD / LDAP / Entra ID), cartographie des dépendances, protocoles standard (ICMP/ARP, SNMP v2c/v3, WMI/WinRM, SSH, REST), Credentials Vault, zone de staging et réconciliation, détection Shadow IT et alignement NIS 2 (ReCyF) | [Chantier F13](#découverte-automatique-et-cmdb-augmentée-f13) |
 
@@ -129,8 +129,8 @@ jamais créées seules (même logique que le sas, CFG-40). Inventaire SSH fait l
 
 **Lot 1** : terminé le 2026-10-13 (étapes 1 à 6, périmètres compris, NIS-18), sauf RAG-10
 (calibrage de la recherche), **en attente** d'un jeu de requêtes réelles (décision du
-2026-10-13). **Itération en cours** : règles 🔜 du lot 2, et
-[déclarations réglementaires](reference/processus/declarations-reglementaires.md) (F11).
+2026-10-13). **Itération en cours** : règles 🔜 du lot 2 ; [déclarations réglementaires](reference/processus/declarations-reglementaires.md)
+(F11) faites le 2026-10-21.
 
 ### Sortie du MVP
 

@@ -73,6 +73,7 @@ public class AuditInterceptor(IHttpContextAccessor http, ILogger<AuditIntercepto
         KnowledgeArticle => "article",
         Improvement => "improvement",
         Assessment => "assessment",
+        Modules.RegulatoryNotifications.RegulatoryNotification => "notification",
         _ => null
     };
 

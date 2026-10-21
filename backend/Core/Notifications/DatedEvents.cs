@@ -54,6 +54,20 @@ public class DatedEvents(AppDbContext db, Notifier notify)
                 notify.ToManagers(i, "incident", "Incident P1 ouvert");
         }
 
+        // DRG-13 : échéance légale à moins de 6 h → responsable et gestionnaires ; dépassée → idem,
+        // chaque heure jusqu'à l'envoi (le libellé porte l'heure de la relance).
+        foreach (var d in await db.RegulatoryNotifications.AsNoTracking()
+                     .Where(d => !Modules.RegulatoryNotifications.RegulatoryNotification.Done.Contains(d.Status)).ToListAsync())
+        {
+            if (d.NextDue() is not { } next) continue;
+            var ev = next.Due < now
+                ? $"{next.Step} : échéance dépassée (relance de {now.ToLocalTime():dd/MM HH} h)"
+                : next.Due - now < TimeSpan.FromHours(6) ? $"{next.Step} : échéance dans moins de 6 h ({next.Due.ToLocalTime():dd/MM HH:mm})" : null;
+            if (ev is null || !Fresh("notification", d.Id, ev)) continue;
+            notify.ToOwner(d, "notification", ev);
+            notify.ToManagers(d, "notification", ev);
+        }
+
         // CHG-24 : la veille de la mise en œuvre → responsable.
         foreach (var c in await db.Changes.AsNoTracking()
                      .Where(c => (c.Status == "Autorisé" || c.Status == "Planifié") && c.PlannedStart > now && c.PlannedStart <= now.AddDays(1))

@@ -14,6 +14,16 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Déclarations réglementaires des incidents de sécurité** (INC-40 à INC-44, DRG-01 à
+  DRG-13, REP-44) : tout rôle marque un incident « sécurité » ; un gestionnaire le qualifie
+  (incident important au sens de NIS 2, violation de données personnelles), ce qui crée une
+  déclaration par régime retenu, avec ses échéances légales en heures calendaires (NIS 2 :
+  alerte précoce 24 h, notification 72 h, rapport final un mois après ; RGPD : 72 h). Contenu
+  complété par tous et figé à chaque envoi, motifs du retard RGPD, incident non clos tant
+  qu'une déclaration est en cours. Échéances proches ou dépassées dans l'Urgent des
+  gestionnaires et en notifications, respect des délais au reporting. Nouvelle entrée
+  Conformité & réglementation › Déclarations.
+
 - **Migrations en étape de déploiement** (O1) : option `--migrate` (applique les migrations
   et s'arrête) et réglage `Database:MigrateOnStartup` (vrai par défaut) ; l'API démarrée sans
   migrer refuse une base en retard. Le rattrapage des échéances SLA se fait en tâche de fond,
@@ -115,6 +125,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Déclarations réglementaires** : la migration `RegulatoryNotifications` ajoute sept colonnes
+  facultatives aux incidents et une table.
 - **Proxy amont** : un second nginx devant S-Aloha (ingress-nginx par exemple) garde sa propre
   limite de 1 Mo ; la porter à 16 Mo (`nginx.ingress.kubernetes.io/proxy-body-size: 16m`) pour
   les imports. Traefik n'en impose pas par défaut.

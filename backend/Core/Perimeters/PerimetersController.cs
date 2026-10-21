@@ -210,6 +210,7 @@ public class PerimetersController(AppDbContext db, PerimeterAccess access) : Con
         new("Améliorations", await db.Improvements.CountAsync(x => x.PerimeterId == id)),
         new("Évaluations NIS 2", await db.Assessments.CountAsync(x => x.PerimeterId == id)),
         new("Projets", await db.Projects.CountAsync(x => x.PerimeterId == id)),
+        new("Déclarations réglementaires", await db.RegulatoryNotifications.CountAsync(x => x.PerimeterId == id)),
     ];
 
     public record PracticeCount(string Practice, int Count);

@@ -44,6 +44,13 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         if (e.IsMajor && !IsManager && e.OwnerId != OriginalOwner(e, creating))
             return "Seul un gestionnaire désigne le responsable d'un incident majeur.";
 
+        // INC-40 : tout rôle marque un incident de sécurité ; non précisé, la marque reste.
+        if (dto.IsSecurity is { } security)
+        {
+            if (!security && e.IsSecurity && e.QualifiedAt is not null)
+                return "Incident qualifié au titre des déclarations réglementaires : il reste un incident de sécurité.";
+            e.IsSecurity = security;
+        }
         e.Category = dto.Category ?? ""; e.AffectedService = dto.AffectedService ?? ""; e.ServiceId = dto.ServiceId;
         e.Resolution = dto.Resolution;
         e.ResolutionCode = string.IsNullOrEmpty(dto.ResolutionCode) ? null : dto.ResolutionCode;
@@ -118,6 +125,15 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         }
 
         if (!Incident.Done.Contains(status)) return null;
+        // INC-43 : un incident cyber ne se clôt qu'avec des déclarations closes ou non requises.
+        if (status == "Clos" && e.IsSecurity)
+        {
+            var open = await Db.RegulatoryNotifications.AsNoTracking()
+                .Where(d => d.IncidentId == e.Id && !RegulatoryNotifications.RegulatoryNotification.Done.Contains(d.Status))
+                .Select(d => d.Reference).ToListAsync();
+            if (open.Count > 0)
+                return $"Déclarations réglementaires en cours ({string.Join(", ", open)}) : les clore ou les déclarer non requises avant de clore l'incident.";
+        }
         if (string.IsNullOrWhiteSpace(e.Resolution))
             return "Décrire la résolution avant de résoudre ou clore l'incident.";
         // INC-08 : code de résolution ; un doublon est relié à l'incident conservé.
@@ -185,5 +201,60 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         // Première prise en charge : posée une fois, jamais effacée (délai de prise en charge, INC-21).
         if (e.Status == "En cours") e.FirstResponseAt ??= DateTime.UtcNow;
         e.ClosedAt = e.Status == "Clos" ? DateTime.UtcNow : null;
+    }
+
+    /// <summary>
+    /// INC-41, INC-42 : qualification réglementaire d'un incident cyber par un gestionnaire.
+    /// Chaque régime retenu (NIS 2 si important, RGPD si violation de données) reçoit une
+    /// déclaration À déclarer reliée à l'incident ; « non » sur un régime exige un motif.
+    /// INC-44 : un incident important au sens NIS 2 est proposé comme incident majeur.
+    /// </summary>
+    [HttpPost("{id:int}/qualification")]
+    public async Task<IActionResult> Qualify(int id, IncidentQualificationDto dto)
+    {
+        var e = await Db.Incidents.FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        await ScopeAsync();
+        ActOn(e.PerimeterId);
+        if (!IsManager) return Forbid();
+        if (!e.IsSecurity) return BadRequest(new { message = "Marquer d'abord l'incident comme incident de sécurité (cyber)." });
+        if (!dto.Nis2Important && string.IsNullOrWhiteSpace(dto.Nis2Reason))
+            return BadRequest(new { message = "Motiver pourquoi l'incident n'est pas important au sens de NIS 2." });
+        if (!dto.PersonalDataBreach && string.IsNullOrWhiteSpace(dto.PersonalDataBreachReason))
+            return BadRequest(new { message = "Motiver pourquoi l'incident n'est pas une violation de données à caractère personnel." });
+        var awareAt = Dates.Utc(dto.AwareAt) ?? e.CreatedAt;
+        if (awareAt > DateTime.UtcNow.AddMinutes(5)) return BadRequest(new { message = "La prise de connaissance ne peut pas être dans le futur." });
+
+        (e.Nis2Important, e.Nis2Reason) = (dto.Nis2Important, dto.Nis2Reason?.Trim());
+        (e.PersonalDataBreach, e.PersonalDataBreachReason) = (dto.PersonalDataBreach, dto.PersonalDataBreachReason?.Trim());
+        (e.QualifiedAt, e.QualifiedBy) = (DateTime.UtcNow, MyDisplay);
+        await Db.SaveChangesAsync();
+
+        var regimes = new List<string>();
+        if (dto.Nis2Important) regimes.Add(RegulatoryNotifications.RegulatoryNotification.Nis2);
+        if (dto.PersonalDataBreach) regimes.Add(RegulatoryNotifications.RegulatoryNotification.Gdpr);
+        var existing = await Db.RegulatoryNotifications.Where(d => d.IncidentId == id).Select(d => d.Regime).ToListAsync();
+        var created = new List<string>();
+        foreach (var regime in regimes.Except(existing))
+        {
+            var declaration = await References.CreateAsync(Db, "DRG", () =>
+            {
+                var d = new RegulatoryNotifications.RegulatoryNotification
+                {
+                    PerimeterId = e.PerimeterId, IncidentId = id, Regime = regime,
+                    Authority = RegulatoryNotifications.RegulatoryNotification.AuthorityOf(regime), AwareAt = awareAt,
+                    Title = $"{regime} — {e.Reference} {e.Title}", Status = RegulatoryNotifications.RegulatoryNotification.ToDeclare,
+                    OwnerType = "User", OwnerId = Me, OwnerDisplayName = MyDisplay, CreatedBy = Me, CreatedByDisplayName = MyDisplay
+                };
+                d.ComputeDueDates();
+                return d;
+            });
+            Db.ItemLinks.Add(new ItemLink { FromType = "notification", FromId = declaration.Id, ToType = "incident", ToId = id, CreatedBy = Me });
+            Notify.ToManagers(declaration, "notification", "Déclaration réglementaire créée");   // DRG-13
+            created.Add(declaration.Reference);
+        }
+        await Db.SaveChangesAsync();
+        await Notify.SaveAsync();
+        return Ok(new { Incident = View(e), Created = created, ProposeMajor = dto.Nis2Important && !e.IsMajor });
     }
 }
