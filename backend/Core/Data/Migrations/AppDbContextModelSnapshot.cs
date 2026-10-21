@@ -3345,6 +3345,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("CancelReason")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("CancelledAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -3353,6 +3356,9 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.Property<DateTime?>("ClosedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ContestReason")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");

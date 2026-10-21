@@ -37,6 +37,13 @@ public class ServiceRequest : Record, IServiceBound
     public DateTime? ClosedAt { get; set; }
     public DateTime? CancelledAt { get; set; }                            // REQ-09 : annulation par le demandeur
     public int? CatalogItemId { get; set; }                               // REQ-20 : modèle du catalogue de demandes
+    /// <summary>REQ-10 : motif de la contestation d'une demande satisfaite.</summary>
+    public string? ContestReason { get; set; }
+    /// <summary>REQ-12 : motif d'annulation (requalification vers un changement ou un incident).</summary>
+    public string? CancelReason { get; set; }
+
+    /// <summary>REQ-10 : délai de contestation d'une demande satisfaite, en jours ouvrés.</summary>
+    public const int ContestBusinessDays = 5;
 
     /// <summary>REQ-30 : en retard le lendemain de l'échéance, tant qu'elle n'est ni satisfaite, ni close, ni rejetée, ni annulée.</summary>
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
@@ -47,7 +54,10 @@ public record ServiceRequestDto(string Title, string? Description, string? Statu
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     string? RequestedItem, string? RequestedFor, string? RequestedForDisplayName,
     DateTime? DueDate, string? RejectionReason = null, int? PerimeterId = null,
-    int? ServiceId = null, string? AffectedService = null, int? CatalogItemId = null) : IRecordDto;
+    int? ServiceId = null, string? AffectedService = null, int? CatalogItemId = null, string? ContestReason = null) : IRecordDto;
+
+/// <summary>REQ-12 : requalification d'une demande en changement (« change ») ou en incident (« incident »).</summary>
+public record RequalifyDto(string Target, string? Reason);
 
 /// <summary>
 /// REQ-20 : modèle du catalogue de demandes, tenu par les gestionnaires — objet demandé,

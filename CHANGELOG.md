@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Demandes : bénéficiaire, contestation, requalification** (REQ-07, REQ-10, REQ-12) : le
+  bénéficiaire vaut le demandeur par défaut ; une demande satisfaite se conteste dans les 5
+  jours ouvrés, avec un motif, par le demandeur, le bénéficiaire ou un gestionnaire ; un
+  besoin non standard se requalifie en changement ou en incident relié, la demande étant
+  annulée avec ce motif.
+
 - **Changements : conflit commenté et relances** (CHG-22, CHG-30 à CHG-32) : autoriser un
   changement en conflit de calendrier exige un commentaire de l'autorité (au CAB aussi) ; un
   changement planifié dont la fin est passée sans mise en œuvre, ou mis en œuvre depuis plus
@@ -131,6 +137,7 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Demandes** : la migration `RequestContestRequalify` ajoute deux colonnes facultatives.
 - **Changements** : la migration `ChangeFollowUps` ajoute deux colonnes facultatives.
 - **Déclarations réglementaires** : la migration `RegulatoryNotifications` ajoute sept colonnes
   facultatives aux incidents et une table.

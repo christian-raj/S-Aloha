@@ -46,7 +46,9 @@ créateur = demandeur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 |---|---|---|---|---|
 | `RequestedItem` | texte 200 | ✔ | Objet demandé ; repris du modèle s'il est vide | ✅ |
 | `ServiceId`, `AffectedService` | lien, texte 150 | | Service du catalogue concerné et son nom recopié ([SLM-10](gestion-des-niveaux-de-service.md)) | ✅ |
-| `RequestedFor`, `RequestedForDisplayName` | AD | | Bénéficiaire ; par défaut le demandeur (🔜) | ✅ |
+| `RequestedFor`, `RequestedForDisplayName` | AD | | Bénéficiaire ; par défaut le demandeur (REQ-07) | ✅ |
+| `ContestReason` | texte | à la contestation | Motif de la contestation d'une demande satisfaite, effacé à la satisfaction suivante (REQ-10) | ✅ |
+| `CancelReason` | texte | à la requalification | Motif d'annulation, avec la référence du changement ou de l'incident créé (REQ-12) | ✅ |
 | `DueDate` | date | | Échéance : calculée depuis le modèle à l'approbation (REQ-22) ; souhaitée, sans modèle à délai cible | ✅ |
 | `ApprovedBy`, `ApprovedAt` | texte, date | auto | Approbation (SOC-08) | ✅ |
 | `FulfilledAt`, `ClosedAt` | date UTC | auto | Satisfaction, clôture | ✅ |
@@ -97,7 +99,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | Soumise, Approuvée → Annulée | Demandeur, Manager | Pas encore En cours | `CancelledAt` | ✅ REQ-09 |
 | Approuvée → En cours | Tous | Responsable renseigné | | ✅ (approbation exigée) / 🔜 (responsable) |
 | En cours → Satisfaite | Responsable, Manager | Toutes les tâches Terminée ou Annulée | `FulfilledAt` | ✅ (horodatage) / 🔜 REQ-25 |
-| Satisfaite → En cours | Demandeur, bénéficiaire, Manager | Motif ; dans les 5 jours ouvrés | `FulfilledAt` effacé | 🔜 REQ-10 |
+| Satisfaite → En cours | Demandeur, bénéficiaire, Manager | Motif (`ContestReason`) ; dans les 5 jours ouvrés | `FulfilledAt` effacé ; responsable notifié | ✅ REQ-10 |
 | Satisfaite → Close | Demandeur, Manager, ou auto après 5 jours ouvrés | | `ClosedAt` | ✅ (horodatage) / 🔜 REQ-11 |
 | Rejetée, Annulée, Close → … | — | Statuts finaux | | ✅ REQ-08 |
 
@@ -111,12 +113,12 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | REQ-04 | Revenir à Soumise ou passer à Rejetée **efface l'approbation** | ✅ | |
 | REQ-05 | `FulfilledAt` posé à Satisfaite, `ClosedAt` à Close, effacés à la sortie (SOC-08) | ✅ | |
 | REQ-06 | Un **rejet** exige un motif, communiqué au demandeur | ✅ | 1 |
-| REQ-07 | Le **bénéficiaire** vaut le demandeur par défaut ; une demande pour autrui garde les deux | 🔜 | 2 |
+| REQ-07 | Le **bénéficiaire** vaut le demandeur par défaut ; une demande pour autrui garde les deux | ✅ | 2 |
 | REQ-08 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejetée, Annulée et Close sont finales | ✅ | 1 |
 | REQ-09 | Statut **Annulée** : le demandeur (ou un Manager) annule une demande Soumise ou Approuvée, tant qu'elle n'est pas En cours | ✅ | 1 |
-| REQ-10 | **Contestation** : dans les 5 jours ouvrés, le demandeur ou le bénéficiaire renvoie une demande Satisfaite En cours, avec motif | 🔜 | 2 |
+| REQ-10 | **Contestation** : dans les 5 jours ouvrés, le demandeur ou le bénéficiaire renvoie une demande Satisfaite En cours, avec motif | ✅ | 2 |
 | REQ-11 | **Clôture** à la confirmation du demandeur, ou automatique 5 jours ouvrés après Satisfaite | 🔜 | 3 |
-| REQ-12 | Une demande qui révèle un **besoin non standard** se requalifie : créer un changement (ou un incident) relié, puis annuler la demande avec ce motif | 🔜 | 2 |
+| REQ-12 | Une demande qui révèle un **besoin non standard** se requalifie : créer un changement (ou un incident) relié, puis annuler la demande avec ce motif (`CancelReason`, qui cite la référence créée) ; demandeur ou gestionnaire, demande Soumise ou Approuvée (mêmes droits que REQ-09) | ✅ | 2 |
 
 ### Catalogue de demandes
 
@@ -142,7 +144,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | Lien | Sens | Règle | Statut |
 |---|---|---|---|
 | Demande → Service | Service du catalogue concerné | REQ-20, SLM-10 | ✅ |
-| Demande → Changement | Besoin non standard | REQ-12 | ✅ (lien manuel) / 🔜 |
+| Demande → Changement | Besoin non standard | REQ-12 | ✅ (requalification ou lien manuel) |
 | Demande → CI | Matériel ou logiciel fourni | Lien manuel | ✅ |
 | Demande → Article | Procédure d'exécution | Lien manuel | ✅ |
 
@@ -167,6 +169,7 @@ prises en charge depuis plus d'un jour ouvré (Relances, lot 2).
 | `GET /api/requests` (filtres `status`, `q`, `owner`), `GET /api/requests/{id}` | User | Registre, fiche |
 | `POST /api/requests`, `PUT /api/requests/{id}` | User (Approuvée/Rejetée : Manager) | Création, modification, transitions |
 | `DELETE /api/requests/{id}` | Admin | Suppression |
+| `POST /api/requests/{id}/requalify` (`target` : `change` ou `incident`, `reason`) | Demandeur, Manager | Requalification d'un besoin non standard : changement ou incident créé et relié, demande annulée (REQ-12) |
 | `GET /api/request-catalog` (`?all=true` : désactivés compris), `GET /api/request-catalog/{id}` | User | Catalogue de demandes (REQ-20) |
 | `POST/PUT /api/request-catalog[/{id}]` | Manager | Tenue du catalogue |
 | `DELETE /api/request-catalog/{id}` | Admin | Suppression d'un modèle dont aucune demande ne vient |
