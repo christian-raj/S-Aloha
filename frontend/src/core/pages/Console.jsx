@@ -99,7 +99,7 @@ export default function Console() {
   ].filter(Boolean)
 
   // Les quatre temps de la console, dans l'ordre où l'on doit les traiter.
-  const urgent = myOverdue.length + L('majorIncidents') + (c.mySlaIncidents?.length ?? 0) + L('slaIncidents')
+  const urgent = myOverdue.length + L('majorIncidents') + (c.mySlaIncidents?.length ?? 0) + L('slaIncidents') + L('regulatory')
   const decide = L('decisions') + L('toQualify') + staging.length
   const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts')
   const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0)
@@ -165,6 +165,9 @@ export default function Console() {
           hint="Périmètres que vous gérez : relancer le responsable, escalader." render={itemRow} />}
         {m && <List title="Incidents majeurs en cours" tone="red" rows={m.majorIncidents} onRow={goItem}
           hint="Coordonner le rétablissement et la communication." render={itemRow} />}
+        {/* INC-41, DRG-11 : incidents de sécurité à qualifier, échéances légales proches ou dépassées. */}
+        {m && <List title="Déclarations réglementaires" tone="red" rows={m.regulatory ?? []} onRow={goItem}
+          hint="Qualifier les incidents de sécurité ; envoyer l’alerte ou la notification avant l’échéance légale." render={itemRow} />}
       </Group>
 
       {m && <Group id="decisions" title="Décisions" total={decide}>

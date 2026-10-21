@@ -63,8 +63,8 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `ReopenCount` | entier | auto | Nombre de réouvertures | ✅ INC-11 |
 | `ReopenReason` | texte | à la réouverture | Motif de la dernière réouverture ; effacé à la résolution suivante (l'historique le garde) | ✅ INC-11 |
 | `ParentId` | lien | | Incident parent (incidents liés à une même panne) | 🔜 INC-16 |
-| `IsSecurity` | booléen | | Incident de nature sécurité (cyber) | 🔜 INC-40 |
-| `NisSignificant`, `PersonalDataBreach` | booléen + motif | si cyber | Qualification réglementaire | 🔜 INC-41 |
+| `IsSecurity` | booléen | | Incident de nature sécurité (cyber) ; ne se retire plus après qualification | ✅ INC-40 |
+| `Nis2Important`, `PersonalDataBreach` | booléen + motif (`Nis2Reason`, `PersonalDataBreachReason`) | si cyber | Qualification réglementaire, avec `QualifiedAt`, `QualifiedBy` | ✅ INC-41 |
 
 ## 4. Cycle de vie
 
@@ -131,11 +131,11 @@ alerte précoce sous 24 h ; RGPD : notification sous 72 h) :
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| INC-40 | **Nature sécurité (cyber)** : un incident est marqué « sécurité » (`IsSecurity`) à la création ou en cours de traitement, par tout rôle ; la fiche l'affiche en tête | 🔜 | 2 |
-| INC-41 | **Qualification réglementaire** : un incident cyber est qualifié par un Manager — *incident important* au sens NIS 2 (oui / non, motif) et *violation de données personnelles* (oui / non, motif). Tant qu'il ne l'est pas, il figure dans le bloc « Urgent » des gestionnaires ; la qualification est attendue dans les 24 h suivant la prise de connaissance | 🔜 | 2 |
-| INC-42 | **Déclarations associées** : la qualification crée, pour chaque régime retenu (NIS 2 si *important*, RGPD si *violation de données*), une **déclaration réglementaire** reliée à l'incident, au statut À déclarer ; une qualification « non » sur les deux régimes est tracée et ne crée rien | 🔜 | 2 |
-| INC-43 | Un incident cyber ne passe pas à **Clos** tant qu'une de ses déclarations n'est ni Close ni Non requise (400, avec les références en cause) | 🔜 | 2 |
-| INC-44 | Un incident cyber qualifié *important* au sens NIS 2 est proposé comme **incident majeur** (INC-13 : décision d'un Manager) | 🔜 | 2 |
+| INC-40 | **Nature sécurité (cyber)** : un incident est marqué « sécurité » (`IsSecurity`) à la création ou en cours de traitement, par tout rôle ; la fiche l'affiche en tête | ✅ | 2 |
+| INC-41 | **Qualification réglementaire** : un incident cyber est qualifié par un Manager — *incident important* au sens NIS 2 (oui / non, motif) et *violation de données personnelles* (oui / non, motif). Tant qu'il ne l'est pas, il figure dans le bloc « Urgent » des gestionnaires ; la qualification est attendue dans les 24 h suivant la prise de connaissance | ✅ | 2 |
+| INC-42 | **Déclarations associées** : la qualification crée, pour chaque régime retenu (NIS 2 si *important*, RGPD si *violation de données*), une **déclaration réglementaire** reliée à l'incident, au statut À déclarer ; une qualification « non » sur les deux régimes est tracée et ne crée rien | ✅ | 2 |
+| INC-43 | Un incident cyber ne passe pas à **Clos** tant qu'une de ses déclarations n'est ni Close ni Non requise (400, avec les références en cause) | ✅ | 2 |
+| INC-44 | Un incident cyber qualifié *important* au sens NIS 2 est proposé comme **incident majeur** (INC-13 : décision d'un Manager) | ✅ | 2 |
 
 ## 6. Délais, calculs et alertes
 
@@ -163,7 +163,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | Incident → Service / SLA | Service affecté, cibles | INC-20, INC-21 | ✅ |
 | Incident → Article | Solution utilisée, cas similaires | INC-19, RAG-06, RAG-09 | ✅ (suggestion) / 🔜 (lien en un clic) |
 | Incident → Changement | Changement à l'origine de l'incident | Lien manuel ; indicateur CHG-33 | ✅ / 🔜 |
-| Incident → Déclaration réglementaire | Incident cyber à déclarer (NIS 2, RGPD) | INC-40 à INC-44, [DRG-01](declarations-reglementaires.md) | 🔜 |
+| Incident → Déclaration réglementaire | Incident cyber à déclarer (NIS 2, RGPD) | INC-40 à INC-44, [DRG-01](declarations-reglementaires.md) | ✅ |
 
 ## 8. Console et indicateurs
 
@@ -191,7 +191,8 @@ depuis plus d'une heure (Décisions, gestionnaires, lot 2), En attente prolongé
 |---|---|---|
 | `GET /api/incidents` (filtres `status`, `q`, `owner`), `GET /api/incidents/{id}` | User | Registre, fiche |
 | `POST /api/incidents`, `PUT /api/incidents/{id}` | User | Création, modification, transitions |
-| `DELETE /api/incidents/{id}` | Admin | Suppression (liens compris) |
+| `DELETE /api/incidents/{id}` | Admin | Suppression (liens et déclarations réglementaires compris) |
+| `POST /api/incidents/{id}/qualification` (`nis2Important`, `nis2Reason`, `personalDataBreach`, `personalDataBreachReason`, `awareAt`) | Manager | Qualification réglementaire d'un incident cyber : crée les déclarations des régimes retenus, propose l'incident majeur (INC-41, INC-42, INC-44) |
 | `GET/POST /api/links`, `DELETE /api/links/{id}` | User | Liens (problème, CI, article…) |
 
 ## 10. Scénarios d'acceptation

@@ -59,6 +59,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     // Connaissances, amélioration continue
     public DbSet<KnowledgeArticle> KnowledgeArticles => Set<KnowledgeArticle>();
     public DbSet<Improvement> Improvements => Set<Improvement>();
+    public DbSet<Modules.RegulatoryNotifications.RegulatoryNotification> RegulatoryNotifications => Set<Modules.RegulatoryNotifications.RegulatoryNotification>();
     // Conformité NIS 2
     public DbSet<SecurityObjective> SecurityObjectives => Set<SecurityObjective>();
     public DbSet<SecurityRequirement> SecurityRequirements => Set<SecurityRequirement>();
@@ -99,6 +100,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<ServiceLevelAgreement>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<KnowledgeArticle>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<Improvement>().HasIndex(x => x.Reference).IsUnique();
+        // DRG-03 : une déclaration par régime et par incident ; supprimer l'incident emporte ses déclarations.
+        b.Entity<Modules.RegulatoryNotifications.RegulatoryNotification>().HasIndex(x => x.Reference).IsUnique();
+        b.Entity<Modules.RegulatoryNotifications.RegulatoryNotification>().HasIndex(x => new { x.IncidentId, x.Regime }).IsUnique();
+        b.Entity<Modules.RegulatoryNotifications.RegulatoryNotification>().HasOne(x => x.Incident).WithMany()
+            .HasForeignKey(x => x.IncidentId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<Assessment>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<Project>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<Project>().Property(x => x.Budget).HasPrecision(14, 2);

@@ -3,8 +3,8 @@
 > Obligations de déclaration des **incidents de sécurité (cyber)** aux autorités. Relève de
 > la pratique ITIL 4 *Information security management*, aux côtés de la
 > [conformité NIS 2](conformite-nis2.md). Préfixe des règles : **DRG**. Socle commun et
-> conventions (✅ / 🔜, lots) : [règles métier](../regles-metier.md). **Tout est à
-> implémenter** (🔜).
+> conventions (✅ / 🔜, lots) : [règles métier](../regles-metier.md). Lot 2 implémenté le
+> 2026-10-21 ; reste le modèle de contenu par régime (DRG-08) et deux indicateurs (lot 3).
 
 <sub>[← Règles métier](../regles-metier.md) · [Toutes les pratiques](readme.md)</sub>
 
@@ -39,10 +39,10 @@ l'autorité** ; S-Aloha prépare le contenu, rappelle les échéances et enregis
 
 | Action | User | Manager | Admin | Statut |
 |---|---|---|---|---|
-| Consulter une déclaration | ✔ | ✔ | ✔ | 🔜 |
-| Compléter le contenu | ✔ | ✔ | ✔ | 🔜 DRG-07 |
-| Qualifier l'incident, créer, décider « non requise », enregistrer un envoi, clore | ✘ | ✔ | ✔ | 🔜 DRG-02 |
-| Supprimer | ✘ | ✘ | ✔ | 🔜 |
+| Consulter une déclaration | ✔ | ✔ | ✔ | ✅ |
+| Compléter le contenu | ✔ | ✔ | ✔ | ✅ DRG-07 |
+| Qualifier l'incident, créer, décider « non requise », enregistrer un envoi, clore | ✘ | ✔ | ✔ | ✅ DRG-02 |
+| Supprimer | ✘ | ✘ | ✔ | ✅ |
 
 ## 3. Données
 
@@ -51,17 +51,19 @@ Déclaration réglementaire (`RegulatoryNotifications`, `DRG-AAAA-NNNN`) ; champ
 
 | Champ | Type | Oblig. | Valeurs / règle | Statut |
 |---|---|---|---|---|
-| `IncidentId` | lien | ✔ | Incident cyber à l'origine | 🔜 |
-| `Regime` | texte 20 | ✔ | NIS 2, RGPD | 🔜 |
-| `Authority` | texte 100 | ✔ | Par défaut : ANSSI (NIS 2), CNIL (RGPD) | 🔜 |
-| `AwareAt` | date UTC | ✔ | **Prise de connaissance** de l'incident, point de départ des délais ; par défaut la création de l'incident ; modifiable par un Manager, avec motif tracé (SOC-20) | 🔜 |
-| `EarlyWarningDueAt`, `NotificationDueAt`, `FinalReportDueAt` | date UTC | calculé | DRG-10 | 🔜 |
-| `EarlyWarningSentAt`, `NotificationSentAt`, `FinalReportSentAt` | date UTC | à l'envoi | Date réelle de chaque envoi | 🔜 |
-| `AuthorityCaseRef` | texte 100 | | Référence du dossier chez l'autorité | 🔜 |
-| `Summary`, `Impact`, `MeasuresTaken` | texte | à la notification | Résumé, impact (services, personnes, durée), mesures prises | 🔜 |
-| `SuspectedMalicious`, `CrossBorderImpact` | booléen | NIS 2 | Cause supposée malveillante ; effets transfrontières (contenu de l'alerte précoce) | 🔜 |
-| `PersonalDataCategories`, `DataSubjectsCount` | texte, entier | RGPD | Catégories de données, nombre approximatif de personnes | 🔜 |
-| `NotRequiredReason` | texte | si non requise | Motif de non-déclaration | 🔜 |
+| `IncidentId` | lien | ✔ | Incident cyber à l'origine | ✅ |
+| `Regime` | texte 20 | ✔ | NIS 2, RGPD | ✅ |
+| `Authority` | texte 100 | ✔ | Par défaut : ANSSI (NIS 2), CNIL (RGPD) | ✅ |
+| `AwareAt` | date UTC | ✔ | **Prise de connaissance** de l'incident, point de départ des délais ; par défaut la création de l'incident ; modifiable par un Manager, avec motif tracé (SOC-20) | ✅ |
+| `EarlyWarningDueAt`, `NotificationDueAt`, `FinalReportDueAt` | date UTC | calculé | DRG-10 | ✅ |
+| `EarlyWarningSentAt`, `NotificationSentAt`, `FinalReportSentAt` | date UTC | à l'envoi | Date réelle de chaque envoi | ✅ |
+| `AuthorityCaseRef` | texte 100 | | Référence du dossier chez l'autorité | ✅ |
+| `Summary`, `Impact`, `MeasuresTaken` | texte | à la notification | Résumé, impact (services, personnes, durée), mesures prises | ✅ |
+| `LateReason` | texte | RGPD hors délai | Motifs du retard d'une notification envoyée après 72 h (DRG-12) | ✅ |
+| `SentVersions` | JSON | à chaque envoi | Contenu tel qu'envoyé, une version par envoi (étape, date, résumé, impact, mesures) (DRG-07) | ✅ |
+| `SuspectedMalicious`, `CrossBorderImpact` | booléen | NIS 2 | Cause supposée malveillante ; effets transfrontières (contenu de l'alerte précoce) | ✅ |
+| `PersonalDataCategories`, `DataSubjectsCount` | texte, entier | RGPD | Catégories de données, nombre approximatif de personnes | ✅ |
+| `NotRequiredReason` | texte | si non requise | Motif de non-déclaration | ✅ |
 
 ## 4. Cycle de vie
 
@@ -100,13 +102,13 @@ stateDiagram-v2
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| DRG-01 | Une déclaration est toujours **associée à un incident** de nature cyber (INC-40), et visible sur sa fiche | 🔜 | 2 |
-| DRG-02 | Qualifier, décider, enregistrer un envoi et clore : **Manager** ; transitions selon le § 4 (SOC-05) | 🔜 | 2 |
-| DRG-03 | **Une déclaration par régime** et par incident (409 sinon) : un même incident peut appeler une déclaration NIS 2 et une déclaration RGPD | 🔜 | 2 |
-| DRG-04 | **Non requise** exige un motif (ex. incident non important au sens NIS 2, absence de risque pour les personnes) ; la décision et son auteur sont tracés | 🔜 | 2 |
-| DRG-05 | Chaque **envoi** enregistre sa date réelle ; elle ne peut précéder `AwareAt` ni être dans le futur | 🔜 | 2 |
-| DRG-06 | Une déclaration NIS 2 ne passe à **Notification envoyée** qu'après l'alerte précoce | 🔜 | 2 |
-| DRG-07 | Tout rôle complète le **contenu** (résumé, impact, mesures) tant que la déclaration n'est pas close ; le contenu envoyé est figé à chaque envoi (version conservée) | 🔜 | 2 |
+| DRG-01 | Une déclaration est toujours **associée à un incident** de nature cyber (INC-40), et visible sur sa fiche | ✅ | 2 |
+| DRG-02 | Qualifier, décider, enregistrer un envoi et clore : **Manager** ; transitions selon le § 4 (SOC-05) | ✅ | 2 |
+| DRG-03 | **Une déclaration par régime** et par incident (409 sinon) : un même incident peut appeler une déclaration NIS 2 et une déclaration RGPD | ✅ | 2 |
+| DRG-04 | **Non requise** exige un motif (ex. incident non important au sens NIS 2, absence de risque pour les personnes) ; la décision et son auteur sont tracés | ✅ | 2 |
+| DRG-05 | Chaque **envoi** enregistre sa date réelle ; elle ne peut précéder `AwareAt` ni être dans le futur | ✅ | 2 |
+| DRG-06 | Une déclaration NIS 2 ne passe à **Notification envoyée** qu'après l'alerte précoce | ✅ | 2 |
+| DRG-07 | Tout rôle complète le **contenu** (résumé, impact, mesures) tant que la déclaration n'est pas close ; le contenu envoyé est figé à chaque envoi (version conservée) | ✅ | 2 |
 | DRG-08 | **Modèle de contenu** par régime : la fiche propose les rubriques attendues (NIS 2 : malveillance supposée, effets transfrontières, gravité, impact, indicateurs de compromission ; RGPD : nature de la violation, catégories et nombre de personnes, conséquences probables, mesures) | 🔜 | 3 |
 
 ## 6. Délais, calculs et alertes
@@ -116,10 +118,10 @@ pas en heures de service (contrairement aux SLA, SLM-14).
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| DRG-10 | **Échéances** : NIS 2 — `EarlyWarningDueAt` = `AwareAt` + 24 h, `NotificationDueAt` = `AwareAt` + 72 h, `FinalReportDueAt` = `NotificationSentAt` + 1 mois (à défaut, `NotificationDueAt` + 1 mois) ; RGPD — `NotificationDueAt` = `AwareAt` + 72 h. Recalculées si `AwareAt` change | 🔜 | 2 |
-| DRG-11 | **Échéance proche** (moins de 6 h) ou **dépassée** ⇒ bloc « Urgent » de la console des gestionnaires, avec le temps restant ; une échéance dépassée reste signalée sur la fiche, même après l'envoi | 🔜 | 2 |
-| DRG-12 | **RGPD hors délai** : une notification envoyée après 72 h exige les **motifs du retard** | 🔜 | 2 |
-| DRG-13 | Notifications (SOC-21) : déclaration créée → tous les gestionnaires ; échéance à 6 h → responsable et gestionnaires ; échéance dépassée → idem, chaque heure jusqu'à l'envoi | 🔜 | 2 |
+| DRG-10 | **Échéances** : NIS 2 — `EarlyWarningDueAt` = `AwareAt` + 24 h, `NotificationDueAt` = `AwareAt` + 72 h, `FinalReportDueAt` = `NotificationSentAt` + 1 mois (à défaut, `NotificationDueAt` + 1 mois) ; RGPD — `NotificationDueAt` = `AwareAt` + 72 h. Recalculées si `AwareAt` change | ✅ | 2 |
+| DRG-11 | **Échéance proche** (moins de 6 h) ou **dépassée** ⇒ bloc « Urgent » de la console des gestionnaires, avec le temps restant ; une échéance dépassée reste signalée sur la fiche, même après l'envoi | ✅ | 2 |
+| DRG-12 | **RGPD hors délai** : une notification envoyée après 72 h exige les **motifs du retard** | ✅ | 2 |
+| DRG-13 | Notifications (SOC-21) : déclaration créée → tous les gestionnaires ; échéance à 6 h → responsable et gestionnaires ; échéance dépassée → idem, chaque heure jusqu'à l'envoi | ✅ | 2 |
 
 ## 7. Liens avec les autres pratiques
 
@@ -132,16 +134,17 @@ pas en heures de service (contrairement aux SLA, SLM-14).
 
 ## 8. Console et indicateurs
 
-Menu (🔜) : le registre des déclarations sera une entrée de la section **Conformité &
+Menu : le registre des déclarations est une entrée de la section **Conformité &
 réglementation**, à côté de NIS 2 (module `group: 'compliance'`,
-[frontend § Navigation cible](../frontend.md#navigation-cible)).
+[frontend § Navigation cible](../frontend.md#navigation-cible)). ✅
 
-Console (🔜) : incidents cyber à qualifier et déclarations à échéance proche ou dépassée
-(Urgent, gestionnaires) ; déclarations en cours (Mon travail du responsable).
+Console : incidents cyber à qualifier et déclarations à échéance proche ou dépassée
+(Urgent, gestionnaires, avec le temps restant ou le retard) ✅ ; déclarations en cours (Mon
+travail du responsable) ✅.
 
 | Indicateur | Calcul | Statut |
 |---|---|---|
-| Respect des délais | Envois faits avant leur échéance / envois, par régime et par étape | 🔜 DRG-20 (lot 2) |
+| Respect des délais | Envois faits avant leur échéance / envois, par régime et par étape, sur les déclarations dont la prise de connaissance tombe dans la période ([REP-44](../reporting.md)) | ✅ DRG-20 (lot 2) |
 | Délai moyen de qualification | Qualification − `AwareAt` | 🔜 DRG-21 (lot 3) |
 | Déclarations par régime et par issue | Déclarées, non requises | 🔜 DRG-22 (lot 3) |
 
@@ -149,11 +152,13 @@ Console (🔜) : incidents cyber à qualifier et déclarations à échéance pro
 
 | Route | Policy | Rôle |
 |---|---|---|
-| `GET /api/regulatory-notifications` (filtres `status`, `regime`), `GET /api/regulatory-notifications/{id}` | User | Registre, fiche — 🔜 |
-| `POST /api/regulatory-notifications`, `PUT /api/regulatory-notifications/{id}` | Manager (contenu : User) | Création, contenu, transitions — 🔜 |
-| `DELETE /api/regulatory-notifications/{id}` | Admin | Suppression — 🔜 |
+| `GET /api/regulatory-notifications` (filtres `status`, `regime`), `GET /api/regulatory-notifications/{id}` | User | Registre (filtre `incident` aussi), fiche ✅ |
+| `POST /api/regulatory-notifications`, `PUT /api/regulatory-notifications/{id}` | Manager (contenu : User) | Création, contenu, transitions ✅ |
+| `DELETE /api/regulatory-notifications/{id}` | Admin | Suppression ✅ |
 
-Type de lien inter-processus : `notification` (préfixe `DRG`).
+Type de lien inter-processus : `notification` (préfixe `DRG`). La qualification d'un incident
+(`POST /api/incidents/{id}/qualification`, [INC-41](gestion-des-incidents.md)) crée les
+déclarations et les relie à l'incident.
 
 ## 10. Scénarios d'acceptation
 

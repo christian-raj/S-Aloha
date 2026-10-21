@@ -8,7 +8,8 @@ import { getUser } from '../../api'
  * type : text (défaut), textarea, select, date, datetime, number, checkbox,
  *        person (utilisateur/groupe AD : clés `key` et `nameKey`, `typeKey` facultatif).
  * `create: false` masque le champ dans le formulaire de création, `onlyCreate` hors de
- * la création (donnée de proposition, comme l'enregistrement d'origine) ; `numeric`
+ * la création (donnée de proposition, comme l'enregistrement d'origine) ; `boolean` : liste
+ * Oui / Non / non renseigné, envoyée en vrai, faux ou null ; `numeric`
  * envoie la valeur d'une liste comme nombre (identifiant, étape…) ; `managerOnly`
  * fige le champ pour qui n'est ni Manager ni Admin (incident majeur, INC-13).
  * `when(form)` n'affiche le champ que si la condition tient (champs du portefeuille pour une
@@ -40,6 +41,7 @@ export function toForm(fields, record = {}) {
     if (fd.type === 'date') f[fd.key] = v ? String(v).slice(0, 10) : ''
     else if (fd.type === 'datetime') f[fd.key] = v ? toLocalInput(v) : ''
     else if (fd.type === 'checkbox') f[fd.key] = !!v
+    else if (fd.boolean) f[fd.key] = v === true ? 'true' : v === false ? 'false' : ''
     else f[fd.key] = v ?? ''
     if (fd.type === 'person') {
       f[fd.nameKey] = record[fd.nameKey] ?? ''
@@ -56,7 +58,7 @@ export function toPayload(fields, form) {
     const v = form[fd.key]
     if (fd.type === 'date' || fd.type === 'datetime') p[fd.key] = v ? new Date(v).toISOString() : null
     else if (fd.type === 'number') p[fd.key] = v === '' || v === null ? null : Number(v)
-    else if (fd.type === 'select') p[fd.key] = v === '' ? null : fd.numeric ? Number(v) : v
+    else if (fd.type === 'select') p[fd.key] = v === '' ? null : fd.numeric ? Number(v) : fd.boolean ? v === 'true' : v
     else p[fd.key] = v
     if (fd.type === 'person') {
       p[fd.nameKey] = form[fd.nameKey] || null

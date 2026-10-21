@@ -32,6 +32,17 @@ public class Incident : Record, IServiceBound
     [MaxLength(150)] public string AffectedService { get; set; } = "";
     public int? ServiceId { get; set; }                                  // SLM-10, INC-20 : service du catalogue
     public bool IsMajor { get; set; }                                // incident majeur
+    /// <summary>INC-40 : incident de sécurité (cyber), marqué par tout rôle.</summary>
+    public bool IsSecurity { get; set; }
+    /// <summary>INC-41 : qualification réglementaire par un gestionnaire ; null tant qu'elle n'est pas faite.</summary>
+    public DateTime? QualifiedAt { get; set; }
+    [System.ComponentModel.DataAnnotations.MaxLength(200)] public string? QualifiedBy { get; set; }
+    /// <summary>INC-41 : incident important au sens de NIS 2, et son motif.</summary>
+    public bool? Nis2Important { get; set; }
+    public string? Nis2Reason { get; set; }
+    /// <summary>INC-41 : violation de données à caractère personnel (RGPD), et son motif.</summary>
+    public bool? PersonalDataBreach { get; set; }
+    public string? PersonalDataBreachReason { get; set; }
     public string? Resolution { get; set; }
     [MaxLength(30)] public string? ResolutionCode { get; set; }         // INC-08
     public DateTime? FirstResponseAt { get; set; }                       // première prise en charge (INC-06)
@@ -64,4 +75,8 @@ public record IncidentDto(string Title, string? Description, string? Status,
     string? Impact, string? Urgency, string? Category, string? AffectedService,
     bool IsMajor, string? Resolution, string? ResolutionCode = null,
     string? ReopenReason = null, DateTime? OccurredAt = null, int? PerimeterId = null, int? ServiceId = null,
-    string? OnHoldReason = null) : IRecordDto;
+    string? OnHoldReason = null, bool? IsSecurity = null) : IRecordDto;
+
+/// <summary>INC-41 : qualification réglementaire d'un incident cyber ; <c>AwareAt</c> : prise de connaissance, si autre que la création.</summary>
+public record IncidentQualificationDto(bool Nis2Important, string? Nis2Reason, bool PersonalDataBreach, string? PersonalDataBreachReason,
+    DateTime? AwareAt = null);

@@ -273,10 +273,12 @@ déclarés `group: 'compliance'` dans le registre.
 | Module | Sous-entrée | Visible par | Règle | Statut |
 |---|---|---|---|---|
 | [NIS 2](processus/conformite-nis2.md) (page « Conformité NIS 2 ») | Registre des évaluations (« Évaluations ReCyF (ANSSI) ») ; fiche : Informations · Questionnaire · Synthèse · Liens | Tous | NIS-02, NIS-04, NIS-10 | ✅ |
-| [Déclarations réglementaires](processus/declarations-reglementaires.md) | Registre, échéances | Tous (décisions : Manager) | DRG-01, DRG-10 | 🔜 |
+| [Déclarations réglementaires](processus/declarations-reglementaires.md) (page « Déclarations réglementaires », `/regulatory-notifications`) | Registre (régime, incident, autorité, prochaine échéance en rouge si dépassée) ; fiche : contenu, envois, échéances et contenu envoyé · Liens · Commentaires · Historique | Tous (décisions : Manager) | DRG-01 à DRG-13 | ✅ |
 
 L'encadré « Déclarations réglementaires » et la qualification restent sur la **fiche d'un
-incident cyber** (INC-41) : ce sont des éléments de l'incident, pas des entrées de menu.
+incident cyber** (INC-41) : ce sont des éléments de l'incident, pas des entrées de menu. ✅
+La console des gestionnaires les reprend dans « Urgent » (incidents à qualifier, échéances
+proches ou dépassées).
 
 ### Paramétrage
 

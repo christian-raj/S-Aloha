@@ -14,7 +14,7 @@
 |---|---|---|---|---|---|
 | [Socle commun](../regles-metier.md) | SOC | 21 | 0 | 4 | 2 |
 | [Gestion des problèmes](gestion-des-problemes.md) | PRB | 26 | 0 | 3 | 1 |
-| [Gestion des incidents](gestion-des-incidents.md) | INC | 20 | 0 | 10 | 2 |
+| [Gestion des incidents](gestion-des-incidents.md) | INC | 25 | 0 | 5 | 2 |
 | [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 14 | 0 | 3 | 4 |
 | [Habilitation des changements](habilitation-des-changements.md) | CHG | 23 | 0 | 3 | 1 |
 | [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 17 | 0 | 1 | 2 |
@@ -22,12 +22,12 @@
 | [Gestion des connaissances](gestion-des-connaissances.md) | KB | 13 | 0 | 0 | 3 |
 | [Amélioration continue](amelioration-continue.md) | CSI | 14 | 0 | 1 | 1 |
 | [Conformité NIS 2](conformite-nis2.md) | NIS | 22 | 0 | 1 | 0 |
-| [Déclarations réglementaires](declarations-reglementaires.md) | DRG | 0 | 0 | 11 | 1 |
+| [Déclarations réglementaires](declarations-reglementaires.md) | DRG | 11 | 0 | 0 | 1 |
 | [Gestion de projet](gestion-de-projet.md) | PRJ | 23 | 0 | 0 | 0 |
 | [Périmètres](../perimetres.md) | PER | 12 | 0 | 0 | 0 |
 | [Recherche](../recherche.md) | RAG | 9 | 1 | 2 | 1 |
-| [Reporting](../reporting.md) | REP | 29 | 0 | 1 | 0 |
-| **Total** | | **258** | **1** | **40** | **19** |
+| [Reporting](../reporting.md) | REP | 30 | 0 | 0 | 0 |
+| **Total** | | **275** | **1** | **23** | **19** |
 
 *Comptes au 2026-10-16 (main `af38031`), sur les tableaux de règles (hors indicateurs). Une
 règle faite en partie compte ✅ (7 règles, la part restante est décrite dans son statut).

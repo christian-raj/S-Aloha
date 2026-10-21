@@ -69,6 +69,7 @@ public static class ItemLinks
         new("improvement", "AMI", db => Of(db.Improvements)),
         new("assessment", "EVA", db => Of(db.Assessments)),
         new("project", "PRJ", db => Of(db.Projects)),
+        new("notification", "DRG", db => Of(db.RegulatoryNotifications)),
     ];
 
     public static Kind? ByType(string type) => Kinds.FirstOrDefault(k => k.Type == type);
@@ -79,7 +80,7 @@ public static class ItemLinks
         "incident" => db.Incidents, "request" => db.ServiceRequests, "problem" => db.Problems,
         "change" => db.Changes, "ci" => db.ConfigurationItems, "service" => db.Services,
         "agreement" => db.Agreements, "article" => db.KnowledgeArticles, "improvement" => db.Improvements,
-        "assessment" => db.Assessments, "project" => db.Projects,
+        "assessment" => db.Assessments, "project" => db.Projects, "notification" => db.RegulatoryNotifications,
         _ => null
     };
 

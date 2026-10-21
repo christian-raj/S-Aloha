@@ -43,6 +43,8 @@ import Projects from './modules/project-management/pages/Projects'
 import ProjectDetail from './modules/project-management/pages/ProjectDetail'
 import Assessments from './modules/compliance-assessment/pages/Assessments'
 import AssessmentDetail from './modules/compliance-assessment/pages/AssessmentDetail'
+import Declarations from './modules/regulatory-notifications/pages/Declarations'
+import DeclarationDetail from './modules/regulatory-notifications/pages/DeclarationDetail'
 import ReferentialSettings from './modules/compliance-assessment/pages/ReferentialSettings'
 
 /**
@@ -114,6 +116,8 @@ export default function App() {
         {/* Conformité & réglementation — NIS 2 (évaluation au ReCyF) */}
         <Route path="assessments" element={<Assessments />} />
         <Route path="assessments/:id" element={<AssessmentDetail />} />
+        <Route path="regulatory-notifications" element={<Declarations />} />
+        <Route path="regulatory-notifications/:id" element={<DeclarationDetail />} />
         {/* Paramétrage */}
         <Route path="settings/categories" element={<Categories />} />
         <Route path="settings/discovery" element={<DiscoverySettings />} />

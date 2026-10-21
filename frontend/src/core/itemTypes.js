@@ -11,6 +11,7 @@ export const ITEM_TYPES = {
   article: { label: 'Article', path: '/knowledge' },
   improvement: { label: 'Amélioration', path: '/improvements' },
   assessment: { label: 'Évaluation NIS 2', path: '/assessments' },
+  notification: { label: 'Déclaration réglementaire', path: '/regulatory-notifications' },
   project: { label: 'Projet', path: '/projects' },
 }
 

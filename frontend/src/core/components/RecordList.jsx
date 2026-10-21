@@ -52,7 +52,7 @@ export default function RecordList({ config, intro }) {
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState('')
   const nav = useNavigate()
-  const canCreate = !config.managerOnly || isManagerRole()
+  const canCreate = !config.noCreate && (!config.managerOnly || isManagerRole())
 
   const load = () => config.api.list({
     ...(status && { status }), ...(q && { q }), ...(mine && { owner: 'me' }),

@@ -125,6 +125,10 @@ dépendance à un éditeur.
   Référentiel Cyber France de l'ANSSI : questionnaire noté, scores et maturité, écarts reliés
   à des actions d'amélioration, preuves liées aux enregistrements, comparaison entre deux
   évaluations, export CSV pour l'auditeur, revue annuelle.
+- **[Déclarations réglementaires](docs/reference/processus/declarations-reglementaires.md)** —
+  un incident de sécurité qualifié par un gestionnaire ouvre ses déclarations NIS 2 (ANSSI :
+  alerte précoce 24 h, notification 72 h, rapport final) et RGPD (CNIL : 72 h) ; échéances
+  légales calculées et rappelées, contenu figé à chaque envoi, respect des délais au reporting.
 - **[Périmètres](docs/reference/perimetres.md)** — droits et visibilité par direction, site
   ou entité ; utilisateurs et groupes AD affectés depuis l'écran d'administration.
 - **Traçabilité** — journal d'audit sur chaque fiche : qui a changé quoi, quand, avec
@@ -207,8 +211,6 @@ appartenir à l'un des groupes `GRP-SALOHA-ADMINS`, `GRP-SALOHA-MANAGERS` ou
 La plupart des évolutions sont déjà **spécifiées règle par règle**, avec leurs scénarios
 d'acceptation ([pratiques ITIL](docs/reference/processus/readme.md)). Les prochains chantiers :
 
-- 🚨 **Déclarations réglementaires** des incidents cyber : NIS 2 (alerte 24 h, notification
-  72 h, rapport final) et RGPD (72 h), rattachées à l'incident, avec échéances et alertes.
 - 📎 **Pièces jointes** sur chaque fiche, et **notifications par courriel** (immédiates ou
   en résumé quotidien).
 - 📋 **Référentiels de conformité importés** par l'organisation (ISO 27002, CR-CMM…), à côté
@@ -303,7 +305,9 @@ place, NIS 2 built in.**
   (health score, MTTR/MTTD, FCR, SLA, CSV/PDF exports) and project management (Scrum,
   Kanban, V-model, PRINCE2 or hybrid).
 - **Security and compliance**: **NIS 2** self-assessment against the French ANSSI
-  framework (scores, gaps, evidence, comparison, auditor export), perimeter-scoped
+  framework (scores, gaps, evidence, comparison, auditor export), regulatory notifications of
+  security incidents (NIS 2 early warning, notification and final report; GDPR 72 h) with legal
+  deadlines and reminders, perimeter-scoped
   permissions (department, site, entity), full audit trail; an administration console
   (users and roles from the directory, platform health, global audit log, duplicate
   clean-up) and manager-maintained incident and problem categories.

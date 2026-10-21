@@ -99,9 +99,13 @@ export const MODULES = [
   // --- Conformité & réglementation ---
   {
     // Évaluation de conformité NIS 2 au Référentiel Cyber France de l'ANSSI.
-    // Les déclarations réglementaires (DRG) rejoindront ce groupe avec leur interface.
     id: 'compliance', group: 'compliance', label: 'NIS 2', description: 'Évaluations ReCyF (ANSSI)', status: 'active',
     href: '/assessments', routes: ['/assessments'],
+  },
+  {
+    // Déclarations réglementaires des incidents de sécurité (DRG) : NIS 2, RGPD.
+    id: 'regulatory-notifications', group: 'compliance', label: 'Déclarations', description: 'Incidents de sécurité : ANSSI, CNIL',
+    status: 'active', href: '/regulatory-notifications', routes: ['/regulatory-notifications'],
   },
 ]
 

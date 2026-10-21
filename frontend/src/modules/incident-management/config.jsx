@@ -28,6 +28,8 @@ export const incidentConfig = {
     { key: 'affectedService', label: 'Service affecté', placeholder: 'Ex. : Messagerie' },
     ownerField('Assigné à'),
     { key: 'isMajor', label: 'Gravité', type: 'checkbox', checkboxLabel: 'Incident majeur', managerOnly: true },
+    // INC-40 : tout rôle marque un incident de sécurité (cyber), qui peut appeler des déclarations réglementaires.
+    { key: 'isSecurity', label: 'Sécurité', type: 'checkbox', checkboxLabel: 'Incident de sécurité (cyber)' },
     { key: 'resolution', label: 'Résolution', type: 'textarea', create: false, rows: 3,
       placeholder: 'Obligatoire pour passer à Résolu ou Clos.' },
     { key: 'resolutionCode', label: 'Code de résolution', type: 'select', create: false,
@@ -47,6 +49,7 @@ export const incidentConfig = {
   badges: r => <>
     <span className={'badge ' + r.priority}>{r.priority}</span>{' '}
     {r.isMajor && <span className="badge t-bad">Majeur</span>}{' '}
+    {r.isSecurity && <span className="badge t-bad">Sécurité</span>}{' '}
     <SlaBadge state={r.slaState} />
   </>,
   // SLM-13, INC-21 : échéances tirées du SLA en vigueur du service.
