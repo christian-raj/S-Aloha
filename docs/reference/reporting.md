@@ -31,10 +31,10 @@ Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=&perime
 | Onglet | API | Règles |
 |---|---|---|
 | Synthèse globale | `GET /api/reports/dashboard/overview` | REP-01 à REP-07 |
-| Incidents | `GET /api/reports/dashboard/incidents` | REP-10 à REP-15 |
+| Incidents | `GET /api/reports/dashboard/incidents` | REP-10 à REP-16 |
 | Demandes | `GET /api/reports/dashboard/requests` | REP-60 à REP-63 |
-| Problèmes | `GET /api/reports/dashboard/problems` | REP-20 à REP-25 |
-| Changements & projets | `GET /api/reports/dashboard/changes-projects` | REP-30 à REP-34 |
+| Problèmes | `GET /api/reports/dashboard/problems` | REP-20 à REP-26 |
+| Changements & projets | `GET /api/reports/dashboard/changes-projects` | REP-30 à REP-35 |
 | Conformité & métriques | `GET /api/reports/dashboard/compliance` | REP-40 à REP-44 |
 | Configuration & inventaire | `GET /api/reports/dashboard/configuration` | REP-50 à REP-53 |
 
@@ -64,6 +64,7 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 | REP-13 | **Backlog par âge** des incidents ouverts : < 24 h, 1 à 7 jours, > 7 jours | ✅ | |
 | REP-14 | **Burn-up** : cumul jour par jour des incidents créés et résolus depuis le début de la période ; répartition des créés par catégorie et par service | ✅ | |
 | REP-15 | **Incidents à suivre** : ouverts majeurs, **SLA en risque** (moins de 25 % du délai restant, [INC-24](processus/gestion-des-incidents.md)) ou **SLA dépassé** ; majeurs d'abord, puis par échéance | ✅ | |
+| REP-16 | **Prise en charge et réouvertures** : délai moyen en heures de `FirstResponseAt − CreatedAt` des incidents pris en charge sur la période ([INC-31](processus/gestion-des-incidents.md)) ; part des incidents résolus sur la période rouverts au moins une fois (INC-33) | ✅ | 2 |
 
 ## 5. Problèmes
 
@@ -75,6 +76,7 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 | REP-23 | **Top 5 des services** qui génèrent le plus de problèmes, avec leurs incidents reliés | ✅ | |
 | REP-24 | **Entonnoir** : Identifié (Nouveau), RCA en cours (En analyse), Contournement trouvé (Erreur connue sans correctif planifié), Correctif planifié (ouvert, avec une action ouverte ou un changement relié), Clôturé (Résolu ou Clos) | ✅ | |
 | REP-25 | **Actions correctives** : ouvertes, en retard (avec leurs responsables R), terminées sur la période | ✅ | |
+| REP-26 | **Qualité de la résolution** : part des problèmes Résolu ou Clos dont la cause racine est renseignée ([PRB-33](processus/gestion-des-problemes.md)) ; **récurrences** — problèmes résolus ou clos ayant reçu un incident sur la période, d'après l'alerte PRB-23, en alerte s'il y en a (PRB-35) ; **5 problèmes** aux incidents reliés les plus nombreux (PRB-34) | ✅ | 2, 3 |
 
 ## 6. Changements et projets
 
@@ -85,6 +87,7 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 | REP-32 | **Avancement** des projets En cours ou Suspendus : points terminés, sinon phases ou étapes terminées, sinon livrables validés ; moyenne des projets mesurables | ✅ | |
 | REP-33 | **Calendrier** des changements des 30 prochains jours (hors rejetés et clos), en Gantt | ✅ | |
 | REP-34 | **Matrice 5 × 5** des risques ouverts des projets actifs (probabilité × impact) | ✅ | |
+| REP-35 | **Effets des changements** : part des changements mis en œuvre sur la période reliés à un incident créé dans les 7 jours qui suivent ([CHG-33](processus/habilitation-des-changements.md)) ; délai moyen d'autorisation des Normal et Urgent autorisés sur la période (CHG-34) ; **respect des créneaux** — dates réelles comprises dans les dates planifiées, parmi les changements mis en œuvre aux dates réelles saisies (CHG-35) | ✅ | 2, 3 |
 
 ## 7. Conformité et métriques
 

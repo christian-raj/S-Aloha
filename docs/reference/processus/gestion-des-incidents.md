@@ -163,7 +163,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | Incident → CI | CI affecté | Lien manuel ; CI Retiré refusé (CFG-14) | ✅ / 🔜 |
 | Incident → Service / SLA | Service affecté, cibles | INC-20, INC-21 | ✅ |
 | Incident → Article | Solution utilisée, cas similaires | INC-19, RAG-06, RAG-09 | ✅ (suggestion, lien en un clic) |
-| Incident → Changement | Changement à l'origine de l'incident | Lien manuel ; indicateur CHG-33 | ✅ / 🔜 |
+| Incident → Changement | Changement à l'origine de l'incident | Lien manuel ; indicateur CHG-33 | ✅ |
 | Incident → Déclaration réglementaire | Incident cyber à déclarer (NIS 2, RGPD) | INC-40 à INC-44, [DRG-01](declarations-reglementaires.md) | ✅ |
 
 ## 8. Console et indicateurs
@@ -181,9 +181,9 @@ gestionnaires, INC-26). À venir : incidents non pris en charge depuis plus d'un
 | Volumétrie par statut | | ✅ |
 | Respect du SLA | Part des incidents résolus avant `ResolutionDueAt`, par service et priorité | ✅ global et par service ([REP-02, REP-41](../reporting.md)) / 🔜 INC-30 (par priorité) |
 | MTTD | `CreatedAt − OccurredAt` (INC-27) | ✅ [REP-11](../reporting.md) |
-| Délai moyen de prise en charge | `FirstResponseAt − CreatedAt` | 🔜 INC-31 (lot 2) |
+| Délai moyen de prise en charge | `FirstResponseAt − CreatedAt` | ✅ INC-31 ([REP-16](../reporting.md#4-incidents)) |
 | Résolution au premier contact | Part INC-23 | ✅ [REP-12](../reporting.md) |
-| Taux de réouverture | Incidents avec `ReopenCount` > 0 / résolus | 🔜 INC-33 (lot 2) |
+| Taux de réouverture | Incidents avec `ReopenCount` > 0 / résolus | ✅ INC-33 (REP-16) |
 | Stock par ancienneté | Incidents ouverts par tranche d'âge (< 1 j, 1–3 j, 3–7 j, > 7 j) et priorité | ✅ trois tranches (< 24 h, 1 à 7 j, > 7 j, [REP-13](../reporting.md)) / 🔜 INC-34 (tranches cibles, priorité) |
 
 ## 9. API

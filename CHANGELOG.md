@@ -17,6 +17,11 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Ajouté
 
+- **Indicateurs au tableau de bord** : délai de prise en charge et taux de réouverture des
+  incidents (INC-31, INC-33) ; part des problèmes clos avec cause racine, récurrences après
+  correctif et problèmes aux incidents les plus nombreux (PRB-33 à PRB-35) ; changements suivis
+  d'un incident, délai d'autorisation et respect des créneaux (CHG-33 à CHG-35).
+
 - **Pièces jointes** (SOC-25) : chaque fiche a un onglet « Pièces jointes » ; les fichiers
   (bureautique, texte, images) vont dans un stockage compatible S3, Garage en tête, réglé
   dans la console ; `docker-compose.yml` fournit un nœud Garage (profil `pieces-jointes`).
