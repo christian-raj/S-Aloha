@@ -56,7 +56,7 @@ et l'arbitrage du portefeuille (choix d'investissement entre applications ou pro
 | Consulter les clés d'hôte SSH et certificats retenus | ✘ | ✔ | ✔ | ✅ CFG-53 |
 | Accepter une clé ou un certificat changé, oublier un hôte | ✘ | ✘ | ✔ | ✅ CFG-53 |
 | Accepter ou écarter une relation proposée par la découverte | ✘ | ✔ | ✔ | ✅ CFG-55 |
-| Importer en masse | ✘ | ✘ | ✔ | 🔜 CFG-30 |
+| Importer en masse | ✘ | ✘ | ✔ | ✅ CFG-30 |
 | Supprimer un CI | ✘ | ✘ | ✔ | ✅ |
 
 Les actifs découverts, tâches de scan et identifiants portent un périmètre, comme les CI :
@@ -116,7 +116,7 @@ suit CFG-05.
 | `Owner…` | AD | En service | Propriétaire du CI (CFG-11) | ✅ |
 | `IpAddress`, `MacAddress` | texte 45, 17 | | Types Serveur, Réseau, Stockage, Poste de travail. IPv4 ou IPv6 valide ; MAC normalisée `00:1A:2B:3C:4D:5E` (saisie avec tirets, points ou sans séparateur acceptée) ; 400 sinon. Critères de rapprochement (CFG-41) | ✅ |
 | `OperatingSystem` | texte 150 | | Système ou micrologiciel ; mis à jour par la découverte ; comparé aux fins de support (CFG-47) | ✅ |
-| `Attributes` | clé/valeur | | Autres attributs propres au type (version, éditeur, CPU, mémoire…) | 🔜 CFG-16 |
+| `Attributes` | clé/valeur (jsonb) | | Autres attributs propres au type (version, éditeur, CPU, mémoire…) ; clés définies par type, nombres et adresses vérifiés | ✅ CFG-16 |
 | `LastVerifiedAt`, `LastVerifiedBy` | date, AD | auto | Dernière vérification | ✅ CFG-15 |
 | Services supportés | liens CI ↔ service | | Les services du catalogue reliés au CI (onglet Liens) | ✅ CFG-21 |
 
@@ -363,7 +363,7 @@ d'un actif :
 | CFG-13 | Un CI relié à un **incident ou changement ouvert** ne peut pas être retiré (400, avec les références en cause) | ✅ | 1 |
 | CFG-14 | Un CI **Retiré** ne peut plus être relié à un nouvel incident, changement ou CI (400) ; ses liens existants restent visibles | ✅ | 1 |
 | CFG-15 | **Vérification** : le propriétaire ou un Manager atteste que la fiche est exacte (`LastVerifiedAt`) ; un CI En service non vérifié depuis **12 mois** remonte en relance au propriétaire. Vérification par `POST /api/configuration-items/{id}/verify` ; relance par notification (relevé périodique). | ✅ | |
-| CFG-16 | **Attributs par type** : chaque type de CI définit des attributs facultatifs (Serveur : CPU, mémoire ; Application : version, éditeur, URL ; Poste de travail : utilisateur…). L'identification technique, le portefeuille applicatif et les actifs matériels (§ 3.2 à 3.4) sont des colonnes dédiées, hors de ces attributs | 🔜 | 3 |
+| CFG-16 | **Attributs par type** : chaque type de CI définit des attributs facultatifs (Serveur : CPU, mémoire ; Application : version, éditeur, URL ; Poste de travail : utilisateur…). L'identification technique, le portefeuille applicatif et les actifs matériels (§ 3.2 à 3.4) sont des colonnes dédiées, hors de ces attributs | ✅ (catalogue `GET /api/configuration-items/attribute-types` : Serveur — processeurs, mémoire, disque, hyperviseur, rôle ; Application — version, éditeur, adresse, licence ; Base de données — moteur, version, taille, instance ; Réseau — micrologiciel, ports, rôle ; Stockage — capacité, protocole, RAID ; Poste de travail — utilisateur, processeurs, mémoire ; Logiciel — version, éditeur, licence, installations ; Autre — aucun. Clé inconnue, nombre ou adresse invalide : 400 ; valeur vide retirée ; saisie sans attributs : gardés ; changement de type : seuls ceux du nouveau type restent. Encadré « Attributs » de la fiche) | 3 |
 | CFG-17 | **Unicité** : deux CI non retirés ne peuvent pas avoir le même nom dans le même environnement (409) | ✅ | 1 |
 | CFG-18 | Un CI **Hors service** relié à un service En service signale ce service « dégradé » sur la fiche du service, avec les CI en cause (`GET /api/services/{id}/degradation`) | ✅ | 2 |
 
@@ -448,7 +448,8 @@ Indicateurs du tableau de bord : onglet [Configuration & inventaire](../reportin
 | `POST /api/configuration-items`, `PUT /api/configuration-items/{id}` | User | Création, modification |
 | `POST /api/configuration-items/{id}/relations`, `DELETE /api/configuration-items/relations/{id}` | User | Relations |
 | `DELETE /api/configuration-items/{id}` | Admin | Suppression |
-| `POST /api/configuration-items/import` | Admin | Import CSV — 🔜 CFG-30 |
+| `POST /api/configuration-items/import` (`csv`, `perimeterId` ; `?dryRun=true` : contrôle seul) | Admin | Import CSV : tout ou rien, rapport des lignes refusées (CFG-30) |
+| `GET /api/configuration-items/attribute-types` | User | Attributs définis par type de CI (CFG-16) |
 | `GET /api/discovery/staging` (filtres `status`, `source`, `q`, `unknown`, `ci`, `perimeter`), `GET …/staging/summary`, `GET …/staging/{id}` | User, gestionnaire du périmètre | Actifs du sas, compteurs ; la fiche donne le rapprochement recalculé et le CI pré-rempli (CFG-40, CFG-41) |
 | `POST …/staging/{id}/reconcile` (`action` : `update` + `targetCiId`, ou `create` + `ci`), `POST …/staging/{id}/ignore`, `POST …/staging/{id}/restore`, `DELETE …/staging/{id}` | User, gestionnaire du périmètre | Réconciliation, exclusion, rétablissement, suppression (CFG-40) |
 | `GET /api/discovery/jobs`, `GET …/jobs/{id}`, `POST …/jobs`, `PUT …/jobs/{id}`, `POST …/jobs/{id}/run` | User, gestionnaire du périmètre | Tâches de scan, lancement immédiat (202, CFG-46) |
@@ -471,7 +472,7 @@ premier identifiant et à ne plus changer), `IntervalMinutes` (relevé des tâch
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
-| CFG-30 | **Import en masse** (CSV : nom, type, environnement, emplacement, propriétaire, statut) : validation ligne à ligne, rapport des lignes refusées, aucun enregistrement partiel en cas d'erreur de format | 🔜 | 3 |
+| CFG-30 | **Import en masse** (CSV : nom, type, environnement, emplacement, propriétaire, statut) : validation ligne à ligne, rapport des lignes refusées, aucun enregistrement partiel en cas d'erreur de format | ✅ (Admin ; séparateur « ; » ou « , », BOM accepté, en-tête obligatoire, nom et type exigés, statut Planifié et environnement Production par défaut, propriétaire = compte AD ; chaque ligne passe les règles d'une création, dont l'unicité du nom par environnement, aussi entre lignes du fichier ; une seule ligne refusée et rien n'est créé ; contrôle seul possible ; 5 000 lignes au plus ; créations tracées au journal d'audit. Carte « Importer des CI » du registre) | 3 |
 
 ## 10. Scénarios d'acceptation
 

@@ -102,6 +102,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<ServiceRequest>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<Change>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<ConfigurationItem>().HasIndex(x => x.Reference).IsUnique();
+        // CFG-16 : attributs par type, une colonne jsonb.
+        b.Entity<ConfigurationItem>().Property(x => x.Attributes).HasColumnType("jsonb")
+            .HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new(),
+                new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<Dictionary<string, string>>(
+                    (a, b) => a!.Count == b!.Count && !a.Except(b).Any(),
+                    v => v.Aggregate(0, (h, kv) => HashCode.Combine(h, kv.Key, kv.Value)),
+                    v => new Dictionary<string, string>(v)));
         b.Entity<ItService>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<ServiceLevelAgreement>().HasIndex(x => x.Reference).IsUnique();
         b.Entity<KnowledgeArticle>().HasIndex(x => x.Reference).IsUnique();

@@ -66,6 +66,9 @@ public class ConfigurationItem : Record
     public DateTime? WarrantyExpiry { get; set; }
     public DateTime? EndOfSupport { get; set; }
 
+    /// <summary>CFG-16 : attributs propres au type (<see cref="CiAttributes"/>), en JSON.</summary>
+    public Dictionary<string, string> Attributes { get; set; } = new();
+
     public List<CiRelationship> Outgoing { get; set; } = new();   // ce CI → autres
     public List<CiRelationship> Incoming { get; set; } = new();   // autres → ce CI
 }
@@ -100,6 +103,10 @@ public record ConfigurationItemDto(string Title, string? Description, string? St
     string? Criticality = null, int? RtoHours = null, int? RpoHours = null,
     bool GdprSensitive = false, bool Nis2Scope = false, string? AppLifecycle = null,
     string? Vendor = null, string? Model = null, string? SerialNumber = null,
-    DateTime? PurchaseDate = null, DateTime? WarrantyExpiry = null, DateTime? EndOfSupport = null) : IRecordDto;
+    DateTime? PurchaseDate = null, DateTime? WarrantyExpiry = null, DateTime? EndOfSupport = null,
+    Dictionary<string, string?>? Attributes = null) : IRecordDto;
+
+/// <summary>CFG-30 : fichier CSV à importer et périmètre d'accueil.</summary>
+public record CiImportDto(string? Csv, int? PerimeterId = null);
 
 public record CiRelationshipDto(string TargetReference, string Type);

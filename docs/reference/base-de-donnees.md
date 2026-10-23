@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `DuplicateDismissals` | Table `DuplicateDismissals` : paires écartées (« pas un doublon », ADM-42) — type, identifiants dans l'ordre croissant (unique), auteur, date |
+| `ConfigurationLot3` | Colonne `ConfigurationItems.Attributes` (jsonb, `{}` pour les CI existants, CFG-16) |
 | `KnowledgeLot3` | Tables `KnowledgeArticleVersions` (versions publiées, KB-15) et `KnowledgeFeedbacks` (un vote par lecteur, KB-13), en cascade ; colonnes `KnowledgeArticles.Version`, `HelpfulCount`, `NotHelpfulCount` |
 | `ProblemChangeLot3` | Colonnes `StandardChangeModels.SuspendedAt`, `SuspendedByChangeId`, `SuspendedByChange`, `ReviewedAt`, `ReviewedBy`, `ReviewNote` (CHG-27) |
 | `IncidentParent` | Colonne `Incidents.ParentId` (INC-16), clé étrangère vers l'incident parent, mise à null à sa suppression |

@@ -17,6 +17,10 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 ### Ajouté
 
+- **Configuration** (CFG-16, CFG-30) : attributs propres à chaque type de CI (processeurs et
+  mémoire d'un serveur, version et éditeur d'une application…) ; import en masse de CI par
+  un fichier CSV (Admin), tout ou rien, avec le rapport des lignes refusées.
+
 - **Connaissances** (KB-13, KB-15, KB-16) : « utile / pas utile » sur un article publié (un
   vote par lecteur ; un article jugé peu utile remonte à son responsable) ; chaque
   publication est conservée en version, relisible sur la fiche ; quatre yeux : un
@@ -185,6 +189,7 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Configuration** : la migration `ConfigurationLot3` ajoute la colonne `ConfigurationItems.Attributes`.
 - **Connaissances** : la migration `KnowledgeLot3` ajoute deux tables et trois colonnes. Les
   articles déjà publiés sont en version 0 jusqu'à leur prochaine publication. Un gestionnaire
   qui rédige seul un article le fait désormais publier par un autre gestionnaire ou un Admin.

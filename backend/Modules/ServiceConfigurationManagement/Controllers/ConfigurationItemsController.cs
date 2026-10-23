@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Auth;
@@ -39,6 +42,87 @@ public class ConfigurationItemsController(AppDbContext db) : RecordController<Co
         if (creating || e.Status != "Hors service" || Db.Entry(e).Property(x => x.Status).OriginalValue == "Hors service") return;
         var graph = await ImpactGraphAsync();
         _servicesTouched = await ServicesOfAsync(Traverse(e.Id, graph.Down).Select(x => x.Id).Append(e.Id));
+    }
+
+    /// <summary>CFG-16 : attributs définis pour chaque type de CI.</summary>
+    [HttpGet("attribute-types")]
+    public IActionResult AttributeTypes() => Ok(CiAttributes.ByType);
+
+    public const int MaxImportLines = 5000;
+    private static readonly string[] ImportColumns = ["nom", "type", "environnement", "emplacement", "propriétaire", "statut"];
+
+    private static string Key(string header) =>
+        new string(header.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD)
+            .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).ToArray());
+
+    /// <summary>
+    /// CFG-30 : import en masse (CSV, séparateur « ; » ou « , », en-tête obligatoire : nom, type,
+    /// environnement, emplacement, propriétaire, statut ; les quatre dernières facultatives). Chaque
+    /// ligne passe les règles d'une création (types, statut, propriétaire, unicité, y compris entre
+    /// lignes du fichier). Une seule ligne refusée et rien n'est créé : le rapport liste les refus.
+    /// <c>dryRun</c> : contrôle seul.
+    /// </summary>
+    [HttpPost("import")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> Import(CiImportDto dto, [FromQuery] bool dryRun = false)
+    {
+        await ScopeAsync();
+        var (perimeterId, refused, forbidden) = await Access.ChooseAsync(dto.PerimeterId);
+        if (forbidden) return Forbid();
+        if (refused is not null) return BadRequest(new { message = refused });
+        ActOn(perimeterId!.Value);
+
+        var rows = ComplianceAssessment.Csv.Parse(dto.Csv ?? "");
+        if (rows.Count < 2) return BadRequest(new { message = "Fichier vide : une ligne d'en-tête puis une ligne par CI." });
+        if (rows.Count - 1 > MaxImportLines) return BadRequest(new { message = $"{MaxImportLines} lignes au plus par import." });
+        var header = rows[0].Select(Key).ToList();
+        var unknown = header.Where(h => h != "" && !ImportColumns.Select(Key).Contains(h)).ToList();
+        if (!header.Contains("nom") || !header.Contains("type") || unknown.Count > 0)
+            return BadRequest(new { message = $"En-tête attendu : {string.Join(";", ImportColumns)} (nom et type obligatoires)"
+                + (unknown.Count > 0 ? $" ; colonnes inconnues : {string.Join(", ", unknown)}." : ".") });
+        string Cell(List<string> row, string column) { var i = header.IndexOf(Key(column)); return i >= 0 && i < row.Count ? row[i].Trim() : ""; }
+
+        var errors = new List<object>();
+        var accepted = new List<ConfigurationItemDto>();
+        var seen = new HashSet<string>();
+        for (var n = 1; n < rows.Count; n++)
+        {
+            var row = rows[n];
+            var owner = Cell(row, "propriétaire");
+            var status = Cell(row, "statut");
+            var line = new ConfigurationItemDto(Cell(row, "nom"), null, status == "" ? "Planifié" : status,
+                owner == "" ? null : "User", owner == "" ? null : owner, owner == "" ? null : owner,
+                Cell(row, "type"), Cell(row, "environnement") is var env && env != "" ? env : "Production", Cell(row, "emplacement"), perimeterId);
+            var probe = new ConfigurationItem { PerimeterId = perimeterId.Value };
+            var error = Fill(probe, line, true) ?? await ValidateAsync(probe)
+                ?? Allowed.Check("Statut", line.Status, Statuses)
+                ?? await CheckStatusAsync(probe, line.Status!) ?? await ConflictAsync(probe);
+            // CFG-17 : un nom par environnement, aussi entre les lignes du fichier.
+            if (error is null && !seen.Add($"{probe.Title.ToLowerInvariant()}|{probe.Environment}"))
+                error = $"« {probe.Title} » figure deux fois pour l'environnement {probe.Environment} dans le fichier.";
+            if (error is not null) errors.Add(new { Line = n + 1, Name = line.Title, Message = error });
+            else accepted.Add(line);
+        }
+        if (errors.Count > 0)
+            return BadRequest(new { message = $"{errors.Count} ligne(s) refusée(s) : rien n'a été importé.", Created = 0, Errors = errors });
+        if (dryRun) return Ok(new { message = $"{accepted.Count} CI prêts à importer.", Created = 0, Ready = accepted.Count, Errors = errors });
+
+        await using var tx = await Db.Database.BeginTransactionAsync();
+        var created = new List<string>();
+        foreach (var line in accepted)
+        {
+            var e = await References.CreateAsync(Db, Code, () =>
+            {
+                var x = new ConfigurationItem { PerimeterId = perimeterId.Value };
+                Fill(x, line, true);
+                x.Status = line.Status!;
+                x.CreatedBy = Me; x.CreatedByDisplayName = MyDisplay;
+                return x;
+            });
+            created.Add(e.Reference);
+        }
+        await tx.CommitAsync();
+        return Ok(new { message = $"{created.Count} CI importés.", Created = created.Count, References = created, Errors = errors });
     }
 
     /// <summary>CFG-15 : le propriétaire (ou un gestionnaire) atteste que la fiche est exacte.</summary>
