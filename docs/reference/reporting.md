@@ -112,7 +112,7 @@ périmètres qu'ils gèrent ([CFG-40](processus/gestion-de-la-configuration.md))
 | REP-51 | **Couverture du portefeuille applicatif** : part des applications avec code, direction, propriétaire métier, responsable DSI et criticité ([CFG-35, CFG-43](processus/gestion-de-la-configuration.md)) | ✅ | |
 | REP-52 | **Obsolescence** : actifs matériels par état de support, actifs en fin de support dépassée ou dans les 6 mois (25 au plus, du plus ancien au plus récent), avec la source de la date ([CFG-38, CFG-47](processus/gestion-de-la-configuration.md)) ; en alerte s'il y en a une dépassée | ✅ | |
 | REP-53 | **Découverte** (gestionnaires) : actifs à rapprocher, en conflit, inconnus (Shadow IT, 25 derniers listés), rapprochés ; actifs par source ; nouveaux actifs et rapprochements par jour de la période ([CFG-36, CFG-37, CFG-42](processus/gestion-de-la-configuration.md)) | ✅ | |
-| REP-54 | **Qualité de la CMDB** : exactitude — part des CI En service vérifiés depuis moins de 12 mois ([CFG-32](processus/gestion-de-la-configuration.md)) ; 10 CI reliés au plus d'incidents créés sur la période (CFG-33) ; CI sans propriétaire ni relation, nombre et 25 premiers (CFG-34) | ✅ | 2 |
+| REP-54 | **Qualité de la CMDB** : exactitude — part des CI En service vérifiés depuis moins de 12 mois, avec le nombre de CI En service mesurés ([CFG-32](processus/gestion-de-la-configuration.md)) ; 10 CI reliés au plus d'incidents créés sur la période (CFG-33) ; CI sans propriétaire ni relation, nombre et 25 premiers (CFG-34) | ✅ | 2 |
 
 ## 9. Demandes
 
