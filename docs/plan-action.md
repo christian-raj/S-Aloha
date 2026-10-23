@@ -22,11 +22,14 @@
 lot 1 ([RAG-10](reference/recherche.md), en attente d'un jeu de requêtes réelles), aucune en
 lot 2, 18 en lot 3 ([synthèse](reference/processus/readme.md)).
 
+**Versions** : préversions 0.1.0 et 0.2.0 retirées le 2026-10-23 (releases et tags) ; la
+première version publiée sera **stable**, à la fin de ce plan d'action.
+
 **Réalisable sans arbitrage (code)** — règles du lot 3, une PR par pratique, dans cet ordre :
 
 | Ordre | Pratique | Règles | Chantier |
 |---|---|---|---|
-| ~~1~~ | Demandes | ~~REQ-24, REQ-25, REQ-11, REQ-32~~ et indicateurs REQ-40 à REQ-43 (onglet Demandes du reporting)~~ — faits le 2026-10-23 | F3 |
+| ~~1~~ | Demandes | ~~REQ-24, REQ-25, REQ-11, REQ-32 et indicateurs REQ-40 à REQ-43 (onglet Demandes du reporting)~~ — faits le 2026-10-23 | F3 |
 | 2 | Incidents | INC-16 (incidents enfants), INC-26 (relance après 5 jours ouvrés En attente) | |
 | 3 | Problèmes, changements | PRB-32 (problème sans activité depuis 30 jours), CHG-27 (modèle standard suspendu après un échec) | |
 | 4 | Connaissances | KB-13 (retour des lecteurs), KB-15 (versions), KB-16 (quatre yeux) | |
@@ -194,6 +197,6 @@ Accueil des contributeurs et financement du projet ; canaux et contreparties pub
 | C2 | Code de conduite (attend l'adresse de contact dédiée), `.github/FUNDING.yml` (après C6) | code + action |
 | C5 | Tableau GitHub Projects public alimenté par ce plan (le jeton `gh` du mainteneur doit recevoir le droit `project` : `gh auth refresh -s project`) | action |
 | C6 | **Activer GitHub Sponsors** (profil du mainteneur : informations bancaires et fiscales), niveaux et contreparties ([ADR-0011](decisions/adr-0011-financement-sponsoring-et-services.md)) | action |
-| C7 | Lancement : LinuxFr, Reddit, AlternativeTo, Framalibre (textes prêts) ; téléverser l'image de partage `docs/screenshots/partage-1280x640.png` (Settings → Social preview) ; awesome-selfhosted **à partir du 2027-02-06** (première version de plus de 4 mois exigée) | action |
+| C7 | Lancement : LinuxFr, Reddit, AlternativeTo, Framalibre (textes prêts) ; téléverser l'image de partage `docs/screenshots/partage-1280x640.png` (Settings → Social preview) ; awesome-selfhosted **4 mois après la première version stable** (première version de plus de 4 mois exigée ; les préversions retirées ne comptent plus) | action |
 | C8 | Démo en ligne réinitialisée chaque nuit | décision |
 | C9 | `GOVERNANCE.md` dès le deuxième contributeur régulier | décision |

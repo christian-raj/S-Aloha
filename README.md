@@ -9,7 +9,6 @@ et montre à chacun **ce qui requiert son intervention, maintenant**.
 
 **10 pratiques ITIL 4** reliées entre elles · **plus de 250 règles de gestion** · **NIS 2** intégré · **on-prem** et libre
 
-[![Version](https://img.shields.io/github/v/release/christian-raj/S-Aloha?label=version)](https://github.com/christian-raj/S-Aloha/releases)
 [![CI](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml/badge.svg)](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
