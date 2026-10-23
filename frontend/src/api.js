@@ -14,7 +14,8 @@ async function request(path, options = {}) {
     ...options,
     credentials: 'same-origin',
     headers: {
-      'Content-Type': 'application/json',
+      // Un formulaire de fichier (pièce jointe, SOC-25) laisse le navigateur poser son type multipart.
+      ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       // Protection CSRF : exigé par l'API sur toute modification authentifiée par le cookie.
       'X-S-Aloha': '1',
       ...options.headers
@@ -65,6 +66,17 @@ const records = (path) => ({
 export const api = {
   audit: { list: (type, id) => request(`/audit?type=${type}&id=${id}`) },
   // Administration (ADM, Admin) : santé, journal d'audit global.
+  // SOC-25 : pièces jointes d'un enregistrement (le téléchargement est un simple lien).
+  attachments: {
+    list: (type, id) => request(`/attachments?type=${type}&id=${id}`),
+    upload: (type, id, file) => {
+      const form = new FormData()
+      form.append('type', type); form.append('id', String(id)); form.append('file', file)
+      return request('/attachments', { method: 'POST', body: form })
+    },
+    remove: (id) => request(`/attachments/${id}`, { method: 'DELETE' }),
+    contentUrl: (id) => `${API}/attachments/${id}/content`
+  },
   // SOC-22 : mes courriels de notification.
   me: {
     mailPreferences: () => request('/me/mail-preferences'),

@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `DuplicateDismissals` | Table `DuplicateDismissals` : paires écartées (« pas un doublon », ADM-42) — type, identifiants dans l'ordre croissant (unique), auteur, date |
+| `Attachments` | Table `Attachments` (enregistrement visé, nom, type, taille, empreinte SHA-256, clé dans le stockage, auteur, date), index (type, id) (SOC-25) |
 | `MailNotifications` | Table `MailPreferences` (choix de courriel d'un compte, adresse, rôle et groupes relevés, envoyé jusqu'à) ; colonne `MailSettings.PublicUrl` (SOC-22) |
 | `Lot3Fin` | Colonnes `Improvements.FollowUpDate`, `FollowUpDoneAt`, `FollowUpDoneBy`, `FollowUpHolds`, `FollowUpNote` (CSI-15) ; `RegulatoryNotifications.Severity`, `CompromiseIndicators`, `BreachNature`, `LikelyConsequences` (DRG-08) |
 | `ConfigurationLot3` | Colonne `ConfigurationItems.Attributes` (jsonb, `{}` pour les CI existants, CFG-16) |

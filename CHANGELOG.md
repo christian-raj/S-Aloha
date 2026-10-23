@@ -17,6 +17,10 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Ajouté
 
+- **Pièces jointes** (SOC-25) : chaque fiche a un onglet « Pièces jointes » ; les fichiers
+  (bureautique, texte, images) vont dans un stockage compatible S3, Garage en tête, réglé
+  dans la console ; `docker-compose.yml` fournit un nœud Garage (profil `pieces-jointes`).
+
 - **Notifications par courriel** (SOC-22) : chacun choisit, dans « Mes préférences », de
   recevoir ses notifications par courriel, au fil de l'eau ou en résumé quotidien, à
   l'adresse de son choix ; liens vers les fiches dès que l'adresse de l'interface est réglée
@@ -203,6 +207,9 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Pièces jointes** : la migration `Attachments` ajoute la table `Attachments`. Activer le
+  stockage dans la console (exploitation, § Pièces jointes et courriels). Un proxy placé devant
+  `web` doit admettre des requêtes à la taille des pièces jointes.
 - **Courriels** : la migration `MailNotifications` ajoute la table `MailPreferences` et la
   colonne `MailSettings.PublicUrl`. Renseigner l'adresse de l'interface pour des liens
   dans les courriels.

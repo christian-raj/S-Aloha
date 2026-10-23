@@ -336,7 +336,7 @@ un onglet sans contenu reste visible avec un état vide explicite.
 | Propre à la pratique | Analyse de cause racine et Actions correctives (problème), Relations et impact (CI), Accords (SLA) (service), Conflits (changement) | PRB-05, CFG-04, SLM-02, CHG-09 | ✅ |
 | Liens | Enregistrements reliés, toutes pratiques ; onglet dédié ; un enregistrement d'un autre périmètre est listé masqué, sans lien ni retrait (PER-08) | SOC-12, PER-08 | ✅ |
 | Commentaires | Fil chronologique, public ou note de travail (marquée, invisible du demandeur) ; `core/components/Comments.jsx` | SOC-24 | ✅ |
-| Pièces jointes | | SOC-25 | 🔜 |
+| Pièces jointes | Liste (nom, taille, auteur, date), téléchargement par lien, dépôt borné en taille et en types, retrait par l'auteur ou un gestionnaire ; avertissement si le stockage n'est pas activé ; `core/components/Attachments.jsx` | SOC-25 | ✅ |
 | Historique | Journal d'audit de l'enregistrement (`core/components/History.jsx`) ; un Admin voit aussi, dans la liste des statuts, les transitions hors graphe, marquées « transition forcée », avec motif obligatoire (`StatusField.jsx`) | SOC-20, SOC-05 | ✅ |
 
 Un bouton de transition n'apparaît que si la transition est **permise** depuis le statut

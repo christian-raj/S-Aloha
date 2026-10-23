@@ -171,6 +171,8 @@ public class PlatformSettingsTests(ApiFixture api, FakeSmtpServer smtp, FakeS3Se
     public async Task ADM_61_63_stockage_s3_regle_par_l_admin_et_essai_de_depot()
     {
         Assert.Equal(HttpStatusCode.BadRequest, (await Admin.PutAsJsonAsync("/api/admin/settings/storage", Storage("s", bucket: "Pièces"))).StatusCode);
+        // Base partagée : un autre test a pu laisser une clé secrète ; on part sans.
+        await Json(await Admin.PutAsJsonAsync("/api/admin/settings/storage", Storage("", enabled: false)));
         Assert.Equal(HttpStatusCode.BadRequest, (await Admin.PutAsJsonAsync("/api/admin/settings/storage", Storage(null))).StatusCode);   // pas de clé secrète
         Assert.Equal(HttpStatusCode.BadRequest, (await Admin.PutAsJsonAsync("/api/admin/settings/storage",
             new { enabled = false, endpoint = "file:///etc", bucket = "b-1", accessKey = "", maxFileMb = 10 })).StatusCode);

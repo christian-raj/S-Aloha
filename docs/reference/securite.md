@@ -66,6 +66,15 @@ Lecture seule de vCenter). L'inventaire WinRM n'emploie que HTTPS et NTLM (impl�
 gérée de .NET, `System.Net.Security.UseManagedNtlm`) : un serveur qui réclamerait Basic
 n'obtient pas le mot de passe (CFG-57).
 
+**Pièces jointes** ([SOC-25](regles-metier.md#8-notifications)) : liste fermée de types
+(bureautique, texte, images matricielles) ; le type servi vient de l'extension, jamais du
+navigateur, et la signature du contenu doit lui correspondre ; HTML, SVG, scripts et
+exécutables sont refusés. Le nom de fichier est assaini (ni chemin ni caractère de contrôle),
+l'objet rangé sous une clé aléatoire. Le téléchargement est toujours une pièce jointe
+(`Content-Disposition: attachment`), avec `X-Content-Type-Options: nosniff` et une CSP
+`sandbox` : le navigateur n'interprète pas le fichier. Pas d'antivirus intégré : brancher, au
+besoin, l'analyse du stockage de l'organisation.
+
 **Messagerie et stockage** ([ADM-60 à ADM-63](administration.md#7-messagerie-et-stockage)) : le mot
 de passe SMTP et la clé secrète S3 sont chiffrés par le même coffre, jamais renvoyés par
 l'API ni écrits au journal d'audit ; réglage réservé à l'Admin. Le certificat du serveur SMTP
