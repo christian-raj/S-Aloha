@@ -65,6 +65,11 @@ const records = (path) => ({
 export const api = {
   audit: { list: (type, id) => request(`/audit?type=${type}&id=${id}`) },
   // Administration (ADM, Admin) : santé, journal d'audit global.
+  // SOC-22 : mes courriels de notification.
+  me: {
+    mailPreferences: () => request('/me/mail-preferences'),
+    saveMailPreferences: (dto) => request('/me/mail-preferences', { method: 'PUT', body: JSON.stringify(dto) })
+  },
   admin: {
     health: () => request('/admin/health'),
     users: (params = {}) => request('/admin/users?' + new URLSearchParams(params)),

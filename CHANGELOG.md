@@ -17,6 +17,11 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Ajouté
 
+- **Notifications par courriel** (SOC-22) : chacun choisit, dans « Mes préférences », de
+  recevoir ses notifications par courriel, au fil de l'eau ou en résumé quotidien, à
+  l'adresse de son choix ; liens vers les fiches dès que l'adresse de l'interface est réglée
+  (Administration › Messagerie et stockage).
+
 - **Disponibilité mesurée** (SLM-21) : chaque mois, la fiche du SLA donne la disponibilité du
   service (heures de service sans incident majeur) face à sa cible ; un mois sous la cible
   alerte les gestionnaires et propose une amélioration.
@@ -198,6 +203,9 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Courriels** : la migration `MailNotifications` ajoute la table `MailPreferences` et la
+  colonne `MailSettings.PublicUrl`. Renseigner l'adresse de l'interface pour des liens
+  dans les courriels.
 - **Améliorations et déclarations** : la migration `Lot3Fin` ajoute neuf colonnes.
 - **Dépôt et images** : le dépôt est désormais `github.com/chrraj7/S-Aloha` et les images
   `ghcr.io/chrraj7/s-aloha-*` ; les anciennes adresses redirigent, mais un `docker-compose.yml`

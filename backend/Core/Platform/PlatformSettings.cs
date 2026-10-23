@@ -20,6 +20,8 @@ public class MailSettings
     public string? EncryptedPassword { get; set; }
     [MaxLength(255)] public string FromAddress { get; set; } = "";
     [MaxLength(100)] public string FromName { get; set; } = "S-Aloha";
+    /// <summary>SOC-22 : adresse de l'interface (https://itsm.example.org), pour les liens des courriels ; vide : pas de lien.</summary>
+    [MaxLength(255)] public string PublicUrl { get; set; } = "";
     public DateTime? UpdatedAt { get; set; }
     [MaxLength(200)] public string? UpdatedBy { get; set; }
 }
@@ -47,14 +49,14 @@ public class StorageSettings
 
 /// <summary>Saisie du SMTP. <c>Password</c> absent : inchangé ; vide : effacé.</summary>
 public record MailSettingsDto(bool Enabled, string? Host, int Port, string? Security, string? Username, string? Password,
-    string? FromAddress, string? FromName);
+    string? FromAddress, string? FromName, string? PublicUrl = null);
 
 /// <summary>Le SMTP tel que l'interface le voit : jamais le mot de passe, seulement s'il est enregistré.</summary>
 public record MailSettingsView(bool Enabled, string Host, int Port, string Security, string? Username, bool HasPassword,
-    string FromAddress, string FromName, DateTime? UpdatedAt, string? UpdatedBy)
+    string FromAddress, string FromName, DateTime? UpdatedAt, string? UpdatedBy, string PublicUrl = "")
 {
     public static MailSettingsView From(MailSettings s) => new(s.Enabled, s.Host, s.Port, s.Security, s.Username,
-        s.EncryptedPassword is not null, s.FromAddress, s.FromName, s.UpdatedAt, s.UpdatedBy);
+        s.EncryptedPassword is not null, s.FromAddress, s.FromName, s.UpdatedAt, s.UpdatedBy, s.PublicUrl);
 }
 
 /// <summary>Saisie du stockage. <c>SecretKey</c> absent : inchangée ; vide : effacée.</summary>

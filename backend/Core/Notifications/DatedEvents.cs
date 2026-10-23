@@ -13,7 +13,7 @@ namespace SAloha.Api.Core.Notifications;
 /// périodique. Chaque événement n'est notifié qu'une fois par enregistrement (son libellé
 /// porte l'échéance quand elle peut changer).
 /// </summary>
-public class DatedEvents(AppDbContext db, Notifier notify)
+public class DatedEvents(AppDbContext db, Notifier notify, MailDispatch mail)
 {
     private static string Day(DateTime d) => d.ToString("dd/MM/yyyy");
 
@@ -193,6 +193,8 @@ public class DatedEvents(AppDbContext db, Notifier notify)
         count += await SAloha.Api.Core.Itil.SlaCompliance.AlertAsync(db, notify, now, (t, id, ev) => done.Add((t, id, ev)));
 
         await notify.SaveAsync();
+        // SOC-22 : les notifications du relevé, et celles des actions depuis le précédent, partent par courriel.
+        await mail.RunAsync(now);
         return count;
     }
 }

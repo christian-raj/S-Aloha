@@ -236,7 +236,7 @@ et à venir, sont au § 8 de son document. Indicateurs historiques, toujours ser
 ## 8. Notifications
 
 Notifications **dans l'application** (cloche dans la barre latérale ou la barre mobile,
-compteur des non lues, ouverture de la fiche) ; le courriel viendra ensuite (SOC-22). Le
+compteur des non lues, ouverture de la fiche), et par courriel au choix de chacun (SOC-22). Le
 destinataire est un compte, un groupe AD ou « les gestionnaires du périmètre », résolu à la
 lecture ; l'auteur d'un événement n'est jamais notifié ; les 30 derniers jours, 50 au plus ; supprimer un
 enregistrement retire ses notifications ; un même événement reçu à plusieurs titres (A d'une
@@ -245,7 +245,7 @@ action et gestionnaire) ne s'affiche et ne se compte qu'une fois.
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | SOC-21 | Chaque événement listé au § 6 des documents de pratique notifie ses destinataires (responsable, groupe, demandeur, gestionnaires) dans l'application ; toute affectation notifie le nouveau responsable | ✅ (événements déclenchés par une action ; événements datés relevés par une tâche périodique : SLA en risque ou dépassé, P1 ouvert, J-1 d'un changement, action en retard, revues échues, SLA expirant) | |
-| SOC-22 | Envoi par **courriel** des mêmes notifications, configurable par utilisateur (aucun, immédiat, résumé quotidien) | 🔜 | 3 |
+| SOC-22 | Envoi par **courriel** des mêmes notifications, configurable par utilisateur (aucun, immédiat, résumé quotidien) | ✅ (page « Mes préférences » : choix et adresse de réception ; envoi au relevé périodique, par le SMTP de la console (ADM-60) : « immédiat » à chaque relevé (15 minutes par défaut), « résumé quotidien » une fois par 24 h ; mêmes notifications que la cloche, une par événement, 24 h au plus en arrière, 50 par courriel, lien vers la fiche si l'adresse de l'interface est réglée ; rôle et groupes du compte relevés au choix puis à chaque connexion ; SMTP non activé : rien ne part ; envoi en échec réessayé au relevé suivant) | 3 |
 | SOC-23 | Une notification porte la référence, le titre, l'événement et un lien vers la fiche ; jamais de donnée au-delà de ce que le destinataire peut consulter (filtrée par ses périmètres à la lecture) | ✅ | |
 
 ## 9. Traçabilité, commentaires, administration

@@ -25,12 +25,7 @@ public class NotificationsController(AppDbContext db, PerimeterAccess access) : 
         var all = scope.Global;
         var seen = scope.Ids.ToList();
         var managed = scope.ManagedIds.ToList();
-        var since = DateTime.UtcNow.AddDays(-30);
-        return db.Notifications.AsNoTracking().Where(n => n.CreatedAt >= since && n.Actor != me
-            && (all || seen.Contains(n.PerimeterId))
-            && ((n.RecipientType == Notification.ToUser && n.RecipientId == me)
-                || (n.RecipientType == Notification.ToGroup && groups.Contains(n.RecipientId))
-                || (n.RecipientType == Notification.ToManagers && (all || managed.Contains(n.PerimeterId)))));
+        return Notification.VisibleTo(db, me, groups, all, seen, managed, DateTime.UtcNow.AddDays(-30));
     }
 
     /// <summary>

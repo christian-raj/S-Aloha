@@ -9,6 +9,9 @@
 - Aucune identité locale : **aucun mot de passe ni compte n'est stocké** par S-Aloha. Seule la
   **date de dernière connexion** de chaque compte est retenue (ADM-12), effacée après 13 mois
   sans connexion : donnée personnelle minimale, à mentionner au registre des traitements.
+  Un utilisateur qui choisit de recevoir ses notifications par courriel (SOC-22) fait retenir
+  son adresse, son nom affiché, son rôle et ses groupes AD (relevés à chaque connexion) ;
+  revenir à « Aucun » efface ces données.
 - Connexion (`POST /api/auth/login`) : recherche de l'utilisateur dans l'AD par le compte
   de service, puis **bind LDAP avec le DN et le mot de passe de l'utilisateur** — c'est
   l'AD qui valide le mot de passe.

@@ -31,6 +31,8 @@ public class AuthController(IAuthenticator directory, TokenService tokens, Data.
         var (account, display, role, groups) = result.Value;
         // ADM-12 : seule la date de connexion est retenue.
         await Administration.LastLogin.RecordAsync(db, account);
+        // SOC-22 : un compte qui reçoit des courriels voit son rôle et ses groupes relevés.
+        await Notifications.MailPreference.RefreshAsync(db, account, display, role, groups);
         var token = tokens.Create(account, display, role, groups);
         Response.Cookies.Append(SessionCookie.Name, token, SessionCookie.Options(Request, DateTimeOffset.UtcNow.Add(tokens.Lifetime)));
         // Un client d'API (script) qui le demande reçoit aussi le jeton, pour l'en-tête Authorization.

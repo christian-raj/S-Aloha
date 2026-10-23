@@ -112,6 +112,7 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/assessments`, `/assessments/:id` | `modules/compliance-assessment/pages/Assessments`, `AssessmentDetail` | Conformité & réglementation › NIS 2 |
 | `/projects`, `/projects/:id` | `modules/project-management/pages/Projects`, `ProjectDetail` | Projets › Projets |
 | `/admin/perimeters`, `/admin/perimeters/:id` | `core/pages/admin/Perimeters`, `PerimeterDetail` | Administration › Périmètres (Admin) |
+| `/preferences` | `core/pages/Preferences` | Mes préférences : notifications par courriel (SOC-22), lien sous l'utilisateur dans la barre latérale |
 | `/admin/users`, `/admin/platform`, `/admin/health`, `/admin/audit`, `/admin/duplicates` | `core/pages/admin/Users`, `PlatformSettings`, `Health`, `AuditLog`, `Duplicates` | Administration › Utilisateurs et rôles, Messagerie et stockage, Santé, Journal d'audit, Nettoyage des doublons (Admin) |
 | `/settings/categories` | `core/pages/settings/Categories` | Paramétrage › Catégories d'incident et de problème (Manager, Admin) |
 | `/settings/discovery` | `modules/service-configuration-management/pages/DiscoverySettings` | Paramétrage › Découverte du réseau (Manager, Admin) ; onglets `?tab=` : tâches, identifiants, fins de support, clés et certificats, constructeurs (OUI) |
@@ -311,7 +312,7 @@ Section réservée à l'**Admin** ; elle apparaît avec sa première entrée imp
 | Entrée | Contenu | Règle | Statut |
 |---|---|---|---|
 | Utilisateurs et rôles (`/admin/users`) | Membres des groupes AD de rôle (annuaire), rôle effectif par périmètre et sa source, dernière connexion ; mapping groupes AD → rôles (lecture) ; affectations « sans accès » | [ADM-10 à ADM-13](administration.md) | ✅ |
-| Messagerie et stockage (`/admin/platform`) | SMTP (serveur, chiffrement, compte, expéditeur, courriel d'essai) ; stockage S3 (adresse, bucket, clés, taille maximale, essai de dépôt) ; secrets jamais réaffichés | [ADM-60 à ADM-63](administration.md) | ✅ |
+| Messagerie et stockage (`/admin/platform`) | SMTP (serveur, chiffrement, compte, expéditeur, adresse de l'interface, courriel d'essai) ; stockage S3 (adresse, bucket, clés, taille maximale, essai de dépôt) ; secrets jamais réaffichés | [ADM-60 à ADM-63](administration.md) | ✅ |
 | Santé (`/admin/health`) | Base, annuaire, embeddings, coffre, messagerie, stockage, tâches de fond, version déployée | [ADM-20, ADM-21](administration.md) | ✅ |
 | Journal d'audit (`/admin/audit`) | Journal global, filtrable par auteur, pratique, action, référence, période ; pages de 100 ; export CSV | [ADM-30, ADM-31](administration.md) | ✅ |
 | Nettoyage des doublons (`/admin/duplicates`) | Paires probables côte à côte ; « Conserver … » (fusion confirmée, `DeleteDialog`), « Pas un doublon » | [ADM-40 à ADM-43](administration.md) | ✅ |

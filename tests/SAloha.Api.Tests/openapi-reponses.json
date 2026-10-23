@@ -291,6 +291,11 @@
     "updatedAt": "string:date-time",
     "version": "integer:int32"
   },
+  "MailPreferenceView": {
+    "address": "string",
+    "mailEnabled": "boolean",
+    "mode": "string"
+  },
   "MailSettingsView": {
     "enabled": "boolean",
     "fromAddress": "string",
@@ -298,6 +303,7 @@
     "hasPassword": "boolean",
     "host": "string",
     "port": "integer:int32",
+    "publicUrl": "string",
     "security": "string",
     "updatedAt": "string:date-time",
     "updatedBy": "string",

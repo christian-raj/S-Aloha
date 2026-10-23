@@ -55,6 +55,8 @@ function MailCard() {
         <div className="field"><label htmlFor="smtp-from">Adresse d’expéditeur</label><input id="smtp-from" value={f.fromAddress} onChange={set('fromAddress')} placeholder="itsm@example.org" /></div>
         <div className="field"><label htmlFor="smtp-name">Nom d’expéditeur</label><input id="smtp-name" value={f.fromName} onChange={set('fromName')} /></div>
       </div>
+      <div className="field"><label htmlFor="smtp-url">Adresse de l’interface (liens des courriels)</label>
+        <input id="smtp-url" value={f.publicUrl ?? ''} onChange={set('publicUrl')} placeholder="https://itsm.example.org" /></div>
       <button className="btn" onClick={save}>Enregistrer</button>
       <Updated s={f} />
       <div className="toolbar" style={{ marginTop: 12 }}>

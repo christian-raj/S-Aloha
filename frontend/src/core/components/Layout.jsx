@@ -178,6 +178,8 @@ function SidebarContent({ user, location, collapsed, onToggle, onClose, onLogout
           <NotificationBell placement="side" onNavigate={onClose} />
           <ThemeToggle />
         </div>
+        {/* SOC-22 : courriels de notification. */}
+        <Link className="source-link" to="/preferences" onClick={onClose}>Mes préférences</Link>
         <button className="logout" onClick={onLogout}><IconLogout /> Se déconnecter</button>
         <a className="source-link" href={SOURCE_URL} target="_blank" rel="noreferrer">Code source · {LICENSE_LABEL}</a>
       </div>
