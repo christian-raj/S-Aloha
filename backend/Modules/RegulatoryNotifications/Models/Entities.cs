@@ -58,6 +58,28 @@ public class RegulatoryNotification : Record
     public bool? CrossBorderImpact { get; set; }
     [MaxLength(300)] public string? PersonalDataCategories { get; set; }
     public int? DataSubjectsCount { get; set; }
+    // DRG-08 : rubriques propres au régime — NIS 2 : gravité, indicateurs de compromission ; RGPD : nature de la violation, conséquences probables.
+    [MaxLength(20)] public string? Severity { get; set; }
+    public string? CompromiseIndicators { get; set; }
+    [MaxLength(100)] public string? BreachNature { get; set; }
+    public string? LikelyConsequences { get; set; }
+
+    public static readonly string[] Severities = ["Faible", "Modérée", "Importante", "Critique"];
+    public static readonly string[] BreachNatures = ["Confidentialité", "Intégrité", "Disponibilité"];
+
+    /// <summary>
+    /// DRG-08 : rubriques attendues du régime (clé de l'API, libellé) et celles encore vides.
+    /// NIS 2 : malveillance supposée, effets transfrontières, gravité, impact, indicateurs de
+    /// compromission ; RGPD : nature de la violation, catégories et nombre de personnes,
+    /// conséquences probables, mesures.
+    /// </summary>
+    public List<(string Key, string Label, bool Filled)> Rubrics() => Regime == Nis2
+        ? [("suspectedMalicious", "Malveillance supposée", SuspectedMalicious is not null), ("crossBorderImpact", "Effets transfrontières", CrossBorderImpact is not null),
+           ("severity", "Gravité", Severity is not null), ("impact", "Impact", Impact is not null),
+           ("compromiseIndicators", "Indicateurs de compromission", CompromiseIndicators is not null)]
+        : [("breachNature", "Nature de la violation", BreachNature is not null), ("personalDataCategories", "Catégories de données", PersonalDataCategories is not null),
+           ("dataSubjectsCount", "Nombre de personnes", DataSubjectsCount is not null), ("likelyConsequences", "Conséquences probables", LikelyConsequences is not null),
+           ("measuresTaken", "Mesures prises", MeasuresTaken is not null)];
     public string? NotRequiredReason { get; set; }
     /// <summary>DRG-12 : motifs du retard d'une notification RGPD envoyée après 72 h.</summary>
     public string? LateReason { get; set; }
@@ -90,14 +112,15 @@ public class RegulatoryNotification : Record
         return null;
     }
 
-    public record SentVersion(string Step, DateTime SentAt, string? Summary, string? Impact, string? MeasuresTaken);
+    public record SentVersion(string Step, DateTime SentAt, string? Summary, string? Impact, string? MeasuresTaken,
+        string? Severity = null, string? CompromiseIndicators = null, string? BreachNature = null, string? LikelyConsequences = null);
 
     public List<SentVersion> Versions() => JsonSerializer.Deserialize<List<SentVersion>>(SentVersions) ?? [];
 
     public void Freeze(string step, DateTime sentAt)
     {
         var versions = Versions();
-        versions.Add(new SentVersion(step, sentAt, Summary, Impact, MeasuresTaken));
+        versions.Add(new SentVersion(step, sentAt, Summary, Impact, MeasuresTaken, Severity, CompromiseIndicators, BreachNature, LikelyConsequences));
         SentVersions = JsonSerializer.Serialize(versions);
     }
 }
@@ -109,4 +132,5 @@ public record RegulatoryNotificationDto(string Title, string? Description, strin
     string? AuthorityCaseRef = null, string? Summary = null, string? Impact = null, string? MeasuresTaken = null,
     bool? SuspectedMalicious = null, bool? CrossBorderImpact = null, string? PersonalDataCategories = null,
     int? DataSubjectsCount = null, string? NotRequiredReason = null, string? LateReason = null,
-    int? PerimeterId = null) : IRecordDto;
+    int? PerimeterId = null, string? Severity = null, string? CompromiseIndicators = null, string? BreachNature = null,
+    string? LikelyConsequences = null) : IRecordDto;

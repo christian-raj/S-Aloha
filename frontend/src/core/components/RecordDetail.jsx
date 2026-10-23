@@ -69,7 +69,8 @@ function Editor({ config, record, onSaved }) {
         disabled={readOnly} reason={reason} onReason={setReason} />
       {isManager && targets.some(p => p.id === record.perimeterId) &&
         <PerimeterSelect perimeters={targets} value={perimeterId} onChange={setPerimeterId} disabled={readOnly} />}
-      <RecordForm fields={config.fields} form={f} onChange={merge} disabled={readOnly || (locked && f.status === record.status)} />
+      {/* Un champ porteur de show(record) ne s'affiche que s'il s'applique ; sa valeur repart telle quelle. */}
+      <RecordForm fields={config.fields.filter(x => !x.show || x.show(record))} form={f} onChange={merge} disabled={readOnly || (locked && f.status === record.status)} />
       <div style={{ display: 'flex', gap: 10 }}>
         {!readOnly && <button className="btn" onClick={save} disabled={!f.title || (force && !reason.trim()) || (locked && f.status === record.status)}>Enregistrer</button>}
         {role === 'Admin' && <button className="btn danger" style={{ marginLeft: 'auto' }} onClick={askRemove}>Supprimer</button>}

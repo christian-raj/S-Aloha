@@ -17,6 +17,15 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Ajouté
 
+- **Disponibilité mesurée** (SLM-21) : chaque mois, la fiche du SLA donne la disponibilité du
+  service (heures de service sans incident majeur) face à sa cible ; un mois sous la cible
+  alerte les gestionnaires et propose une amélioration.
+- **Durabilité des améliorations** (CSI-15) : une amélioration réalisée porte une date de
+  contrôle ; à cette date, le porteur confirme que le résultat tient, ou en ouvre une nouvelle.
+- **Déclarations réglementaires** (DRG-08) : la fiche ne propose que les rubriques du régime
+  (NIS 2 : gravité, indicateurs de compromission… ; RGPD : nature de la violation,
+  conséquences probables…) et signale celles encore vides.
+
 - **Configuration** (CFG-16, CFG-30) : attributs propres à chaque type de CI (processeurs et
   mémoire d'un serveur, version et éditeur d'une application…) ; import en masse de CI par
   un fichier CSV (Admin), tout ou rien, avec le rapport des lignes refusées.
@@ -189,6 +198,7 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Améliorations et déclarations** : la migration `Lot3Fin` ajoute neuf colonnes.
 - **Dépôt et images** : le dépôt est désormais `github.com/chrraj7/S-Aloha` et les images
   `ghcr.io/chrraj7/s-aloha-*` ; les anciennes adresses redirigent, mais un `docker-compose.yml`
   copié avant ce changement est à mettre à jour.

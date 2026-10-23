@@ -247,7 +247,11 @@ export const api = {
     myFeedback: (id) => request(`/knowledge/${id}/feedback`),
     feedback: (id, helpful) => request(`/knowledge/${id}/feedback`, { method: 'POST', body: JSON.stringify({ helpful }) })
   },
-  improvements: records('/improvements'),
+  improvements: {
+    ...records('/improvements'),
+    // CSI-15 : conclusion du contrôle de durabilité.
+    followUp: (id, dto) => request(`/improvements/${id}/follow-up`, { method: 'POST', body: JSON.stringify(dto) })
+  },
   assessments: {
     ...records('/assessments'),
     questionnaire: (id) => request(`/assessments/${id}/questionnaire`),

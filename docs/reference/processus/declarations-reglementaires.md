@@ -4,7 +4,7 @@
 > la pratique ITIL 4 *Information security management*, aux côtés de la
 > [conformité NIS 2](conformite-nis2.md). Préfixe des règles : **DRG**. Socle commun et
 > conventions (✅ / 🔜, lots) : [règles métier](../regles-metier.md). Lot 2 implémenté le
-> 2026-10-21 ; reste le modèle de contenu par régime (DRG-08) et deux indicateurs (lot 3).
+> 2026-10-21, modèle de contenu par régime (DRG-08) le 2026-10-23 ; restent deux indicateurs (lot 3).
 
 <sub>[← Règles métier](../regles-metier.md) · [Toutes les pratiques](readme.md)</sub>
 
@@ -63,6 +63,8 @@ Déclaration réglementaire (`RegulatoryNotifications`, `DRG-AAAA-NNNN`) ; champ
 | `SentVersions` | JSON | à chaque envoi | Contenu tel qu'envoyé, une version par envoi (étape, date, résumé, impact, mesures) (DRG-07) | ✅ |
 | `SuspectedMalicious`, `CrossBorderImpact` | booléen | NIS 2 | Cause supposée malveillante ; effets transfrontières (contenu de l'alerte précoce) | ✅ |
 | `PersonalDataCategories`, `DataSubjectsCount` | texte, entier | RGPD | Catégories de données, nombre approximatif de personnes | ✅ |
+| `Severity`, `CompromiseIndicators` | texte (Faible, Modérée, Importante, Critique), texte | NIS 2 | Gravité, indicateurs de compromission | ✅ DRG-08 |
+| `BreachNature`, `LikelyConsequences` | texte (Confidentialité, Intégrité, Disponibilité), texte | RGPD | Nature de la violation, conséquences probables pour les personnes | ✅ DRG-08 |
 | `NotRequiredReason` | texte | si non requise | Motif de non-déclaration | ✅ |
 
 ## 4. Cycle de vie
@@ -109,7 +111,7 @@ stateDiagram-v2
 | DRG-05 | Chaque **envoi** enregistre sa date réelle ; elle ne peut précéder `AwareAt` ni être dans le futur | ✅ | 2 |
 | DRG-06 | Une déclaration NIS 2 ne passe à **Notification envoyée** qu'après l'alerte précoce | ✅ | 2 |
 | DRG-07 | Tout rôle complète le **contenu** (résumé, impact, mesures) tant que la déclaration n'est pas close ; le contenu envoyé est figé à chaque envoi (version conservée) | ✅ | 2 |
-| DRG-08 | **Modèle de contenu** par régime : la fiche propose les rubriques attendues (NIS 2 : malveillance supposée, effets transfrontières, gravité, impact, indicateurs de compromission ; RGPD : nature de la violation, catégories et nombre de personnes, conséquences probables, mesures) | 🔜 | 3 |
+| DRG-08 | **Modèle de contenu** par régime : la fiche propose les rubriques attendues (NIS 2 : malveillance supposée, effets transfrontières, gravité, impact, indicateurs de compromission ; RGPD : nature de la violation, catégories et nombre de personnes, conséquences probables, mesures) | ✅ (la fiche n'affiche que les rubriques de son régime et signale celles encore vides, `missingRubrics` ; gravité et nature en valeurs fermées ; figées à chaque envoi avec le reste du contenu) | 3 |
 
 ## 6. Délais, calculs et alertes
 

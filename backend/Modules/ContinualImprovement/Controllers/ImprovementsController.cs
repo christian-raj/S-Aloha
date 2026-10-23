@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SAloha.Api.Core.Auth;
 using Microsoft.EntityFrameworkCore;
 using SAloha.Api.Core.Data;
 using SAloha.Api.Core.Links;
@@ -33,6 +34,8 @@ public class ImprovementsController(AppDbContext db) : RecordController<Improvem
         e.Benefit = dto.Benefit ?? ""; e.Baseline = dto.Baseline ?? ""; e.Target = dto.Target ?? "";
         e.Outcome = dto.Outcome;
         e.DueDate = Dates.Utc(dto.DueDate);
+        // CSI-15 : la date de contrôle se fixe librement ; une fois le contrôle conclu, elle ne change plus.
+        if (e.FollowUpDoneAt is null) e.FollowUpDate = Dates.Utc(dto.FollowUpDate);
         e.AbandonReason = string.IsNullOrWhiteSpace(dto.AbandonReason) ? null : dto.AbandonReason.Trim();
         return null;
     }
@@ -104,5 +107,47 @@ public class ImprovementsController(AppDbContext db) : RecordController<Improvem
         // nouvelle décision de gestionnaire.
         else if (e.Status is "Proposée" or "Abandonnée") { e.ValidatedAt = null; e.ValidatedBy = null; }
         e.CompletedAt = e.Status == "Réalisée" ? DateTime.UtcNow : null;
+    }
+
+    /// <summary>
+    /// CSI-15 : à la date de contrôle, le porteur (ou un gestionnaire) confirme que le résultat
+    /// tient, ou constate qu'il ne tient pas : une nouvelle amélioration Proposée, reliée, reprend
+    /// le sujet avec le constat.
+    /// </summary>
+    [HttpPost("{id:int}/follow-up")]
+    public async Task<IActionResult> FollowUp(int id, FollowUpDto dto)
+    {
+        var e = await Db.Improvements.FindAsync(id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        await ScopeAsync();
+        ActOn(e.PerimeterId);
+        if (!IsManager && !User.Designates(e.OwnerType, e.OwnerId)) return Forbid();
+        if (e.Status != "Réalisée" || e.FollowUpDate is null) return BadRequest(new { message = "Seule une amélioration Réalisée avec une date de contrôle se contrôle." });
+        if (e.FollowUpDoneAt is not null) return BadRequest(new { message = "Le contrôle de durabilité est déjà conclu." });
+        if (e.FollowUpDate.Value.Date > DateTime.UtcNow.Date) return BadRequest(new { message = $"Contrôle prévu le {e.FollowUpDate:dd/MM/yyyy}." });
+        var note = string.IsNullOrWhiteSpace(dto.Note) ? null : dto.Note.Trim();
+        if (!dto.Holds && note is null) return BadRequest(new { message = "Décrire ce qui ne tient pas : le constat ouvre la nouvelle amélioration." });
+        (e.FollowUpDoneAt, e.FollowUpDoneBy, e.FollowUpHolds, e.FollowUpNote) = (DateTime.UtcNow, MyDisplay, dto.Holds, note);
+        e.UpdatedAt = DateTime.UtcNow;
+        await Db.SaveChangesAsync();
+        Improvement? next = null;
+        if (!dto.Holds)
+        {
+            var title = $"Reprise : {e.Title}";
+            next = await References.CreateAsync(Db, Code, () => new Improvement
+            {
+                Title = title.Length > 200 ? title[..200] : title,
+                Description = $"Le résultat de {e.Reference} ne tient pas au contrôle du {DateTime.UtcNow:dd/MM/yyyy} : {note}",
+                Status = "Proposée", Step = 2, Priority = e.Priority, Source = e.Source, PerimeterId = e.PerimeterId,
+                Baseline = e.Outcome ?? "", Target = e.Target,
+                OwnerType = e.OwnerType, OwnerId = e.OwnerId, OwnerDisplayName = e.OwnerDisplayName,
+                CreatedBy = Me, CreatedByDisplayName = MyDisplay
+            });
+            Db.ItemLinks.Add(new ItemLink { FromType = LinkType, FromId = next.Id, ToType = LinkType, ToId = e.Id, CreatedBy = Me });
+            await Db.SaveChangesAsync();
+            Notify.ToManagers(next, LinkType, "Amélioration proposée");
+            await Notify.SaveAsync();
+        }
+        return Ok(new { Improvement = View(e), Created = next?.Reference });
     }
 }

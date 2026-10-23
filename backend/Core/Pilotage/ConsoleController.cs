@@ -148,6 +148,13 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
         var myUnhelpful = unhelpful.Where(a => a.OwnerId != null && (a.OwnerType == "Group"
                 ? groups.Contains(a.OwnerId.ToLower()) : a.OwnerId.ToLower() == meKey)).Select(Unhelpful).ToList();
 
+        // CSI-15 : mes contrôles de durabilité arrivés à leur date.
+        var myFollowUpChecks = (await db.Improvements.AsNoTracking()
+                .Where(x => x.Status == "Réalisée" && x.FollowUpDate != null && x.FollowUpDate <= today && x.FollowUpDoneAt == null
+                            && (all || seen.Contains(x.PerimeterId))).OrderBy(x => x.FollowUpDate).ToListAsync())
+            .Where(x => x.OwnerId != null && (x.OwnerType == "Group" ? groups.Contains(x.OwnerId.ToLower()) : x.OwnerId.ToLower() == meKey))
+            .Select(x => new Item("improvement", x.Id, x.Reference, x.Title, $"Contrôle de durabilité du {x.FollowUpDate:dd/MM/yyyy}")).ToList();
+
         object? management = null;
         // ADR-0014 D4 : le pilotage revient à qui est gestionnaire d'au moins un périmètre.
         if (all || managed.Count > 0)
@@ -300,7 +307,7 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
 
         return Ok(new { Role = role, Username = me, MyProblems = myProblems, MyActions = myActions,
                         MyAssignments = myAssignments, MySlaIncidents = mySla, MyProjectAlerts = myProjectAlerts,
-                        MyChangeFollowUps = myFollowUps, MyIncidentFollowUps = myHeldLong, MyUnhelpfulArticles = myUnhelpful, Management = management });
+                        MyChangeFollowUps = myFollowUps, MyIncidentFollowUps = myHeldLong, MyUnhelpfulArticles = myUnhelpful, MyFollowUpChecks = myFollowUpChecks, Management = management });
     }
 
     /// <summary>Ligne de console désignant un enregistrement d'un processus.</summary>

@@ -68,15 +68,20 @@ export function AgreementCompliance({ agreement }) {
       <h3 style={{ color: 'var(--navy)', marginBottom: 4 }}>Respect du SLA</h3>
       <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 10 }}>
         Part des incidents du service résolus dans le délai, par mois
-        {data.complianceTarget != null ? ` ; cible : ${data.complianceTarget} %. Un mois achevé sous la cible alerte les gestionnaires et propose une amélioration.` : ' ; aucune cible fixée : pas d\'alerte.'}</p>
+        {data.complianceTarget != null ? ` ; cible : ${data.complianceTarget} %. Un mois achevé sous la cible alerte les gestionnaires et propose une amélioration.` : ' ; aucune cible fixée : pas d\'alerte.'}
+        {' '}Disponibilité : heures de service sans incident majeur{data.availabilityTarget != null ? ` (cible : ${data.availabilityTarget} %)` : ''}.</p>
       <table>
-        <thead><tr><th>Mois</th><th>Incidents</th><th>Dans le délai</th><th>Respect</th><th>Par priorité</th></tr></thead>
+        <thead><tr><th>Mois</th><th>Incidents</th><th>Dans le délai</th><th>Respect</th><th>Par priorité</th><th>Disponibilité</th></tr></thead>
         <tbody>{data.months.slice().reverse().map(m => (
           <tr key={m.period}>
             <td>{monthFr(m.period)}</td><td>{m.total}</td><td>{m.onTime}</td>
             <td style={m.met === false ? { color: 'var(--danger)', fontWeight: 700 } : {}}>
               {m.percent == null ? '—' : `${m.percent.toLocaleString('fr-FR')} %`}{m.met === false && ' ⚠'}</td>
             <td className="small">{m.byPriority.map(p => `${p.priority} : ${p.onTime}/${p.total}`).join(' · ') || '—'}</td>
+            {/* SLM-21 : disponibilité mesurée sur les incidents majeurs du service. */}
+            <td style={m.availability?.met === false ? { color: 'var(--danger)', fontWeight: 700 } : {}}
+              title={m.availability ? `${m.availability.downtimeHours.toLocaleString('fr-FR')} h d'indisponibilité, ${m.availability.majorIncidents} incident(s) majeur(s)` : undefined}>
+              {m.availability?.percent == null ? '—' : `${m.availability.percent.toLocaleString('fr-FR')} %`}{m.availability?.met === false && ' ⚠'}</td>
           </tr>))}</tbody>
       </table>
     </div>

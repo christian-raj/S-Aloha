@@ -34,10 +34,11 @@ première version publiée sera **stable**, à la fin de ce plan d'action.
 | ~~3~~ | Problèmes, changements | ~~PRB-32 (problème sans activité depuis 30 jours), CHG-27 (modèle standard suspendu après un échec)~~ — faits le 2026-10-23 | |
 | ~~4~~ | Connaissances | ~~KB-13 (retour des lecteurs), KB-15 (versions), KB-16 (quatre yeux)~~ — faits le 2026-10-23 | |
 | ~~5~~ | Configuration | ~~CFG-30 (import en masse), CFG-16 (attributs par type)~~ — faits le 2026-10-23 | F5 |
-| 6 | Niveaux de service, amélioration, déclarations | SLM-21 (disponibilité mesurée), CSI-15 (durabilité), DRG-08 (modèle de contenu par régime) | |
+| ~~6~~ | Niveaux de service, amélioration, déclarations | ~~SLM-21 (disponibilité mesurée), CSI-15 (durabilité), DRG-08 (modèle de contenu par régime)~~ — faits le 2026-10-23 | |
 
-La suite de F7 (courriels SOC-22, pièces jointes SOC-25) reprend **après** les étapes 3 à 6
-(décision du 2026-10-23).
+Étapes 1 à 6 faites le 2026-10-23 : les règles du lot 3 des pratiques sont toutes en place. Restent
+**F7** (courriels SOC-22, pièces jointes SOC-25, puis RAG-12) et les indicateurs du lot 3 des
+pratiques (SLM-31, PRB-35, CHG-35, CSI-32, DRG-21, DRG-22…), au tableau de bord.
 
 **À arbitrer avant de commencer** :
 

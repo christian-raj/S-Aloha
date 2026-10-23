@@ -85,6 +85,14 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             if (Fresh("change", c.Id, ev)) notify.ToOwner(c, "change", ev);
         }
 
+        // CSI-15 : contrôle de durabilité arrivé à sa date → porteur, une fois.
+        foreach (var x in await db.Improvements.AsNoTracking()
+                     .Where(x => x.Status == "Réalisée" && x.FollowUpDate != null && x.FollowUpDate <= today && x.FollowUpDoneAt == null).ToListAsync())
+        {
+            var ev = $"Contrôle de durabilité à faire (prévu le {Day(x.FollowUpDate!.Value)})";
+            if (Fresh("improvement", x.Id, ev)) notify.ToOwner(x, "improvement", ev);
+        }
+
         // PRB-32 : problème ouvert sans activité depuis 30 jours → gestionnaires, une fois par période d'inactivité.
         foreach (var (p, last) in await ProblemRules.IdleAsync(db, now, _ => true))
         {

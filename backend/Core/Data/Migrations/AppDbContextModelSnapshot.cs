@@ -1172,6 +1172,22 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<int?>("Effort")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("FollowUpDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FollowUpDoneAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FollowUpDoneBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool?>("FollowUpHolds")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("FollowUpNote")
+                        .HasColumnType("text");
+
                     b.Property<string>("Outcome")
                         .HasColumnType("text");
 
@@ -2448,6 +2464,13 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
+                    b.Property<string>("BreachNature")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("CompromiseIndicators")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2490,6 +2513,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("LateReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LikelyConsequences")
                         .HasColumnType("text");
 
                     b.Property<string>("MeasuresTaken")
@@ -2536,6 +2562,10 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("SentVersions")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("Severity")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Status")
                         .IsRequired()

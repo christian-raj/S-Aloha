@@ -105,7 +105,7 @@ export default function Console() {
   const referential = m?.referentialWithoutText > 0
     ? [{ id: 'nis2', reference: 'Référentiel NIS 2', title: `${m.referentialWithoutText} exigence(s) encore sans texte : importer le texte de l’ANSSI`, href: '/settings/nis2' }] : []
   const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps') + L('incidentFollowUps') + L('idleProblems') + L('unhelpfulArticles') + referential.length
-  const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0) + (c.myChangeFollowUps?.length ?? 0) + (c.myIncidentFollowUps?.length ?? 0) + (c.myUnhelpfulArticles?.length ?? 0)
+  const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0) + (c.myChangeFollowUps?.length ?? 0) + (c.myIncidentFollowUps?.length ?? 0) + (c.myUnhelpfulArticles?.length ?? 0) + (c.myFollowUpChecks?.length ?? 0)
   const follow = c.myProblems.length + L('inAnalysisNoRootCause')
 
   const tiles = [
@@ -238,6 +238,9 @@ export default function Console() {
         {/* KB-13 */}
         <List title="Mes articles jugés peu utiles" tone="amber" rows={c.myUnhelpfulArticles ?? []} onRow={goItem}
           hint="Les lecteurs ne s’y retrouvent pas : revoir le contenu." render={itemRow} />
+        {/* CSI-15 */}
+        <List title="Contrôles de durabilité" tone="amber" rows={c.myFollowUpChecks ?? []} onRow={goItem}
+          hint="Le résultat de l’amélioration tient-il ? Confirmer, ou ouvrir une nouvelle amélioration." render={itemRow} />
       </Group>
 
       <Group id="suivi" title="À suivre" total={follow}>

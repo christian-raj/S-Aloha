@@ -49,7 +49,8 @@ porteur AD, créateur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 | `Source` | texte 20 | ✔ | Suggestion (défaut), Incident, Problème, SLA, Audit, Retour client ; l'enregistrement d'origine, s'il est donné à la proposition, est relié | ✅ CSI-10 |
 | `Value`, `Effort` | entier 1–3 | à la validation | Valeur métier, effort estimé ; la priorité en découle. Exigés à l'entrée dans Validée (une amélioration validée avant la règle reste modifiable) | ✅ CSI-12 |
 | `AbandonReason` | texte | à l'abandon | Motif | ✅ |
-| `FollowUpDate` | date | | Date de contrôle de la durabilité (étape 7) | 🔜 CSI-15 |
+| `FollowUpDate` | date | | Date de contrôle de la durabilité (étape 7) ; ne change plus une fois le contrôle conclu | ✅ CSI-15 |
+| `FollowUpDoneAt`, `FollowUpDoneBy`, `FollowUpHolds`, `FollowUpNote` | date, texte, booléen, texte | auto | Conclusion du contrôle : le résultat tient ou non, constat | ✅ CSI-15 |
 
 **Modèle d'amélioration continue ITIL 4** : 1. *Quelle est la vision ?* — 2. *Où en
 sommes-nous ?* — 3. *Où voulons-nous être ?* — 4. *Comment y parvenir ?* — 5. *Passer à
@@ -102,7 +103,7 @@ stateDiagram-v2
 | CSI-12 | **Priorisation** : à la validation, le gestionnaire note la valeur et l'effort (1 à 3) ; la priorité est calculée : valeur 3 et effort 1–2 → Élevée ; valeur 1 et effort 2–3 → Faible ; sinon Moyenne | ✅ |  |
 | CSI-13 | **Abandon** motivé : le motif est obligatoire et visible sur la fiche | ✅ | 1 |
 | CSI-14 | **Validation** exige valeur attendue, mesure de départ et mesure cible (une amélioration se mesure) | ✅ | 1 |
-| CSI-15 | **Durabilité** (étape 7) : une amélioration Réalisée peut porter une date de contrôle ; à cette date, le porteur confirme que le résultat tient, ou ouvre une nouvelle amélioration reliée | 🔜 | 3 |
+| CSI-15 | **Durabilité** (étape 7) : une amélioration Réalisée peut porter une date de contrôle ; à cette date, le porteur confirme que le résultat tient, ou ouvre une nouvelle amélioration reliée | ✅ (porteur ou gestionnaire, à partir de la date ; « ne tient pas » exige un constat et ouvre une amélioration Proposée « Reprise : … », même porteur, reliée ; notification au porteur et console, Mon travail, à la date ; encadré « Durabilité » de la fiche) | 3 |
 | CSI-16 | **Réalisée** exige l'étape 6 au moins (« Y sommes-nous parvenus ? ») : le résultat est comparé à la cible | ✅ | 1 |
 
 ## 6. Délais, calculs et alertes
@@ -126,8 +127,8 @@ stateDiagram-v2
 ## 8. Console et indicateurs
 
 Console ✅ : améliorations Proposée dans « Décisions » (gestionnaires) ; mes améliorations
-ouvertes (Mon travail). À venir : échéances dépassées (Relances, CSI-21), contrôles de
-durabilité du jour (Mon travail, CSI-15).
+ouvertes et contrôles de durabilité arrivés à leur date (Mon travail, CSI-15). À venir :
+échéances dépassées (Relances, CSI-21).
 
 | Indicateur | Calcul | Statut |
 |---|---|---|
@@ -143,6 +144,7 @@ durabilité du jour (Mon travail, CSI-15).
 | `GET /api/improvements` (filtres `status`, `q`, `owner`), `GET /api/improvements/{id}` | User | Registre, fiche |
 | `POST /api/improvements`, `PUT /api/improvements/{id}` | User (Validée/Abandonnée : Manager) | Proposition, avancement, transitions |
 | `DELETE /api/improvements/{id}` | Admin | Suppression |
+| `POST /api/improvements/{id}/follow-up` (`holds`, `note`) | Porteur, Manager | Contrôle de durabilité (CSI-15) |
 
 ## 10. Scénarios d'acceptation
 
