@@ -428,9 +428,9 @@ Indicateurs du tableau de bord : onglet [Configuration & inventaire](../reportin
 |---|---|---|
 | Volumétrie par statut | Nombre de CI par statut | ✅ |
 | CI par type et environnement | Répartition par `CiType` et `Environment` (REP-50) | ✅ CFG-31 |
-| Exactitude de la CMDB | Part des CI En service vérifiés depuis moins de 12 mois | 🔜 CFG-32 (lot 2) |
-| CI les plus impliqués | CI reliés au plus d'incidents sur la période | 🔜 CFG-33 (lot 2) |
-| CI sans propriétaire ni relation | Qualité des données | 🔜 CFG-34 (lot 2) |
+| Exactitude de la CMDB | Part des CI En service vérifiés depuis moins de 12 mois | ✅ CFG-32 ([REP-54](../reporting.md#8-configuration-et-inventaire)) |
+| CI les plus impliqués | CI reliés au plus d'incidents sur la période | ✅ CFG-33 (REP-54) |
+| CI sans propriétaire ni relation | Qualité des données | ✅ CFG-34 (REP-54) |
 | Couverture du portefeuille applicatif | Part des applications non retirées avec leur gouvernance complète (CFG-43, REP-51) | ✅ CFG-35 |
 | Actifs en staging | Nombre d'actifs à rapprocher et en conflit (gestionnaires, REP-53) | ✅ CFG-36 |
 | Shadow IT | Nombre d'actifs inconnus (CFG-42, REP-53) | ✅ CFG-37 |

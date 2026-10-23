@@ -17,6 +17,12 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Ajouté
 
+- **Indicateurs de conformité et de configuration** : écarts NIS 2 traités et évolution du score
+  (NIS-30, NIS-31), disponibilité des services sous SLA (SLM-31), délais et abandons des
+  améliorations (CSI-30 à CSI-32), usage et fraîcheur des articles (KB-30 à KB-32), délai de
+  qualification et issue des déclarations (DRG-21, DRG-22) ; exactitude de la CMDB, CI les plus
+  impliqués, CI orphelins (CFG-32 à CFG-34).
+
 - **Indicateurs au tableau de bord** : délai de prise en charge et taux de réouverture des
   incidents (INC-31, INC-33) ; part des problèmes clos avec cause racine, récurrences après
   correctif et problèmes aux incidents les plus nombreux (PRB-33 à PRB-35) ; changements suivis

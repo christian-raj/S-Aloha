@@ -35,8 +35,8 @@ Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=&perime
 | Demandes | `GET /api/reports/dashboard/requests` | REP-60 à REP-63 |
 | Problèmes | `GET /api/reports/dashboard/problems` | REP-20 à REP-26 |
 | Changements & projets | `GET /api/reports/dashboard/changes-projects` | REP-30 à REP-35 |
-| Conformité & métriques | `GET /api/reports/dashboard/compliance` | REP-40 à REP-44 |
-| Configuration & inventaire | `GET /api/reports/dashboard/configuration` | REP-50 à REP-53 |
+| Conformité & métriques | `GET /api/reports/dashboard/compliance` | REP-40 à REP-45 |
+| Configuration & inventaire | `GET /api/reports/dashboard/configuration` | REP-50 à REP-54 |
 
 Paramètres : `from`, `to` (dates, incluses), `service` (facultatif, sans tenir compte de la
 casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste servi.
@@ -98,6 +98,7 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 | REP-42 | **Amélioration continue** : registre par statut, améliorations réalisées sur la période | ✅ | |
 | REP-43 | **Connaissances** : articles publiés, brouillons, revues en retard, publications de la période | ✅ | |
 | REP-44 | **Déclarations réglementaires** : par régime, déclarations de la période (prise de connaissance), en cours, non requises, et respect des délais par étape — envois faits avant leur échéance / envois (DRG-20, [DRG](processus/declarations-reglementaires.md)) ; export CSV | ✅ | 2 |
+| REP-45 | **Indicateurs des pratiques** : NIS 2 — écarts dotés d'une amélioration reliée (NIS-31) et évolution du score depuis l'évaluation validée précédente du même périmètre (NIS-30) ; **disponibilité** de la période des SLA En vigueur dotés d'une cible (SLM-21, SLM-31) ; amélioration — réalisées sur la période par source, délai moyen de la validation à la réalisation en jours, taux d'abandon (CSI-30 à CSI-32) ; connaissances — articles à jour, incidents résolus de la période reliés à un article, 10 articles les plus reliés à des incidents ou des demandes (KB-30 à KB-32) ; déclarations — délai moyen de la prise de connaissance à la qualification de l'incident, déclarées et non requises par régime (DRG-21, DRG-22) | ✅ | 2, 3 |
 
 ## 8. Configuration et inventaire
 
@@ -111,6 +112,7 @@ périmètres qu'ils gèrent ([CFG-40](processus/gestion-de-la-configuration.md))
 | REP-51 | **Couverture du portefeuille applicatif** : part des applications avec code, direction, propriétaire métier, responsable DSI et criticité ([CFG-35, CFG-43](processus/gestion-de-la-configuration.md)) | ✅ | |
 | REP-52 | **Obsolescence** : actifs matériels par état de support, actifs en fin de support dépassée ou dans les 6 mois (25 au plus, du plus ancien au plus récent), avec la source de la date ([CFG-38, CFG-47](processus/gestion-de-la-configuration.md)) ; en alerte s'il y en a une dépassée | ✅ | |
 | REP-53 | **Découverte** (gestionnaires) : actifs à rapprocher, en conflit, inconnus (Shadow IT, 25 derniers listés), rapprochés ; actifs par source ; nouveaux actifs et rapprochements par jour de la période ([CFG-36, CFG-37, CFG-42](processus/gestion-de-la-configuration.md)) | ✅ | |
+| REP-54 | **Qualité de la CMDB** : exactitude — part des CI En service vérifiés depuis moins de 12 mois ([CFG-32](processus/gestion-de-la-configuration.md)) ; 10 CI reliés au plus d'incidents créés sur la période (CFG-33) ; CI sans propriétaire ni relation, nombre et 25 premiers (CFG-34) | ✅ | 2 |
 
 ## 9. Demandes
 

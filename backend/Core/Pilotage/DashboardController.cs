@@ -437,14 +437,34 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
             var resp = await db.AssessmentResponses.AsNoTracking().Where(r => r.AssessmentId == last.Id).ToDictionaryAsync(r => r.RequirementId);
             int? ScoreOf(EvaluatedRequirement r) => resp.TryGetValue(r.Id, out var x) && !x.NotApplicable ? x.Score : null;
             var percent = Scoring.Percent(reqs.Select(ScoreOf));
-            var improvements = await db.ItemLinks.CountAsync(l => l.FromType == "assessment" && l.FromId == last.Id && l.ToType == "improvement");
+            var linkedIds = await db.ItemLinks.Where(l => l.FromType == "assessment" && l.FromId == last.Id && l.ToType == "improvement").Select(l => l.ToId).ToListAsync();
+            var improvements = linkedIds.Count;
+            // NIS-31 : écarts traités — exigences en écart dotées d'une amélioration reliée (titre « NIS 2 code — », NIS-12).
+            var titles = await db.Improvements.AsNoTracking().Where(i => linkedIds.Contains(i.Id)).Select(i => i.Title).ToListAsync();
+            var gaps = reqs.Where(r => ScoreOf(r) is < Scoring.Max).ToList();
+            var treated = gaps.Count(r => titles.Any(t => t.StartsWith($"NIS 2 {r.Code} — ")));
+            // NIS-30 : évolution depuis l'évaluation validée précédente du même périmètre.
+            var previous = await In(db.Assessments.AsNoTracking())
+                .Where(a => a.Status == "Validée" && a.PerimeterId == last.PerimeterId && a.Id != last.Id && a.ValidatedAt < last.ValidatedAt)
+                .OrderByDescending(a => a.ValidatedAt).FirstOrDefaultAsync();
+            double? previousPercent = null;
+            if (previous is not null)
+            {
+                var prevReqs = await AssessmentReferential.RequirementsAsync(db, previous);
+                var prevResp = await db.AssessmentResponses.AsNoTracking().Where(r => r.AssessmentId == previous.Id).ToDictionaryAsync(r => r.RequirementId);
+                previousPercent = Scoring.Percent(prevReqs.Select(r => prevResp.TryGetValue(r.Id, out var x) && !x.NotApplicable ? x.Score : null));
+            }
             nis2 = new
             {
                 last.Id, last.Reference, last.Title, last.ValidatedAt, Percent = percent,
                 Maturity = percent is null ? null : Scoring.MaturityOf(percent.Value),
                 Pillars = reqs.GroupBy(r => r.Pillar).Select(g => new { Pillar = g.Key, Percent = Scoring.Percent(g.Select(ScoreOf)) }),
-                Gaps = reqs.Count(r => ScoreOf(r) is < Scoring.Max),
+                Gaps = gaps.Count,
                 Improvements = improvements,
+                GapsTreated = treated,
+                GapsTreatedRate = Pct(treated, gaps.Count),
+                Previous = previous is null ? null : new { previous.Id, previous.Reference, previous.ValidatedAt, Percent = previousPercent },
+                Delta = percent is { } p && previousPercent is { } pp ? Math.Round(p - pp, 1) : (double?)null,
             };
         }
 
@@ -479,6 +499,7 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
             {
                 Regime = regime,
                 Total = list.Count,
+                Declared = list.Count(d => d.NotificationSentAt != null),   // DRG-22
                 InProgress = list.Count(d => !Modules.RegulatoryNotifications.RegulatoryNotification.Done.Contains(d.Status)),
                 NotRequired = list.Count(d => d.Status == Modules.RegulatoryNotifications.RegulatoryNotification.NotRequired),
                 Steps = steps.Where(s => s.Sent is not null).GroupBy(s => s.Step).Select(g => new
@@ -489,10 +510,41 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
             };
         }).ToList();
 
+        // DRG-21 : délai moyen entre la prise de connaissance et la qualification de l'incident (INC-41).
+        var declaredIncidents = declarations.Select(d => d.IncidentId).Distinct().ToList();
+        var qualified = await db.Incidents.AsNoTracking().Where(i => declaredIncidents.Contains(i.Id) && i.QualifiedAt != null)
+            .ToDictionaryAsync(i => i.Id, i => i.QualifiedAt!.Value);
+        var qualificationHours = Avg(declarations.GroupBy(d => d.IncidentId).Where(g => qualified.ContainsKey(g.Key))
+            .Select(g => Math.Max(0, (qualified[g.Key] - g.Min(d => d.AwareAt)).TotalHours)));
+
+        // SLM-31 : disponibilité mesurée de la période, SLA En vigueur dotés d'une cible (SLM-21).
+        var now = DateTime.UtcNow;
+        var availability = new List<object>();
+        foreach (var a in await In(db.Agreements.AsNoTracking()).Include(x => x.Service)
+                     .Where(x => x.Status == "En vigueur" && x.AvailabilityTarget != null).ToListAsync())
+        {
+            if (f.Service is not null && (a.Service?.Title ?? "").Trim().ToLower() != f.Service) continue;
+            if (await Core.Itil.SlaCompliance.AvailabilityAsync(db, a, f.From, f.To < now ? f.To : now) is { } m)
+                availability.Add(new { a.Id, a.Reference, a.Title, Service = a.Service?.Title, m.Percent, m.Target, m.Met, m.DowntimeHours, m.MajorIncidents });
+        }
+
+        // KB-30 à KB-32 : articles les plus utilisés, à jour, incidents résolus avec un article.
+        var articleIds = articles.Select(a => a.Id).ToHashSet();
+        var usage = (await db.ItemLinks.AsNoTracking()
+                .Where(l => (l.FromType == "article" && (l.ToType == "incident" || l.ToType == "request")) || (l.ToType == "article" && (l.FromType == "incident" || l.FromType == "request")))
+                .Select(l => l.FromType == "article" ? l.FromId : l.ToId).ToListAsync())
+            .Where(articleIds.Contains).GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
+        var resolvedPeriod = (await Incidents(f)).Where(i => i.ResolvedAt >= f.From && i.ResolvedAt < f.To).Select(i => i.Id).ToList();
+        var withArticle = (await db.ItemLinks.AsNoTracking()
+                .Where(l => (l.FromType == "incident" && l.ToType == "article" && resolvedPeriod.Contains(l.FromId)) || (l.ToType == "incident" && l.FromType == "article" && resolvedPeriod.Contains(l.ToId)))
+                .Select(l => l.FromType == "incident" ? l.FromId : l.ToId).ToListAsync()).Distinct().Count();
+
         return Ok(new
         {
             Nis2 = nis2,
             Regulatory = regulatory,
+            QualificationHours = qualificationHours,
+            Availability = availability,
             // Évaluations non validées : signalées, sans score (seul un score validé engage).
             Nis2Pending = await In(db.Assessments.AsNoTracking()).Where(a => a.Status != "Validée")
                 .OrderByDescending(a => a.CreatedAt).Select(a => new { a.Id, a.Reference, a.Title, a.Status }).ToListAsync(),
@@ -501,6 +553,12 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
             {
                 ByStatus = Modules.ContinualImprovement.Improvement.Statuses.Select(s => new { Status = s, Count = improvementsAll.Count(i => i.Status == s) }),
                 Completed = improvementsAll.Count(i => i.CompletedAt >= f.From && i.CompletedAt < f.To),
+                // CSI-30 : réalisées sur la période, par source ; CSI-31 : délai moyen de réalisation (jours) ; CSI-32 : taux d'abandon.
+                CompletedBySource = improvementsAll.Where(i => i.CompletedAt >= f.From && i.CompletedAt < f.To).GroupBy(i => i.Source)
+                    .Select(g => new { Label = g.Key, Count = g.Count() }).OrderByDescending(x => x.Count),
+                CompletionDays = Avg(improvementsAll.Where(i => i.CompletedAt >= f.From && i.CompletedAt < f.To && i.ValidatedAt != null)
+                    .Select(i => (i.CompletedAt!.Value - i.ValidatedAt!.Value).TotalDays)),
+                AbandonRate = Pct(improvementsAll.Count(i => i.Status == "Abandonnée"), improvementsAll.Count(i => i.Status is "Réalisée" or "Abandonnée")),
             },
             Knowledge = new
             {
@@ -508,6 +566,10 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 Drafts = articles.Count(a => a.Status == "Brouillon"),
                 ReviewOverdue = articles.Count(a => a.Status == "Publié" && a.ReviewDate < today),
                 PublishedInPeriod = articles.Count(a => a.PublishedAt >= f.From && a.PublishedAt < f.To),
+                UpToDate = Pct(articles.Count(a => a.Status == "Publié" && !(a.ReviewDate < today)), articles.Count(a => a.Status == "Publié")),   // KB-31
+                IncidentsWithArticle = Pct(withArticle, resolvedPeriod.Count),                                                                   // KB-32
+                TopUsed = articles.Where(a => usage.ContainsKey(a.Id)).OrderByDescending(a => usage[a.Id]).Take(10)                              // KB-30
+                    .Select(a => new { a.Id, a.Reference, a.Title, a.Status, Uses = usage[a.Id] }),
             },
         });
     }
@@ -587,11 +649,26 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
             };
         }
 
+        // CFG-32 : CI En service vérifiés depuis moins de 12 mois (CFG-15) ; CFG-34 : CI sans propriétaire ni relation.
+        var inService = cis.Where(c => c.Status == "En service").ToList();
+        var ciIds = cis.Select(c => c.Id).ToList();
+        var related = (await db.CiRelationships.AsNoTracking().Where(r => ciIds.Contains(r.SourceId) || ciIds.Contains(r.TargetId))
+            .Select(r => new { r.SourceId, r.TargetId }).ToListAsync()).SelectMany(r => new[] { r.SourceId, r.TargetId }).ToHashSet();
+        var orphans = cis.Where(c => string.IsNullOrEmpty(c.OwnerId) && !related.Contains(c.Id)).ToList();
+        // CFG-33 : CI reliés au plus d'incidents créés sur la période.
+        var periodIncidents = await In(db.Incidents.AsNoTracking()).Where(i => i.CreatedAt >= f.From && i.CreatedAt < f.To).Select(i => i.Id).ToListAsync();
+        var ciIncidents = (await db.ItemLinks.AsNoTracking()
+                .Where(l => (l.FromType == "ci" && l.ToType == "incident" && periodIncidents.Contains(l.ToId)) || (l.ToType == "ci" && l.FromType == "incident" && periodIncidents.Contains(l.FromId)))
+                .Select(l => l.FromType == "ci" ? l.FromId : l.ToId).ToListAsync())
+            .GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
+
         return Ok(new
         {
             Kpis = new
             {
                 Cis = cis.Count,
+                Accuracy = Pct(inService.Count(c => c.LastVerifiedAt >= today.AddMonths(-12)), inService.Count),   // CFG-32
+                Orphans = orphans.Count,                                                                             // CFG-34
                 Applications = apps.Count,
                 PortfolioCoverage = Pct(governed, apps.Count),
                 Hardware = hardware.Count,
@@ -605,6 +682,9 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
             ByCriticality = Bars(apps.Select(a => a.Criticality ?? "Non renseignée"), [.. ConfigurationItem.Criticalities, "Non renseignée"]),
             Support = Bars(hardware.Select(h => h.Support.State), [Obsolescence.Passed, Obsolescence.Near, Obsolescence.Supported, Obsolescence.Unknown]),
             Obsolete = obsolete,
+            TopIncidentCis = cis.Where(c => ciIncidents.ContainsKey(c.Id)).OrderByDescending(c => ciIncidents[c.Id]).Take(10)
+                .Select(c => new { c.Id, c.Reference, c.Title, c.CiType, Incidents = ciIncidents[c.Id] }),
+            OrphanCis = orphans.OrderBy(c => c.CreatedAt).Take(25).Select(c => new { c.Id, c.Reference, c.Title, c.CiType, c.Status }),
             Staging = staging,
         });
     }

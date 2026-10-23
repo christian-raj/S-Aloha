@@ -144,7 +144,7 @@ expirant dans 30 jours (Relances, SLM-24 : notifié aujourd'hui).
 |---|---|---|
 | Volumétrie (services, SLA par statut) | | ✅ |
 | Respect des SLA | SLM-20, par SLA et par mois | ✅ (fiche du SLA) / 🔜 SLM-30 (reporting, lot 2) |
-| Disponibilité mesurée | SLM-21 | ✅ (fiche du SLA) ; au tableau de bord 🔜 SLM-31 (lot 3) |
+| Disponibilité mesurée | SLM-21 | ✅ (fiche du SLA ; tableau de bord, SLM-31, [REP-45](../reporting.md#7-conformité-et-métriques)) |
 | SLA à revoir, expirant | SLM-05, SLM-24 | ✅ / 🔜 |
 
 ## 9. API

@@ -23,7 +23,14 @@ export default function ConfigurationTab({ data }) {
               alert={staging.unknown > 0 ? `${staging.unknown} actif(s) inconnu(s)` : null}
               sub={<Link to="/configuration/staging">Ouvrir le sas de staging</Link>} />
           : <Kpi value={kpis.supportNear} label="Fins de support dans les 6 mois" />}
+        {/* CFG-32, CFG-34 */}
+        <Kpi value={fmt(kpis.accuracy, 0)} suffix=" %" label="Exactitude de la CMDB" sub="CI en service vérifiés depuis moins de 12 mois" />
+        <Kpi value={kpis.orphans} label="CI sans propriétaire ni relation" />
       </div>
+
+      {/* CFG-33 */}
+      {(data.topIncidentCis ?? []).length > 0 && <HBars title="CI les plus impliqués dans les incidents de la période"
+        data={data.topIncidentCis.map(c => ({ label: `${c.reference} ${c.title}`, count: c.incidents }))} />}
 
       <div className="report-grid">
         <HBars title="CI par type" data={data.byType} empty="Aucun CI." />
@@ -90,10 +97,13 @@ export const configurationCsv = (d) => [
     ['CI non retirés', d.kpis.cis], ['Applications', d.kpis.applications],
     ['Portefeuille applicatif gouverné (%)', d.kpis.portfolioCoverage], ['Actifs matériels', d.kpis.hardware],
     ['Fin de support dépassée', d.kpis.supportPassed], ['Fin de support dans les 6 mois', d.kpis.supportNear],
+    ['Exactitude de la CMDB (%)', d.kpis.accuracy ?? ''], ['CI sans propriétaire ni relation', d.kpis.orphans ?? ''],
     ...(d.staging ? [['Actifs à rapprocher', d.staging.toReconcile], ['Actifs en conflit', d.staging.conflicts],
       ['Actifs inconnus', d.staging.unknown]] : [])] },
   bars('CI par type', d.byType), bars('CI par environnement', d.byEnvironment), bars('CI par statut', d.byStatus),
   bars('Applications par criticité', d.byCriticality), bars('Support des actifs matériels', d.support),
+  { title: 'CI les plus impliqués dans les incidents', header: ['Référence', 'CI', 'Type', 'Incidents'], rows: (d.topIncidentCis ?? []).map(c => [c.reference, c.title, c.ciType, c.incidents]) },
+  { title: 'CI sans propriétaire ni relation', header: ['Référence', 'CI', 'Type', 'Statut'], rows: (d.orphanCis ?? []).map(c => [c.reference, c.title, c.ciType, c.status]) },
   { title: 'Actifs en fin de support', header: ['Référence', 'CI', 'Type', 'État', 'Date', 'Source'],
     rows: d.obsolete.map(o => [o.reference, o.title, o.ciType, o.state, date(o.date), o.source]) },
   ...(d.staging ? [

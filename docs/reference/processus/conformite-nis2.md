@@ -170,8 +170,8 @@ Admin, NIS-23).
 | Score global, par pilier, objectif, thématique | NIS-10 | ✅ (synthèse de l'évaluation) |
 | Niveau de maturité | NIS-12 | ✅ |
 | Écarts | NIS-13 | ✅ |
-| Évolution entre deux évaluations | NIS-09 | 🔜 NIS-30 (lot 2) |
-| Écarts traités | Écarts avec action d'amélioration / écarts | 🔜 NIS-31 (lot 2) |
+| Évolution entre deux évaluations | NIS-09 | ✅ NIS-30 ([REP-45](../reporting.md#7-conformité-et-métriques)) |
+| Écarts traités | Écarts avec action d'amélioration / écarts | ✅ NIS-31 (REP-45) |
 
 ### Interface
 

@@ -133,9 +133,9 @@ ouvertes et contrôles de durabilité arrivés à leur date (Mon travail, CSI-15
 | Indicateur | Calcul | Statut |
 |---|---|---|
 | Volumétrie par statut | | ✅ |
-| Améliorations réalisées sur la période, par source | | 🔜 CSI-30 (lot 2) |
-| Délai moyen de réalisation | `CompletedAt − ValidatedAt` | 🔜 CSI-31 (lot 2) |
-| Taux d'abandon | Abandonnées / (Réalisées + Abandonnées) | 🔜 CSI-32 (lot 3) |
+| Améliorations réalisées sur la période, par source | | ✅ CSI-30 ([REP-45](../reporting.md#7-conformité-et-métriques)) |
+| Délai moyen de réalisation | `CompletedAt − ValidatedAt` | ✅ CSI-31 (REP-45) |
+| Taux d'abandon | Abandonnées / (Réalisées + Abandonnées) | ✅ CSI-32 (REP-45) |
 
 ## 9. API
 
