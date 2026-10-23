@@ -123,9 +123,9 @@ responsable, KB-13) ; mes articles (Mon travail).
 | Indicateur | Calcul | Statut |
 |---|---|---|
 | Volumétrie par statut et par type | | ✅ (statut) / 🔜 |
-| Articles les plus utilisés | KB-14, top 10 | 🔜 KB-30 (lot 2) |
-| Part des articles à jour | Publiés dont la revue n'est pas échue | 🔜 KB-31 (lot 2) |
-| Incidents résolus avec un article | Incidents résolus reliés à un article / incidents résolus | 🔜 KB-32 (lot 2) |
+| Articles les plus utilisés | KB-14, top 10 | ✅ KB-30 ([REP-45](../reporting.md#7-conformité-et-métriques)) |
+| Part des articles à jour | Publiés dont la revue n'est pas échue | ✅ KB-31 (REP-45) |
+| Incidents résolus avec un article | Incidents résolus reliés à un article / incidents résolus | ✅ KB-32 (REP-45) |
 
 ## 9. API
 

@@ -37,8 +37,8 @@ première version publiée sera **stable**, à la fin de ce plan d'action.
 | ~~6~~ | Niveaux de service, amélioration, déclarations | ~~SLM-21 (disponibilité mesurée), CSI-15 (durabilité), DRG-08 (modèle de contenu par régime)~~ — faits le 2026-10-23 | |
 
 Étapes 1 à 6 faites le 2026-10-23 : les règles du lot 3 des pratiques sont toutes en place. Restent
-**F7** (courriels SOC-22 et pièces jointes SOC-25 faits le 2026-10-23 ; reste l'indexation des pièces jointes, RAG-12) et les indicateurs du lot 3 des
-pratiques (SLM-31, PRB-35, CHG-35, CSI-32, DRG-21, DRG-22…), au tableau de bord.
+**F7** (courriels SOC-22 et pièces jointes SOC-25 faits le 2026-10-23 ; reste l'indexation des pièces jointes, RAG-12) les indicateurs des pratiques, au
+tableau de bord, sont faits le 2026-10-23 (REP-16, REP-26, REP-35, REP-45, REP-54).
 
 **À arbitrer avant de commencer** :
 

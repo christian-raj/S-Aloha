@@ -147,8 +147,8 @@ travail du responsable) ✅.
 | Indicateur | Calcul | Statut |
 |---|---|---|
 | Respect des délais | Envois faits avant leur échéance / envois, par régime et par étape, sur les déclarations dont la prise de connaissance tombe dans la période ([REP-44](../reporting.md)) | ✅ DRG-20 (lot 2) |
-| Délai moyen de qualification | Qualification − `AwareAt` | 🔜 DRG-21 (lot 3) |
-| Déclarations par régime et par issue | Déclarées, non requises | 🔜 DRG-22 (lot 3) |
+| Délai moyen de qualification | Qualification − `AwareAt` | ✅ DRG-21 ([REP-45](../reporting.md#7-conformité-et-métriques)) |
+| Déclarations par régime et par issue | Déclarées, non requises | ✅ DRG-22 (REP-45) |
 
 ## 9. API
 
