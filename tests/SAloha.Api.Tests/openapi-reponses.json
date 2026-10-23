@@ -279,6 +279,18 @@
     "title": "string",
     "updatedAt": "string:date-time"
   },
+  "MailSettingsView": {
+    "enabled": "boolean",
+    "fromAddress": "string",
+    "fromName": "string",
+    "hasPassword": "boolean",
+    "host": "string",
+    "port": "integer:int32",
+    "security": "string",
+    "updatedAt": "string:date-time",
+    "updatedBy": "string",
+    "username": "string"
+  },
   "ProblemView": {
     "actions": "array[CorrectiveActionView]",
     "affectedService": "string",
@@ -476,5 +488,17 @@
     "reference": "string",
     "status": "string",
     "title": "string"
+  },
+  "StorageSettingsView": {
+    "accessKey": "string",
+    "bucket": "string",
+    "enabled": "boolean",
+    "endpoint": "string",
+    "hasSecretKey": "boolean",
+    "maxFileMb": "integer:int32",
+    "pathStyle": "boolean",
+    "region": "string",
+    "updatedAt": "string:date-time",
+    "updatedBy": "string"
   }
 }

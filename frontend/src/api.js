@@ -71,7 +71,13 @@ export const api = {
     mergeDuplicate: (dto) => request('/admin/duplicates/merge', { method: 'POST', body: JSON.stringify(dto) }),
     dismissDuplicate: (dto) => request('/admin/duplicates/dismiss', { method: 'POST', body: JSON.stringify(dto) }),
     audit: (params = {}) => request('/admin/audit?' + new URLSearchParams(params)),
-    auditExport: (params = {}) => download('/admin/audit/export?' + new URLSearchParams(params))
+    auditExport: (params = {}) => download('/admin/audit/export?' + new URLSearchParams(params)),
+    mail: () => request('/admin/settings/mail'),
+    saveMail: (dto) => request('/admin/settings/mail', { method: 'PUT', body: JSON.stringify(dto) }),
+    testMail: (to) => request('/admin/settings/mail/test', { method: 'POST', body: JSON.stringify({ to }) }),
+    storage: () => request('/admin/settings/storage'),
+    saveStorage: (dto) => request('/admin/settings/storage', { method: 'PUT', body: JSON.stringify(dto) }),
+    testStorage: () => request('/admin/settings/storage/test', { method: 'POST' })
   },
   login: (username, password) =>
     request('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }), quiet: true }),

@@ -67,6 +67,19 @@ public class AdminController(AppDbContext db, LdapService directory, IDirectoryR
                 vault.Configured ? (Healthy, "Clé configurée.")
                 : await db.DiscoveryCredentials.AnyAsync() ? (Down, "Clé absente alors que des identifiants sont enregistrés : ils sont illisibles.")
                 : (Degraded, "Clé non configurée : aucun identifiant ne peut être enregistré.")),
+            // ADM-60, ADM-61 : réglés dans la console ; l'essai de connexion est sur la page Messagerie et stockage.
+            await CheckAsync("Messagerie (SMTP)", async () => await db.MailSettings.AsNoTracking().FirstOrDefaultAsync() switch
+            {
+                { Enabled: true, EncryptedPassword: not null } when !vault.Configured => (Down, "Clé du coffre absente : le mot de passe SMTP est illisible."),
+                { Enabled: true } m when Platform.MailSender.Ready(m) => (Healthy, $"Activée : {m.Host}:{m.Port}, expéditeur {m.FromAddress}."),
+                _ => (Healthy, "Non activée : notifications dans l'application seulement."),
+            }),
+            await CheckAsync("Stockage des pièces jointes (S3)", async () => await db.StorageSettings.AsNoTracking().FirstOrDefaultAsync() switch
+            {
+                { Enabled: true } s when Platform.ObjectStorage.Ready(s) && !vault.Configured => (Down, "Clé du coffre absente : la clé secrète est illisible."),
+                { Enabled: true } s when Platform.ObjectStorage.Ready(s) => (Healthy, $"Activé : {s.Endpoint}, bucket {s.Bucket}."),
+                _ => (Healthy, "Non activé : pas de pièces jointes."),
+            }),
             // O1 : rattrapage des échéances SLA, une fois après le démarrage.
             heartbeats.Last(Modules.IncidentManagement.SlaBackfill.Task) switch
             {
