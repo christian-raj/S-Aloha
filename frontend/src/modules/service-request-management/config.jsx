@@ -37,8 +37,10 @@ export const requestConfig = {
   ],
   meta: r => [r.approvedAt && `Approuvée par ${r.approvedBy} le ${dateTimeFr(r.approvedAt)}`,
     r.overdue && `En retard : échéance du ${dateFr(r.dueDate)} dépassée`,
-    r.contestReason && `Contestée : ${r.contestReason}`, r.cancelReason && `Annulée — ${r.cancelReason}`],
-  help: 'Une demande se crée depuis un modèle du catalogue, qui en donne l\'objet, le service, le délai et le groupe qui la traite. Elle est approuvée (ou rejetée) par un gestionnaire avant d\'être traitée, sauf modèle pré-approuvé. Le bénéficiaire est par défaut le demandeur. Satisfaite, elle se conteste dans les 5 jours ouvrés, avec un motif. Un besoin non standard se requalifie en changement ou en incident.',
+    r.contestReason && `Contestée : ${r.contestReason}`, r.cancelReason && `Annulée — ${r.cancelReason}`,
+    r.autoClosed && 'Close automatiquement, sans contestation dans les 5 jours ouvrés',
+    r.satisfactionScore && `Satisfaction : ${r.satisfactionScore}/5${r.satisfactionComment ? ` — ${r.satisfactionComment}` : ''}`],
+  help: 'Une demande se crée depuis un modèle du catalogue, qui en donne l\'objet, le service, le délai et le groupe qui la traite. Elle est approuvée (ou rejetée) par un gestionnaire avant d\'être traitée, sauf modèle pré-approuvé. Le bénéficiaire est par défaut le demandeur. Satisfaite, elle se conteste dans les 5 jours ouvrés, avec un motif. Un besoin non standard se requalifie en changement ou en incident. Les tâches du modèle sont créées à l\'approbation ; la demande n\'est satisfaite que ses tâches terminées ou annulées. Le demandeur confirme la clôture, sinon elle est automatique 5 jours ouvrés après la satisfaction.',
   suggestOnTyping: true,
   linkHint: 'Service du catalogue concerné, changement standard déclenché…',
 }

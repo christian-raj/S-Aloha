@@ -68,6 +68,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AssessmentEvidence> AssessmentEvidences => Set<AssessmentEvidence>();
     public DbSet<AgreementReview> AgreementReviews => Set<AgreementReview>();
     public DbSet<RequestCatalogItem> RequestCatalogItems => Set<RequestCatalogItem>();
+    public DbSet<RequestCatalogTask> RequestCatalogTasks => Set<RequestCatalogTask>();
+    public DbSet<RequestTask> RequestTasks => Set<RequestTask>();
     public DbSet<ChangeApproval> ChangeApprovals => Set<ChangeApproval>();
     public DbSet<ChangeFreeze> ChangeFreezes => Set<ChangeFreeze>();
     public DbSet<StandardChangeModel> StandardChangeModels => Set<StandardChangeModel>();
@@ -148,6 +150,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<DiscoveryJob>().HasOne(j => j.Credential).WithMany().HasForeignKey(j => j.CredentialId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<EndOfLifeRule>().HasIndex(r => r.Product).IsUnique();
         b.Entity<DiscoveredAsset>().HasMany(a => a.Software).WithOne().HasForeignKey(s => s.AssetId).OnDelete(DeleteBehavior.Cascade);
+        // REQ-24 : tâches du modèle et de la demande, supprimées avec eux.
+        b.Entity<RequestCatalogItem>().HasMany(x => x.Tasks).WithOne().HasForeignKey(t => t.CatalogItemId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<RequestTask>().HasOne<ServiceRequest>().WithMany().HasForeignKey(t => t.RequestId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<SshHostKey>().HasIndex(k => new { k.PerimeterId, k.Protocol, k.Host, k.Port }).IsUnique();
         b.Entity<RelationProposal>().HasOne(r => r.SourceAsset).WithMany().HasForeignKey(r => r.SourceAssetId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<RelationProposal>().HasOne(r => r.TargetAsset).WithMany().HasForeignKey(r => r.TargetAssetId).OnDelete(DeleteBehavior.Cascade);

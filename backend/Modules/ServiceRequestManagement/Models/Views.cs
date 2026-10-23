@@ -12,6 +12,10 @@ public record ServiceRequestView(
     DateTime? DueDate,
     string? RejectionReason,
     string? ContestReason,
+    int? SatisfactionScore,
+    string? SatisfactionComment,
+    DateTime? SatisfactionAt,
+    bool AutoClosed,
     string? CancelReason,
     string? ApprovedBy,
     DateTime? ApprovedAt,
@@ -43,6 +47,10 @@ public record ServiceRequestView(
         e.DueDate,
         e.RejectionReason,
         e.ContestReason,
+        e.SatisfactionScore,
+        e.SatisfactionComment,
+        e.SatisfactionAt,
+        e.AutoClosed,
         e.CancelReason,
         e.ApprovedBy,
         e.ApprovedAt,
@@ -77,7 +85,8 @@ public record RequestCatalogItemView(
     bool Active,
     string? CreatedBy,
     DateTime CreatedAt,
-    DateTime UpdatedAt)
+    DateTime UpdatedAt,
+    List<RequestCatalogTaskView> Tasks)
 {
     public static RequestCatalogItemView From(RequestCatalogItem e) => new(
         e.Id,
@@ -90,5 +99,6 @@ public record RequestCatalogItemView(
         e.Active,
         e.CreatedBy,
         e.CreatedAt,
-        e.UpdatedAt);
+        e.UpdatedAt,
+        e.Tasks.OrderBy(t => t.Order).Select(RequestCatalogTaskView.From).ToList());
 }

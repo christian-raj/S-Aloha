@@ -18,11 +18,12 @@ public class RequestCatalogController(AppDbContext db) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] bool all = false) =>
-        Ok(await db.RequestCatalogItems.AsNoTracking().Where(x => all || x.Active).OrderBy(x => x.Name).Select(x => RequestCatalogItemView.From(x)).ToListAsync());
+        Ok((await db.RequestCatalogItems.AsNoTracking().Include(x => x.Tasks).Where(x => all || x.Active).OrderBy(x => x.Name).ToListAsync())
+            .Select(RequestCatalogItemView.From));
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id) =>
-        await db.RequestCatalogItems.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id) is { } item ? Ok(RequestCatalogItemView.From(item)) : NotFound();
+        await db.RequestCatalogItems.AsNoTracking().Include(x => x.Tasks).FirstOrDefaultAsync(x => x.Id == id) is { } item ? Ok(RequestCatalogItemView.From(item)) : NotFound();
 
     private async Task<string?> CheckAsync(RequestCatalogItemDto dto)
     {
@@ -30,6 +31,9 @@ public class RequestCatalogController(AppDbContext db) : ControllerBase
         if (dto.TargetHours is <= 0) return "Le délai cible est un nombre d'heures positif.";
         if (dto.ServiceId is int s && !await db.Services.AnyAsync(x => x.Id == s && x.Status != "Retiré"))
             return "Choisir un service du catalogue qui n'est pas retiré.";
+        // REQ-24 : tâches prédéfinies nommées, 30 au plus.
+        if (dto.Tasks is { } tasks && (tasks.Count > 30 || tasks.Any(t => string.IsNullOrWhiteSpace(t.Title))))
+            return "Les tâches prédéfinies ont un titre (30 au plus).";
         return null;
     }
 
@@ -39,6 +43,17 @@ public class RequestCatalogController(AppDbContext db) : ControllerBase
         x.RequiresApproval = dto.RequiresApproval; x.TargetHours = dto.TargetHours;
         x.FulfillmentGroup = string.IsNullOrWhiteSpace(dto.FulfillmentGroup) ? null : dto.FulfillmentGroup.Trim();
         x.Active = dto.Active; x.UpdatedAt = DateTime.UtcNow;
+        // REQ-24 : la liste fournie remplace les tâches prédéfinies ; absente, elle reste.
+        if (dto.Tasks is { } tasks)
+        {
+            x.Tasks.Clear();
+            x.Tasks.AddRange(tasks.Select((t, i) => new RequestCatalogTask
+            {
+                Title = t.Title.Trim(), OwnerType = string.IsNullOrWhiteSpace(t.OwnerId) ? null : t.OwnerType ?? "User",
+                OwnerId = string.IsNullOrWhiteSpace(t.OwnerId) ? null : t.OwnerId.Trim(),
+                OwnerDisplayName = string.IsNullOrWhiteSpace(t.OwnerId) ? null : t.OwnerDisplayName ?? t.OwnerId.Trim(), Order = i + 1
+            }));
+        }
     }
 
     [HttpPost]
@@ -59,7 +74,7 @@ public class RequestCatalogController(AppDbContext db) : ControllerBase
     [Authorize(Policy = "Manager")]
     public async Task<IActionResult> Update(int id, RequestCatalogItemDto dto)
     {
-        var item = await db.RequestCatalogItems.FirstOrDefaultAsync(x => x.Id == id);
+        var item = await db.RequestCatalogItems.Include(x => x.Tasks).FirstOrDefaultAsync(x => x.Id == id);
         if (item is null) return NotFound();
         var error = await CheckAsync(dto);
         Fill(item, dto);

@@ -3,7 +3,26 @@ import { api, getUser } from '../../../api'
 import useServices from '../../../core/useServices'
 import ServiceSelect from '../../../core/components/ServiceSelect'
 
-const EMPTY = { name: '', description: '', serviceId: '', requiresApproval: true, targetHours: '', fulfillmentGroup: '', active: true }
+const EMPTY = { name: '', description: '', serviceId: '', requiresApproval: true, targetHours: '', fulfillmentGroup: '', active: true, tasks: [] }
+
+/** REQ-24 : tâches prédéfinies du modèle, recopiées sur la demande à l'approbation. */
+export function TaskTemplates({ tasks, onChange }) {
+  const set = (i, patch) => onChange(tasks.map((t, j) => (j === i ? { ...t, ...patch } : t)))
+  return (
+    <div className="field full"><label>Tâches d’exécution prédéfinies</label>
+      {tasks.map((t, i) => (
+        <div className="toolbar" key={i} style={{ marginBottom: 6 }}>
+          <input value={t.title} onChange={e => set(i, { title: e.target.value })} placeholder={`Tâche ${i + 1}, ex. : préparer le poste`}
+            aria-label={`Titre de la tâche ${i + 1}`} style={{ flex: 2 }} />
+          <input value={t.ownerId ?? ''} onChange={e => set(i, { ownerId: e.target.value, ownerType: 'User', ownerDisplayName: e.target.value })}
+            placeholder="Responsable (compte AD), sinon celui de la demande" aria-label={`Responsable de la tâche ${i + 1}`} style={{ flex: 1 }} />
+          <button type="button" className="btn ghost small" onClick={() => onChange(tasks.filter((_, j) => j !== i))}>Retirer</button>
+        </div>))}
+      <button type="button" className="btn ghost small" onClick={() => onChange([...tasks, { title: '', ownerId: '' }])}>+ Ajouter une tâche</button>
+      <small className="field-hint">Créées sur la demande à son approbation ; la demande n’est satisfaite que ses tâches terminées ou annulées.</small>
+    </div>
+  )
+}
 
 /**
  * REQ-20 : catalogue de demandes. Chaque modèle donne l'objet demandé, le service, l'approbation
@@ -55,7 +74,8 @@ export default function RequestCatalog() {
                 <input type="checkbox" style={{ width: 'auto' }} checked={f.active} onChange={set('active')} /> Proposé (actif)</label>
             </div>
           </div>
-          <button className="btn" onClick={save} disabled={!f.name.trim()}>Enregistrer</button>{' '}
+          <TaskTemplates tasks={f.tasks ?? []} onChange={tasks => setF({ ...f, tasks })} />
+          <button className="btn" onClick={save} disabled={!f.name.trim() || (f.tasks ?? []).some(t => !t.title.trim())}>Enregistrer</button>{' '}
           <button className="btn ghost" onClick={() => setF(null)}>Annuler</button>
         </div>
       )}
@@ -71,7 +91,7 @@ export default function RequestCatalog() {
                 <td>{i.targetHours ? `${i.targetHours} h` : '—'}</td>
                 <td>{i.fulfillmentGroup || '—'}</td>
                 <td>{i.active ? 'Proposé' : 'Désactivé'}</td>
-                {manager && <td><button className="btn ghost small" onClick={() => setF({ ...EMPTY, ...i, serviceId: i.serviceId ?? '', targetHours: i.targetHours ?? '', fulfillmentGroup: i.fulfillmentGroup ?? '' })}>Modifier</button></td>}
+                {manager && <td><button className="btn ghost small" onClick={() => setF({ ...EMPTY, ...i, serviceId: i.serviceId ?? '', targetHours: i.targetHours ?? '', fulfillmentGroup: i.fulfillmentGroup ?? '', tasks: i.tasks ?? [] })}>Modifier</button></td>}
               </tr>))}
             {items.length === 0 && <tr><td colSpan={7} className="muted">Aucun modèle : les demandes restent libres.</td></tr>}
           </tbody>

@@ -175,6 +175,8 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/compliance/referential` ; POST `/api/compliance/referential/import` : Admin | User | Référentiel NIS 2, import du texte des exigences | Modules/ComplianceAssessment |
 | GET `/api/regulatory-notifications[/{id}]` (filtres `incident`, `regime`) ; PUT `/{id}` (contenu : User ; envois et transitions : Manager) ; POST : Manager ; DELETE : Admin | User | Déclarations réglementaires des incidents de sécurité (DRG-01 à DRG-13) | Modules/RegulatoryNotifications |
 | GET `/api/services/{id}/degradation` | User | Service dégradé : CI hors service qui le supportent (CFG-18) | Modules/ServiceLevelManagement |
+| GET/POST `/api/requests/{id}/tasks`, PUT/DELETE `/api/requests/{id}/tasks/{taskId}` | User (suppression : Manager) | Tâches d'exécution d'une demande (REQ-24, REQ-25) | Modules/ServiceRequestManagement |
+| POST `/api/requests/{id}/satisfaction` | Demandeur, bénéficiaire | Enquête de satisfaction d'une demande close (REQ-32) | Modules/ServiceRequestManagement |
 | POST `/api/requests/{id}/requalify` | Demandeur, Manager | Requalification d'une demande en changement ou en incident (REQ-12) | Modules/ServiceRequestManagement |
 | POST `/api/incidents/{id}/qualification` | Manager | Qualification réglementaire d'un incident cyber, création des déclarations (INC-41, INC-42) | Modules/IncidentManagement |
 | GET/POST/PUT `/api/projects[/{id}]`, GET `/{id}/summary` | User ; modification : chef de projet ou Manager ; Cadrage → En cours : Manager | Projets, synthèse (avancement, tolérances, risques) (DELETE : Admin) | Modules/ProjectManagement |

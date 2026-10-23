@@ -3352,6 +3352,101 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.ToTable("RequestCatalogItems");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.RequestCatalogTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CatalogItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OwnerDisplayName")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("OwnerId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("OwnerType")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CatalogItemId");
+
+                    b.ToTable("RequestCatalogTasks");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.RequestTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("FromCatalog")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OwnerDisplayName")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("OwnerId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("OwnerType")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int>("RequestId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("RequestTasks");
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.ServiceRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -3371,6 +3466,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("ApprovedBy")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("AutoClosed")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("CancelReason")
                         .HasColumnType("text");
@@ -3445,6 +3543,15 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("SatisfactionAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SatisfactionComment")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SatisfactionScore")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("ServiceId")
                         .HasColumnType("integer");
@@ -3904,6 +4011,24 @@ namespace SAloha.Api.Core.Data.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.RequestCatalogTask", b =>
+                {
+                    b.HasOne("SAloha.Api.Modules.ServiceRequestManagement.RequestCatalogItem", null)
+                        .WithMany("Tasks")
+                        .HasForeignKey("CatalogItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.RequestTask", b =>
+                {
+                    b.HasOne("SAloha.Api.Modules.ServiceRequestManagement.ServiceRequest", null)
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.ServiceRequest", b =>
                 {
                     b.HasOne("SAloha.Api.Modules.ServiceRequestManagement.RequestCatalogItem", null)
@@ -3965,6 +4090,11 @@ namespace SAloha.Api.Core.Data.Migrations
             modelBuilder.Entity("SAloha.Api.Modules.ServiceLevelManagement.ServiceLevelAgreement", b =>
                 {
                     b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.ServiceRequestManagement.RequestCatalogItem", b =>
+                {
+                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

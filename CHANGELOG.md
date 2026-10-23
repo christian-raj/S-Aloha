@@ -14,6 +14,12 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Demandes : tâches d'exécution, clôture, satisfaction** (REQ-24, REQ-25, REQ-11, REQ-32) :
+  un modèle du catalogue porte ses tâches prédéfinies, créées sur la demande à l'approbation
+  (onglet Tâches) ; une demande n'est satisfaite que ses tâches terminées ou annulées ; le
+  demandeur confirme la clôture, sinon elle est automatique 5 jours ouvrés après la
+  satisfaction ; enquête de satisfaction facultative (note de 1 à 5) une fois la demande close.
+
 - **Fin du lot 2** (RAG-09, RAG-11, SOC-15, NIS-23, CSI-22, CFG-18) : cas similaires proposés
   dès la saisie du titre d'un incident ou d'une demande, et article ou problème relié en un
   clic depuis les cas similaires ; un enregistrement terminé ne se modifie que par un
@@ -151,6 +157,8 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Demandes** : la migration `RequestTasksSatisfaction` ajoute deux tables (tâches du modèle et
+  de la demande) et quatre colonnes.
 - **Incidents et problèmes** : la migration `IncidentProblemLot2` ajoute sept colonnes ; les
   problèmes existants sont proactifs (aucun n'est bloqué après coup), les nouveaux réactifs
   par défaut.
