@@ -8,6 +8,7 @@ using SAloha.Api.Modules.ComplianceAssessment;
 using SAloha.Api.Modules.IncidentManagement;
 using SAloha.Api.Modules.ProjectManagement;
 using SAloha.Api.Modules.ServiceConfigurationManagement;
+using SAloha.Api.Modules.ServiceRequestManagement;
 
 namespace SAloha.Api.Core.Pilotage;
 
@@ -68,6 +69,7 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
         var incidents = await Incidents(f);
         var open = incidents.Where(i => !Incident.Done.Contains(i.Status)).ToList();
         var problems = (await In(db.Problems.AsNoTracking()).ToListAsync()).Where(p => InService(p.AffectedService, f)).ToList();
+        var requestsOverdue = (await In(db.ServiceRequests.AsNoTracking()).ToListAsync()).Count(r => r.Overdue && InService(r.AffectedService, f));
         var changes = await In(db.Changes.AsNoTracking()).ToListAsync();
         var requests = await In(db.ServiceRequests.AsNoTracking()).Where(r => r.CreatedAt >= f.From && r.CreatedAt < f.To).ToListAsync();
         var projects = await In(db.Projects.AsNoTracking()).Where(p => OpenProjects.Contains(p.Status)).ToListAsync();
@@ -142,6 +144,7 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 Incidents = new { Count = majorOpen + breached, Tone = majorOpen > 0 ? "bad" : "wait" },
                 Problems = new { Count = rcaPending, Tone = "wait" },
                 ChangesProjects = new { Count = outOfTolerance + failed, Tone = outOfTolerance > 0 ? "bad" : "wait" },
+                Requests = new { Count = requestsOverdue, Tone = "wait" },
                 Compliance = new { Count = slaToReview, Tone = "wait" },
                 Configuration = new { Count = configuration.Obsolete + configuration.Staging, Tone = configuration.Obsolete > 0 ? "bad" : "wait" },
             }
@@ -204,6 +207,59 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 .OrderByDescending(x => x.i.IsMajor).ThenBy(x => x.i.ResolutionDueAt)
                 .Select(x => new { x.i.Id, x.i.Reference, x.i.Title, x.i.Priority, x.i.IsMajor, x.i.Status, x.i.OwnerDisplayName,
                     x.i.ResolutionDueAt, Sla = x.sla, x.i.AffectedService }),
+        });
+    }
+
+    /// <summary>Onglet Demandes (REP-60 à REP-64, indicateurs REQ-40 à REQ-43).</summary>
+    [HttpGet("requests")]
+    public async Task<IActionResult> RequestsTab([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? service,
+        [FromQuery] int? perimeter)
+    {
+        _scope = await ReportScope.ForAsync(access, perimeter);
+        var f = Read(from, to, service);
+        bool Period(DateTime? d) => d >= f.From && d < f.To;
+        var all = (await In(db.ServiceRequests.AsNoTracking()).ToListAsync()).Where(r => InService(r.AffectedService, f)).ToList();
+        var items = await db.RequestCatalogItems.AsNoTracking().ToDictionaryAsync(i => i.Id, i => i.Name);
+        string Item(ServiceRequest r) => r.CatalogItemId is { } id && items.TryGetValue(id, out var n) ? n : "Hors catalogue";
+        var fulfilled = all.Where(r => Period(r.FulfilledAt)).ToList();
+        var dated = fulfilled.Where(r => r.DueDate != null).ToList();
+        bool OnTime(ServiceRequest r) => r.FulfilledAt <= r.DueDate;
+        // REQ-42 : décisions de la période ; un modèle pré-approuvé ne compte pas. Rejetée est définitive : sa date est la dernière modification.
+        var approved = all.Where(r => Period(r.ApprovedAt) && r.ApprovedBy != "Modèle pré-approuvé").ToList();
+        var rejected = all.Where(r => r.Status == "Rejetée" && Period(r.UpdatedAt)).ToList();
+        var rated = all.Where(r => Period(r.SatisfactionAt) && r.SatisfactionScore != null).ToList();
+        var overdue = all.Where(r => r.Overdue).ToList();
+        return Ok(new
+        {
+            Kpis = new
+            {
+                FulfillmentHours = Avg(fulfilled.Select(r => (r.FulfilledAt!.Value - r.CreatedAt).TotalHours)),   // REQ-40
+                Fulfilled = fulfilled.Count,
+                OnTime = Pct(dated.Count(OnTime), dated.Count),                                                 // REQ-41
+                Dated = dated.Count,
+                ApprovalRate = Pct(approved.Count, approved.Count + rejected.Count),                             // REQ-42
+                Decisions = approved.Count + rejected.Count,
+                Satisfaction = Avg(rated.Select(r => (double)r.SatisfactionScore!.Value)),                      // REQ-43
+                Ratings = rated.Count,
+                Open = all.Count(r => !ServiceRequest.Done.Contains(r.Status)),
+                Overdue = overdue.Count,
+            },
+            // REP-61 : par modèle du catalogue.
+            ByItem = all.Where(r => Period(r.CreatedAt) || Period(r.FulfilledAt) || approved.Contains(r) || rejected.Contains(r) || rated.Contains(r))
+                .GroupBy(Item).OrderBy(g => g.Key).Select(g => new
+                {
+                    Item = g.Key,
+                    Created = g.Count(r => Period(r.CreatedAt)),
+                    FulfillmentHours = Avg(g.Where(fulfilled.Contains).Select(r => (r.FulfilledAt!.Value - r.CreatedAt).TotalHours)),
+                    OnTime = Pct(g.Count(r => dated.Contains(r) && OnTime(r)), g.Count(dated.Contains)),
+                    ApprovalRate = Pct(g.Count(approved.Contains), g.Count(r => approved.Contains(r) || rejected.Contains(r))),
+                    Satisfaction = Avg(g.Where(rated.Contains).Select(r => (double)r.SatisfactionScore!.Value)),
+                }),
+            // REP-62 : répartition des notes.
+            Scores = Enumerable.Range(1, 5).Select(n => new { Score = n, Count = rated.Count(r => r.SatisfactionScore == n) }),
+            // REP-63 : demandes en retard (REQ-30), de la plus ancienne échéance à la plus récente.
+            Watch = overdue.OrderBy(r => r.DueDate).Take(25)
+                .Select(r => new { r.Id, r.Reference, r.Title, r.Status, r.OwnerDisplayName, r.DueDate, Item = Item(r) }),
         });
     }
 

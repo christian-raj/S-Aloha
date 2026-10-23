@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace SAloha.Api.Tests;
 
@@ -152,9 +153,63 @@ public class DashboardTests(ApiFixture api)
         Assert.Equal("Sans objet", row.GetProperty("tolerance").GetProperty("cost").GetString());
     }
 
+    [Fact]
+    public async Task REP_60_a_63_onglet_demandes_delai_respect_approbation_satisfaction()
+    {
+        var m = api.Client("Manager", "chef.rep60");
+        var svc = await Json(await m.PostAsJsonAsync("/api/services", new
+        {
+            title = _svc, criticality = "Moyenne", status = "En service",
+            ownerType = "User", ownerId = "hery.rakoto", ownerDisplayName = "Hery Rakoto"
+        }));
+        var item = await Json(await m.PostAsJsonAsync("/api/request-catalog", new
+        {
+            name = $"Badge {_svc}", description = "d", serviceId = Id(svc), requiresApproval = true, targetHours = 1000, fulfillmentGroup = "GRP-ACCUEIL"
+        }));
+        var requester = api.Client("User", "demandeur.rep60");
+        object R(string? status, string? reason = null, DateTime? due = null) => new { title = "Badge", requestedItem = "", catalogItemId = Id(item), status, rejectionReason = reason, dueDate = due };
+        async Task<int> Create() => Id(await Json(await requester.PostAsJsonAsync("/api/requests", R(null))));
+        // Une mise à jour renvoie l'échéance calculée à l'approbation (REQ-22).
+        async Task Move(HttpClient c, int id, string status)
+        {
+            var due = (await Json(await c.GetAsync($"/api/requests/{id}"))).GetProperty("dueDate");
+            await Json(await c.PutAsJsonAsync($"/api/requests/{id}", R(status, due: due.ValueKind == JsonValueKind.Null ? null : due.GetDateTime())));
+        }
+
+        var done = await Create();
+        foreach (var st in new[] { "Approuvée", "En cours", "Satisfaite" }) await Move(m, done, st);
+        await Move(requester, done, "Close");
+        await Json(await requester.PostAsJsonAsync($"/api/requests/{done}/satisfaction", new { score = 4 }));
+        var rejected = await Create();
+        await Json(await m.PutAsJsonAsync($"/api/requests/{rejected}", R("Rejetée", "Hors politique")));
+        var late = await Create();
+        await Move(m, late, "Approuvée");
+        await using (var db = api.Database())
+        {
+            var e = await db.ServiceRequests.SingleAsync(x => x.Id == late);
+            e.DueDate = DateTime.UtcNow.AddDays(-3);
+            await db.SaveChangesAsync();
+        }
+
+        var tab = await Json(await m.GetAsync($"/api/reports/dashboard/requests?service={Uri.EscapeDataString(_svc)}"));
+        var k = tab.GetProperty("kpis");
+        Assert.Equal(1, k.GetProperty("fulfilled").GetInt32());
+        Assert.Equal(100, k.GetProperty("onTime").GetDouble());
+        Assert.Equal(66.7, k.GetProperty("approvalRate").GetDouble());
+        Assert.Equal(4, k.GetProperty("satisfaction").GetDouble());
+        Assert.Equal((1, 1), (k.GetProperty("open").GetInt32(), k.GetProperty("overdue").GetInt32()));
+        var row = Assert.Single(tab.GetProperty("byItem").EnumerateArray());
+        Assert.Equal((3, 66.7), (row.GetProperty("created").GetInt32(), row.GetProperty("approvalRate").GetDouble()));
+        Assert.Equal(1, tab.GetProperty("scores")[3].GetProperty("count").GetInt32());
+        Assert.Equal(late, Id(Assert.Single(tab.GetProperty("watch").EnumerateArray())));
+        var overview = await Json(await m.GetAsync($"/api/reports/dashboard/overview?service={Uri.EscapeDataString(_svc)}"));
+        Assert.Equal(1, overview.GetProperty("badges").GetProperty("requests").GetProperty("count").GetInt32());
+    }
+
     [Theory]
     [InlineData("changes-projects", "kpis")]
     [InlineData("compliance", "knowledge")]
+    [InlineData("requests", "scores")]
     public async Task Onglets_accessibles_a_tout_utilisateur(string tab, string key)
     {
         var body = await Json(await api.Client("User").GetAsync($"/api/reports/dashboard/{tab}?from=2026-01-01&to=2026-12-31"));

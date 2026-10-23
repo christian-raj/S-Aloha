@@ -163,10 +163,10 @@ prises en charge depuis plus d'un jour ouvré (Relances, lot 2).
 | Indicateur | Calcul | Statut |
 |---|---|---|
 | Volumétrie par statut | | ✅ |
-| Délai moyen de traitement | `FulfilledAt − CreatedAt`, par modèle | 🔜 REQ-40 (lot 2) |
-| Respect des délais | Part des demandes satisfaites avant l'échéance | 🔜 REQ-41 (lot 2) |
-| Taux d'approbation | Approuvées / (approuvées + rejetées), par modèle | 🔜 REQ-42 (lot 2) |
-| Satisfaction moyenne | REQ-32 | 🔜 REQ-43 (lot 3) |
+| Délai moyen de traitement | `FulfilledAt − CreatedAt`, par modèle | ✅ REQ-40 ([REP-60](../reporting.md#9-demandes)) |
+| Respect des délais | Part des demandes satisfaites au plus tard à l'échéance | ✅ REQ-41 |
+| Taux d'approbation | Approuvées / (approuvées + rejetées), par modèle | ✅ REQ-42 |
+| Satisfaction moyenne | REQ-32, avec la répartition des notes | ✅ REQ-43 |
 
 ## 9. API
 

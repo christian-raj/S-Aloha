@@ -190,7 +190,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/audit?type=&id=` | User | Historique d'un enregistrement (journal d'audit, SOC-20) | Core/Audit |
 | PUT `…/{id}?force=true&reason=` | Admin | Transition forcée hors graphe, motif obligatoire et tracé (SOC-05) | Core/Audit, socle des pratiques et module Problèmes |
 | GET `/api/directory/search?q=` | User | Recherche utilisateurs/groupes AD (sélecteur RACI) | Core/Directory |
-| GET `/api/reports/dashboard/{overview,incidents,problems,changes-projects,compliance}?from=&to=&service=` | User | Tableau de bord par onglet ([reporting](reporting.md), REP-01 à REP-43) | Core/Pilotage |
+| GET `/api/reports/dashboard/{overview,incidents,requests,problems,changes-projects,compliance,configuration}?from=&to=&service=` | User | Tableau de bord par onglet ([reporting](reporting.md), REP-01 à REP-63) | Core/Pilotage |
 | GET `/api/reports/summary` | User | Indicateurs : problèmes (statuts, priorités, catégories, retards, MTTR, volumétrie), MTTR incidents, taux de changements réussis, incidents majeurs ouverts, volumétrie par processus | Core/Pilotage |
 | GET `/api/search?q=&types=&limit=`, `/api/search/similar?type=&id=` | User | Recherche hybride, cas similaires ([recherche](recherche.md)) | Core/Search |
 | GET `/api/search/status`, POST `/api/search/reindex` | Admin | État et reconstruction de l'index de recherche | Core/Search |

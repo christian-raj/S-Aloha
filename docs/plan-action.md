@@ -26,7 +26,7 @@ lot 2, 18 en lot 3 ([synthèse](reference/processus/readme.md)).
 
 | Ordre | Pratique | Règles | Chantier |
 |---|---|---|---|
-| ~~1~~ | Demandes | ~~REQ-24, REQ-25, REQ-11, REQ-32~~ — faites le 2026-10-23 ; indicateurs REQ-40 à REQ-43 (onglet Demandes du reporting) à suivre | F3 |
+| ~~1~~ | Demandes | ~~REQ-24, REQ-25, REQ-11, REQ-32~~ et indicateurs REQ-40 à REQ-43 (onglet Demandes du reporting)~~ — faits le 2026-10-23 | F3 |
 | 2 | Incidents | INC-16 (incidents enfants), INC-26 (relance après 5 jours ouvrés En attente) | |
 | 3 | Problèmes, changements | PRB-32 (problème sans activité depuis 30 jours), CHG-27 (modèle standard suspendu après un échec) | |
 | 4 | Connaissances | KB-13 (retour des lecteurs), KB-15 (versions), KB-16 (quatre yeux) | |
