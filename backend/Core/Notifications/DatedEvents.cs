@@ -52,6 +52,9 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             }
             if (i.Priority == "P1" && Fresh("incident", i.Id, "Incident P1 ouvert"))
                 notify.ToManagers(i, "incident", "Incident P1 ouvert");
+            // INC-26 : En attente depuis plus de 5 jours ouvrés → responsable, une fois par attente.
+            if (i.HoldFollowUp(now) is { } held && Fresh("incident", i.Id, held))
+                notify.ToOwner(i, "incident", held);
         }
 
         // DRG-13 : échéance légale à moins de 6 h → responsable et gestionnaires ; dépassée → idem,

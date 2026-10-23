@@ -104,8 +104,8 @@ export default function Console() {
   // NIS-23 : exigences du référentiel NIS 2 sans texte (Admin).
   const referential = m?.referentialWithoutText > 0
     ? [{ id: 'nis2', reference: 'Référentiel NIS 2', title: `${m.referentialWithoutText} exigence(s) encore sans texte : importer le texte de l’ANSSI`, href: '/settings/nis2' }] : []
-  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps') + referential.length
-  const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0) + (c.myChangeFollowUps?.length ?? 0)
+  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps') + L('incidentFollowUps') + referential.length
+  const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0) + (c.myChangeFollowUps?.length ?? 0) + (c.myIncidentFollowUps?.length ?? 0)
   const follow = c.myProblems.length + L('inAnalysisNoRootCause')
 
   const tiles = [
@@ -209,6 +209,9 @@ export default function Console() {
         {/* CHG-30, CHG-31 */}
         <List title="Changements à relancer" tone="amber" rows={m.changeFollowUps ?? []} onRow={goItem}
           hint="Fin planifiée passée sans mise en œuvre, ou mis en œuvre depuis plus de 2 jours ouvrés sans clôture." render={itemRow} />
+        {/* INC-26 */}
+        <List title="Incidents en attente prolongée" tone="amber" rows={m.incidentFollowUps ?? []} onRow={goItem}
+          hint="En attente depuis plus de 5 jours ouvrés : relancer l’utilisateur, le fournisseur ou le changement attendu." render={itemRow} />
       </Group>}
 
       <Group id="travail" title="Mon travail" total={work}>
@@ -223,6 +226,9 @@ export default function Console() {
         {/* CHG-30, CHG-31 : relances du responsable d'un changement. */}
         <List title="Mes changements à relancer" tone="amber" rows={c.myChangeFollowUps ?? []} onRow={goItem}
           hint="Mettre en œuvre ou replanifier ; renseigner le résultat et clore." render={itemRow} />
+        {/* INC-26 */}
+        <List title="Mes incidents en attente prolongée" tone="amber" rows={c.myIncidentFollowUps ?? []} onRow={goItem}
+          hint="En attente depuis plus de 5 jours ouvrés : relancer, ou reprendre l’incident." render={itemRow} />
       </Group>
 
       <Group id="suivi" title="À suivre" total={follow}>

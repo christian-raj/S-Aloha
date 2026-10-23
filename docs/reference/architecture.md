@@ -179,6 +179,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET/POST `/api/requests/{id}/tasks`, PUT/DELETE `/api/requests/{id}/tasks/{taskId}` | User (suppression : Manager) | Tâches d'exécution d'une demande (REQ-24, REQ-25) | Modules/ServiceRequestManagement |
 | POST `/api/requests/{id}/satisfaction` | Demandeur, bénéficiaire | Enquête de satisfaction d'une demande close (REQ-32) | Modules/ServiceRequestManagement |
 | POST `/api/requests/{id}/requalify` | Demandeur, Manager | Requalification d'une demande en changement ou en incident (REQ-12) | Modules/ServiceRequestManagement |
+| GET `/api/incidents/{id}/family`, PUT `/api/incidents/{id}/parent` | User | Incidents d'une même panne : parent et enfants, rattachement (INC-16) | Modules/IncidentManagement |
 | POST `/api/incidents/{id}/qualification` | Manager | Qualification réglementaire d'un incident cyber, création des déclarations (INC-41, INC-42) | Modules/IncidentManagement |
 | GET/POST/PUT `/api/projects[/{id}]`, GET `/{id}/summary` | User ; modification : chef de projet ou Manager ; Cadrage → En cours : Manager | Projets, synthèse (avancement, tolérances, risques) (DELETE : Admin) | Modules/ProjectManagement |
 | GET/POST/PUT/DELETE `/api/projects/{id}/{phases,milestones,deliverables,sprints,workitems,risks,issues}[/{id}]`, POST `phases/{id}/approve`, GET `sprints/{id}/burndown` | User ; phases, jalons, sprints, suppressions, validations : chef de projet ou Manager | Composants du projet ; 400 si le composant n'est pas actif | Modules/ProjectManagement |

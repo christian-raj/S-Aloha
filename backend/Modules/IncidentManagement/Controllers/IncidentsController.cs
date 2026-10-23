@@ -180,11 +180,33 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
             e.OnHoldSince = null; resumed = true;
         }
         if (e.Status != "En attente") e.OnHoldReason = null;
+        if (!creating && e.Status == "Résolu" && from is not null && !Incident.Done.Contains(from)) await ResolveChildrenAsync(e);
         if (creating || resumed || entry.Property(x => x.Priority).IsModified || entry.Property(x => x.AffectedService).IsModified
             || entry.Property(x => x.ServiceId).IsModified || e.ResolutionDueAt is null)
         {
             e.ResolutionDueAt = await IncidentSla.DueAsync(Db, e);
             e.ResponseDueAt = await IncidentSla.ResponseDueAsync(Db, e);
+        }
+    }
+
+    /// <summary>
+    /// INC-16 : résoudre le parent résout ses enfants ouverts avec la même résolution et le même
+    /// code ; l'attente d'un enfant prend fin (son temps compte comme à une reprise, INC-22).
+    /// Le journal d'audit trace chaque enfant ; déclarant et utilisateur affecté sont notifiés.
+    /// </summary>
+    private async Task ResolveChildrenAsync(Incident parent)
+    {
+        var now = DateTime.UtcNow;
+        foreach (var child in await Db.Incidents.Where(c => c.ParentId == parent.Id && !Incident.Done.Contains(c.Status)).ToListAsync())
+        {
+            if (child.Status == "En attente" && child.OnHoldSince is { } since)
+                child.HeldMinutes += (int)Math.Round((await IncidentSla.CalendarAsync(Db, child.ServiceId)).Between(since, now).TotalMinutes);
+            var from = child.Status;
+            (child.Status, child.Resolution, child.ResolutionCode) = ("Résolu", parent.Resolution, parent.ResolutionCode);
+            (child.OnHoldSince, child.OnHoldReason, child.UpdatedAt) = (null, null, now);
+            OnStatusChanged(child, from);
+            Notify.ToCreator(child, LinkType, "Incident résolu");
+            Notify.ToUser(child, LinkType, child.CallerId, "Incident résolu");
         }
     }
 
@@ -217,6 +239,53 @@ public class IncidentsController(AppDbContext db) : RecordController<Incident, I
         // Première prise en charge : posée une fois, jamais effacée (délai de prise en charge, INC-21).
         if (e.Status == "En cours") e.FirstResponseAt ??= DateTime.UtcNow;
         e.ClosedAt = e.Status == "Clos" ? DateTime.UtcNow : null;
+    }
+
+    /// <summary>INC-16 : parent et enfants d'un incident (enfants visibles seulement).</summary>
+    [HttpGet("{id:int}/family")]
+    public async Task<IActionResult> Family(int id)
+    {
+        var e = await Db.Incidents.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        IncidentRelative Of(Incident i) => new(i.Id, i.Reference, i.Title, i.Status, i.Priority);
+        var parent = e.ParentId is int pid ? await Db.Incidents.AsNoTracking().FirstOrDefaultAsync(x => x.Id == pid) : null;
+        var children = new List<IncidentRelative>();
+        foreach (var c in await Db.Incidents.AsNoTracking().Where(x => x.ParentId == id).OrderBy(x => x.CreatedAt).ToListAsync())
+            if (await VisibleAsync(c)) children.Add(Of(c));
+        return Ok(new { Parent = parent is not null && await VisibleAsync(parent) ? Of(parent) : null, Children = children });
+    }
+
+    /// <summary>
+    /// INC-16 : rattacher un incident à un parent (même panne), par sa référence, ou l'en détacher.
+    /// Un seul niveau : le parent n'a pas de parent, l'enfant n'a pas d'enfants ; même périmètre ;
+    /// ni soi-même ni un incident clos ; un incident résolu ou clos ne change plus de parent.
+    /// </summary>
+    [HttpPut("{id:int}/parent")]
+    public async Task<IActionResult> SetParent(int id, IncidentParentDto dto)
+    {
+        var e = await Db.Incidents.FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        await ScopeAsync();
+        ActOn(e.PerimeterId);
+        if (Incident.Done.Contains(e.Status)) return BadRequest(new { message = "Incident résolu ou clos : son rattachement ne change plus." });
+        var reference = dto.ParentReference?.Trim();
+        if (string.IsNullOrEmpty(reference)) e.ParentId = null;
+        else
+        {
+            var parent = await Db.Incidents.FirstOrDefaultAsync(x => x.Reference.ToLower() == reference.ToLower());
+            var error = parent is null || !await VisibleAsync(parent) ? (string?)$"Incident {reference} introuvable."
+                : parent.Id == e.Id ? "Un incident ne peut pas être son propre parent."
+                : parent.PerimeterId != e.PerimeterId ? "Le parent doit être dans le même périmètre que l'incident."
+                : parent.Status == "Clos" ? "Le parent est clos : rattacher à un incident ouvert."
+                : parent.ParentId is not null ? $"{parent.Reference} est lui-même rattaché à un parent : rattacher à ce dernier."
+                : await Db.Incidents.AnyAsync(x => x.ParentId == e.Id) ? "Cet incident a des enfants : il ne peut pas être rattaché à un parent."
+                : null;
+            if (error is not null) return BadRequest(new { message = error });
+            e.ParentId = parent!.Id;
+        }
+        e.UpdatedAt = DateTime.UtcNow;
+        await Db.SaveChangesAsync();
+        return Ok(View(e));
     }
 
     /// <summary>
