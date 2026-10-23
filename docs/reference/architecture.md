@@ -189,6 +189,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | GET `/api/notifications`, POST `/api/notifications/{id}/read`, POST `/api/notifications/read-all` | User | Mes notifications (compte, groupes, périmètres gérés ; SOC-21, SOC-23) | Core/Notifications |
 | GET/PUT `/api/me/mail-preferences` (`mode`, `address`) | User | Mes courriels de notification : aucun, immédiat, résumé quotidien (SOC-22) | Core/Notifications |
 | POST `/api/notifications/run` | Admin | Relevé immédiat des notifications datées, puis envoi des courriels (`MailDispatch`, SOC-22) (sinon toutes les 15 minutes, `DatedEventsWorker`) | Core/Notifications |
+| GET `/api/attachments?type=&id=`, POST `/api/attachments` (multipart : `type`, `id`, `file`), GET `/api/attachments/{id}/content`, DELETE `/api/attachments/{id}` | User | Pièces jointes dans le stockage compatible S3 ([SOC-25](regles-metier.md#8-notifications), ADR-0020) ; retrait : auteur, gestionnaire du périmètre ou Admin | Core/Attachments |
 | GET `/api/comments?type=&id=`, POST `/api/comments`, DELETE `/api/comments/{id}` | User | Commentaires publics et notes de travail ([SOC-24](regles-metier.md#9-traçabilité-commentaires-administration)) ; retrait : auteur ou Admin | Core/Comments |
 | GET `/api/links?type=&id=`, POST `/api/links`, DELETE `/api/links/{id}` | User | Liens inter-processus, lus dans les deux sens | Core/Links |
 | GET `/api/audit?type=&id=` | User | Historique d'un enregistrement (journal d'audit, SOC-20) | Core/Audit |

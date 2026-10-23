@@ -331,9 +331,11 @@ public abstract class RecordController<T, TDto, TView>(AppDbContext db) : Contro
         if (e is null) return NotFound();
         var links = await db.ItemLinks.CountAsync(l => (l.FromType == LinkType && l.FromId == id) || (l.ToType == LinkType && l.ToId == id));
         var comments = await db.Comments.CountAsync(c => c.TargetType == LinkType && c.TargetId == id);
+        var attachments = await db.Attachments.CountAsync(a => a.TargetType == LinkType && a.TargetId == id);
         var notifications = await db.Notifications.CountAsync(n => n.TargetType == LinkType && n.TargetId == id);
         var impacts = (await Deletion.CascadeAsync<T>(db, id))
             .Prepend(new Deletion.Impact("notifications", notifications))
+            .Prepend(new Deletion.Impact("pièces jointes", attachments))
             .Prepend(new Deletion.Impact("commentaires", comments))
             .Prepend(new Deletion.Impact("liens vers d'autres enregistrements", links))
             .Where(i => i.Count > 0).ToList();
@@ -350,11 +352,17 @@ public abstract class RecordController<T, TDto, TView>(AppDbContext db) : Contro
         ItemLinks.RemoveFor(db, LinkType, id);
         // SOC-24 : ses commentaires partent avec lui.
         db.Comments.RemoveRange(db.Comments.Where(c => c.TargetType == LinkType && c.TargetId == id));
+        // SOC-25 : ses pièces jointes aussi, base puis stockage.
+        var attachments = await db.Attachments.Where(a => a.TargetType == LinkType && a.TargetId == id).ToListAsync();
+        db.Attachments.RemoveRange(attachments);
         // SOC-21 : ses notifications aussi (elles mèneraient à une fiche disparue).
         var notifications = db.Notifications.Where(n => n.TargetType == LinkType && n.TargetId == id);
         db.NotificationReads.RemoveRange(db.NotificationReads.Where(r => notifications.Any(n => n.Id == r.NotificationId)));
         db.Notifications.RemoveRange(notifications);
         await db.SaveChangesAsync();
+        if (attachments.Count > 0)
+            await Attachments.AttachmentsController.RemoveObjectsAsync(HttpContext.RequestServices.GetRequiredService<Platform.ObjectStorage>(),
+                attachments.Select(a => a.StorageKey), HttpContext.RequestServices.GetRequiredService<ILogger<T>>());
         return NoContent();
     }
 

@@ -56,6 +56,20 @@ services:
     # bge-m3 occupe ~1,2 Go une fois chargé ; marge pour les pics de calcul.
     mem_limit: 3g
 
+  garage:
+    # Pièces jointes (SOC-25, ADR-0020) : stockage compatible S3, démarré seulement avec le
+    # profil « pieces-jointes ». Réglage dans Administration › Messagerie et stockage :
+    # adresse http://garage:3900, région garage (docs/reference/exploitation.md).
+    image: dxflrs/garage:v2.1.0
+    profiles: ["pieces-jointes"]
+    environment:
+      # Obligatoire avec le profil (sinon Garage refuse de démarrer) : openssl rand -hex 32.
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:-}
+    volumes:
+      - ./garage/garage.toml:/etc/garage.toml:ro
+      - garage-meta:/var/lib/garage/meta
+      - garage-data:/var/lib/garage/data
+
   web:
     image: ghcr.io/chrraj7/s-aloha-web:${S_ALOHA_VERSION:-latest}
     build: ./frontend
@@ -67,3 +81,5 @@ services:
 volumes:
   pgdata:
   ollama:
+  garage-meta:
+  garage-data:

@@ -131,6 +131,8 @@ public class Duplicates(AppDbContext db)
         }
         var comments = await db.Comments.Where(c => c.TargetType == type && c.TargetId == removeId).ToListAsync();
         foreach (var c in comments) c.TargetId = keepId;
+        // SOC-25 : les pièces jointes du doublon suivent ses commentaires (les objets du stockage restent en place).
+        foreach (var a in await db.Attachments.Where(a => a.TargetType == type && a.TargetId == removeId).ToListAsync()) a.TargetId = keepId;
         // Notifications du doublon : elles mèneraient à une fiche disparue (comme SOC-14).
         var notifications = db.Notifications.Where(n => n.TargetType == type && n.TargetId == removeId);
         db.NotificationReads.RemoveRange(db.NotificationReads.Where(r => notifications.Any(n => n.Id == r.NotificationId)));

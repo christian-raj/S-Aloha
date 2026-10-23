@@ -33,6 +33,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Administration.DuplicateDismissal> DuplicateDismissals => Set<Administration.DuplicateDismissal>();
     public DbSet<Platform.MailSettings> MailSettings => Set<Platform.MailSettings>();
     public DbSet<Notifications.MailPreference> MailPreferences => Set<Notifications.MailPreference>();
+    public DbSet<Attachments.Attachment> Attachments => Set<Attachments.Attachment>();
     public DbSet<Platform.StorageSettings> StorageSettings => Set<Platform.StorageSettings>();
     public DbSet<Itil.Category> Categories => Set<Itil.Category>();
     // Gestion des problèmes
@@ -223,6 +224,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         }
 
         b.Entity<Administration.DuplicateDismissal>().HasIndex(d => new { d.Type, d.FirstId, d.SecondId }).IsUnique();
+        // SOC-25 : pièces jointes d'un enregistrement.
+        b.Entity<Attachments.Attachment>().HasIndex(a => new { a.TargetType, a.TargetId });
         // ADM-60, ADM-61 : une seule ligne de réglages chacun, saisie par l'Admin.
         b.Entity<Platform.MailSettings>().Property(s => s.Id).ValueGeneratedNever();
         b.Entity<Platform.StorageSettings>().Property(s => s.Id).ValueGeneratedNever();
