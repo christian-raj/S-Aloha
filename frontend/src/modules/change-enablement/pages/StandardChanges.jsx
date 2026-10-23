@@ -1,5 +1,24 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api, getUser } from '../../../api'
+
+/** CHG-27 : revue d'un modèle suspendu — conclusion, puis remise en service ou désactivation. */
+export function Review({ model, onDone }) {
+  const [note, setNote] = useState('')
+  const [error, setError] = useState('')
+  const send = keep => api.standardChanges.review(model.id, { note, keep }).then(onDone).catch(e => setError(e.message))
+  return (
+    <div className="card" style={{ marginBottom: 16 }} aria-label={`Revue du modèle ${model.name}`}>
+      <h3 className="card-title">Revue du modèle « {model.name} »</h3>
+      <p className="small">Suspendu depuis l’échec de <Link to={`/changes/${model.suspendedByChangeId}`}>{model.suspendedByChange}</Link>.</p>
+      {error && <div className="error">{error}</div>}
+      <div className="field"><label htmlFor="std-review">Conclusion de la revue *</label>
+        <textarea id="std-review" rows={2} value={note} onChange={e => setNote(e.target.value)} placeholder="Cause de l’échec, plans revus ou non…" /></div>
+      <button className="btn" onClick={() => send(true)} disabled={!note.trim()}>Remettre en service</button>{' '}
+      <button className="btn ghost" onClick={() => send(false)} disabled={!note.trim()}>Désactiver le modèle</button>
+    </div>
+  )
+}
 
 const EMPTY = { name: '', description: '', implementationPlan: '', backoutPlan: '', risk: 'Faible', active: true }
 
@@ -11,6 +30,7 @@ const EMPTY = { name: '', description: '', implementationPlan: '', backoutPlan: 
 export default function StandardChanges() {
   const [items, setItems] = useState(null)
   const [f, setF] = useState(null)
+  const [review, setReview] = useState(null)
   const [error, setError] = useState('')
   const manager = ['Admin', 'Manager'].includes(getUser()?.role)
   const load = () => api.standardChanges.list(true).then(setItems).catch(e => setError(e.message))
@@ -22,7 +42,7 @@ export default function StandardChanges() {
   return (
     <>
       <h1 className="page-title">Modèles de changement standard</h1>
-      <p className="page-sub">Changements courants, à faible risque, évalués une fois : un changement Standard se crée depuis un modèle et est pré-autorisé.</p>
+      <p className="page-sub">Changements courants, à faible risque, évalués une fois : un changement Standard se crée depuis un modèle et est pré-autorisé. Un échec suspend le modèle jusqu’à la revue d’un gestionnaire.</p>
       {error && <div className="error">{error}</div>}
       {manager && !f && <button className="btn" style={{ marginBottom: 16 }} onClick={() => setF(EMPTY)}>+ Nouveau modèle</button>}
       {f && (
@@ -46,6 +66,7 @@ export default function StandardChanges() {
           <button className="btn" onClick={save} disabled={!f.name.trim() || !f.implementationPlan.trim() || !f.backoutPlan.trim()}>Enregistrer</button>{' '}
           <button className="btn ghost" onClick={() => setF(null)}>Annuler</button>
         </div>)}
+      {review && <Review model={review} onDone={() => { setReview(null); load() }} />}
       {!items ? <p>Chargement…</p> : (
         <table>
           <thead><tr><th>Modèle</th><th>Risque</th><th>Statut</th>{manager && <th />}</tr></thead>
@@ -53,8 +74,11 @@ export default function StandardChanges() {
             {items.map(m => (
               <tr key={m.id} style={m.active ? {} : { color: 'var(--muted)' }}>
                 <td><b>{m.name}</b>{m.description && <div className="muted small">{m.description}</div>}</td>
-                <td>{m.risk}</td><td>{m.active ? 'Proposé' : 'Désactivé'}</td>
-                {manager && <td><button className="btn ghost small" onClick={() => setF({ ...EMPTY, ...m })}>Modifier</button></td>}
+                <td>{m.risk}</td>
+                <td>{m.suspendedAt ? <span className="badge t-bad">Suspendu ({m.suspendedByChange})</span> : m.active ? 'Proposé' : 'Désactivé'}
+                  {m.reviewedAt && !m.suspendedAt && <div className="muted small">Revu par {m.reviewedBy} : {m.reviewNote}</div>}</td>
+                {manager && <td><button className="btn ghost small" onClick={() => setF({ ...EMPTY, ...m })}>Modifier</button>
+                  {m.suspendedAt && <> <button className="btn small" onClick={() => setReview(m)}>Revoir</button></>}</td>}
               </tr>))}
             {items.length === 0 && <tr><td colSpan={4} className="muted">Aucun modèle : sans modèle, pas de changement Standard.</td></tr>}
           </tbody>

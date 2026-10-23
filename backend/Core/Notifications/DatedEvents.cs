@@ -85,6 +85,13 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             if (Fresh("change", c.Id, ev)) notify.ToOwner(c, "change", ev);
         }
 
+        // PRB-32 : problème ouvert sans activité depuis 30 jours → gestionnaires, une fois par période d'inactivité.
+        foreach (var (p, last) in await ProblemRules.IdleAsync(db, now, _ => true))
+        {
+            var ev = $"Sans activité depuis le {Day(last)}";
+            if (Fresh("problem", p.Id, ev)) notify.ToManagers(p, "problem", ev);
+        }
+
         // PRB-31 : action en retard → R, A et gestionnaires du problème.
         foreach (var a in await db.Actions.AsNoTracking().Include(a => a.Raci).Include(a => a.Problem)
                      .Where(a => a.Status != "Terminée" && a.Status != "Annulée" && a.DueDate != null && a.DueDate < today)

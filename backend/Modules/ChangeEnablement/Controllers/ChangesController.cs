@@ -53,6 +53,8 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         var model = e.StandardModelId is int id ? await Db.StandardChangeModels.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id) : null;
         if (model is null) return "Un changement Standard se crée depuis un modèle standard du catalogue ; sinon, créer un changement Normal.";
         if (!model.Active) return $"Le modèle standard « {model.Name} » n'est plus proposé.";
+        if (model.SuspendedAt is not null)
+            return $"Le modèle standard « {model.Name} » est suspendu depuis l'échec de {model.SuspendedByChange} : créer un changement Normal en attendant la revue d'un gestionnaire.";
         FromModel(e, model);
         return null;
     }
@@ -68,6 +70,14 @@ public class ChangesController(AppDbContext db) : RecordController<Change, Chang
         if (creating && e.ChangeType == "Standard" && e.StandardModelId is int id
             && await Db.StandardChangeModels.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id) is { } model)
             FromModel(e, model);
+        // CHG-27 : l'échec d'un changement standard suspend son modèle jusqu'à la revue d'un gestionnaire.
+        if (!creating && e.Outcome == "Échoué" && Db.Entry(e).Property(x => x.Outcome).OriginalValue != "Échoué"
+            && e.ChangeType == "Standard" && e.StandardModelId is int modelId
+            && await Db.StandardChangeModels.FirstOrDefaultAsync(m => m.Id == modelId) is { SuspendedAt: null } failed)
+        {
+            (failed.SuspendedAt, failed.SuspendedByChangeId, failed.SuspendedByChange) = (DateTime.UtcNow, e.Id, e.Reference);
+            Notify.ToManagers(e, LinkType, $"Modèle standard suspendu : {failed.Name}");
+        }
         // CHG-20 : une nouvelle évaluation repart sans décision du CAB.
         if (!creating && e.Status == "Évalué" && Db.Entry(e).Property(x => x.Status).OriginalValue != "Évalué")
             Db.ChangeApprovals.RemoveRange(await Db.ChangeApprovals.Where(a => a.ChangeId == e.Id).ToListAsync());

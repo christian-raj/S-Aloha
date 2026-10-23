@@ -104,7 +104,7 @@ export default function Console() {
   // NIS-23 : exigences du référentiel NIS 2 sans texte (Admin).
   const referential = m?.referentialWithoutText > 0
     ? [{ id: 'nis2', reference: 'Référentiel NIS 2', title: `${m.referentialWithoutText} exigence(s) encore sans texte : importer le texte de l’ANSSI`, href: '/settings/nis2' }] : []
-  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps') + L('incidentFollowUps') + referential.length
+  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps') + L('incidentFollowUps') + L('idleProblems') + referential.length
   const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0) + (c.myChangeFollowUps?.length ?? 0) + (c.myIncidentFollowUps?.length ?? 0)
   const follow = c.myProblems.length + L('inAnalysisNoRootCause')
 
@@ -209,6 +209,9 @@ export default function Console() {
         {/* CHG-30, CHG-31 */}
         <List title="Changements à relancer" tone="amber" rows={m.changeFollowUps ?? []} onRow={goItem}
           hint="Fin planifiée passée sans mise en œuvre, ou mis en œuvre depuis plus de 2 jours ouvrés sans clôture." render={itemRow} />
+        {/* PRB-32 */}
+        <List title="Problèmes sans activité" tone="amber" rows={m.idleProblems ?? []} onRow={goItem}
+          hint="Ni analyse, ni action, ni modification depuis 30 jours : relancer le gestionnaire du problème, ou le clore." render={itemRow} />
         {/* INC-26 */}
         <List title="Incidents en attente prolongée" tone="amber" rows={m.incidentFollowUps ?? []} onRow={goItem}
           hint="En attente depuis plus de 5 jours ouvrés : relancer l’utilisateur, le fournisseur ou le changement attendu." render={itemRow} />

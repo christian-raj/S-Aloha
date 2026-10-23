@@ -56,6 +56,7 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `ConflictComment` | texte | selon CHG-22 | Commentaire de l'autorité qui autorise un changement en conflit de calendrier | ✅ CHG-22 |
 | `ImplementedAt` | date UTC | auto | Entrée dans Mis en œuvre (relance CHG-31 ; à défaut, le début réel) | ✅ CHG-31 |
 | `StandardModelId` | lien | si Standard | Modèle de changement standard, choisi à la création ; plans et risque en sont repris | ✅ CHG-26 |
+| Modèle : `SuspendedAt`, `SuspendedByChange`, `ReviewedAt`, `ReviewedBy`, `ReviewNote` | date, référence, texte | auto | Suspension après un échec et sa revue | ✅ CHG-27 |
 | Décisions du CAB (`ChangeApprovals`) | liste | si CAB | Approbateur, décision, date, commentaire ; une par gestionnaire ; effacées à une nouvelle évaluation | ✅ CHG-20 |
 
 ## 4. Cycle de vie
@@ -135,7 +136,7 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 |---|---|---|---|
 | CHG-25 | **Périodes de gel** (début, fin, motif) définies par les gestionnaires : planifier un créneau qui les chevauche est refusé, sauf changement **Urgent** ; elles apparaissent sur le calendrier | ✅ (périodes communes à l'organisation ; vérifiées à la planification et à tout déplacement d'un changement planifié ; affichées sur le calendrier) | |
 | CHG-26 | **Modèles de changement standard** (F4) : nom, plan de mise en œuvre et de retour arrière types, risque, CI concernés ; un changement Standard se crée depuis un modèle actif dont il reprend les plans | ✅ (modèle obligatoire pour un Standard — décision du 2026-10-16 ; page « Modèles standard » ; désactivé plutôt que supprimé) / 🔜 (CI concernés du modèle) | |
-| CHG-27 | Un modèle standard dont un changement a échoué est **suspendu** jusqu'à revue par un Manager | 🔜 | 3 |
+| CHG-27 | Un modèle standard dont un changement a échoué est **suspendu** jusqu'à revue par un Manager | ✅ (résultat Échoué d'un changement Standard : modèle suspendu, gestionnaires notifiés ; un nouveau changement Standard depuis ce modèle est refusé ; revue motivée par un gestionnaire — remise en service ou désactivation, conclusion gardée sur le modèle ; console « Décisions » ; badge « Suspendu » et bouton « Revoir » sur la page des modèles) | 3 |
 
 ## 6. Délais, calculs et alertes
 
@@ -156,7 +157,8 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 
 ## 8. Console et indicateurs
 
-Console ✅ : changements Demandé et Évalué dans « Décisions » (gestionnaires) ; mes
+Console ✅ : changements Demandé et Évalué, modèles standard suspendus à revoir (CHG-27) dans
+« Décisions » (gestionnaires) ; mes
 changements ouverts (Mon travail) ; relances CHG-30 et CHG-31 du responsable (Mon travail),
 et de l'équipe (Relances, gestionnaires), avec une notification au responsable par motif.
 À venir : mises en œuvre du jour (Mon travail), changements Urgent sans revue (Relances).
@@ -181,6 +183,7 @@ et de l'équipe (Relances, gestionnaires), avec une notification au responsable 
 | `GET /api/changes/{id}/approvals`, `POST /api/changes/{id}/approvals` (`{ approve, comment }`) | User ; décision : Manager du périmètre, pas le demandeur | Décisions du CAB (CHG-20) |
 | `GET /api/change-freezes`, `POST`, `DELETE /api/change-freezes/{id}` | User (lecture), Manager (écriture) | Périodes de gel (CHG-25), communes à l'organisation |
 | `GET /api/standard-changes` (`?all=true`), `POST/PUT /api/standard-changes[/{id}]`, `DELETE` | User (lecture), Manager (écriture), Admin (suppression d'un modèle inutilisé) | Modèles de changement standard (CHG-26) |
+| `POST /api/standard-changes/{id}/review` (`note`, `keep`) | Manager | Revue d'un modèle suspendu : remise en service ou désactivation (CHG-27) |
 
 ## 10. Scénarios d'acceptation
 

@@ -102,6 +102,26 @@ public class StandardChangeModelsController(AppDbContext db) : ControllerBase
         return Ok(StandardChangeModelView.From(m));
     }
 
+    /// <summary>
+    /// CHG-27 : revue d'un modèle suspendu par un gestionnaire, motivée : le modèle est remis en
+    /// service (« Keep ») ou désactivé ; la conclusion reste sur le modèle.
+    /// </summary>
+    [HttpPost("{id:int}/review")]
+    [Authorize(Policy = "Manager")]
+    public async Task<IActionResult> Review(int id, StandardModelReviewDto dto)
+    {
+        var m = await db.StandardChangeModels.FirstOrDefaultAsync(x => x.Id == id);
+        if (m is null) return NotFound();
+        if (m.SuspendedAt is null) return BadRequest(new { message = "Ce modèle n'est pas suspendu." });
+        if (string.IsNullOrWhiteSpace(dto.Note)) return BadRequest(new { message = "Conclure la revue : cause de l'échec, plans revus ou non." });
+        (m.ReviewedAt, m.ReviewedBy, m.ReviewNote) = (DateTime.UtcNow, User.FindFirst("displayName")?.Value ?? User.Identity?.Name, dto.Note.Trim());
+        m.SuspendedAt = null;
+        if (!dto.Keep) m.Active = false;
+        m.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return Ok(StandardChangeModelView.From(m));
+    }
+
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Delete(int id)
