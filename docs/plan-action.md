@@ -30,11 +30,14 @@ première version publiée sera **stable**, à la fin de ce plan d'action.
 | Ordre | Pratique | Règles | Chantier |
 |---|---|---|---|
 | ~~1~~ | Demandes | ~~REQ-24, REQ-25, REQ-11, REQ-32 et indicateurs REQ-40 à REQ-43 (onglet Demandes du reporting)~~ — faits le 2026-10-23 | F3 |
-| 2 | Incidents | INC-16 (incidents enfants), INC-26 (relance après 5 jours ouvrés En attente) | |
+| ~~2~~ | Incidents | ~~INC-16 (incidents enfants), INC-26 (relance après 5 jours ouvrés En attente)~~ — faits le 2026-10-23 | |
 | 3 | Problèmes, changements | PRB-32 (problème sans activité depuis 30 jours), CHG-27 (modèle standard suspendu après un échec) | |
 | 4 | Connaissances | KB-13 (retour des lecteurs), KB-15 (versions), KB-16 (quatre yeux) | |
 | 5 | Configuration | CFG-30 (import en masse), CFG-16 (attributs par type) | F5 |
 | 6 | Niveaux de service, amélioration, déclarations | SLM-21 (disponibilité mesurée), CSI-15 (durabilité), DRG-08 (modèle de contenu par régime) | |
+
+La suite de F7 (courriels SOC-22, pièces jointes SOC-25) reprend **après** les étapes 3 à 6
+(décision du 2026-10-23).
 
 **À arbitrer avant de commencer** :
 

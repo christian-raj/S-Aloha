@@ -72,6 +72,16 @@ public class Incident : Record, IServiceBound
     [MaxLength(30)] public string? OnHoldReason { get; set; }            // INC-07
     public DateTime? OnHoldSince { get; set; }                           // INC-22 : début de l'attente en cours
     public int HeldMinutes { get; set; }                                 // INC-22 : attente cumulée, en minutes de service
+    /// <summary>INC-16 : incident parent (même panne) ; un seul niveau : un parent n'a pas lui-même de parent.</summary>
+    public int? ParentId { get; set; }
+
+    /// <summary>INC-26 : délai, en jours ouvrés, au-delà duquel un incident En attente remonte au responsable.</summary>
+    public const int HoldFollowUpBusinessDays = 5;
+
+    /// <summary>INC-26 : motif de relance d'un incident En attente depuis plus de 5 jours ouvrés, sinon null.</summary>
+    public string? HoldFollowUp(DateTime now) =>
+        Status == "En attente" && OnHoldSince is { } since && now > Dates.AddBusinessDays(since, HoldFollowUpBusinessDays)
+            ? $"En attente depuis le {since:dd/MM/yyyy} ({OnHoldReason ?? "sans motif"})" : null;
 
     /// <summary>INC-24 : état SLA calculé à la lecture (fiche, registre, console, reporting).</summary>
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
@@ -85,6 +95,12 @@ public record IncidentDto(string Title, string? Description, string? Status,
     string? ReopenReason = null, DateTime? OccurredAt = null, int? PerimeterId = null, int? ServiceId = null,
     string? OnHoldReason = null, bool? IsSecurity = null, string? Channel = null, string? CallerId = null,
     string? CallerDisplayName = null, string? EscalationReason = null) : IRecordDto;
+
+/// <summary>INC-16 : rattachement à un incident parent, désigné par sa référence ; vide : détaché.</summary>
+public record IncidentParentDto(string? ParentReference);
+
+/// <summary>INC-16 : un incident de la famille (parent ou enfant).</summary>
+public record IncidentRelative(int Id, string Reference, string Title, string Status, string Priority);
 
 /// <summary>INC-41 : qualification réglementaire d'un incident cyber ; <c>AwareAt</c> : prise de connaissance, si autre que la création.</summary>
 public record IncidentQualificationDto(bool Nis2Important, string? Nis2Reason, bool PersonalDataBreach, string? PersonalDataBreachReason,

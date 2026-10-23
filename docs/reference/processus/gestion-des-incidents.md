@@ -63,7 +63,7 @@ créateur, dates) : [socle](../regles-metier.md#5-règles-communes-aux-processus
 | `OwnerChanged` | booléen | auto | Le responsable a changé depuis la création (INC-23) | ✅ |
 | `ReopenCount` | entier | auto | Nombre de réouvertures | ✅ INC-11 |
 | `ReopenReason` | texte | à la réouverture | Motif de la dernière réouverture ; effacé à la résolution suivante (l'historique le garde) | ✅ INC-11 |
-| `ParentId` | lien | | Incident parent (incidents liés à une même panne) | 🔜 INC-16 |
+| `ParentId` | lien | | Incident parent (même panne), un seul niveau, même périmètre ; supprimer le parent détache ses enfants | ✅ INC-16 |
 | `IsSecurity` | booléen | | Incident de nature sécurité (cyber) ; ne se retire plus après qualification | ✅ INC-40 |
 | `Nis2Important`, `PersonalDataBreach` | booléen + motif (`Nis2Reason`, `PersonalDataBreachReason`) | si cyber | Qualification réglementaire, avec `QualifiedAt`, `QualifiedBy` | ✅ INC-41 |
 
@@ -119,7 +119,7 @@ stateDiagram-v2
 | INC-13 | Seul un **Manager** déclare ou retire le caractère majeur ; un incident majeur a toujours priorité P1 et un Manager pour responsable | ✅ (responsable nominatif, désigné par un Manager ; il est gestionnaire du périmètre de l'incident — rôle par périmètre, PER-03, lu dans l'annuaire — vérifié quand il est désigné ou que l'incident devient majeur ; annuaire injoignable : désignation acceptée et tracée au journal de l'API) | 1 |
 | INC-14 | **Ouvrir un problème lié** depuis l'incident : crée le problème avec les mêmes titre, description, impact, urgence, catégorie et service, puis relie les deux | ✅ | |
 | INC-15 | Un incident **majeur** ne passe à Résolu que relié à un **problème** (existant ou créé, INC-14) : la revue de l'incident majeur s'y conduit | ✅ | 2 |
-| INC-16 | **Incidents enfants** : un incident peut être rattaché à un incident parent (même panne) ; résoudre le parent résout ses enfants avec la même résolution | 🔜 | 3 |
+| INC-16 | **Incidents enfants** : un incident peut être rattaché à un incident parent (même panne) ; résoudre le parent résout ses enfants avec la même résolution | ✅ (rattachement par la référence du parent, par tout rôle qui voit l'incident ; un seul niveau : le parent n'a pas de parent, l'enfant n'a pas d'enfants ; même périmètre ; ni soi-même ni un parent clos ; figé une fois l'incident résolu. À la résolution du parent, ses enfants ouverts passent Résolu avec sa résolution et son code, leur attente prend fin ; déclarant et utilisateur affecté notifiés ; encadré « Même panne » sur la fiche) | 3 |
 | INC-17 | **Escalade fonctionnelle** : changer le responsable vers un autre groupe est tracé (SOC-20) avec un motif (`EscalationReason`, nouveau à chaque escalade) | ✅ | 2 |
 | INC-18 | **Escalade hiérarchique** : un P1, ou un incident dont l'échéance de résolution est dépassée, notifie les gestionnaires (SOC-21) | ✅ (notification des gestionnaires, relevé périodique) | |
 | INC-19 | **Suggestion de connaissance** : l'onglet Informations de la fiche présente les « **Cas similaires** » (articles publiés, problèmes établis, incidents résolus) par la recherche hybride ([RAG-06](../recherche.md)) ; relier en un clic l'élément retenu à l'incident : [RAG-09](../recherche.md) | ✅ (relier : 🔜 RAG-09) | 2 |
@@ -152,7 +152,7 @@ priorité (aujourd'hui enregistré, pas mesuré).
 | INC-23 | **Résolu au premier contact** : résolu sans passer par En cours, sans changement de responsable ni réouverture ; fixé à la première résolution, une réouverture le met à faux | ✅ | |
 | INC-24 | **SLA en risque** : moins de 25 % du délai de résolution restant ⇒ bloc « Urgent » de la console du responsable et des gestionnaires ; **SLA dépassé** ⇒ marqué sur la fiche et le registre | ✅ (état SLA calculé `slaState` : Dans le SLA, SLA en risque, SLA dépassé, SLA suspendu En attente, SLA respecté ou non une fois résolu, Sans SLA ; badge sur la fiche et colonne du registre ; console : Urgent du responsable et des gestionnaires) | |
 | INC-25 | Notifications (SOC-21) : affectation → responsable (ou membres du groupe) ; résolution → utilisateur affecté ; incident majeur déclaré → tous les gestionnaires ; SLA en risque → responsable | ✅ | |
-| INC-26 | Un incident **En attente** depuis plus de 5 jours ouvrés remonte en relance au responsable | 🔜 | 3 |
+| INC-26 | Un incident **En attente** depuis plus de 5 jours ouvrés remonte en relance au responsable | ✅ (calcul `holdFollowUp` : console du responsable, Mon travail, et des gestionnaires, Relances ; notification au responsable, une fois par attente, par le relevé périodique) | 3 |
 | INC-27 | **Début constaté** (`OccurredAt`), facultatif, jamais postérieur à la déclaration (5 minutes de tolérance, 400 sinon) ; le MTTD en découle ([REP-11](../reporting.md)) | ✅ | |
 
 ## 7. Liens avec les autres pratiques
@@ -170,9 +170,9 @@ priorité (aujourd'hui enregistré, pas mesuré).
 
 Console ✅ : incidents majeurs en cours (Urgent, gestionnaires) ; SLA en risque ou dépassé
 (Urgent : les miens, et ceux des périmètres gérés, INC-24) ; mes incidents ouverts (Mon
-travail). À venir : incidents non pris en charge
-depuis plus d'une heure (Décisions, gestionnaires, lot 2), En attente prolongés
-(Relances, INC-26).
+travail) ; En attente depuis plus de 5 jours ouvrés (Mon travail du responsable, Relances des
+gestionnaires, INC-26). À venir : incidents non pris en charge depuis plus d'une heure
+(Décisions, gestionnaires, lot 2).
 
 | Indicateur | Calcul | Statut |
 |---|---|---|
@@ -193,6 +193,7 @@ depuis plus d'une heure (Décisions, gestionnaires, lot 2), En attente prolongé
 | `GET /api/incidents` (filtres `status`, `q`, `owner`), `GET /api/incidents/{id}` | User | Registre, fiche |
 | `POST /api/incidents`, `PUT /api/incidents/{id}` | User | Création, modification, transitions |
 | `DELETE /api/incidents/{id}` | Admin | Suppression (liens et déclarations réglementaires compris) |
+| `GET /api/incidents/{id}/family`, `PUT /api/incidents/{id}/parent` (`parentReference`, vide : détaché) | User | Parent et enfants d'un incident, rattachement (INC-16) |
 | `POST /api/incidents/{id}/qualification` (`nis2Important`, `nis2Reason`, `personalDataBreach`, `personalDataBreachReason`, `awareAt`) | Manager | Qualification réglementaire d'un incident cyber : crée les déclarations des régimes retenus, propose l'incident majeur (INC-41, INC-42, INC-44) |
 | `GET/POST /api/links`, `DELETE /api/links/{id}` | User | Liens (problème, CI, article…) |
 

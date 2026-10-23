@@ -165,6 +165,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<ServiceLevelAgreement>().Property(a => a.ComplianceTarget).HasPrecision(5, 2);
         // SLM-10 : service du catalogue ; supprimer un service garde le libellé recopié.
         b.Entity<Incident>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
+        // INC-16 : incident parent ; supprimer le parent détache ses enfants.
+        b.Entity<Incident>().HasOne<Incident>().WithMany().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.SetNull);
         b.Entity<Problem>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
         b.Entity<ServiceRequest>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
         // REQ-20 : modèle de la demande ; un service supprimé ne supprime pas le modèle.

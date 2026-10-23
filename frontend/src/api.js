@@ -110,7 +110,10 @@ export const api = {
   incidents: {
     ...records('/incidents'),
     // INC-41 : qualification réglementaire d'un incident de sécurité (gestionnaire).
-    qualify: (id, dto) => request(`/incidents/${id}/qualification`, { method: 'POST', body: JSON.stringify(dto) })
+    qualify: (id, dto) => request(`/incidents/${id}/qualification`, { method: 'POST', body: JSON.stringify(dto) }),
+    // INC-16 : parent et enfants (même panne).
+    family: id => request(`/incidents/${id}/family`),
+    setParent: (id, parentReference) => request(`/incidents/${id}/parent`, { method: 'PUT', body: JSON.stringify({ parentReference }) })
   },
   regulatoryNotifications: records('/regulatory-notifications'),
   requests: {

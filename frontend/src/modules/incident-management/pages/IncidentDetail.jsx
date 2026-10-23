@@ -36,6 +36,39 @@ function OpenProblem({ incident }) {
 }
 
 /**
+ * INC-16 : incidents d'une même panne. Un enfant se rattache à un parent par sa référence ;
+ * résoudre le parent résout ses enfants avec la même résolution.
+ */
+export function Family({ incident, reload }) {
+  const [family, setFamily] = useState(null)
+  const [reference, setReference] = useState('')
+  const [error, setError] = useState('')
+  useEffect(() => { api.incidents.family(incident.id).then(setFamily).catch(e => setError(e.message)) }, [incident.id, incident.parentId, incident.status])
+  if (!family) return null
+  const done = ['Résolu', 'Clos'].includes(incident.status)
+  const attach = ref => api.incidents.setParent(incident.id, ref).then(() => { setReference(''); setError(''); reload() }).catch(e => setError(e.message))
+  const row = i => <li key={i.id}><Link to={`/incidents/${i.id}`}><b>{i.reference}</b></Link> {i.title} <span className="badge">{i.status}</span></li>
+  if (!family.parent && family.children.length === 0 && done) return null
+  return (
+    <section className="card" style={{ marginTop: 16 }} aria-label="Même panne">
+      <h3 className="card-title">Même panne</h3>
+      {error && <div className="error">{error}</div>}
+      {family.parent && <p className="small">Rattaché à l’incident parent : <Link to={`/incidents/${family.parent.id}`}><b>{family.parent.reference}</b></Link> {family.parent.title}
+        {!done && <> <button className="btn ghost small" onClick={() => attach('')}>Détacher</button></>}</p>}
+      {family.children.length > 0 && <>
+        <p className="small">Incidents enfants, résolus avec celui-ci :</p>
+        <ul className="small">{family.children.map(row)}</ul>
+      </>}
+      {!family.parent && family.children.length === 0 && !done && (
+        <div className="toolbar">
+          <input aria-label="Référence de l’incident parent" value={reference} onChange={e => setReference(e.target.value)} placeholder="INC-2026-0042" />
+          <button className="btn ghost" onClick={() => attach(reference.trim())} disabled={!reference.trim()}>Rattacher à cet incident parent</button>
+        </div>)}
+    </section>
+  )
+}
+
+/**
  * INC-41, INC-42 : qualification réglementaire d'un incident de sécurité par un gestionnaire,
  * et ses déclarations (DRG-01). INC-44 : important au sens NIS 2 → proposé comme incident majeur.
  */
@@ -107,5 +140,5 @@ export function Regulatory({ incident, reload }) {
 export default function IncidentDetail() {
   const config = useCategoryConfig(useServiceConfig(incidentConfig), 'incident')
   if (!config) return <p>Chargement…</p>
-  return <RecordDetail config={config}>{(r, reload) => <><Regulatory incident={r} reload={reload} /><OpenProblem incident={r} /><SimilarCases type="incident" id={r.id} /></>}</RecordDetail>
+  return <RecordDetail config={config}>{(r, reload) => <><Regulatory incident={r} reload={reload} /><Family incident={r} reload={reload} /><OpenProblem incident={r} /><SimilarCases type="incident" id={r.id} /></>}</RecordDetail>
 }

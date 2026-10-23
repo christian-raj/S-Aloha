@@ -1330,6 +1330,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PerimeterId")
                         .HasColumnType("integer");
 
@@ -1400,6 +1403,8 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasColumnType("character varying(10)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("PerimeterId");
 
@@ -3777,6 +3782,11 @@ namespace SAloha.Api.Core.Data.Migrations
 
             modelBuilder.Entity("SAloha.Api.Modules.IncidentManagement.Incident", b =>
                 {
+                    b.HasOne("SAloha.Api.Modules.IncidentManagement.Incident", null)
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SAloha.Api.Core.Perimeters.Perimeter", null)
                         .WithMany()
                         .HasForeignKey("PerimeterId")

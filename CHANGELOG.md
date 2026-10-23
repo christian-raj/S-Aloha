@@ -17,6 +17,11 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 ### Ajouté
 
+- **Incidents d'une même panne** (INC-16) : un incident se rattache à un incident parent ;
+  résoudre le parent résout ses enfants avec la même résolution (encadré « Même panne »).
+- **Attente prolongée** (INC-26) : un incident En attente depuis plus de 5 jours ouvrés
+  remonte au responsable (console, notification) et aux gestionnaires (Relances).
+
 - **Messagerie et stockage** (ADM-60 à ADM-63, [ADR-0020](docs/decisions/adr-0020-pieces-jointes-s3-et-smtp-configurables.md)) :
   nouvelle page Administration › Messagerie et stockage pour régler le serveur SMTP des
   courriels et le stockage objet compatible S3 (Garage) des pièces jointes, chacun avec un
@@ -170,6 +175,7 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Incidents** : la migration `IncidentParent` ajoute la colonne `Incidents.ParentId`.
 - **Messagerie et stockage** : la migration `PlatformSettings` ajoute deux tables de réglages.
   Rien n'est activé : régler et essayer dans la console. Les secrets dépendent de
   `Discovery:VaultKey`, qui doit donc être fixée.

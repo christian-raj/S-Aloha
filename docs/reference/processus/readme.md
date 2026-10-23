@@ -14,7 +14,7 @@
 |---|---|---|---|---|---|
 | [Socle commun](../regles-metier.md) | SOC | 25 | 0 | 0 | 2 |
 | [Gestion des problèmes](gestion-des-problemes.md) | PRB | 29 | 0 | 0 | 1 |
-| [Gestion des incidents](gestion-des-incidents.md) | INC | 29 | 0 | 0 | 2 |
+| [Gestion des incidents](gestion-des-incidents.md) | INC | 31 | 0 | 0 | 0 |
 | [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 21 | 0 | 0 | 0 |
 | [Habilitation des changements](habilitation-des-changements.md) | CHG | 26 | 0 | 0 | 1 |
 | [Gestion de la configuration](gestion-de-la-configuration.md) | CFG | 37 | 0 | 0 | 2 |
@@ -27,7 +27,7 @@
 | [Périmètres](../perimetres.md) | PER | 12 | 0 | 0 | 0 |
 | [Recherche](../recherche.md) | RAG | 11 | 1 | 0 | 1 |
 | [Reporting](../reporting.md) | REP | 34 | 0 | 0 | 0 |
-| **Total** | | **324** | **1** | **0** | **15** |
+| **Total** | | **326** | **1** | **0** | **13** |
 
 *Comptes au 2026-10-16 (main `af38031`), sur les tableaux de règles (hors indicateurs). Une
 règle faite en partie compte ✅ (7 règles, la part restante est décrite dans son statut).
