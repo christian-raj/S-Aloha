@@ -4,7 +4,7 @@
 
 **N'ouvrez pas d'issue publique.** Utilisez le signalement privé de GitHub :
 onglet **Security** → **Report a vulnerability**
-([lien direct](https://github.com/christian-raj/S-Aloha/security/advisories/new)).
+([lien direct](https://github.com/chrraj7/S-Aloha/security/advisories/new)).
 
 Indiquez la version ou le commit concerné, les étapes pour reproduire et l'impact
 estimé. Vous recevrez un accusé de réception sous 7 jours ; le correctif et l'avis

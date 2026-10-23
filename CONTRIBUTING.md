@@ -8,9 +8,9 @@ contribution est publiée sous la même licence.
 
 ## Par où commencer
 
-- Les issues [`good first issue`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+- Les issues [`good first issue`](https://github.com/chrraj7/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
   sont rédigées pour un premier passage : contexte, fichiers concernés, critère de fin.
-  Les [`help wanted`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+  Les [`help wanted`](https://github.com/chrraj7/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
   demandent un peu plus de contexte.
 - Indiquez dans l'issue que vous la prenez, pour éviter un travail en double.
 - Lancez l'application **sans Active Directory** avec le mode démonstration :
@@ -34,7 +34,7 @@ contribution est publiée sous la même licence.
 
 ## Signaler un bug ou proposer une évolution
 
-Les [issues](https://github.com/christian-raj/S-Aloha/issues) sont la source de vérité
+Les [issues](https://github.com/chrraj7/S-Aloha/issues) sont la source de vérité
 du projet ([ADR-0001](docs/decisions/adr-0001-github-issues-source-de-verite.md)).
 Utilisez les modèles proposés. Une faille de sécurité ne passe **jamais** par une
 issue publique : voir [SECURITY.md](SECURITY.md).

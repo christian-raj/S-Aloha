@@ -27,7 +27,7 @@ jobs:
           COMMIT: ${{ github.sha }}
         run: |
           set -euo pipefail
-          prefixe=ghcr.io/christian-raj/s-aloha
+          prefixe=ghcr.io/chrraj7/s-aloha
           source=https://github.com/${{ github.repository }}
           for image in api:backend web:frontend annuaire-demo:demo/annuaire; do
             nom=${image%%:*}; dossier=${image#*:}

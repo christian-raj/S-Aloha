@@ -9,7 +9,7 @@ et montre à chacun **ce qui requiert son intervention, maintenant**.
 
 **10 pratiques ITIL 4** reliées entre elles · **plus de 250 règles de gestion** · **NIS 2** intégré · **on-prem** et libre
 
-[![CI](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml/badge.svg)](https://github.com/christian-raj/S-Aloha/actions/workflows/ci.yml)
+[![CI](https://github.com/chrraj7/S-Aloha/actions/workflows/ci.yml/badge.svg)](https://github.com/chrraj7/S-Aloha/actions/workflows/ci.yml)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
@@ -180,7 +180,7 @@ Pas besoin d'Active Directory : le **mode démonstration** démarre son propre a
 charge des données d'exemple fictives. Seul Docker est requis.
 
 ```bash
-git clone https://github.com/christian-raj/S-Aloha.git && cd S-Aloha
+git clone https://github.com/chrraj7/S-Aloha.git && cd S-Aloha
 docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d
 ```
 
@@ -251,9 +251,9 @@ S-Aloha est un projet ouvert : code, documentation, retours d'usage, tout compte
   identifiant (`INC-15`, `REQ-24`…). Commencer par le
   [mode d'emploi](docs/reference/processus/readme.md#mode-demploi-pour-implémenter-une-règle).
 - 🧩 **Première contribution ?** Les issues
-  [`good first issue`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+  [`good first issue`](https://github.com/chrraj7/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
   sont prêtes à prendre : contexte, fichiers concernés, critère de fin. Plus large :
-  [`help wanted`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
+  [`help wanted`](https://github.com/chrraj7/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
 - 🧪 **Un terrain sûr.** Le mode démonstration démarre sans Active Directory ; tests d'API
   sur une vraie base PostgreSQL (Testcontainers), tests d'interface, CI à chaque pull request.
 - 📝 Le [guide de contribution](CONTRIBUTING.md) explique comment proposer une
@@ -322,7 +322,7 @@ place, NIS 2 built in.**
   about sixty specified rules are waiting for an implementation, each a well-scoped pull
   request. Documentation is in French, code in English; issues and pull requests are
   welcome in **English or French**. Start with a
-  [`good first issue`](https://github.com/christian-raj/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+  [`good first issue`](https://github.com/chrraj7/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
   and read [CONTRIBUTING.md](CONTRIBUTING.md). Commits are signed off (DCO).
 
 ## Licence
@@ -335,7 +335,7 @@ Vous pouvez l'utiliser, le modifier et le redistribuer librement. Si vous mettez
 donner accès à son code source : l'interface affiche pour cela un lien « Code source »,
 configurable ([détails](docs/reference/exploitation.md#licence-et-code-source)).
 
-Copyright © 2026 Christian Rajaonary.
+Copyright © 2026 Leipa.
 
 <div align="center">
 <br/>

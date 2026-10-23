@@ -89,8 +89,8 @@ Prérequis des motifs (réouverture, rejet, abandon) et des transitions forcées
 
 | Règle | Objet |
 |---|---|
-| [SOC-02](../regles-metier.md#5-règles-communes-aux-processus), [PRB-02](gestion-des-problemes.md) | Valeurs fermées dans le module Problèmes ([#28](https://github.com/christian-raj/S-Aloha/issues/28)) |
-| [PRB-17](gestion-des-problemes.md), [PRB-18](gestion-des-problemes.md) | RACI à la modification ([#23](https://github.com/christian-raj/S-Aloha/issues/23)), date d'achèvement ([#24](https://github.com/christian-raj/S-Aloha/issues/24)) |
+| [SOC-02](../regles-metier.md#5-règles-communes-aux-processus), [PRB-02](gestion-des-problemes.md) | Valeurs fermées dans le module Problèmes ([#28](https://github.com/chrraj7/S-Aloha/issues/28)) |
+| [PRB-17](gestion-des-problemes.md), [PRB-18](gestion-des-problemes.md) | RACI à la modification ([#23](https://github.com/chrraj7/S-Aloha/issues/23)), date d'achèvement ([#24](https://github.com/chrraj7/S-Aloha/issues/24)) |
 | [PRB-11](gestion-des-problemes.md), [PRB-12](gestion-des-problemes.md), [PRB-13](gestion-des-problemes.md), [PRB-14](gestion-des-problemes.md) | Erreur connue, résolution, code de clôture, `ResolvedAt` |
 | [INC-06](gestion-des-incidents.md), [INC-08](gestion-des-incidents.md) | Prise en charge, code de résolution |
 | [CHG-12](habilitation-des-changements.md), [CHG-13](habilitation-des-changements.md) | Plans exigés à l'évaluation, fin planifiée |
@@ -149,7 +149,7 @@ du lot 3 du tableau ci-dessus.
 
 | Règle | Objet |
 |---|---|
-| [KB-10](gestion-des-connaissances.md) | Rendu Markdown des articles ([#25](https://github.com/christian-raj/S-Aloha/issues/25)) |
+| [KB-10](gestion-des-connaissances.md) | Rendu Markdown des articles ([#25](https://github.com/chrraj7/S-Aloha/issues/25)) |
 
 ## Gabarit d'un document de pratique
 

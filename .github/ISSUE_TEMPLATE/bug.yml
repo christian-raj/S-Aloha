@@ -4,7 +4,7 @@ labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: "**Faille de sécurité ?** Ne remplissez pas ce formulaire : utilisez le [signalement privé](https://github.com/christian-raj/S-Aloha/security/advisories/new)."
+      value: "**Faille de sécurité ?** Ne remplissez pas ce formulaire : utilisez le [signalement privé](https://github.com/chrraj7/S-Aloha/security/advisories/new)."
   - type: textarea
     id: constat
     attributes:

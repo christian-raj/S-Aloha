@@ -1,6 +1,6 @@
 # 🛡️ Sécurité
 
-> Le modèle de sécurité tel qu'il est, et ce qui reste à durcir avant une mise en production. Correctifs suivis dans [GitHub Issues](https://github.com/christian-raj/S-Aloha/issues) (label `security`).
+> Le modèle de sécurité tel qu'il est, et ce qui reste à durcir avant une mise en production. Correctifs suivis dans [GitHub Issues](https://github.com/chrraj7/S-Aloha/issues) (label `security`).
 
 <sub>[← Documentation](../readme.md) · [Produit](produit.md) · [Règles métier](regles-metier.md) · [Architecture](architecture.md) · [Base de données](base-de-donnees.md) · [Frontend](frontend.md) · [Exploitation](exploitation.md) · [Sécurité](securite.md) · [Glossaire](glossaire.md)</sub>
 

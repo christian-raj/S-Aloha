@@ -21,7 +21,7 @@ projet dans la durée ([ADR-0011](decisions/adr-0011-financement-sponsoring-et-s
 | **Open Collective** | Organisations qui ont besoin d'une facture et d'une dépense transparente | Ouvert à la première demande |
 
 Pour un sponsoring de fonctionnalité ou des services, ouvrez une
-[discussion](https://github.com/christian-raj/S-Aloha/discussions) ou écrivez au
+[discussion](https://github.com/chrraj7/S-Aloha/discussions) ou écrivez au
 mainteneur depuis son profil GitHub.
 
 ## Chantiers à sponsoriser

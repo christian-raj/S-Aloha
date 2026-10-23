@@ -4,7 +4,7 @@
 
 - **Date** : 2026-10-10
 - **Statut** : accepté le 2026-10-10 — décisions D1 à D4 selon les recommandations
-- **Décideur** : Christian Rajaonary
+- **Décideur** : Leipa
 
 ## Contexte
 

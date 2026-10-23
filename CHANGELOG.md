@@ -11,7 +11,7 @@ section **Mise à jour** de chaque étape avant de mettre à jour une installati
 
 Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 [journaux](docs/archives/readme.md) ; les notes complètes de chaque version, une fois
-publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases).
+publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ## Non publié
 
@@ -189,6 +189,9 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Dépôt et images** : le dépôt est désormais `github.com/chrraj7/S-Aloha` et les images
+  `ghcr.io/chrraj7/s-aloha-*` ; les anciennes adresses redirigent, mais un `docker-compose.yml`
+  copié avant ce changement est à mettre à jour.
 - **Configuration** : la migration `ConfigurationLot3` ajoute la colonne `ConfigurationItems.Attributes`.
 - **Connaissances** : la migration `KnowledgeLot3` ajoute deux tables et trois colonnes. Les
   articles déjà publiés sont en version 0 jusqu'à leur prochaine publication. Un gestionnaire

@@ -41,7 +41,7 @@ Le cycle : un constat daté part en **archives** ; ce qu'il révèle de durable 
 
 | J'ai… | Je le mets dans… |
 |---|---|
-| un bug, une faille | [GitHub Issues](https://github.com/christian-raj/S-Aloha/issues) ([ADR-0001](decisions/adr-0001-github-issues-source-de-verite.md)) |
+| un bug, une faille | [GitHub Issues](https://github.com/chrraj7/S-Aloha/issues) ([ADR-0001](decisions/adr-0001-github-issues-source-de-verite.md)) |
 | un chantier qui demande une intention | [`plan-action.md`](plan-action.md) |
 | un audit, un état des lieux | `archives/`, daté dans le nom du fichier |
 | un sujet traité aujourd'hui | le journal du jour, `archives/journal-AAAA-MM-JJ.md` ([protocole](protocole-documentation.md)) |
@@ -50,7 +50,7 @@ Le cycle : un constat daté part en **archives** ; ce qu'il révèle de durable 
 
 ## Wiki
 
-Le [wiki du projet](https://github.com/christian-raj/S-Aloha/wiki) est généré depuis ce
+Le [wiki du projet](https://github.com/chrraj7/S-Aloha/wiki) est généré depuis ce
 dossier par `scripts/sync-wiki.py` : on le lit, on ne l'édite pas
 ([protocole § 6](protocole-documentation.md#6-publier-le-wiki)).
 

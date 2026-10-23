@@ -16,7 +16,7 @@ services:
 
   api:
     # Image publiée à chaque version ; « up --build » construit depuis les sources.
-    image: ghcr.io/christian-raj/s-aloha-api:${S_ALOHA_VERSION:-latest}
+    image: ghcr.io/chrraj7/s-aloha-api:${S_ALOHA_VERSION:-latest}
     build: ./backend
     depends_on:
       db:
@@ -57,7 +57,7 @@ services:
     mem_limit: 3g
 
   web:
-    image: ghcr.io/christian-raj/s-aloha-web:${S_ALOHA_VERSION:-latest}
+    image: ghcr.io/chrraj7/s-aloha-web:${S_ALOHA_VERSION:-latest}
     build: ./frontend
     depends_on:
       - api

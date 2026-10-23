@@ -4,7 +4,7 @@
 
 - **Date** : 2026-10-06
 - **Statut** : accepté
-- **Décideur** : Christian Rajaonary
+- **Décideur** : Leipa
 
 ## Contexte
 
@@ -17,7 +17,7 @@ Ce mode a deux défauts :
 
 ## Décision
 
-[GitHub Issues](https://github.com/christian-raj/S-Aloha/issues) est la source de vérité
+[GitHub Issues](https://github.com/chrraj7/S-Aloha/issues) est la source de vérité
 pour les bugs, les items de sécurité et le backlog. Chaque item ouvert a une issue, avec
 un label (`bug`, `security`, `enhancement`, `documentation`).
 

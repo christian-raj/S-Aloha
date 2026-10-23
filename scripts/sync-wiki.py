@@ -7,7 +7,7 @@ dans le wiki est écrasée au passage suivant.
 
     python3 scripts/sync-wiki.py <dossier-du-wiki>
 
-Le dossier est un clone de https://github.com/christian-raj/S-Aloha.wiki.git. Le script
+Le dossier est un clone de https://github.com/chrraj7/S-Aloha.wiki.git. Le script
 réécrit les pages générées, sans toucher au reste ; il ne committe pas. Procédure
 complète : docs/protocole-documentation.md § Wiki.
 """
@@ -17,9 +17,9 @@ import re
 import sys
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
-GITHUB = 'https://github.com/christian-raj/S-Aloha'
+GITHUB = 'https://github.com/chrraj7/S-Aloha'
 BLOB = f'{GITHUB}/blob/main'
-RAW = 'https://raw.githubusercontent.com/christian-raj/S-Aloha/main'
+RAW = 'https://raw.githubusercontent.com/chrraj7/S-Aloha/main'
 
 # Pages du wiki : nom de page → fichier source. L'ordre est celui de la barre latérale.
 # Troisième champ : ce que le lecteur vient y chercher (page d'accueil).
