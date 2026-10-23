@@ -15,7 +15,7 @@ projet dans la durée ([ADR-0011](decisions/adr-0011-financement-sponsoring-et-s
 
 | Moyen | Pour qui | Comment |
 |---|---|---|
-| **GitHub Sponsors** | Particuliers et organisations, dons ponctuels ou récurrents | Bouton « Sponsor » du dépôt, dès l'ouverture du profil du mainteneur |
+| **GitHub Sponsors** | Particuliers et organisations, dons ponctuels ou récurrents | Bouton « Sponsor » du dépôt, ou [github.com/sponsors/chrraj7](https://github.com/sponsors/chrraj7) |
 | **Sponsoring de fonctionnalité** | Une organisation qui veut accélérer un chantier de la feuille de route | Devis par fonctionnalité ; le résultat est publié sous AGPLv3, pour tous |
 | **Services** | Organisations qui déploient en production | Installation, durcissement, formation aux pratiques ITIL |
 | **Open Collective** | Organisations qui ont besoin d'une facture et d'une dépense transparente | Ouvert à la première demande |
@@ -26,28 +26,30 @@ mainteneur depuis son profil GitHub.
 
 ## Chantiers à sponsoriser
 
-Des chantiers de la [feuille de route](plan-action.md#7-feuille-de-route-fonctionnelle),
-pour la plupart déjà spécifiés règle par règle, qu'un sponsoring de fonctionnalité peut
-accélérer :
+Des chantiers de la [feuille de route](plan-action.md#7-feuille-de-route-fonctionnelle)
+qu'un sponsoring de fonctionnalité peut accélérer :
 
 | Chantier | Ce que l'organisation y gagne |
 |---|---|
-| **Déclarations réglementaires** NIS 2 et RGPD ([spécification](reference/processus/declarations-reglementaires.md)) | Alerte 24 h, notification 72 h et rapport final suivis depuis l'incident cyber, échéances et alertes |
 | **Référentiels de conformité importés** (ISO 27002, CR-CMM…) | Évaluer d'autres référentiels que NIS 2 avec le même outillage : scores, écarts, actions |
-| **Pièces jointes et notifications par courriel** ([socle](reference/regles-metier.md#8-notifications)) | Preuves et documents sur chaque fiche ; alertes reçues hors de l'application |
-| **Import en masse de la CMDB** ([configuration](reference/processus/gestion-de-la-configuration.md)) | Reprendre un inventaire existant en une fois, avec rapport des lignes refusées |
-| **Tâches d'exécution des demandes** ([demandes](reference/processus/gestion-des-demandes.md)) | Répartir une demande entre plusieurs équipes, suivre chaque tâche |
+| **Recherche dans les pièces jointes** ([recherche](reference/recherche.md)) | Retrouver une procédure ou un rapport par le texte des documents joints aux fiches |
+| **Agent d'inventaire nomade** (découverte des postes hors réseau, [configuration](reference/processus/gestion-de-la-configuration.md)) | Une CMDB à jour pour les postes itinérants, preuves NIS 2 alimentées par la découverte |
+| **Démonstration en ligne** | Essayer S-Aloha sans l'installer, sur un jeu de données remis à zéro chaque nuit |
+
+Déjà livrés grâce à la feuille de route : déclarations réglementaires NIS 2 et RGPD, pièces
+jointes et notifications par courriel, import en masse de la CMDB, tâches d'exécution des
+demandes.
 
 ## Ce que reçoit un sponsor
 
 Les contreparties sont publiques et identiques pour tous à niveau égal.
 
-| Niveau | Contrepartie |
-|---|---|
-| Soutien | Nom dans les notes de version |
-| Bronze | Logo dans le README et le wiki |
-| Argent | Logo et vote sur l'ordre de la feuille de route |
-| Or | Logo en tête, point mensuel avec le mainteneur, priorité sur les correctifs |
+| Niveau | Par mois | Contrepartie |
+|---|---|---|
+| Soutien | 5 $ | Nom dans les notes de version |
+| Bronze | 25 $ | Logo dans le README et le wiki |
+| Argent | 100 $ | Logo et vote sur l'ordre de la feuille de route |
+| Or | 500 $ | Logo en tête, point mensuel avec le mainteneur, priorité sur les correctifs |
 
 Les sponsors accélèrent la feuille de route, ils ne l'achètent pas : tout ce qui est
 développé est publié sous la même licence, pour tous.

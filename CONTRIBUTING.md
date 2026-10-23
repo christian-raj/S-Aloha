@@ -1,7 +1,8 @@
 # Contribuer à S-Aloha
 
 Merci de votre intérêt. S-Aloha est distribué sous [AGPLv3](LICENSE) : toute
-contribution est publiée sous la même licence.
+contribution est publiée sous la même licence. Chacun s'engage à respecter le
+[code de conduite](CODE_OF_CONDUCT.md).
 
 > **EN:** Contributions are welcome in English or French. Every commit must be signed
 > off (`git commit -s`) under the [Developer Certificate of Origin](https://developercertificate.org/).
