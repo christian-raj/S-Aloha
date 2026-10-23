@@ -263,10 +263,13 @@
     "createdBy": "string",
     "createdByDisplayName": "string",
     "description": "string",
+    "flaggedUnhelpful": "boolean",
+    "helpfulCount": "integer:int32",
     "id": "integer:int32",
     "keywords": "string",
     "lastReviewedAt": "string:date-time",
     "lastReviewedBy": "string",
+    "notHelpfulCount": "integer:int32",
     "ownerDisplayName": "string",
     "ownerId": "string",
     "ownerType": "string",
@@ -279,7 +282,8 @@
     "submittedAt": "string:date-time",
     "submittedBy": "string",
     "title": "string",
-    "updatedAt": "string:date-time"
+    "updatedAt": "string:date-time",
+    "version": "integer:int32"
   },
   "MailSettingsView": {
     "enabled": "boolean",

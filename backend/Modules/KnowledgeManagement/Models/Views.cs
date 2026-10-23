@@ -17,6 +17,10 @@ public record KnowledgeArticleView(
     DateTime? ArchiveRequestedAt,
     string? ArchiveRequestedBy,
     string? ArchiveRequestReason,
+    int Version,
+    int HelpfulCount,
+    int NotHelpfulCount,
+    bool FlaggedUnhelpful,
     int Id,
     int PerimeterId,
     string? Reference,
@@ -45,6 +49,10 @@ public record KnowledgeArticleView(
         e.ArchiveRequestedAt,
         e.ArchiveRequestedBy,
         e.ArchiveRequestReason,
+        e.Version,
+        e.HelpfulCount,
+        e.NotHelpfulCount,
+        e.FlaggedUnhelpful,
         e.Id,
         e.PerimeterId,
         e.Reference,
@@ -58,4 +66,12 @@ public record KnowledgeArticleView(
         e.CreatedByDisplayName,
         e.CreatedAt,
         e.UpdatedAt);
+}
+
+/// <summary>KB-15 : version publiée, telle que la fiche la liste.</summary>
+public record KnowledgeArticleVersionView(int Version, string Title, string Description, string ArticleType, string Content,
+    string Authors, string PublishedBy, DateTime PublishedAt)
+{
+    public static KnowledgeArticleVersionView From(KnowledgeArticleVersion v) =>
+        new(v.Version, v.Title, v.Description, v.ArticleType, v.Content, v.Authors, v.PublishedBy, v.PublishedAt);
 }

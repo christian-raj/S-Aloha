@@ -50,8 +50,10 @@ responsable AD, créateur, dates) : [socle](../regles-metier.md#5-règles-commun
 | `SubmittedAt`, `SubmittedBy` | date, texte | auto | Brouillon soumis à publication, effacé à la publication ou à l'archivage (KB-21) | ✅ |
 | `LastReviewedAt`, `LastReviewedBy` | date, texte | auto | Dernière revue confirmée (KB-17) | ✅ |
 | `ArchiveRequestedAt`, `ArchiveRequestedBy`, `ArchiveRequestReason` | date, texte, texte 500 | à la demande | Archivage demandé à la revue, soldé par la décision du gestionnaire (KB-17) | ✅ |
-| `HelpfulCount`, `NotHelpfulCount` | entier | auto | Retours des lecteurs | 🔜 KB-13 |
-| `Version` | entier | auto | Incrémentée à chaque publication | 🔜 KB-15 |
+| `HelpfulCount`, `NotHelpfulCount` | entier | auto | Retours des lecteurs sur la version publiée, remis à zéro à chaque publication | ✅ KB-13 |
+| `Version` | entier | auto | Incrémentée à chaque publication | ✅ KB-15 |
+| Versions (`KnowledgeArticleVersions`) | liste | auto | Version, titre, résumé, type, contenu, rédacteurs, publication ; supprimées avec l'article | ✅ KB-15 |
+| Votes (`KnowledgeFeedbacks`) | liste | auto | Un vote par lecteur et par article (utile ou non), modifiable | ✅ KB-13 |
 
 ## 4. Cycle de vie
 
@@ -70,7 +72,7 @@ stateDiagram-v2
 | De → Vers | Qui | Conditions (400 sinon) | Effets | Statut |
 |---|---|---|---|---|
 | — → Brouillon | Tous | Titre, type | Référence | ✅ |
-| Brouillon → Publié | Manager | Contenu renseigné | `PublishedAt`, `PublishedBy` ; `ReviewDate` par défaut (KB-11) ; soumission soldée ; version + 1 (KB-15) | ✅ / 🔜 (KB-15) |
+| Brouillon → Publié | Manager | Contenu renseigné | `PublishedAt`, `PublishedBy` ; `ReviewDate` par défaut (KB-11) ; soumission soldée ; version + 1, conservée (KB-15) ; quatre yeux (KB-16) | ✅ |
 | Publié → Brouillon | Auto | Retouche du titre, résumé, contenu ou type par un User | Publication effacée | ✅ |
 | Publié → Archivé | Manager | | Demande d'archivage soldée ; retiré des suggestions et de la recherche par défaut | ✅ KB-18 |
 | Archivé → Brouillon | Manager | | | ✅ KB-18 |
@@ -88,10 +90,10 @@ stateDiagram-v2
 | KB-10 | Le contenu est rendu en **Markdown** (titres, listes, code, citations, gras, italique, liens http(s) et mailto), sans interpréter de HTML brut ; onglet **Lecture** de la fiche | ✅ | |
 | KB-11 | À la publication, une date de revue vide est fixée à **publication + 12 mois** | ✅ | |
 | KB-12 | **Article d'erreur connue** créé depuis un problème (PRB-30) : type *Erreur connue*, titre, symptômes (description du problème) et contournement repris, relié au problème ; quand le problème est Clos *Corrigé*, l'article est proposé à l'archivage (Relances des gestionnaires) | ✅ | |
-| KB-13 | **Retour des lecteurs** : « utile / pas utile » sur un article publié, un vote par utilisateur ; 3 « pas utile » de plus que d'« utile » le signalent en relance à son responsable | 🔜 | 3 |
+| KB-13 | **Retour des lecteurs** : « utile / pas utile » sur un article publié, un vote par utilisateur ; 3 « pas utile » de plus que d'« utile » le signalent en relance à son responsable | ✅ (vote modifiable ; signalé : notification au responsable au franchissement du seuil, console du responsable, Mon travail, et des gestionnaires, Relances ; une nouvelle publication repart sans votes) | 3 |
 | KB-14 | **Utilisation** : nombre d'incidents et de demandes reliés à l'article (INC-19), affiché sur la fiche | ✅ | |
-| KB-15 | **Versions** : chaque publication conserve la version précédente (contenu, auteur, date), consultable sur la fiche | 🔜 | 3 |
-| KB-16 | **Quatre yeux** : un gestionnaire ne publie pas un article dont il est le seul rédacteur, sauf Admin | 🔜 | 3 |
+| KB-15 | **Versions** : chaque publication conserve la version précédente (contenu, auteur, date), consultable sur la fiche | ✅ (chaque publication est gardée : numéro, contenu, rédacteurs, publieur, date ; la retouche d'un article publié par un gestionnaire le republie en nouvelle version ; encadré « Versions publiées » de la fiche) | 3 |
+| KB-16 | **Quatre yeux** : un gestionnaire ne publie pas un article dont il est le seul rédacteur, sauf Admin | ✅ (rédacteurs : le créateur et quiconque a modifié le titre, le résumé, le type ou le contenu, d'après le journal d'audit ; 400 sinon) | 3 |
 | KB-17 | **Revue** : à la date de revue, le responsable (en personne ou par son groupe AD) ou un gestionnaire confirme l'article (nouvelle date de revue, un an par défaut, sans repasser en Brouillon) ou demande son archivage, motivé ; la demande remonte dans « Décisions » des gestionnaires | ✅ | |
 | KB-18 | **Archiver** et réactiver : gestionnaire uniquement ; transitions selon le § 4 (SOC-05) | ✅ | |
 
@@ -115,8 +117,8 @@ stateDiagram-v2
 
 Console ✅ : articles à revoir et articles d'erreur connue à archiver (Relances,
 gestionnaires, KB-12) ; brouillons soumis à publication et archivages demandés (Décisions,
-KB-21, KB-17) ; mes articles (Mon travail). À venir : articles signalés peu utiles
-(Relances, KB-13).
+KB-21, KB-17) ; articles jugés peu utiles (Relances des gestionnaires, Mon travail du
+responsable, KB-13) ; mes articles (Mon travail).
 
 | Indicateur | Calcul | Statut |
 |---|---|---|
@@ -136,7 +138,8 @@ KB-21, KB-17) ; mes articles (Mon travail). À venir : articles signalés peu ut
 | `POST /api/knowledge/{id}/review` (`{ nextReviewDate }`), `POST /api/knowledge/{id}/archive-request` (`{ reason }`) | Responsable de l'article, Manager | Revue confirmée, archivage demandé (KB-17) |
 | `GET /api/knowledge/{id}/usage` | User | Incidents et demandes reliés (KB-14) |
 | `GET /api/knowledge/suggest?text=` | User | Suggestions pour un incident — 🔜 INC-19 |
-| `POST /api/knowledge/{id}/feedback` | User | Retour utile / pas utile — 🔜 KB-13 |
+| `GET/POST /api/knowledge/{id}/feedback` (`helpful`) | User | Mon vote ; retour utile / pas utile sur un article publié (KB-13) |
+| `GET /api/knowledge/{id}/versions` | User | Versions publiées (KB-15) |
 
 ## 10. Scénarios d'acceptation
 

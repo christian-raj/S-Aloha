@@ -70,7 +70,7 @@ public class TransitionsTests(ApiFixture api)
     {
         var m = api.Client("Manager");
         object Dto(string? status) => new { title = "Dépublier", articleType = "FAQ", content = "c", status };
-        var a = await Json(await m.PostAsJsonAsync("/api/knowledge", Dto(null)));
+        var a = await Json(await api.Client("User", "redacteur.transitions").PostAsJsonAsync("/api/knowledge", Dto(null)));   // KB-16
         await Json(await m.PutAsJsonAsync($"/api/knowledge/{Id(a)}", Dto("Publié")));
         await Refused(await m.PutAsJsonAsync($"/api/knowledge/{Id(a)}", Dto("Brouillon")));
         await Json(await m.PutAsJsonAsync($"/api/knowledge/{Id(a)}", Dto("Archivé")));

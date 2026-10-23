@@ -104,8 +104,8 @@ export default function Console() {
   // NIS-23 : exigences du référentiel NIS 2 sans texte (Admin).
   const referential = m?.referentialWithoutText > 0
     ? [{ id: 'nis2', reference: 'Référentiel NIS 2', title: `${m.referentialWithoutText} exigence(s) encore sans texte : importer le texte de l’ANSSI`, href: '/settings/nis2' }] : []
-  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps') + L('incidentFollowUps') + L('idleProblems') + referential.length
-  const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0) + (c.myChangeFollowUps?.length ?? 0) + (c.myIncidentFollowUps?.length ?? 0)
+  const chase = L('overdueActions') + L('knownErrorsNoAction') + L('reviewsDue') + L('overdueRequests') + L('projectAlerts') + L('changeFollowUps') + L('incidentFollowUps') + L('idleProblems') + L('unhelpfulArticles') + referential.length
+  const work = myTodo.length + c.myAssignments.length + (c.myProjectAlerts?.length ?? 0) + (c.myChangeFollowUps?.length ?? 0) + (c.myIncidentFollowUps?.length ?? 0) + (c.myUnhelpfulArticles?.length ?? 0)
   const follow = c.myProblems.length + L('inAnalysisNoRootCause')
 
   const tiles = [
@@ -209,6 +209,9 @@ export default function Console() {
         {/* CHG-30, CHG-31 */}
         <List title="Changements à relancer" tone="amber" rows={m.changeFollowUps ?? []} onRow={goItem}
           hint="Fin planifiée passée sans mise en œuvre, ou mis en œuvre depuis plus de 2 jours ouvrés sans clôture." render={itemRow} />
+        {/* KB-13 */}
+        <List title="Articles jugés peu utiles" tone="amber" rows={m.unhelpfulArticles ?? []} onRow={goItem}
+          hint="Trois « pas utile » de plus que d’« utile » : faire revoir l’article par son responsable." render={itemRow} />
         {/* PRB-32 */}
         <List title="Problèmes sans activité" tone="amber" rows={m.idleProblems ?? []} onRow={goItem}
           hint="Ni analyse, ni action, ni modification depuis 30 jours : relancer le gestionnaire du problème, ou le clore." render={itemRow} />
@@ -232,6 +235,9 @@ export default function Console() {
         {/* INC-26 */}
         <List title="Mes incidents en attente prolongée" tone="amber" rows={c.myIncidentFollowUps ?? []} onRow={goItem}
           hint="En attente depuis plus de 5 jours ouvrés : relancer, ou reprendre l’incident." render={itemRow} />
+        {/* KB-13 */}
+        <List title="Mes articles jugés peu utiles" tone="amber" rows={c.myUnhelpfulArticles ?? []} onRow={goItem}
+          hint="Les lecteurs ne s’y retrouvent pas : revoir le contenu." render={itemRow} />
       </Group>
 
       <Group id="suivi" title="À suivre" total={follow}>

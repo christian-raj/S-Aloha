@@ -237,7 +237,11 @@ export const api = {
     submit: (id) => request(`/knowledge/${id}/submit`, { method: 'POST' }),
     review: (id, nextReviewDate) => request(`/knowledge/${id}/review`, { method: 'POST', body: JSON.stringify({ nextReviewDate }) }),
     requestArchive: (id, reason) => request(`/knowledge/${id}/archive-request`, { method: 'POST', body: JSON.stringify({ reason }) }),
-    usage: (id) => request(`/knowledge/${id}/usage`)
+    usage: (id) => request(`/knowledge/${id}/usage`),
+    // KB-15 : versions publiées ; KB-13 : retour des lecteurs.
+    versions: (id) => request(`/knowledge/${id}/versions`),
+    myFeedback: (id) => request(`/knowledge/${id}/feedback`),
+    feedback: (id, helpful) => request(`/knowledge/${id}/feedback`, { method: 'POST', body: JSON.stringify({ helpful }) })
   },
   improvements: records('/improvements'),
   assessments: {

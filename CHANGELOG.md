@@ -17,6 +17,11 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 ### Ajouté
 
+- **Connaissances** (KB-13, KB-15, KB-16) : « utile / pas utile » sur un article publié (un
+  vote par lecteur ; un article jugé peu utile remonte à son responsable) ; chaque
+  publication est conservée en version, relisible sur la fiche ; quatre yeux : un
+  gestionnaire ne publie pas un article dont il est le seul rédacteur (sauf Admin).
+
 - **Problèmes sans activité** (PRB-32) : un problème ouvert sans analyse, action, commentaire
   ni modification depuis 30 jours remonte aux gestionnaires (Relances, notification).
 - **Modèle standard suspendu** (CHG-27) : l'échec d'un changement Standard suspend son modèle
@@ -180,6 +185,9 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Connaissances** : la migration `KnowledgeLot3` ajoute deux tables et trois colonnes. Les
+  articles déjà publiés sont en version 0 jusqu'à leur prochaine publication. Un gestionnaire
+  qui rédige seul un article le fait désormais publier par un autre gestionnaire ou un Admin.
 - **Changements** : la migration `ProblemChangeLot3` ajoute six colonnes aux modèles standard.
 - **Incidents** : la migration `IncidentParent` ajoute la colonne `Incidents.ParentId`.
 - **Messagerie et stockage** : la migration `PlatformSettings` ajoute deux tables de réglages.
