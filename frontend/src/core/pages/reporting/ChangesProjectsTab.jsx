@@ -89,6 +89,13 @@ export default function ChangesProjectsTab({ data }) {
         <Kpi value={data.projects.filter(p => p.tolerance.time === 'Hors tolérance' || p.tolerance.cost === 'Hors tolérance').length}
           label="Projets hors tolérance" />
       </div>
+      {/* CHG-33 à CHG-35 */}
+      <div className="kpi-row">
+        <Kpi value={fmt(kpis.incidentAfterChange)} suffix=" %" label="Changements suivis d’un incident"
+          sub={`${kpis.incidentAfterChangeCount ?? 0} relié(s) à un incident dans les 7 jours de leur mise en œuvre`} />
+        <Kpi value={fmt(kpis.authorizationHours)} suffix=" h" label="Délai moyen d’autorisation" sub="Changements normaux et urgents" />
+        <Kpi value={fmt(kpis.slotRespect)} suffix=" %" label="Respect des créneaux" sub={`sur ${kpis.slotMeasured ?? 0} changement(s) aux dates réelles saisies`} />
+      </div>
 
       <div className="report-grid">
         <Gantt items={data.upcoming} />
@@ -131,6 +138,8 @@ export const changesProjectsCsv = (d) => [
     ...d.kpis.byType.map(t => [`Changements ${t.type.toLowerCase()}s créés`, t.count]),
     ['Part des changements urgents (%)', d.kpis.urgentShare ?? ''],
     ...(d.kpis.urgentByMonth ?? []).map(m => [`Changements urgents, ${m.month} (%)`, m.percent ?? '']),
+    ['Changements suivis d’un incident (%)', d.kpis.incidentAfterChange ?? ''], ['Délai moyen d’autorisation (heures)', d.kpis.authorizationHours ?? ''],
+    ['Respect des créneaux (%)', d.kpis.slotRespect ?? ''],
     ['Avancement moyen des projets (%)', d.kpis.projectsProgress], ['Projets en cours', d.kpis.activeProjects]] },
   { title: 'Changements des 30 prochains jours', header: ['Référence', 'Titre', 'Type', 'Risque', 'Statut', 'Début', 'Fin'],
     rows: d.upcoming.map(c => [c.reference, c.title, c.changeType, c.risk, c.status, dateTime(c.plannedStart), dateTime(c.plannedEnd)]) },

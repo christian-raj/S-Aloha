@@ -178,9 +178,9 @@ mes problèmes déclarés, mes actions (en retard, en cours), actions en retard 
 | MTTR problèmes | Moyenne en jours (`ClosedAt − CreatedAt`), problèmes clos | ✅ |
 | Problèmes ouverts, erreurs connues | Comptes par statut, priorité, catégorie | ✅ |
 | Actions en retard | PRB-19, avec leurs R | ✅ |
-| Part des problèmes avec cause racine | Problèmes Résolu ou Clos avec `RootCause` / total Résolu ou Clos | 🔜 PRB-33 (lot 2) |
-| Incidents par problème | Nombre d'incidents reliés, moyenne et top 5 | 🔜 PRB-34 (lot 2) |
-| Récurrences | Problèmes ayant reçu un incident après Résolu (PRB-23) | 🔜 PRB-35 (lot 3) |
+| Part des problèmes avec cause racine | Problèmes Résolu ou Clos avec `RootCause` / total Résolu ou Clos | ✅ PRB-33 ([REP-26](../reporting.md#5-problèmes)) |
+| Incidents par problème | Nombre d'incidents reliés, moyenne et top 5 | ✅ PRB-34 (REP-21, REP-26) |
+| Récurrences | Problèmes ayant reçu un incident après Résolu (PRB-23) | ✅ PRB-35 (REP-26) |
 
 ## 9. API
 

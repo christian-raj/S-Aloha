@@ -15,6 +15,10 @@ export default function ProblemsTab({ data }) {
         <Kpi value={fmt(kpis.incidentsPerProblem)} label="Incidents liés par problème (moyenne)" />
         <Kpi value={kpis.rcaPending} label="Causes racines en attente de validation"
           sub="Analyse conclue, cause racine non encore validée" />
+        {/* PRB-33, PRB-35 */}
+        <Kpi value={fmt(kpis.rootCauseRate)} suffix=" %" label="Problèmes clos avec cause racine" />
+        <Kpi value={kpis.recurrences} label="Récurrences après correctif" sub="Nouvel incident sur un problème résolu, sur la période"
+          alert={kpis.recurrences > 0 ? 'À revoir : le correctif ne tient pas' : null} />
       </div>
 
       <div className="report-grid">
@@ -57,6 +61,17 @@ export default function ProblemsTab({ data }) {
           </div>
         )}
       </div>
+
+      {/* PRB-34 : problèmes qui regroupent le plus d'incidents. */}
+      <div className="card">
+        <h3 className="card-title">Problèmes aux incidents les plus nombreux</h3>
+        {(data.topProblems ?? []).length === 0 ? <p className="muted small">Aucun incident relié à un problème.</p> : (
+          <table className="compact">
+            <thead><tr><th>Problème</th><th>Statut</th><th>Incidents reliés</th></tr></thead>
+            <tbody>{data.topProblems.map(p => (
+              <tr key={p.id}><td><Link to={`/problems/${p.id}`}>{p.reference}</Link> {p.title}</td><td>{p.status}</td><td>{p.incidents}</td></tr>))}</tbody>
+          </table>)}
+      </div>
     </div>
   )
 }
@@ -64,7 +79,9 @@ export default function ProblemsTab({ data }) {
 export const problemsCsv = (d) => [
   { title: 'Indicateurs', header: ['Indicateur', 'Valeur'], rows: [
     ['Problèmes ouverts', d.kpis.open], ['Erreurs connues', d.kpis.knownErrors],
-    ['Incidents liés par problème', d.kpis.incidentsPerProblem], ['Causes racines en attente de validation', d.kpis.rcaPending]] },
+    ['Incidents liés par problème', d.kpis.incidentsPerProblem], ['Causes racines en attente de validation', d.kpis.rcaPending],
+    ['Problèmes clos avec cause racine (%)', d.kpis.rootCauseRate], ['Récurrences après correctif', d.kpis.recurrences]] },
+  { title: 'Problèmes aux incidents les plus nombreux', header: ['Référence', 'Titre', 'Statut', 'Incidents reliés'], rows: (d.topProblems ?? []).map(p => [p.reference, p.title, p.status, p.incidents]) },
   { title: 'Entonnoir de résolution', header: ['Étape', 'Problèmes'], rows: d.funnel.map(f => [f.stage, f.count]) },
   { title: 'Top 5 des services', header: ['Service', 'Problèmes', 'Incidents liés'], rows: d.topServices.map(s => [s.label, s.count, s.incidents]) },
   { title: 'Actions correctives', header: ['Ouvertes', 'En retard', 'Terminées sur la période'], rows: [[d.actions.open, d.actions.overdue, d.actions.done]] },

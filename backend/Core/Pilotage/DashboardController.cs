@@ -183,6 +183,11 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 Fcr = Pct(resolved.Count(i => i.FirstContactResolution == true), resolved.Count(i => i.FirstContactResolution != null)), // REP-12, INC-23
                 Resolved = resolved.Count,
                 Open = open.Count,
+                // INC-31 : délai moyen de prise en charge des incidents pris en charge sur la période.
+                ResponseHours = Avg(all.Where(i => i.FirstResponseAt >= f.From && i.FirstResponseAt < f.To)
+                    .Select(i => (i.FirstResponseAt!.Value - i.CreatedAt).TotalHours)),
+                // INC-33 : part des incidents résolus sur la période qui ont été rouverts au moins une fois.
+                ReopenRate = Pct(resolved.Count(i => i.ReopenCount > 0), resolved.Count),
             },
             // REP-13 : ancienneté du backlog ouvert.
             Backlog = new[]
@@ -293,7 +298,17 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 KnownErrors = problems.Count(p => p.Status == "Erreur connue"),                                     // REP-20
                 IncidentsPerProblem = problems.Count == 0 ? (double?)null : Math.Round(problems.Average(p => (double)IncidentsOf(p.Id)), 1), // REP-21
                 RcaPending = await RcaPendingCount(problems),                                                       // REP-22
+                // PRB-33 : problèmes Résolu ou Clos dont la cause racine est renseignée.
+                RootCauseRate = Pct(problems.Count(p => p.Status is "Résolu" or "Clos" && !string.IsNullOrWhiteSpace(p.RootCause)),
+                    problems.Count(p => p.Status is "Résolu" or "Clos")),
+                // PRB-35 : problèmes résolus ou clos qui ont reçu un nouvel incident sur la période (PRB-23).
+                Recurrences = (await db.Notifications.AsNoTracking()
+                        .Where(n => n.TargetType == "problem" && n.Event.StartsWith("Récurrence après correctif") && n.CreatedAt >= f.From && n.CreatedAt < f.To)
+                        .Select(n => n.TargetId).Distinct().ToListAsync()).Count(ids.Contains),
             },
+            // PRB-34 : problèmes qui regroupent le plus d'incidents.
+            TopProblems = problems.Select(p => new { p.Id, p.Reference, p.Title, p.Status, Incidents = IncidentsOf(p.Id) })
+                .Where(x => x.Incidents > 0).OrderByDescending(x => x.Incidents).Take(5),
             // REP-23 : services qui génèrent le plus de problèmes, et les incidents qui leur sont liés.
             TopServices = problems.Where(p => p.AffectedService != "").GroupBy(p => p.AffectedService)
                 .Select(g => new { Label = g.Key, Count = g.Count(), Incidents = g.Sum(p => IncidentsOf(p.Id)) })
@@ -332,6 +347,19 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
         var changes = await In(db.Changes.AsNoTracking()).ToListAsync();
         var period = changes.Where(c => c.CreatedAt >= f.From && c.CreatedAt < f.To).ToList();
         var outcomes = changes.Where(c => c.Outcome != null && c.ClosedAt >= f.From && c.ClosedAt < f.To).ToList();
+        // CHG-33 : changements mis en œuvre sur la période suivis, dans les 7 jours, d'un incident qui leur est relié.
+        var implemented = changes.Where(c => c.ImplementedAt >= f.From && c.ImplementedAt < f.To).ToList();
+        var implementedIds = implemented.Select(c => c.Id).ToList();
+        var incidentLinks = await db.ItemLinks.AsNoTracking()
+            .Where(l => (l.FromType == "change" && l.ToType == "incident" && implementedIds.Contains(l.FromId))
+                        || (l.ToType == "change" && l.FromType == "incident" && implementedIds.Contains(l.ToId)))
+            .Select(l => l.FromType == "change" ? new { Change = l.FromId, Incident = l.ToId } : new { Change = l.ToId, Incident = l.FromId }).ToListAsync();
+        var incidentIds = incidentLinks.Select(l => l.Incident).Distinct().ToList();
+        var incidentDates = await db.Incidents.AsNoTracking().Where(i => incidentIds.Contains(i.Id)).ToDictionaryAsync(i => i.Id, i => i.CreatedAt);
+        var causedIncident = implemented.Where(c => incidentLinks.Any(l => l.Change == c.Id && incidentDates.TryGetValue(l.Incident, out var at)
+            && at >= c.ImplementedAt && at < c.ImplementedAt!.Value.AddDays(7))).ToList();
+        // CHG-35 : mis en œuvre dans le créneau planifié (dates réelles comprises entre les dates planifiées).
+        var slotted = implemented.Where(c => c.PlannedStart != null && c.PlannedEnd != null && c.ActualStart != null && c.ActualEnd != null).ToList();
         var projects = await In(db.Projects.AsNoTracking()).Where(p => OpenProjects.Contains(p.Status)).ToListAsync();
         var pids = projects.Select(p => p.Id).ToList();
         var items = await db.WorkItems.AsNoTracking().Where(w => pids.Contains(w.ProjectId)).ToListAsync();
@@ -366,6 +394,13 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
                 UrgentByMonth = period.GroupBy(c => new DateTime(c.CreatedAt.Year, c.CreatedAt.Month, 1)).OrderBy(g => g.Key)
                     .Select(g => new { Month = g.Key.ToString("yyyy-MM"), Urgent = g.Count(c => c.ChangeType == "Urgent"), Total = g.Count(),
                         Percent = Pct(g.Count(c => c.ChangeType == "Urgent"), g.Count()) }),
+                IncidentAfterChange = Pct(causedIncident.Count, implemented.Count),                                   // CHG-33
+                IncidentAfterChangeCount = causedIncident.Count,
+                // CHG-34 : délai moyen d'autorisation des changements Normal et Urgent autorisés sur la période.
+                AuthorizationHours = Avg(changes.Where(c => c.ChangeType != "Standard" && c.AuthorizedAt >= f.From && c.AuthorizedAt < f.To)
+                    .Select(c => (c.AuthorizedAt!.Value - c.CreatedAt).TotalHours)),
+                SlotRespect = Pct(slotted.Count(c => c.ActualStart >= c.PlannedStart && c.ActualEnd <= c.PlannedEnd), slotted.Count),  // CHG-35
+                SlotMeasured = slotted.Count,
                 ProjectsProgress = Avg(progress.Where(p => p.Progress != null).Select(p => p.Progress!.Value)),       // REP-32
                 ActiveProjects = projects.Count,
             },

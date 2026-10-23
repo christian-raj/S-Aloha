@@ -152,7 +152,7 @@ transitions sont libres. **Cible (🔜 CHG-11, lot 1)** : seules ces transitions
 | Changement → CI | CI modifiés | CHG-09, CHG-16 ; onglet « Impact » de la fiche : CI reliés, CI touchés en aval, services touchés (CFG-20) | ✅ |
 | Problème → Changement | Correctif | CHG-23 | ✅ (lien) / 🔜 |
 | Demande → Changement | Besoin non standard | REQ-12 | ✅ (lien) / 🔜 |
-| Changement → Incident | Incident causé par le changement | CHG-33 | ✅ (lien) / 🔜 |
+| Changement → Incident | Incident causé par le changement | CHG-33 | ✅ (lien, indicateur) |
 | Changement → Article | Procédure | Lien manuel | ✅ |
 
 ## 8. Console et indicateurs
@@ -168,9 +168,9 @@ et de l'équipe (Relances, gestionnaires), avec une notification au responsable 
 | Taux de changements réussis | Réussi / résultats renseignés | ✅ |
 | Volumétrie par statut | | ✅ |
 | Part des changements urgents | Urgent / changements créés, sur la période et par mois (reporting, onglet Changements & projets) | ✅ CHG-32 (lot 2) |
-| Changements ayant causé un incident | Changements reliés à un incident créé dans les 7 jours suivant leur mise en œuvre | 🔜 CHG-33 (lot 2) |
-| Délai moyen d'autorisation | `AuthorizedAt − CreatedAt`, Normal et Urgent | 🔜 CHG-34 (lot 2) |
-| Respect des créneaux | Changements mis en œuvre dans leur créneau planifié | 🔜 CHG-35 (lot 3) |
+| Changements ayant causé un incident | Changements reliés à un incident créé dans les 7 jours suivant leur mise en œuvre | ✅ CHG-33 ([REP-35](../reporting.md#6-changements-et-projets)) |
+| Délai moyen d'autorisation | `AuthorizedAt − CreatedAt`, Normal et Urgent | ✅ CHG-34 (REP-35) |
+| Respect des créneaux | Changements mis en œuvre dans leur créneau planifié | ✅ CHG-35 (REP-35) |
 
 ## 9. API
 

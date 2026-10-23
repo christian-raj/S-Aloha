@@ -21,6 +21,9 @@ export default function IncidentsTab({ data }) {
           sub={kpis.mttdMeasured ? `sur ${kpis.mttdMeasured} incident(s) au début constaté` : 'Début constaté jamais renseigné'} />
         <Kpi value={fmt(kpis.fcr)} suffix=" %" label="Résolution au premier contact (FCR)" />
         <Kpi value={kpis.open} label="Incidents ouverts" />
+        {/* INC-31, INC-33 */}
+        <Kpi value={fmt(kpis.responseHours)} suffix=" h" label="Délai moyen de prise en charge" />
+        <Kpi value={fmt(kpis.reopenRate)} suffix=" %" label="Taux de réouverture" sub="des incidents résolus sur la période" />
       </div>
 
       <div className="report-grid">
@@ -72,7 +75,8 @@ export default function IncidentsTab({ data }) {
 export const incidentsCsv = (d) => [
   { title: 'Indicateurs', header: ['Indicateur', 'Valeur'], rows: [
     ['MTTR (heures)', d.kpis.mttrHours], ['MTTD (heures)', d.kpis.mttdHours], ['Incidents au début constaté', d.kpis.mttdMeasured],
-    ['FCR (%)', d.kpis.fcr], ['Incidents résolus', d.kpis.resolved], ['Incidents ouverts', d.kpis.open]] },
+    ['FCR (%)', d.kpis.fcr], ['Incidents résolus', d.kpis.resolved], ['Incidents ouverts', d.kpis.open],
+    ['Délai moyen de prise en charge (heures)', d.kpis.responseHours], ['Taux de réouverture (%)', d.kpis.reopenRate]] },
   { title: 'Backlog par ancienneté', header: ['Ancienneté', 'Incidents'], rows: d.backlog.map(b => [b.bucket, b.count]) },
   { title: 'Burn-up', header: ['Jour', 'Créés (cumul)', 'Résolus (cumul)'], rows: d.burnUp.map(b => [date(b.date), b.created, b.resolved]) },
   { title: 'Par catégorie', header: ['Catégorie', 'Incidents'], rows: d.byCategory.map(c => [c.label, c.count]) },
