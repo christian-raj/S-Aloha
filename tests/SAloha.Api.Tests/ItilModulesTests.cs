@@ -284,7 +284,7 @@ public class ItilModulesTests(ApiFixture api)
     [Fact]
     public async Task F9_article_publie_modifie_par_un_utilisateur_repasse_en_brouillon()
     {
-        var user = api.Client("User");
+        var user = api.Client("User", "redacteur.f9");   // KB-16 : rédacteur distinct du gestionnaire qui publie
         var manager = api.Client("Manager");
         object Dto(string content, string? status) => new { title = "Procédure VPN", articleType = "Procédure", content, status };
         var a = await Create(user, "/api/knowledge", Dto("v1", null));

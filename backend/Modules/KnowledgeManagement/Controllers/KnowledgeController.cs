@@ -36,6 +36,60 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
     protected override string? CheckStatus(KnowledgeArticle e, string status) =>
         status == "Publié" && string.IsNullOrWhiteSpace(e.Content) ? "Un article publié doit avoir un contenu." : null;
 
+    private static readonly string[] ContentFields = ["title", "description", "content", "articleType"];
+
+    /// <summary>KB-15, KB-16 : rédacteurs d'un article — son créateur et quiconque en a modifié le contenu (journal d'audit).</summary>
+    private async Task<List<string>> WritersAsync(KnowledgeArticle e)
+    {
+        var writers = new List<string> { (e.Id == 0 ? Me : e.CreatedBy).ToLowerInvariant() };
+        if (e.Id != 0)
+            writers.AddRange(await Db.AuditEntries.AsNoTracking()
+                .Where(a => a.EntityType == LinkType && a.EntityId == e.Id && a.Action == Core.Audit.AuditEntry.Modification && ContentFields.Contains(a.Field!))
+                .Select(a => a.Author.ToLower()).ToListAsync());
+        return writers.Where(w => w != "").Distinct().ToList();
+    }
+
+    private List<string>? _authors;
+
+    /// <summary>KB-16 : quatre yeux — un gestionnaire ne publie pas un article dont il est le seul rédacteur, sauf Admin.</summary>
+    protected override async Task<string?> CheckStatusAsync(KnowledgeArticle e, string status)
+    {
+        var error = CheckStatus(e, status);
+        if (error is not null || status != "Publié" || e.Status == "Publié") return error;
+        _authors = await WritersAsync(e);
+        if (!User.IsInRole("Admin") && _authors.All(w => w == Me.ToLowerInvariant()))
+            return "Quatre yeux : vous êtes le seul rédacteur de cet article ; un autre gestionnaire le publie (ou un Admin).";
+        return null;
+    }
+
+    private bool _published;
+
+    /// <summary>
+    /// KB-15 : la version publiée est conservée (un article naît brouillon : seule une mise à jour
+    /// le publie) ; KB-13 : les votes portaient sur la version précédente, ils sont remis à zéro.
+    /// </summary>
+    protected override async Task BeforeSaveAsync(KnowledgeArticle e, bool creating)
+    {
+        if (creating) return;
+        // Un gestionnaire qui retouche un article publié le republie : nouvelle version.
+        var entry = Db.Entry(e);
+        if (!_published && e.Status == "Publié" && entry.Property(x => x.Status).OriginalValue == "Publié"
+            && (entry.Property(x => x.Title).IsModified || entry.Property(x => x.Description).IsModified
+                || entry.Property(x => x.Content).IsModified || entry.Property(x => x.ArticleType).IsModified))
+        {
+            e.Version++; e.PublishedAt = DateTime.UtcNow; e.PublishedBy = MyDisplay; _published = true;
+        }
+        if (!_published) return;
+        Db.KnowledgeArticleVersions.Add(new KnowledgeArticleVersion
+        {
+            ArticleId = e.Id, Version = e.Version, Title = e.Title, Description = e.Description, ArticleType = e.ArticleType,
+            Content = e.Content, Authors = string.Join(", ", _authors ?? await WritersAsync(e)), PublishedBy = e.PublishedBy ?? MyDisplay,
+            PublishedAt = e.PublishedAt ?? DateTime.UtcNow,
+        });
+        Db.KnowledgeFeedbacks.RemoveRange(await Db.KnowledgeFeedbacks.Where(f => f.ArticleId == e.Id).ToListAsync());
+        (e.HelpfulCount, e.NotHelpfulCount) = (0, 0);
+    }
+
     // Un article publié retouché par un non-gestionnaire repasse en brouillon :
     // la nouvelle version attend une nouvelle publication.
     protected override string? StatusAfterEdit(KnowledgeArticle e, KnowledgeArticleDto dto) =>
@@ -54,6 +108,7 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
         if (e.Status == "Publié")
         {
             e.PublishedAt = DateTime.UtcNow; e.PublishedBy = MyDisplay;
+            e.Version++; _published = true;   // KB-15
             // KB-11 : sans date de revue, l'article se revoit un an après sa publication.
             e.ReviewDate ??= DateTime.UtcNow.Date.AddMonths(12);
         }
@@ -123,6 +178,50 @@ public class KnowledgeController(AppDbContext db) : RecordController<KnowledgeAr
         if (error is not null) return BadRequest(new { message = error });
         await Db.SaveChangesAsync();
         return Ok(View(e));
+    }
+
+    /// <summary>KB-15 : versions publiées, de la plus récente à la plus ancienne.</summary>
+    [HttpGet("{id:int}/versions")]
+    public async Task<IActionResult> Versions(int id)
+    {
+        if (!await VisibleAsync(id)) return NotFound();
+        return Ok((await Db.KnowledgeArticleVersions.AsNoTracking().Where(v => v.ArticleId == id).OrderByDescending(v => v.Version).ToListAsync())
+            .Select(KnowledgeArticleVersionView.From));
+    }
+
+    /// <summary>
+    /// KB-13 : « utile » ou « pas utile » sur un article publié, un vote par lecteur (modifiable).
+    /// Trois « pas utile » de plus que d'« utile » signalent l'article à son responsable (notifié une fois).
+    /// </summary>
+    [HttpPost("{id:int}/feedback")]
+    public async Task<IActionResult> Feedback(int id, FeedbackDto dto)
+    {
+        var e = await Db.KnowledgeArticles.FindAsync(id);
+        if (e is null || !await VisibleAsync(e)) return NotFound();
+        if (e.Status != "Publié") return BadRequest(new { message = "Seul un article publié reçoit des retours." });
+        var me = Me.ToLowerInvariant();
+        var wasFlagged = e.FlaggedUnhelpful;
+        var vote = await Db.KnowledgeFeedbacks.FirstOrDefaultAsync(f => f.ArticleId == id && f.Username == me);
+        if (vote is null) Db.KnowledgeFeedbacks.Add(vote = new KnowledgeFeedback { ArticleId = id, Username = me });
+        else if (vote.Helpful) e.HelpfulCount--; else e.NotHelpfulCount--;
+        (vote.Helpful, vote.At) = (dto.Helpful, DateTime.UtcNow);
+        if (dto.Helpful) e.HelpfulCount++; else e.NotHelpfulCount++;
+        await Db.SaveChangesAsync();
+        if (e.FlaggedUnhelpful && !wasFlagged)
+        {
+            Notify.ToOwner(e, LinkType, "Article jugé peu utile par ses lecteurs");
+            await Notify.SaveAsync();
+        }
+        return Ok(new { View = View(e), MyVote = dto.Helpful });
+    }
+
+    /// <summary>KB-13 : mon vote sur l'article, ou null.</summary>
+    [HttpGet("{id:int}/feedback")]
+    public async Task<IActionResult> MyFeedback(int id)
+    {
+        if (!await VisibleAsync(id)) return NotFound();
+        var me = Me.ToLowerInvariant();
+        return Ok(new { MyVote = await Db.KnowledgeFeedbacks.AsNoTracking().Where(f => f.ArticleId == id && f.Username == me).Select(f => (bool?)f.Helpful).FirstOrDefaultAsync() });
     }
 
     /// <summary>KB-14 : incidents et demandes reliés à l'article (résolus ou traités grâce à lui).</summary>

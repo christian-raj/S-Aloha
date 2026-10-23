@@ -37,6 +37,6 @@ export const knowledgeConfig = {
     {r.submittedAt && <span className="badge t-progress">Soumis à publication</span>}
     {r.archiveRequestedAt && <span className="badge t-wait">Archivage demandé</span>}
   </>,
-  help: 'Le rédacteur soumet son brouillon, un gestionnaire le publie (contenu obligatoire ; revue fixée à un an par défaut) ; retouché par un autre utilisateur, il repasse en brouillon. À la revue, le responsable confirme l\'article ou demande son archivage ; archiver et réactiver sont des décisions de gestionnaire.',
+  help: 'Le rédacteur soumet son brouillon, un gestionnaire le publie, s\'il n\'en est pas le seul rédacteur (quatre yeux, sauf Admin) ; contenu obligatoire ; revue fixée à un an par défaut ; chaque publication garde sa version ; retouché par un autre utilisateur, il repasse en brouillon. À la revue, le responsable confirme l\'article ou demande son archivage ; trois « pas utile » de plus que d\'« utile » le signalent. Archiver et réactiver sont des décisions de gestionnaire.',
   linkHint: 'Problème (erreur connue), incidents résolus grâce à l\'article…',
 }

@@ -60,6 +60,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ServiceLevelAgreement> Agreements => Set<ServiceLevelAgreement>();
     // Connaissances, amélioration continue
     public DbSet<KnowledgeArticle> KnowledgeArticles => Set<KnowledgeArticle>();
+    public DbSet<KnowledgeArticleVersion> KnowledgeArticleVersions => Set<KnowledgeArticleVersion>();
+    public DbSet<KnowledgeFeedback> KnowledgeFeedbacks => Set<KnowledgeFeedback>();
     public DbSet<Improvement> Improvements => Set<Improvement>();
     public DbSet<Modules.RegulatoryNotifications.RegulatoryNotification> RegulatoryNotifications => Set<Modules.RegulatoryNotifications.RegulatoryNotification>();
     // Conformité NIS 2
@@ -165,6 +167,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<ServiceLevelAgreement>().Property(a => a.ComplianceTarget).HasPrecision(5, 2);
         // SLM-10 : service du catalogue ; supprimer un service garde le libellé recopié.
         b.Entity<Incident>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);
+        // KB-15, KB-13 : versions publiées et votes, supprimés avec l'article ; un vote par lecteur.
+        b.Entity<KnowledgeArticleVersion>().HasOne<KnowledgeArticle>().WithMany().HasForeignKey(v => v.ArticleId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<KnowledgeArticleVersion>().HasIndex(v => new { v.ArticleId, v.Version }).IsUnique();
+        b.Entity<KnowledgeFeedback>().HasOne<KnowledgeArticle>().WithMany().HasForeignKey(f => f.ArticleId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<KnowledgeFeedback>().HasIndex(f => new { f.ArticleId, f.Username }).IsUnique();
         // INC-16 : incident parent ; supprimer le parent détache ses enfants.
         b.Entity<Incident>().HasOne<Incident>().WithMany().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.SetNull);
         b.Entity<Problem>().HasOne<ItService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.SetNull);

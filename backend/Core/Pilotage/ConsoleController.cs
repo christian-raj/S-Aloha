@@ -138,6 +138,16 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                 ? groups.Contains(x.i.OwnerId.ToLower()) : x.i.OwnerId.ToLower() == meKey))
             .Select(x => new Item("incident", x.i.Id, x.i.Reference, x.i.Title, x.Reason!)).ToList();
 
+        // KB-13 : articles publiés jugés peu utiles (3 « pas utile » de plus que d'« utile ») — les miens.
+        var margin = Modules.KnowledgeManagement.KnowledgeArticle.UnhelpfulMargin;
+        var unhelpful = await db.KnowledgeArticles.AsNoTracking()
+            .Where(a => a.Status == "Publié" && a.NotHelpfulCount - a.HelpfulCount >= margin && (all || seen.Contains(a.PerimeterId)))
+            .OrderByDescending(a => a.NotHelpfulCount - a.HelpfulCount).ToListAsync();
+        Item Unhelpful(Modules.KnowledgeManagement.KnowledgeArticle a) =>
+            new("article", a.Id, a.Reference, a.Title, $"Peu utile : {a.NotHelpfulCount} « pas utile », {a.HelpfulCount} « utile »");
+        var myUnhelpful = unhelpful.Where(a => a.OwnerId != null && (a.OwnerType == "Group"
+                ? groups.Contains(a.OwnerId.ToLower()) : a.OwnerId.ToLower() == meKey)).Select(Unhelpful).ToList();
+
         object? management = null;
         // ADR-0014 D4 : le pilotage revient à qui est gestionnaire d'au moins un périmètre.
         if (all || managed.Count > 0)
@@ -272,6 +282,8 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                                // CHG-30, CHG-31 : changements à relancer des périmètres gérés.
                                ChangeFollowUps = followUps.Where(x => all || managed.Contains(x.c.PerimeterId))
                                    .Select(x => new Item("change", x.c.Id, x.c.Reference, x.c.Title, x.Reason!)).ToList(),
+                               // KB-13 : articles jugés peu utiles des périmètres gérés.
+                               UnhelpfulArticles = unhelpful.Where(a => all || managed.Contains(a.PerimeterId)).Select(Unhelpful).ToList(),
                                // PRB-32 : problèmes ouverts sans activité depuis 30 jours.
                                IdleProblems = (await ProblemRules.IdleAsync(db, now, id => all || managed.Contains(id)))
                                    .Select(x => new Item("problem", x.Problem.Id, x.Problem.Reference, x.Problem.Title,
@@ -288,7 +300,7 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
 
         return Ok(new { Role = role, Username = me, MyProblems = myProblems, MyActions = myActions,
                         MyAssignments = myAssignments, MySlaIncidents = mySla, MyProjectAlerts = myProjectAlerts,
-                        MyChangeFollowUps = myFollowUps, MyIncidentFollowUps = myHeldLong, Management = management });
+                        MyChangeFollowUps = myFollowUps, MyIncidentFollowUps = myHeldLong, MyUnhelpfulArticles = myUnhelpful, Management = management });
     }
 
     /// <summary>Ligne de console désignant un enregistrement d'un processus.</summary>

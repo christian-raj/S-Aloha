@@ -39,7 +39,8 @@ public class SearchTests(ApiFixture api)
     private async Task<string> PublishedArticle(string title, string content)
     {
         var manager = api.Client("Manager", "lova.rabe");
-        var a = await Json(await manager.PostAsJsonAsync("/api/knowledge", new { title, description = "", articleType = "Solution", content, keywords = "" }));
+        // KB-16 : un autre compte rédige, le gestionnaire publie.
+        var a = await Json(await api.Client("User", "redacteur.search").PostAsJsonAsync("/api/knowledge", new { title, description = "", articleType = "Solution", content, keywords = "" }));
         await Json(await manager.PutAsJsonAsync($"/api/knowledge/{a.GetProperty("id").GetInt32()}",
             new { title, description = "", status = "Publié", articleType = "Solution", content, keywords = "" }));
         return a.GetProperty("reference").GetString()!;

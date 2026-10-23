@@ -37,16 +37,19 @@ public class KnowledgeTests(ApiFixture api)
         console.GetProperty("management").GetProperty(group).EnumerateArray()
             .Select(x => (x.GetProperty("reference").GetString()!, x.GetProperty("status").GetString()!));
 
+    // KB-16 : un autre compte rédige, le gestionnaire publie (quatre yeux).
+    private HttpClient Writer => api.Client("User", "redacteur.kb");
+
     [Fact]
     public async Task KB_11_sans_date_de_revue_la_publication_la_fixe_a_un_an()
     {
         var m = api.Client("Manager");
-        var a = await Json(await m.PostAsJsonAsync("/api/knowledge", Article("KB-11")));
+        var a = await Json(await Writer.PostAsJsonAsync("/api/knowledge", Article("KB-11")));
         var published = await Json(await m.PutAsJsonAsync($"/api/knowledge/{Id(a)}", Article("KB-11", "Publié")));
         Assert.Equal(DateTime.UtcNow.Date.AddMonths(12), published.GetProperty("reviewDate").GetDateTime().Date);
 
         var fixedDate = DateTime.UtcNow.Date.AddMonths(3);
-        var b = await Json(await m.PostAsJsonAsync("/api/knowledge", Article("KB-11 bis", review: fixedDate)));
+        var b = await Json(await Writer.PostAsJsonAsync("/api/knowledge", Article("KB-11 bis", review: fixedDate)));
         var kept = await Json(await m.PutAsJsonAsync($"/api/knowledge/{Id(b)}", Article("KB-11 bis", "Publié", review: fixedDate)));
         Assert.Equal(fixedDate, kept.GetProperty("reviewDate").GetDateTime().Date);
     }
@@ -94,7 +97,7 @@ public class KnowledgeTests(ApiFixture api)
         var owner = api.Client("User", "responsable.kb17");
         var other = api.Client("User", "autre.kb17");
         var m = api.Client("Manager");
-        var a = await Json(await m.PostAsJsonAsync("/api/knowledge", Article("KB-17", owner: "responsable.kb17")));
+        var a = await Json(await Writer.PostAsJsonAsync("/api/knowledge", Article("KB-17", owner: "responsable.kb17")));
         var url = $"/api/knowledge/{Id(a)}";
         Assert.Contains("publié", await Refused(await owner.PostAsJsonAsync($"{url}/review", new { nextReviewDate = (DateTime?)null })));
         await Json(await m.PutAsJsonAsync(url, Article("KB-17", "Publié", owner: "responsable.kb17")));
@@ -118,7 +121,7 @@ public class KnowledgeTests(ApiFixture api)
     public async Task KB_14_et_KB_12_utilisation_et_article_d_erreur_connue_a_archiver()
     {
         var m = api.Client("Manager");
-        var a = await Json(await m.PostAsJsonAsync("/api/knowledge", Article("KB-12 erreur connue", type: "Erreur connue")));
+        var a = await Json(await Writer.PostAsJsonAsync("/api/knowledge", Article("KB-12 erreur connue", type: "Erreur connue")));
         await Json(await m.PutAsJsonAsync($"/api/knowledge/{Id(a)}", Article("KB-12 erreur connue", "Publié", type: "Erreur connue")));
 
         // KB-14 : un incident résolu grâce à l'article.

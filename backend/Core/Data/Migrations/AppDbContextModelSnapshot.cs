@@ -1481,6 +1481,9 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("HelpfulCount")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Keywords")
                         .IsRequired()
                         .HasMaxLength(300)
@@ -1492,6 +1495,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<string>("LastReviewedBy")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<int>("NotHelpfulCount")
+                        .HasColumnType("integer");
 
                     b.Property<string>("OwnerDisplayName")
                         .HasMaxLength(250)
@@ -1543,6 +1549,9 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PerimeterId");
@@ -1551,6 +1560,89 @@ namespace SAloha.Api.Core.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("KnowledgeArticles");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.KnowledgeManagement.KnowledgeArticleVersion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArticleId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ArticleType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Authors")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PublishedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArticleId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("KnowledgeArticleVersions");
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.KnowledgeManagement.KnowledgeFeedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArticleId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Helpful")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArticleId", "Username")
+                        .IsUnique();
+
+                    b.ToTable("KnowledgeFeedbacks");
                 });
 
             modelBuilder.Entity("SAloha.Api.Modules.ProblemManagement.CorrectiveAction", b =>
@@ -3825,6 +3917,24 @@ namespace SAloha.Api.Core.Data.Migrations
                         .WithMany()
                         .HasForeignKey("PerimeterId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.KnowledgeManagement.KnowledgeArticleVersion", b =>
+                {
+                    b.HasOne("SAloha.Api.Modules.KnowledgeManagement.KnowledgeArticle", null)
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SAloha.Api.Modules.KnowledgeManagement.KnowledgeFeedback", b =>
+                {
+                    b.HasOne("SAloha.Api.Modules.KnowledgeManagement.KnowledgeArticle", null)
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
