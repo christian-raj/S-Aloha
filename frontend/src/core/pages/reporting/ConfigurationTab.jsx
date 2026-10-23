@@ -24,7 +24,7 @@ export default function ConfigurationTab({ data }) {
               sub={<Link to="/configuration/staging">Ouvrir le sas de staging</Link>} />
           : <Kpi value={kpis.supportNear} label="Fins de support dans les 6 mois" />}
         {/* CFG-32, CFG-34 */}
-        <Kpi value={fmt(kpis.accuracy, 0)} suffix=" %" label="Exactitude de la CMDB" sub="CI en service vérifiés depuis moins de 12 mois" />
+        <Kpi value={fmt(kpis.accuracy, 0)} suffix=" %" label="Exactitude de la CMDB" sub={`CI en service vérifiés depuis moins de 12 mois, sur ${kpis.accuracyMeasured ?? 0} en service`} />
         <Kpi value={kpis.orphans} label="CI sans propriétaire ni relation" />
       </div>
 
@@ -97,7 +97,7 @@ export const configurationCsv = (d) => [
     ['CI non retirés', d.kpis.cis], ['Applications', d.kpis.applications],
     ['Portefeuille applicatif gouverné (%)', d.kpis.portfolioCoverage], ['Actifs matériels', d.kpis.hardware],
     ['Fin de support dépassée', d.kpis.supportPassed], ['Fin de support dans les 6 mois', d.kpis.supportNear],
-    ['Exactitude de la CMDB (%)', d.kpis.accuracy ?? ''], ['CI sans propriétaire ni relation', d.kpis.orphans ?? ''],
+    ['Exactitude de la CMDB (%)', d.kpis.accuracy ?? ''], ['CI en service mesurés', d.kpis.accuracyMeasured ?? ''], ['CI sans propriétaire ni relation', d.kpis.orphans ?? ''],
     ...(d.staging ? [['Actifs à rapprocher', d.staging.toReconcile], ['Actifs en conflit', d.staging.conflicts],
       ['Actifs inconnus', d.staging.unknown]] : [])] },
   bars('CI par type', d.byType), bars('CI par environnement', d.byEnvironment), bars('CI par statut', d.byStatus),

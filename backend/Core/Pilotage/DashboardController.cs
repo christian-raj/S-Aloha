@@ -668,6 +668,7 @@ public class DashboardController(AppDbContext db, PerimeterAccess access) : Cont
             {
                 Cis = cis.Count,
                 Accuracy = Pct(inService.Count(c => c.LastVerifiedAt >= today.AddMonths(-12)), inService.Count),   // CFG-32
+                AccuracyMeasured = inService.Count,
                 Orphans = orphans.Count,                                                                             // CFG-34
                 Applications = apps.Count,
                 PortfolioCoverage = Pct(governed, apps.Count),

@@ -43,7 +43,8 @@ public class IndicatorsLot3bTests(ApiFixture api)
             await db.SaveChangesAsync();
         }
         var tab = await Json(await Admin.GetAsync($"/api/reports/dashboard/configuration?perimeter={p}"));
-        Assert.Equal((50.0, 1), (tab.GetProperty("kpis").GetProperty("accuracy").GetDouble(), tab.GetProperty("kpis").GetProperty("orphans").GetInt32()));
+        Assert.Equal((50.0, 2, 1), (tab.GetProperty("kpis").GetProperty("accuracy").GetDouble(), tab.GetProperty("kpis").GetProperty("accuracyMeasured").GetInt32(),
+            tab.GetProperty("kpis").GetProperty("orphans").GetInt32()));
         var top = Assert.Single(tab.GetProperty("topIncidentCis").EnumerateArray());
         Assert.Equal((Id(a), 1), (Id(top), top.GetProperty("incidents").GetInt32()));
     }

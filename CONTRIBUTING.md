@@ -9,6 +9,8 @@ contribution est publiée sous la même licence. Chacun s'engage à respecter le
 
 ## Par où commencer
 
+- Le tableau [S-Aloha — feuille de route](https://github.com/users/chrraj7/projects/3) montre ce
+  qu'il reste à faire, tiré du [plan d'action](docs/plan-action.md).
 - Les issues [`good first issue`](https://github.com/chrraj7/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
   sont rédigées pour un premier passage : contexte, fichiers concernés, critère de fin.
   Les [`help wanted`](https://github.com/chrraj7/S-Aloha/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
