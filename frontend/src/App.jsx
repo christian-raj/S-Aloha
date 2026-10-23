@@ -10,6 +10,7 @@ import Perimeters from './core/pages/admin/Perimeters'
 import PerimeterDetail from './core/pages/admin/PerimeterDetail'
 import Health from './core/pages/admin/Health'
 import PlatformSettings from './core/pages/admin/PlatformSettings'
+import Preferences from './core/pages/Preferences'
 import Users from './core/pages/admin/Users'
 import AuditLog from './core/pages/admin/AuditLog'
 import Duplicates from './core/pages/admin/Duplicates'
@@ -77,6 +78,7 @@ export default function App() {
         <Route path="admin/users" element={<Users />} />
         <Route path="admin/health" element={<Health />} />
         <Route path="admin/platform" element={<PlatformSettings />} />
+        <Route path="preferences" element={<Preferences />} />
         <Route path="admin/audit" element={<AuditLog />} />
         <Route path="admin/duplicates" element={<Duplicates />} />
         {/* Pratique — Gestion des incidents */}

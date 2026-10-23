@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
+using SAloha.Api.Core.Data;
 
 namespace SAloha.Api.Core.Notifications;
 
@@ -13,6 +15,19 @@ public class Notification
     public const string ToUser = "User";
     public const string ToGroup = "Group";
     public const string ToManagers = "Managers";
+
+    /// <summary>
+    /// SOC-21, SOC-23 : notifications d'un compte depuis <paramref name="since"/> — adressées à lui,
+    /// à l'un de ses groupes, ou aux gestionnaires d'un périmètre qu'il gère — dans ses périmètres,
+    /// jamais les siennes. Partagé par la cloche et les courriels (SOC-22).
+    /// </summary>
+    public static IQueryable<Notification> VisibleTo(AppDbContext db, string me, IReadOnlyCollection<string> groups, bool all,
+        IReadOnlyCollection<int> seen, IReadOnlyCollection<int> managed, DateTime since) =>
+        db.Notifications.AsNoTracking().Where(n => n.CreatedAt >= since && n.Actor != me
+            && (all || seen.Contains(n.PerimeterId))
+            && ((n.RecipientType == ToUser && n.RecipientId == me)
+                || (n.RecipientType == ToGroup && groups.Contains(n.RecipientId))
+                || (n.RecipientType == ToManagers && (all || managed.Contains(n.PerimeterId)))));
 
     public long Id { get; set; }
     [MaxLength(10)] public string RecipientType { get; set; } = ToUser;

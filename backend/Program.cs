@@ -34,6 +34,7 @@ builder.Services.AddSingleton<SAloha.Api.Core.Administration.Heartbeats>();
 builder.Services.AddScoped<SAloha.Api.Core.Administration.Duplicates>();
 builder.Services.AddSingleton<CredentialVault>();
 builder.Services.AddScoped<SAloha.Api.Core.Platform.MailSender>();
+builder.Services.AddScoped<SAloha.Api.Core.Notifications.MailDispatch>();
 builder.Services.AddScoped<SAloha.Api.Core.Platform.ObjectStorage>();
 builder.Services.AddSingleton<DiscoveryQueue>();
 builder.Services.AddScoped<IDiscoveryCollector, NetworkScanner>();

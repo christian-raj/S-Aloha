@@ -61,6 +61,9 @@ public partial class PlatformSettingsController(AppDbContext db, CredentialVault
             return BadRequest("Adresse d'expéditeur invalide.");
         if (dto.Enabled && (host == "" || from == "")) return BadRequest("Serveur et adresse d'expéditeur requis pour activer l'envoi.");
         if (!string.IsNullOrEmpty(dto.Password) && !vault.Configured) return BadRequest(CredentialVault.NotConfigured);
+        var publicUrl = dto.PublicUrl?.Trim().TrimEnd('/') ?? "";
+        if (publicUrl != "" && (!Uri.TryCreate(publicUrl, UriKind.Absolute, out var site) || site.Scheme is not ("http" or "https") || site.Query != "" || site.UserInfo != ""))
+            return BadRequest("Adresse de l'interface invalide : une URL http(s), par exemple https://itsm.example.org.");
 
         var s = await db.MailSettings.FirstOrDefaultAsync();
         if (s is null) db.MailSettings.Add(s = new MailSettings());
@@ -70,11 +73,12 @@ public partial class PlatformSettingsController(AppDbContext db, CredentialVault
         Trace("Messagerie", 1,
         [
             ("enabled", s.Enabled ? "oui" : "non", dto.Enabled ? "oui" : "non"), ("host", s.Host, host), ("port", s.Port.ToString(), dto.Port.ToString()),
-            ("security", s.Security, security), ("username", s.Username, username), ("fromAddress", s.FromAddress, from), ("fromName", s.FromName, fromName),
+            ("security", s.Security, security), ("username", s.Username, username), ("fromAddress", s.FromAddress, from), ("fromName", s.FromName, fromName), ("publicUrl", s.PublicUrl, publicUrl),
             ("password", null, s.EncryptedPassword == password ? null : Change(s.EncryptedPassword, password)),
         ]);
         (s.Enabled, s.Host, s.Port, s.Security, s.Username, s.EncryptedPassword, s.FromAddress, s.FromName) =
             (dto.Enabled, host, dto.Port, security, username, password, from, fromName);
+        s.PublicUrl = publicUrl;
         (s.UpdatedAt, s.UpdatedBy) = (DateTime.UtcNow, MyDisplay);
         await db.SaveChangesAsync();
         return Ok(MailSettingsView.From(s));

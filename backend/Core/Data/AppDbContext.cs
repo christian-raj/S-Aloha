@@ -32,6 +32,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Administration.LastLogin> LastLogins => Set<Administration.LastLogin>();
     public DbSet<Administration.DuplicateDismissal> DuplicateDismissals => Set<Administration.DuplicateDismissal>();
     public DbSet<Platform.MailSettings> MailSettings => Set<Platform.MailSettings>();
+    public DbSet<Notifications.MailPreference> MailPreferences => Set<Notifications.MailPreference>();
     public DbSet<Platform.StorageSettings> StorageSettings => Set<Platform.StorageSettings>();
     public DbSet<Itil.Category> Categories => Set<Itil.Category>();
     // Gestion des problèmes

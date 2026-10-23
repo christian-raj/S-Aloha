@@ -257,6 +257,46 @@ namespace SAloha.Api.Core.Data.Migrations
                     b.ToTable("ItemLinks");
                 });
 
+            modelBuilder.Entity("SAloha.Api.Core.Notifications.MailPreference", b =>
+                {
+                    b.Property<string>("Username")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("Groups")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<DateTime>("SentUntil")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Username");
+
+                    b.ToTable("MailPreferences");
+                });
+
             modelBuilder.Entity("SAloha.Api.Core.Notifications.Notification", b =>
                 {
                     b.Property<long>("Id")
@@ -466,6 +506,11 @@ namespace SAloha.Api.Core.Data.Migrations
 
                     b.Property<int>("Port")
                         .HasColumnType("integer");
+
+                    b.Property<string>("PublicUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<string>("Security")
                         .IsRequired()

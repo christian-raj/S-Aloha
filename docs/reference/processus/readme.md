@@ -12,7 +12,7 @@
 
 | Pratique | Préfixe | ✅ | 🔜 lot 1 | 🔜 lot 2 | 🔜 lot 3 |
 |---|---|---|---|---|---|
-| [Socle commun](../regles-metier.md) | SOC | 25 | 0 | 0 | 2 |
+| [Socle commun](../regles-metier.md) | SOC | 26 | 0 | 0 | 1 |
 | [Gestion des problèmes](gestion-des-problemes.md) | PRB | 30 | 0 | 0 | 0 |
 | [Gestion des incidents](gestion-des-incidents.md) | INC | 31 | 0 | 0 | 0 |
 | [Gestion des demandes de service](gestion-des-demandes.md) | REQ | 21 | 0 | 0 | 0 |
@@ -27,7 +27,7 @@
 | [Périmètres](../perimetres.md) | PER | 12 | 0 | 0 | 0 |
 | [Recherche](../recherche.md) | RAG | 11 | 1 | 0 | 1 |
 | [Reporting](../reporting.md) | REP | 34 | 0 | 0 | 0 |
-| **Total** | | **336** | **1** | **0** | **3** |
+| **Total** | | **337** | **1** | **0** | **2** |
 
 *Comptes au 2026-10-16 (main `af38031`), sur les tableaux de règles (hors indicateurs). Une
 règle faite en partie compte ✅ (7 règles, la part restante est décrite dans son statut).
