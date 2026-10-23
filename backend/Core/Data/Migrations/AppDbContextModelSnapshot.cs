@@ -2613,6 +2613,10 @@ namespace SAloha.Api.Core.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<string>("Attributes")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
                     b.Property<string>("BusinessOwnerDisplayName")
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");

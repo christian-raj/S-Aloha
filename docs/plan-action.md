@@ -33,7 +33,7 @@ première version publiée sera **stable**, à la fin de ce plan d'action.
 | ~~2~~ | Incidents | ~~INC-16 (incidents enfants), INC-26 (relance après 5 jours ouvrés En attente)~~ — faits le 2026-10-23 | |
 | ~~3~~ | Problèmes, changements | ~~PRB-32 (problème sans activité depuis 30 jours), CHG-27 (modèle standard suspendu après un échec)~~ — faits le 2026-10-23 | |
 | ~~4~~ | Connaissances | ~~KB-13 (retour des lecteurs), KB-15 (versions), KB-16 (quatre yeux)~~ — faits le 2026-10-23 | |
-| 5 | Configuration | CFG-30 (import en masse), CFG-16 (attributs par type) | F5 |
+| ~~5~~ | Configuration | ~~CFG-30 (import en masse), CFG-16 (attributs par type)~~ — faits le 2026-10-23 | F5 |
 | 6 | Niveaux de service, amélioration, déclarations | SLM-21 (disponibilité mesurée), CSI-15 (durabilité), DRG-08 (modèle de contenu par régime) | |
 
 La suite de F7 (courriels SOC-22, pièces jointes SOC-25) reprend **après** les étapes 3 à 6
@@ -119,7 +119,7 @@ restantes sont spécifiées règle par règle dans [`reference/processus/`](refe
 |---|---|---|---|
 | ~~F2~~ | Incidents, Problèmes | ~~Service et catégorie tirés du catalogue et d'un référentiel~~ — soldé le 2026-10-19 | [SOC-27](reference/regles-metier.md#9-traçabilité-commentaires-administration), [SLM-10](reference/processus/gestion-des-niveaux-de-service.md) |
 | ~~F3~~ | Demandes | ~~Tâches d'exécution créées depuis le modèle~~ — soldé le 2026-10-23 (REQ-24, REQ-25) | [REQ-24, REQ-25](reference/processus/gestion-des-demandes.md) |
-| F5 | Configuration | Import en masse, attributs par type de CI (rattachement CI ↔ service fait le 2026-10-13, service signalé « dégradé » le 2026-10-21) ; exactitude de la CMDB ([#124](https://github.com/christian-raj/S-Aloha/issues/124)), CI à vérifier dans la console ([#125](https://github.com/christian-raj/S-Aloha/issues/125)) | [CFG-16, CFG-30](reference/processus/gestion-de-la-configuration.md) |
+| F5 | Configuration | Import en masse et attributs par type de CI faits le 2026-10-23 (rattachement CI ↔ service fait le 2026-10-13, service signalé « dégradé » le 2026-10-21) ; restent exactitude de la CMDB ([#124](https://github.com/christian-raj/S-Aloha/issues/124)), CI à vérifier dans la console ([#125](https://github.com/christian-raj/S-Aloha/issues/125)) | [CFG-16, CFG-30](reference/processus/gestion-de-la-configuration.md) |
 | F7 | Tous | Pièces jointes, notifications par courriel (notifications dans l'application et commentaires faits le 2026-10-13) | [SOC-22, SOC-25](reference/regles-metier.md#8-notifications) |
 | ~~F8~~ | Connaissances, Incidents | ~~Suggestion d'articles et cas similaires dès la saisie, relier en un clic~~ — soldé le 2026-10-21 | [INC-19](reference/processus/gestion-des-incidents.md), [RAG-09, RAG-11](reference/recherche.md) |
 | F11 | Incidents, sécurité | **Déclarations réglementaires** des incidents cyber (NIS 2 : alerte précoce 24 h, notification 72 h, rapport final ; RGPD : 72 h) : lot 2 fait le 2026-10-21 (qualification de l'incident, déclarations, échéances, console, notifications, respect des délais) ; reste le modèle de contenu par régime et deux indicateurs (lot 3) | [DRG-08, DRG-21, DRG-22](reference/processus/declarations-reglementaires.md) |

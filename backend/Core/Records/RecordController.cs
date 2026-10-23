@@ -41,7 +41,7 @@ public abstract class RecordController<T, TDto, TView>(AppDbContext db) : Contro
     private int? _perimeter;
     /// <summary>Portée de l'utilisateur (PER-03), chargée une fois par requête.</summary>
     protected async Task<PerimeterScope> ScopeAsync() => _scope ??= await Access.GetAsync();
-    private PerimeterAccess Access => HttpContext.RequestServices.GetRequiredService<PerimeterAccess>();
+    protected PerimeterAccess Access => HttpContext.RequestServices.GetRequiredService<PerimeterAccess>();
     /// <summary>
     /// Référentiel partagé (ADR-0014 D2) : enregistrements visibles de tous, quel que soit
     /// leur périmètre (catalogue des services, articles publiés) ; null : aucun.
@@ -358,7 +358,7 @@ public abstract class RecordController<T, TDto, TView>(AppDbContext db) : Contro
         return NoContent();
     }
 
-    private string? Fill(T e, TDto dto, bool creating)
+    protected string? Fill(T e, TDto dto, bool creating)
     {
         if (string.IsNullOrWhiteSpace(dto.Title)) return "Le titre est obligatoire.";
         var error = Allowed.Check("Type de responsable", dto.OwnerType, ["User", "Group"], optional: true);

@@ -78,6 +78,15 @@ public static class CiRules
         e.PurchaseDate = hardware ? Dates.Utc(dto.PurchaseDate) : null;
         e.WarrantyExpiry = hardware ? Dates.Utc(dto.WarrantyExpiry) : null;
         e.EndOfSupport = hardware ? Dates.Utc(dto.EndOfSupport) : null;
+
+        // CFG-16 : attributs du type ; absents de la saisie, ils sont gardés (sauf ceux qu'un nouveau type ne définit pas).
+        if (dto.Attributes is null) e.Attributes = CiAttributes.Keep(e.CiType, e.Attributes);
+        else
+        {
+            var (attrError, values) = CiAttributes.Check(e.CiType, dto.Attributes);
+            if (attrError is not null) return attrError;
+            e.Attributes = values;
+        }
         return null;
     }
 

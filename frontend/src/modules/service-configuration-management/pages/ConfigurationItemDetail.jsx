@@ -106,6 +106,42 @@ export function ServicesTouched({ services }) {
   )
 }
 
+/**
+ * CFG-16 : attributs propres au type du CI (CPU, mémoire, version, éditeur…). L'enregistrement
+ * renvoie la fiche entière avec ses attributs ; l'API vérifie les clés, les nombres et les adresses.
+ */
+export function Attributes({ ci, onSaved }) {
+  const [types, setTypes] = useState(null)
+  const [f, setF] = useState(null)
+  const [error, setError] = useState('')
+  useEffect(() => { api.configurationItems.attributeTypes().then(setTypes).catch(() => setTypes({})) }, [])
+  const defined = types?.[ci.ciType] ?? []
+  if (!types || defined.length === 0) return null
+  const save = () => api.configurationItems.update(ci.id, { ...ci, attributes: f })
+    .then(() => { setF(null); setError(''); onSaved() }).catch(e => setError(e.message))
+  return (
+    <div className="card" style={{ marginTop: 16 }} aria-label="Attributs">
+      <h3 className="card-title">Attributs ({ci.ciType})</h3>
+      {error && <div className="error">{error}</div>}
+      {f ? <>
+        <div className="row3">{defined.map(a => (
+          <div className="field" key={a.key}><label htmlFor={'attr-' + a.key}>{a.label}</label>
+            <input id={'attr-' + a.key} value={f[a.key] ?? ''} inputMode={a.kind === 'nombre' ? 'decimal' : undefined}
+              type={a.kind === 'url' ? 'url' : 'text'} onChange={e => setF({ ...f, [a.key]: e.target.value })} /></div>))}
+        </div>
+        <button className="btn" onClick={save}>Enregistrer</button>{' '}
+        <button className="btn ghost" onClick={() => setF(null)}>Annuler</button>
+      </> : <>
+        <dl className="small">{defined.filter(a => ci.attributes?.[a.key]).map(a => (
+          <div key={a.key}><dt className="muted" style={{ display: 'inline' }}>{a.label} : </dt><dd style={{ display: 'inline', margin: 0 }}>{ci.attributes[a.key]}</dd></div>))}
+        </dl>
+        {!defined.some(a => ci.attributes?.[a.key]) && <p className="muted small">Aucun attribut renseigné.</p>}
+        <button className="btn ghost small" onClick={() => setF({ ...(ci.attributes ?? {}) })}>Modifier les attributs</button>
+      </>}
+    </div>
+  )
+}
+
 /** CFG-15 : le propriétaire (ou un gestionnaire) atteste que la fiche est exacte. */
 function Verification({ ci, onSaved }) {
   const [msg, setMsg] = useState(null)
@@ -158,7 +194,7 @@ export default function ConfigurationItemDetail() {
       label: 'Relations et impact',
       render: (r, reload) => <><Relations ci={r} onChanged={reload} /><Impact ci={r} /></>
     }}>
-      {(r, reload) => <><Verification ci={r} onSaved={reload} /><DiscoveryTrace ci={r} /></>}
+      {(r, reload) => <><Attributes ci={r} onSaved={reload} /><Verification ci={r} onSaved={reload} /><DiscoveryTrace ci={r} /></>}
     </RecordDetail>
   )
 }

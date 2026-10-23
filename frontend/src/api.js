@@ -29,7 +29,8 @@ async function request(path, options = {}) {
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
     if (res.status === 413 && !body.message) throw new Error('Fichier trop volumineux pour le serveur (413) : vérifier la taille admise par le proxy.')
-    throw new Error(body.message || 'Une erreur est survenue (' + res.status + ')')
+    // Le corps reste joint à l'erreur : un rapport détaillé (import CSV, CFG-30) s'y lit.
+    throw Object.assign(new Error(body.message || 'Une erreur est survenue (' + res.status + ')'), { body })
   }
   if (options.raw) return res
   return res.status === 204 ? null : res.json()
@@ -153,6 +154,9 @@ export const api = {
     impact: (id) => request(`/configuration-items/${id}/impact`),
     impactOf: (type, id) => request(`/configuration-items/impact-of?type=${type}&id=${id}`),
     verify: (id) => request(`/configuration-items/${id}/verify`, { method: 'POST' }),
+    // CFG-16 : attributs définis par type ; CFG-30 : import CSV (Admin), contrôle seul avec dryRun.
+    attributeTypes: () => request('/configuration-items/attribute-types'),
+    importCsv: (csv, dryRun) => request('/configuration-items/import' + (dryRun ? '?dryRun=true' : ''), { method: 'POST', body: JSON.stringify({ csv }) }),
     ...records('/configuration-items'),
     addRelation: (id, dto) => request(`/configuration-items/${id}/relations`, { method: 'POST', body: JSON.stringify(dto) }),
     removeRelation: (relId) => request('/configuration-items/relations/' + relId, { method: 'DELETE' }),

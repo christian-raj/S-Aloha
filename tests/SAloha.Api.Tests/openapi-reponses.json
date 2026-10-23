@@ -92,6 +92,7 @@
   "ConfigurationItemView": {
     "appCode": "string",
     "appLifecycle": "string",
+    "attributes": "object",
     "businessOwnerDisplayName": "string",
     "businessOwnerId": "string",
     "businessOwnerType": "string",
