@@ -34,6 +34,8 @@ export const improvementConfig = {
       options: STEPS.map((s, i) => ({ value: i + 1, label: `${i + 1}. ${s}` })) },
     ownerField('Porteur'),
     { key: 'dueDate', label: 'Échéance', type: 'date' },
+    // CSI-15 : date de contrôle de la durabilité (étape 7), une fois l'amélioration réalisée.
+    { key: 'followUpDate', label: 'Contrôle de durabilité le', type: 'date', create: false },
     descriptionField('Opportunité', 'Constat, irritant, besoin métier…', 3),
     { key: 'benefit', label: 'Valeur attendue', type: 'textarea', rows: 2 },
     { key: 'baseline', label: 'Mesure de départ', placeholder: 'Ex. : 5 jours en moyenne' },

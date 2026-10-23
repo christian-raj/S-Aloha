@@ -50,8 +50,14 @@ public class RegulatoryNotificationsController(AppDbContext db)
             dto.PersonalDataCategories, dto.DataSubjectsCount, dto.LateReason);
         var before = (e.Summary, e.Impact, e.MeasuresTaken, e.SuspectedMalicious, e.CrossBorderImpact,
             e.PersonalDataCategories, e.DataSubjectsCount, e.LateReason);
-        if (!creating && RegulatoryNotification.Done.Contains(e.Status) && Clean(content) != Clean(before))
+        var rubrics = (Text(dto.Severity), Text(dto.CompromiseIndicators), Text(dto.BreachNature), Text(dto.LikelyConsequences));
+        if (!creating && RegulatoryNotification.Done.Contains(e.Status)
+            && (Clean(content) != Clean(before) || rubrics != (e.Severity, e.CompromiseIndicators, e.BreachNature, e.LikelyConsequences)))
             return $"Déclaration {e.Status.ToLowerInvariant()} : son contenu ne se modifie plus.";
+        // DRG-08 : rubriques du modèle de contenu, valeurs fermées pour la gravité et la nature.
+        if (Allowed.Check("Gravité", rubrics.Item1, RegulatoryNotification.Severities, optional: true) is { } severityError) return severityError;
+        if (Allowed.Check("Nature de la violation", rubrics.Item3, RegulatoryNotification.BreachNatures, optional: true) is { } natureError) return natureError;
+        (e.Severity, e.CompromiseIndicators, e.BreachNature, e.LikelyConsequences) = rubrics;
         if (dto.DataSubjectsCount is < 0) return "Le nombre de personnes concernées ne peut pas être négatif.";
         e.Summary = Text(dto.Summary); e.Impact = Text(dto.Impact); e.MeasuresTaken = Text(dto.MeasuresTaken);
         e.SuspectedMalicious = dto.SuspectedMalicious; e.CrossBorderImpact = dto.CrossBorderImpact;

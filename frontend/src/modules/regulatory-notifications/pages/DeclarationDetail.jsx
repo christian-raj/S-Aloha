@@ -42,6 +42,16 @@ function Steps({ r }) {
   )
 }
 
+/** DRG-08 : rubriques attendues par le régime, encore vides — à compléter avant l'envoi. */
+export function Rubrics({ r }) {
+  if (!r.missingRubrics?.length) return null
+  return (
+    <div className="notice warn" role="status" style={{ marginTop: 16 }}>
+      <b>Contenu attendu ({r.regime}) :</b> {r.missingRubrics.join(', ')} — à compléter dans l’onglet Détails avant l’envoi à {r.authority}.
+    </div>
+  )
+}
+
 export default function DeclarationDetail() {
-  return <RecordDetail config={declarationConfig}>{r => <Steps r={r} />}</RecordDetail>
+  return <RecordDetail config={declarationConfig}>{r => <><Rubrics r={r} /><Steps r={r} /></>}</RecordDetail>
 }

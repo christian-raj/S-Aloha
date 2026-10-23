@@ -29,6 +29,11 @@ public record RegulatoryNotificationView(
     int? DataSubjectsCount,
     string? NotRequiredReason,
     string? LateReason,
+    string? Severity,
+    string? CompromiseIndicators,
+    string? BreachNature,
+    string? LikelyConsequences,
+    List<string> MissingRubrics,
     List<DeclarationStep> Steps,
     string? NextStep,
     DateTime? NextDueAt,
@@ -60,7 +65,8 @@ public record RegulatoryNotificationView(
         return new(e.IncidentId, e.Incident?.Reference, e.Incident?.Title, e.Regime, e.Authority, e.AwareAt, e.AwareAtReason,
             e.EarlyWarningDueAt, e.NotificationDueAt, e.FinalReportDueAt, e.EarlyWarningSentAt, e.NotificationSentAt, e.FinalReportSentAt,
             e.AuthorityCaseRef, e.Summary, e.Impact, e.MeasuresTaken, e.SuspectedMalicious, e.CrossBorderImpact,
-            e.PersonalDataCategories, e.DataSubjectsCount, e.NotRequiredReason, e.LateReason, steps, next?.Step, next?.Due,
+            e.PersonalDataCategories, e.DataSubjectsCount, e.NotRequiredReason, e.LateReason,
+            e.Severity, e.CompromiseIndicators, e.BreachNature, e.LikelyConsequences, e.Rubrics().Where(r => !r.Filled).Select(r => r.Label).ToList(), steps, next?.Step, next?.Due,
             e.Versions(), e.Id, e.PerimeterId, e.Reference, e.Title, e.Description, e.Status, e.OwnerType, e.OwnerId,
             e.OwnerDisplayName, e.CreatedBy, e.CreatedByDisplayName, e.CreatedAt, e.UpdatedAt);
     }

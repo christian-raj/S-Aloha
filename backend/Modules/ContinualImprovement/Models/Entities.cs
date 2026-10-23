@@ -50,10 +50,20 @@ public class Improvement : Record
     [MaxLength(200)] public string? ValidatedBy { get; set; }
     public DateTime? ValidatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
+    /// <summary>CSI-15 : contrôle de la durabilité (étape 7) — date, puis conclusion du porteur.</summary>
+    public DateTime? FollowUpDate { get; set; }
+    public DateTime? FollowUpDoneAt { get; set; }
+    [MaxLength(200)] public string? FollowUpDoneBy { get; set; }
+    public bool? FollowUpHolds { get; set; }
+    public string? FollowUpNote { get; set; }
 }
 
 public record ImprovementDto(string Title, string? Description, string? Status,
     string? OwnerType, string? OwnerId, string? OwnerDisplayName,
     int Step, string? Priority, string? Benefit, string? Baseline, string? Target,
     string? Outcome, DateTime? DueDate, string? AbandonReason = null, int? PerimeterId = null,
-    string? Source = null, int? Value = null, int? Effort = null, string? OriginReference = null) : IRecordDto;
+    string? Source = null, int? Value = null, int? Effort = null, string? OriginReference = null,
+    DateTime? FollowUpDate = null) : IRecordDto;
+
+/// <summary>CSI-15 : conclusion du contrôle de durabilité ; si le résultat ne tient pas, une nouvelle amélioration est ouverte.</summary>
+public record FollowUpDto(bool Holds, string? Note);

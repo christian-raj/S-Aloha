@@ -168,7 +168,7 @@ public class AgreementsController(AppDbContext db) : RecordController<ServiceLev
         if (first > last || first < last.AddMonths(-23)) return BadRequest(new { message = "Période de 1 à 24 mois." });
         var months = new List<SAloha.Api.Core.Itil.SlaCompliance.Month>();
         for (var m = first; m <= last; m = m.AddMonths(1)) months.Add(await SAloha.Api.Core.Itil.SlaCompliance.MonthAsync(Db, e, m, now));
-        return Ok(new { e.ComplianceTarget, Months = months });
+        return Ok(new { e.ComplianceTarget, e.AvailabilityTarget, Months = months });
     }
 
     /// <summary>
