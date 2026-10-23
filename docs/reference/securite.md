@@ -63,6 +63,11 @@ Lecture seule de vCenter). L'inventaire WinRM n'emploie que HTTPS et NTLM (impl�
 gérée de .NET, `System.Net.Security.UseManagedNtlm`) : un serveur qui réclamerait Basic
 n'obtient pas le mot de passe (CFG-57).
 
+**Messagerie et stockage** ([ADM-60 à ADM-63](administration.md#7-messagerie-et-stockage)) : le mot
+de passe SMTP et la clé secrète S3 sont chiffrés par le même coffre, jamais renvoyés par
+l'API ni écrits au journal d'audit ; réglage réservé à l'Admin. Le certificat du serveur SMTP
+est toujours vérifié ; « Aucun » chiffrement ne convient qu'à un relais du réseau interne.
+
 ## Surface exposée
 
 | Port | Service | Contenu |

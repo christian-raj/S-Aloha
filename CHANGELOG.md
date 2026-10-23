@@ -17,6 +17,12 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 ### Ajouté
 
+- **Messagerie et stockage** (ADM-60 à ADM-63, [ADR-0020](docs/decisions/adr-0020-pieces-jointes-s3-et-smtp-configurables.md)) :
+  nouvelle page Administration › Messagerie et stockage pour régler le serveur SMTP des
+  courriels et le stockage objet compatible S3 (Garage) des pièces jointes, chacun avec un
+  essai ; secrets chiffrés par le coffre, jamais réaffichés, modifications tracées ; état
+  affiché dans la page Santé. Préalable aux courriels (SOC-22) et aux pièces jointes (SOC-25).
+
 - **Reporting : onglet Demandes** (REP-60 à REP-63, indicateurs REQ-40 à REQ-43) : délai moyen
   de traitement, respect des délais, taux d'approbation et satisfaction moyenne, globalement
   et par modèle du catalogue ; avis par note ; demandes en retard, aussi en badge de l'onglet.
@@ -164,6 +170,9 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Messagerie et stockage** : la migration `PlatformSettings` ajoute deux tables de réglages.
+  Rien n'est activé : régler et essayer dans la console. Les secrets dépendent de
+  `Discovery:VaultKey`, qui doit donc être fixée.
 - **Demandes** : la migration `RequestTasksSatisfaction` ajoute deux tables (tâches du modèle et
   de la demande) et quatre colonnes.
 - **Incidents et problèmes** : la migration `IncidentProblemLot2` ajoute sept colonnes ; les

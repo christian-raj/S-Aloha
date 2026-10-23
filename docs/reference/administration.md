@@ -19,6 +19,7 @@
 | Administration | Nettoyage des doublons | Admin | ADM-40 à ADM-43 | ✅ |
 | Administration | Périmètres | Admin | [PER-01 à PER-12](perimetres.md) | ✅ |
 | Administration | Index de recherche | Admin | [RAG-08](recherche.md) | ✅ |
+| Administration | Messagerie et stockage | Admin | ADM-60 à ADM-63 | ✅ |
 | Paramétrage | Catégories (incidents, problèmes) | Manager, Admin | ADM-50 à ADM-53 | ✅ |
 
 ## 2. Utilisateurs et rôles
@@ -34,7 +35,7 @@
 
 | ID | Règle | Statut |
 |---|---|---|
-| ADM-20 | **État des composants**, chacun « OK », « Dégradé » ou « Hors service » avec un message et la durée de la vérification : base (connexion, migrations en attente), annuaire (liaison du compte de service), service d'embeddings ([RAG-08](recherche.md)), coffre de la découverte (clé configurée), tâches de fond (dernier relevé des notifications datées, tâches de découverte en échec) | ✅ |
+| ADM-20 | **État des composants**, chacun « OK », « Dégradé » ou « Hors service » avec un message et la durée de la vérification : base (connexion, migrations en attente), annuaire (liaison du compte de service), service d'embeddings ([RAG-08](recherche.md)), coffre de la découverte (clé configurée), messagerie et stockage des pièces jointes (activés ou non, ADM-63), tâches de fond (dernier relevé des notifications datées, tâches de découverte en échec) | ✅ |
 | ADM-21 | **Version** déployée (numéro et commit), date de démarrage de l'API, environnement ; aucun secret ni chaîne de connexion affichés. Les sondes publiques `/health/live` et `/health/ready` sont distinctes ([#121](https://github.com/christian-raj/S-Aloha/issues/121)) | ✅ |
 
 ## 4. Journal d'audit global
@@ -62,7 +63,19 @@
 | ADM-52 | **Reprise** : à la migration, les catégories déjà saisies sur les incidents et les problèmes deviennent des catégories actives de leur pratique (sans tenir compte de la casse) | ✅ |
 | ADM-53 | Le service affecté reste tiré du catalogue ([SLM-10](processus/gestion-des-niveaux-de-service.md)) ; SOC-27 est réalisée avec ADM-50 à ADM-52 | ✅ |
 
-## 7. API
+## 7. Messagerie et stockage
+
+Décision : [ADR-0020](../decisions/adr-0020-pieces-jointes-s3-et-smtp-configurables.md). Les
+deux sont désactivés tant que l'Admin ne les a pas réglés.
+
+| ID | Règle | Statut |
+|---|---|---|
+| ADM-60 | **SMTP** des courriels ([SOC-22](regles-metier.md#8-notifications)) : envoi activé ou non, serveur, port, chiffrement (STARTTLS, TLS implicite ou aucun pour un relais interne ; certificat toujours vérifié), compte facultatif, adresse et nom d'expéditeur. L'activation exige le serveur et une adresse d'expéditeur valide (400) | ✅ |
+| ADM-61 | **Stockage objet compatible S3** des pièces jointes ([SOC-25](regles-metier.md#8-notifications)), Garage en référence : activé ou non, adresse http(s), région (`garage` par défaut), bucket (3 à 63 caractères : minuscules, chiffres, points, tirets), clé d'accès et clé secrète, adressage par chemin (défaut) ou par sous-domaine, taille maximale d'un fichier (1 à 100 Mo, 10 par défaut). L'activation exige l'adresse, le bucket et les deux clés (400) | ✅ |
+| ADM-62 | **Secrets** (mot de passe SMTP, clé secrète S3) chiffrés par le coffre (`Discovery:VaultKey`, [CFG-45](processus/gestion-de-la-configuration.md)) ; refusés (400) si le coffre n'a pas de clé ; jamais renvoyés (l'API dit seulement s'ils sont enregistrés) ; laissés vides, ils sont gardés, et « Effacer » les supprime. Chaque champ modifié est tracé au journal d'audit (type `parametre`, références « Messagerie » et « Stockage ») ; un secret n'y figure que comme « modifié » ou « effacé » | ✅ |
+| ADM-63 | **Essais** avec les réglages enregistrés, même désactivés : courriel d'essai à une adresse saisie ; dépôt, relecture et suppression d'un objet d'essai dans le bucket. Le résultat (réussite, ou message de l'erreur sans secret) s'affiche sur la page. La page **Santé** indique si chacun est activé, et « Hors service » si un secret est enregistré alors que la clé du coffre manque | ✅ |
+
+## 8. API
 
 | Route | Policy | Rôle |
 |---|---|---|
@@ -70,4 +83,6 @@
 | `GET /api/admin/health` | Admin | Santé (ADM-20, ADM-21) |
 | `GET /api/admin/audit` (`author`, `type`, `action`, `reference`, `from`, `to`, `page`), `GET …/audit/export` | Admin | Journal global, export (ADM-30, ADM-31) |
 | `GET /api/admin/duplicates`, `POST /api/admin/duplicates/merge`, `POST /api/admin/duplicates/dismiss` | Admin | Doublons, fusion, « pas un doublon » (ADM-40 à ADM-42) |
+| `GET/PUT /api/admin/settings/mail`, `POST …/mail/test` (`to`) | Admin | SMTP, courriel d'essai (ADM-60, ADM-62, ADM-63) |
+| `GET/PUT /api/admin/settings/storage`, `POST …/storage/test` | Admin | Stockage S3, essai de dépôt (ADM-61 à ADM-63) |
 | `GET /api/categories?practice=`, `POST`, `PUT /{id}`, `DELETE /{id}` | User (lecture), Manager (écriture) | Catégories (ADM-50 à ADM-52) |

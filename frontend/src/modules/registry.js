@@ -138,6 +138,7 @@ export const SECTIONS = [
       { href: '/admin/users', label: 'Utilisateurs et rôles', description: 'Annuaire, rôles, connexions', icon: 'admin' },
       { href: '/admin/perimeters', label: 'Périmètres', description: 'Directions, sites, affectations', icon: 'admin' },
       { href: '/admin/search', label: 'Index de recherche', description: 'État et reconstruction', icon: 'admin' },
+      { href: '/admin/platform', label: 'Messagerie et stockage', description: 'SMTP des courriels, stockage S3 des pièces jointes', icon: 'admin' },
       { href: '/admin/health', label: 'Santé', description: 'Base, annuaire, services, version', icon: 'admin' },
       { href: '/admin/audit', label: "Journal d'audit", description: 'Toutes pratiques, export', icon: 'admin' },
       { href: '/admin/duplicates', label: 'Nettoyage des doublons', description: 'Détection et fusion', icon: 'admin' },

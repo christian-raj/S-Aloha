@@ -9,6 +9,7 @@ import SearchIndexAdmin from './core/pages/SearchIndexAdmin'
 import Perimeters from './core/pages/admin/Perimeters'
 import PerimeterDetail from './core/pages/admin/PerimeterDetail'
 import Health from './core/pages/admin/Health'
+import PlatformSettings from './core/pages/admin/PlatformSettings'
 import Users from './core/pages/admin/Users'
 import AuditLog from './core/pages/admin/AuditLog'
 import Duplicates from './core/pages/admin/Duplicates'
@@ -75,6 +76,7 @@ export default function App() {
         <Route path="admin/perimeters/:id" element={<PerimeterDetail />} />
         <Route path="admin/users" element={<Users />} />
         <Route path="admin/health" element={<Health />} />
+        <Route path="admin/platform" element={<PlatformSettings />} />
         <Route path="admin/audit" element={<AuditLog />} />
         <Route path="admin/duplicates" element={<Duplicates />} />
         {/* Pratique — Gestion des incidents */}

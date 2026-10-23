@@ -40,7 +40,7 @@ première version publiée sera **stable**, à la fin de ce plan d'action.
 
 | Chantier | Décision à prendre |
 |---|---|
-| ~~F7~~ | **Décidé le 2026-10-23** : pièces jointes dans un stockage objet **compatible S3 (Garage)**, courriels par un **SMTP configurable** ; le paramétrage des deux se fait dans la **console d'administration**. Restent à fixer en réalisant : préférences de courriel par utilisateur (SOC-22), limite et types de fichiers (SOC-25, 10 Mo prévus) |
+| ~~F7~~ | **Décidé le 2026-10-23** : pièces jointes dans un stockage objet **compatible S3 (Garage)**, courriels par un **SMTP configurable** ; le paramétrage des deux se fait dans la **console d'administration**. [ADR-0020](decisions/adr-0020-pieces-jointes-s3-et-smtp-configurables.md) ; **réglages et essais faits le 2026-10-23** (ADM-60 à ADM-63). Restent : courriels des notifications et préférences par utilisateur (SOC-22), puis pièces jointes (SOC-25, types de fichiers à fixer) |
 | F12 — référentiels définis par l'Admin | Spécifier d'abord (format d'import, échelle, calcul des niveaux), sur le modèle de l'[ADR-0012](decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md) |
 | F13 phase 4 — agent nomade | Forme de l'agent (service Windows et Linux, langage, signature du binaire), jeton d'enrôlement par périmètre, fréquence d'envoi ; preuves NIS 2 nourries par la découverte |
 

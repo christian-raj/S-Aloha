@@ -28,6 +28,7 @@ son état actuel, et pas seulement *quel* est cet état.
 | [0017](adr-0017-observabilite-journal-json-et-opentelemetry.md) | Observabilité : journal JSON, OpenTelemetry optionnel | 2026-10-19 | accepté |
 | [0018](adr-0018-jeton-en-cookie-httponly-et-csp.md) | Jeton de session en cookie HttpOnly, politique CSP | 2026-10-19 | accepté |
 | [0019](adr-0019-console-d-administration.md) | Administration : utilisateurs depuis l'annuaire, fusion des doublons, catégories | 2026-10-19 | accepté |
+| [0020](adr-0020-pieces-jointes-s3-et-smtp-configurables.md) | Pièces jointes sur un stockage compatible S3 (Garage), courriels par un SMTP configurable, réglés dans la console | 2026-10-23 | accepté |
 
 Les choix fondateurs antérieurs à cette base (authentification AD LDAP → JWT, analyses
 RCA stockées en JSON) sont décrits dans [`reference/architecture.md`](../reference/architecture.md)

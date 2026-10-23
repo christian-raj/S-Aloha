@@ -31,6 +31,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PerimeterAssignment> PerimeterAssignments => Set<PerimeterAssignment>();
     public DbSet<Administration.LastLogin> LastLogins => Set<Administration.LastLogin>();
     public DbSet<Administration.DuplicateDismissal> DuplicateDismissals => Set<Administration.DuplicateDismissal>();
+    public DbSet<Platform.MailSettings> MailSettings => Set<Platform.MailSettings>();
+    public DbSet<Platform.StorageSettings> StorageSettings => Set<Platform.StorageSettings>();
     public DbSet<Itil.Category> Categories => Set<Itil.Category>();
     // Gestion des problèmes
     public DbSet<Problem> Problems => Set<Problem>();
@@ -202,6 +204,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         }
 
         b.Entity<Administration.DuplicateDismissal>().HasIndex(d => new { d.Type, d.FirstId, d.SecondId }).IsUnique();
+        // ADM-60, ADM-61 : une seule ligne de réglages chacun, saisie par l'Admin.
+        b.Entity<Platform.MailSettings>().Property(s => s.Id).ValueGeneratedNever();
+        b.Entity<Platform.StorageSettings>().Property(s => s.Id).ValueGeneratedNever();
         b.Entity<Itil.Category>().HasIndex(c => new { c.Practice, c.Name }).IsUnique();
         b.Entity<ItemLink>().HasIndex(l => new { l.FromType, l.FromId });
         b.Entity<ItemLink>().HasIndex(l => new { l.ToType, l.ToId });

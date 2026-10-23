@@ -151,6 +151,7 @@ les entités EF sont renvoyées avec leurs navigations (`Analysis → Problem �
 | Méthode / Route | Policy | Rôle métier | Emplacement |
 |---|---|---|---|
 | GET `/api/admin/users`, GET `/api/admin/health`, GET `/api/admin/audit`, GET `/api/admin/audit/export`, GET `/api/admin/duplicates`, POST `…/duplicates/merge`, POST `…/duplicates/dismiss` | Admin | Utilisateurs et rôles (annuaire, ADM-10 à ADM-13), doublons (détection, fusion, ADM-40 à ADM-42), santé de la plateforme, journal d'audit global et export CSV (ADM-20 à ADM-31) | Core/Administration |
+| GET/PUT `/api/admin/settings/mail`, POST `…/mail/test`, GET/PUT `/api/admin/settings/storage`, POST `…/storage/test` | Admin | Messagerie (SMTP) et stockage S3 des pièces jointes, réglés et essayés depuis la console (ADM-60 à ADM-63, [ADR-0020](../decisions/adr-0020-pieces-jointes-s3-et-smtp-configurables.md)) | Core/Platform |
 | GET `/api/categories?practice=`, POST, PUT `/{id}`, DELETE `/{id}` | User (lecture), Manager (écriture) | Catégories d'incident et de problème (ADM-50 à ADM-52, SOC-27) | Core/Itil |
 | POST `/api/auth/login`, POST `/logout`, GET `/me` | — (`me` : User) | Authentification AD → cookie de session (jeton dans la réponse sur `returnToken`), déconnexion, utilisateur de la session | Core/Auth |
 | GET `/api/console` | User | Console par rôle, orientée action (blocs « à traiter » / « à suivre ») | Core/Pilotage |
