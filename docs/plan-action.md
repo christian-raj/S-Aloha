@@ -26,7 +26,7 @@ lot 2, 18 en lot 3 ([synthèse](reference/processus/readme.md)).
 
 | Ordre | Pratique | Règles | Chantier |
 |---|---|---|---|
-| 1 | Demandes | REQ-24, REQ-25 (tâches d'exécution du modèle), REQ-11 (clôture à la confirmation ou après 5 jours ouvrés), REQ-32 (enquête de satisfaction) | F3 |
+| ~~1~~ | Demandes | ~~REQ-24, REQ-25, REQ-11, REQ-32~~ — faites le 2026-10-23 ; indicateurs REQ-40 à REQ-43 (onglet Demandes du reporting) à suivre | F3 |
 | 2 | Incidents | INC-16 (incidents enfants), INC-26 (relance après 5 jours ouvrés En attente) | |
 | 3 | Problèmes, changements | PRB-32 (problème sans activité depuis 30 jours), CHG-27 (modèle standard suspendu après un échec) | |
 | 4 | Connaissances | KB-13 (retour des lecteurs), KB-15 (versions), KB-16 (quatre yeux) | |
@@ -37,8 +37,7 @@ lot 2, 18 en lot 3 ([synthèse](reference/processus/readme.md)).
 
 | Chantier | Décision à prendre |
 |---|---|
-| [F7](#7-feuille-de-route-fonctionnelle) — courriel (SOC-22) | Serveur d'envoi (SMTP de l'organisation, avec ou sans authentification), adresse d'expéditeur, préférences par utilisateur (aucun, immédiat, résumé quotidien) |
-| F7 — pièces jointes (SOC-25, puis RAG-12) | Stockage hors base (volume monté ou stockage objet), limite de taille (10 Mo prévus), types admis, antivirus éventuel ; indexation du texte (RAG-12) plus tard |
+| ~~F7~~ | **Décidé le 2026-10-23** : pièces jointes dans un stockage objet **compatible S3 (Garage)**, courriels par un **SMTP configurable** ; le paramétrage des deux se fait dans la **console d'administration**. Restent à fixer en réalisant : préférences de courriel par utilisateur (SOC-22), limite et types de fichiers (SOC-25, 10 Mo prévus) |
 | F12 — référentiels définis par l'Admin | Spécifier d'abord (format d'import, échelle, calcul des niveaux), sur le modèle de l'[ADR-0012](decisions/adr-0012-referentiel-nis2-structure-versionnee-texte-importe.md) |
 | F13 phase 4 — agent nomade | Forme de l'agent (service Windows et Linux, langage, signature du binaire), jeton d'enrôlement par périmètre, fréquence d'envoi ; preuves NIS 2 nourries par la découverte |
 
@@ -113,7 +112,7 @@ restantes sont spécifiées règle par règle dans [`reference/processus/`](refe
 | # | Processus | Enrichissement | Règles |
 |---|---|---|---|
 | ~~F2~~ | Incidents, Problèmes | ~~Service et catégorie tirés du catalogue et d'un référentiel~~ — soldé le 2026-10-19 | [SOC-27](reference/regles-metier.md#9-traçabilité-commentaires-administration), [SLM-10](reference/processus/gestion-des-niveaux-de-service.md) |
-| F3 | Demandes | Tâches d'exécution créées depuis le modèle (catalogue et modèles faits le 2026-10-14) | [REQ-24, REQ-25](reference/processus/gestion-des-demandes.md) |
+| ~~F3~~ | Demandes | ~~Tâches d'exécution créées depuis le modèle~~ — soldé le 2026-10-23 (REQ-24, REQ-25) | [REQ-24, REQ-25](reference/processus/gestion-des-demandes.md) |
 | F5 | Configuration | Import en masse, attributs par type de CI (rattachement CI ↔ service fait le 2026-10-13, service signalé « dégradé » le 2026-10-21) ; exactitude de la CMDB ([#124](https://github.com/christian-raj/S-Aloha/issues/124)), CI à vérifier dans la console ([#125](https://github.com/christian-raj/S-Aloha/issues/125)) | [CFG-16, CFG-30](reference/processus/gestion-de-la-configuration.md) |
 | F7 | Tous | Pièces jointes, notifications par courriel (notifications dans l'application et commentaires faits le 2026-10-13) | [SOC-22, SOC-25](reference/regles-metier.md#8-notifications) |
 | ~~F8~~ | Connaissances, Incidents | ~~Suggestion d'articles et cas similaires dès la saisie, relier en un clic~~ — soldé le 2026-10-21 | [INC-19](reference/processus/gestion-des-incidents.md), [RAG-09, RAG-11](reference/recherche.md) |

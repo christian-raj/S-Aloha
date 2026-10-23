@@ -92,11 +92,49 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         {
             e.OwnerType = "Group"; e.OwnerId = group; e.OwnerDisplayName = group;
         }
+        _tasksFrom = item.Id;
+        // Approbation d'une demande existante : tâches écrites avec elle ; à la création, après (OnCreatedAsync).
+        if (!creating) await CreateTasksAsync(e, save: false);
     }
+
+    /// <summary>REQ-24 : modèle dont les tâches prédéfinies sont à recopier après l'écriture.</summary>
+    private int? _tasksFrom;
+
+    /// <summary>
+    /// REQ-24 : à l'approbation, les tâches prédéfinies du modèle sont créées sur la demande, une
+    /// fois, chacune avec son responsable (à défaut, celui de la demande).
+    /// </summary>
+    private async Task CreateTasksAsync(ServiceRequest e, bool save = true)
+    {
+        if (_tasksFrom is not int itemId || await Db.RequestTasks.AnyAsync(t => t.RequestId == e.Id && t.FromCatalog)) return;
+        var templates = await Db.RequestCatalogTasks.AsNoTracking().Where(t => t.CatalogItemId == itemId).OrderBy(t => t.Order).ToListAsync();
+        if (templates.Count == 0) return;
+        Db.RequestTasks.AddRange(templates.Select(t => new RequestTask
+        {
+            RequestId = e.Id, Title = t.Title, Order = t.Order, FromCatalog = true, CreatedBy = Me,
+            OwnerType = t.OwnerId is null ? e.OwnerType : t.OwnerType, OwnerId = t.OwnerId ?? e.OwnerId,
+            OwnerDisplayName = t.OwnerId is null ? e.OwnerDisplayName : t.OwnerDisplayName
+        }));
+        if (save) await Db.SaveChangesAsync();
+    }
+
+    protected override Task OnCreatedAsync(ServiceRequest e) => CreateTasksAsync(e);
 
     protected override bool RequiresManager(string status) => status is "Approuvée" or "Rejetée";
 
     // Une demande rejetée est terminée : elle n'est ni traitée ni close.
+    /// <summary>REQ-25 : satisfaite, toutes ses tâches sont terminées ou annulées.</summary>
+    protected override async Task<string?> CheckStatusAsync(ServiceRequest e, string status)
+    {
+        if (status == "Satisfaite" && e.Status != "Satisfaite" && e.Id != 0)
+        {
+            var open = await Db.RequestTasks.Where(t => t.RequestId == e.Id && !RequestTask.Finished.Contains(t.Status)).Select(t => t.Title).ToListAsync();
+            if (open.Count > 0)
+                return $"Tâches encore ouvertes ({string.Join(", ", open.Select(t => $"« {t} »"))}) : les terminer ou les annuler avant de satisfaire la demande.";
+        }
+        return CheckStatus(e, status);
+    }
+
     protected override string? CheckStatus(ServiceRequest e, string status)
     {
         if (e.ApprovedAt is null && status is "En cours" or "Satisfaite" or "Close")
@@ -107,6 +145,9 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         // REQ-09 : annulation par le demandeur ou un gestionnaire.
         if (status == "Annulée" && !IsManager && !string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase))
             return "Seul le demandeur ou un gestionnaire peut annuler la demande.";
+        // REQ-11 : la clôture est la confirmation du demandeur (ou d'un gestionnaire) ; sinon automatique.
+        if (status == "Close" && e.Status != "Close" && !IsManager && !string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase))
+            return "Seul le demandeur ou un gestionnaire confirme la clôture ; sans contestation, elle est automatique 5 jours ouvrés après la satisfaction.";
         // REQ-10 : contestation d'une demande satisfaite — demandeur, bénéficiaire ou gestionnaire,
         // motivée, dans les 5 jours ouvrés.
         if (e.Status == "Satisfaite" && status == "En cours")
@@ -191,5 +232,122 @@ public class ServiceRequestsController(AppDbContext db) : RecordController<Servi
         if (dto.Target == "change") n.ToManagers(target, "change", "Changement demandé");
         await n.SaveAsync();
         return Ok(new { Request = View(e), Target = new { Type = dto.Target, target.Id, target.Reference } });
+    }
+
+    private async Task<(ServiceRequest? Request, IActionResult? Refusal)> OpenAsync(int id)
+    {
+        var e = await Db.ServiceRequests.FirstOrDefaultAsync(x => x.Id == id);
+        if (e is null || !await VisibleAsync(e)) return (null, NotFound());
+        await ScopeAsync();
+        ActOn(e.PerimeterId);
+        return (e, null);
+    }
+
+    /// <summary>REQ-24 : tâches d'exécution de la demande, dans l'ordre.</summary>
+    [HttpGet("{id:int}/tasks")]
+    public async Task<IActionResult> Tasks(int id)
+    {
+        var (e, refusal) = await OpenAsync(id);
+        if (e is null) return refusal!;
+        return Ok(await Db.RequestTasks.AsNoTracking().Where(t => t.RequestId == id).OrderBy(t => t.Order).ThenBy(t => t.Id)
+            .Select(t => RequestTaskView.From(t)).ToListAsync());
+    }
+
+    private static string? CheckTask(RequestTaskDto dto) =>
+        string.IsNullOrWhiteSpace(dto.Title) ? "Nommer la tâche."
+        : Allowed.Check("Statut de la tâche", dto.Status, RequestTask.Statuses, optional: true);
+
+    /// <summary>REQ-24 : on ajoute une tâche à une demande en cours de traitement.</summary>
+    [HttpPost("{id:int}/tasks")]
+    public async Task<IActionResult> AddTask(int id, RequestTaskDto dto)
+    {
+        var (e, refusal) = await OpenAsync(id);
+        if (e is null) return refusal!;
+        if (e.Status is not ("Approuvée" or "En cours")) return BadRequest(new { message = "Les tâches s'ajoutent à une demande approuvée ou en cours." });
+        if (CheckTask(dto) is { } error) return BadRequest(new { message = error });
+        var order = (await Db.RequestTasks.Where(t => t.RequestId == id).MaxAsync(t => (int?)t.Order) ?? 0) + 1;
+        var task = new RequestTask
+        {
+            RequestId = id, Title = dto.Title.Trim(), Order = order, CreatedBy = Me, Status = dto.Status ?? RequestTask.ToDo,
+            OwnerType = string.IsNullOrWhiteSpace(dto.OwnerId) ? null : dto.OwnerType ?? "User", OwnerId = string.IsNullOrWhiteSpace(dto.OwnerId) ? null : dto.OwnerId.Trim(),
+            OwnerDisplayName = string.IsNullOrWhiteSpace(dto.OwnerId) ? null : dto.OwnerDisplayName ?? dto.OwnerId.Trim()
+        };
+        if (RequestTask.Finished.Contains(task.Status)) task.CompletedAt = DateTime.UtcNow;
+        if (Lengths.Check(task) is { } length) return BadRequest(new { message = length });
+        Db.RequestTasks.Add(task);
+        await Db.SaveChangesAsync();
+        return Ok(RequestTaskView.From(task));
+    }
+
+    /// <summary>REQ-24 : avancement d'une tâche (statut, responsable, titre), tant que la demande n'est pas satisfaite.</summary>
+    [HttpPut("{id:int}/tasks/{taskId:int}")]
+    public async Task<IActionResult> UpdateTask(int id, int taskId, RequestTaskDto dto)
+    {
+        var (e, refusal) = await OpenAsync(id);
+        if (e is null) return refusal!;
+        var task = await Db.RequestTasks.FirstOrDefaultAsync(t => t.Id == taskId && t.RequestId == id);
+        if (task is null) return NotFound();
+        if (ServiceRequest.Done.Contains(e.Status)) return BadRequest(new { message = $"Demande {e.Status.ToLowerInvariant()} : ses tâches ne changent plus." });
+        if (CheckTask(dto) is { } error) return BadRequest(new { message = error });
+        task.Title = dto.Title.Trim();
+        (task.OwnerType, task.OwnerId, task.OwnerDisplayName) = string.IsNullOrWhiteSpace(dto.OwnerId) ? (null, null, null)
+            : (dto.OwnerType ?? "User", dto.OwnerId.Trim(), dto.OwnerDisplayName ?? dto.OwnerId.Trim());
+        var status = dto.Status ?? task.Status;
+        task.CompletedAt = RequestTask.Finished.Contains(status) ? task.CompletedAt ?? DateTime.UtcNow : null;
+        task.Status = status;
+        if (Lengths.Check(task) is { } length) return BadRequest(new { message = length });
+        await Db.SaveChangesAsync();
+        return Ok(RequestTaskView.From(task));
+    }
+
+    /// <summary>Supprimer une tâche ajoutée par erreur : gestionnaire (les tâches du modèle s'annulent).</summary>
+    [HttpDelete("{id:int}/tasks/{taskId:int}")]
+    public async Task<IActionResult> DeleteTask(int id, int taskId)
+    {
+        var (e, refusal) = await OpenAsync(id);
+        if (e is null) return refusal!;
+        if (!IsManager) return Forbid();
+        var task = await Db.RequestTasks.FirstOrDefaultAsync(t => t.Id == taskId && t.RequestId == id);
+        if (task is null) return NotFound();
+        if (task.FromCatalog) return BadRequest(new { message = "Une tâche du modèle ne se supprime pas : l'annuler." });
+        Db.RequestTasks.Remove(task);
+        await Db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    /// <summary>REQ-32 : le demandeur (ou le bénéficiaire) note la demande close, de 1 à 5, avec un commentaire facultatif.</summary>
+    [HttpPost("{id:int}/satisfaction")]
+    public async Task<IActionResult> Satisfaction(int id, SatisfactionDto dto)
+    {
+        var (e, refusal) = await OpenAsync(id);
+        if (e is null) return refusal!;
+        if (!string.Equals(e.CreatedBy, Me, StringComparison.OrdinalIgnoreCase) && !string.Equals(e.RequestedFor, Me, StringComparison.OrdinalIgnoreCase))
+            return StatusCode(403, new { message = "L'enquête de satisfaction est réservée au demandeur et au bénéficiaire." });
+        if (e.Status != "Close") return BadRequest(new { message = "L'enquête de satisfaction se remplit une fois la demande close." });
+        if (dto.Score is < 1 or > 5) return BadRequest(new { message = "Noter la demande de 1 à 5." });
+        (e.SatisfactionScore, e.SatisfactionComment, e.SatisfactionAt) = (dto.Score, string.IsNullOrWhiteSpace(dto.Comment) ? null : dto.Comment.Trim(), DateTime.UtcNow);
+        e.UpdatedAt = DateTime.UtcNow;
+        await Db.SaveChangesAsync();
+        return Ok(View(e));
+    }
+}
+
+/// <summary>
+/// REQ-11 : une demande satisfaite sans contestation depuis 5 jours ouvrés est close
+/// automatiquement ; le demandeur est prévenu (et invité à l'enquête, REQ-32).
+/// </summary>
+public static class RequestAutoClose
+{
+    public static async Task<int> RunAsync(AppDbContext db, Notifier notify, DateTime now)
+    {
+        var due = (await db.ServiceRequests.Where(r => r.Status == "Satisfaite" && r.FulfilledAt != null).ToListAsync())
+            .Where(r => now > Dates.AddBusinessDays(r.FulfilledAt!.Value, ServiceRequest.ContestBusinessDays)).ToList();
+        foreach (var r in due)
+        {
+            (r.Status, r.ClosedAt, r.AutoClosed, r.UpdatedAt) = ("Close", now, true, now);
+            notify.ToCreator(r, "request", "Demande close automatiquement");
+        }
+        if (due.Count > 0) await db.SaveChangesAsync();
+        return due.Count;
     }
 }

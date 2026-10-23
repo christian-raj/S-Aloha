@@ -110,7 +110,13 @@ export const api = {
   requests: {
     ...records('/requests'),
     // REQ-12 : requalification en changement ou en incident (la demande est annulée).
-    requalify: (id, dto) => request(`/requests/${id}/requalify`, { method: 'POST', body: JSON.stringify(dto) })
+    requalify: (id, dto) => request(`/requests/${id}/requalify`, { method: 'POST', body: JSON.stringify(dto) }),
+    // REQ-24 : tâches d'exécution ; REQ-32 : enquête de satisfaction.
+    tasks: id => request(`/requests/${id}/tasks`),
+    addTask: (id, dto) => request(`/requests/${id}/tasks`, { method: 'POST', body: JSON.stringify(dto) }),
+    updateTask: (id, taskId, dto) => request(`/requests/${id}/tasks/${taskId}`, { method: 'PUT', body: JSON.stringify(dto) }),
+    removeTask: (id, taskId) => request(`/requests/${id}/tasks/${taskId}`, { method: 'DELETE' }),
+    rate: (id, dto) => request(`/requests/${id}/satisfaction`, { method: 'POST', body: JSON.stringify(dto) })
   },
   changes: {
     ...records('/changes'),

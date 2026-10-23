@@ -47,6 +47,8 @@ créateur = demandeur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 | `RequestedItem` | texte 200 | ✔ | Objet demandé ; repris du modèle s'il est vide | ✅ |
 | `ServiceId`, `AffectedService` | lien, texte 150 | | Service du catalogue concerné et son nom recopié ([SLM-10](gestion-des-niveaux-de-service.md)) | ✅ |
 | `RequestedFor`, `RequestedForDisplayName` | AD | | Bénéficiaire ; par défaut le demandeur (REQ-07) | ✅ |
+| `SatisfactionScore`, `SatisfactionComment`, `SatisfactionAt` | entier 1 à 5, texte, date | facultatif | Enquête de satisfaction du demandeur ou du bénéficiaire, une fois la demande close (REQ-32) | ✅ |
+| `AutoClosed` | booléen | auto | Close automatiquement 5 jours ouvrés après la satisfaction (REQ-11) | ✅ |
 | `ContestReason` | texte | à la contestation | Motif de la contestation d'une demande satisfaite, effacé à la satisfaction suivante (REQ-10) | ✅ |
 | `CancelReason` | texte | à la requalification | Motif d'annulation, avec la référence du changement ou de l'incident créé (REQ-12) | ✅ |
 | `DueDate` | date | | Échéance : calculée depuis le modèle à l'approbation (REQ-22) ; souhaitée, sans modèle à délai cible | ✅ |
@@ -58,11 +60,15 @@ créateur = demandeur, dates) : [socle](../regles-metier.md#5-règles-communes-a
 
 **Modèle de demande** (`RequestCatalogItems`, ✅ REQ-20) : nom (objet demandé), description,
 service du catalogue, approbation requise (oui/non), délai cible (heures de service), groupe
-d'exécution (AD), actif/inactif ; tâches prédéfinies 🔜 REQ-24. Un modèle se désactive plutôt
+d'exécution (AD), actif/inactif ; tâches prédéfinies (titre, responsable facultatif, ordre) ✅ REQ-24. Un modèle se désactive plutôt
 que de se supprimer (suppression refusée tant qu'une demande en vient).
 
-**Tâche d'exécution** (`RequestTasks`, 🔜 REQ-24) : titre, responsable AD, statut (À faire,
-En cours, Terminée, Annulée), ordre.
+**Tâche d'exécution** (`RequestTasks`, ✅ REQ-24) : titre, responsable AD (à défaut, celui de la
+demande), statut (À faire, En cours, Terminée, Annulée), ordre, venue du modèle ou ajoutée.
+Les tâches du modèle sont recopiées une fois, à l'approbation (ou à la création d'une demande
+pré-approuvée) ; on en ajoute à une demande approuvée ou en cours ; elles ne changent plus
+une fois la demande satisfaite. Une tâche ajoutée se supprime (gestionnaire) ; une tâche du
+modèle s'annule.
 
 ## 4. Cycle de vie
 
@@ -98,9 +104,9 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | Soumise → Rejetée | Manager | Motif de rejet | | ✅ (motif) |
 | Soumise, Approuvée → Annulée | Demandeur, Manager | Pas encore En cours | `CancelledAt` | ✅ REQ-09 |
 | Approuvée → En cours | Tous | Responsable renseigné | | ✅ (approbation exigée) / 🔜 (responsable) |
-| En cours → Satisfaite | Responsable, Manager | Toutes les tâches Terminée ou Annulée | `FulfilledAt` | ✅ (horodatage) / 🔜 REQ-25 |
+| En cours → Satisfaite | Responsable, Manager | Toutes les tâches Terminée ou Annulée | `FulfilledAt` | ✅ REQ-25 |
 | Satisfaite → En cours | Demandeur, bénéficiaire, Manager | Motif (`ContestReason`) ; dans les 5 jours ouvrés | `FulfilledAt` effacé ; responsable notifié | ✅ REQ-10 |
-| Satisfaite → Close | Demandeur, Manager, ou auto après 5 jours ouvrés | | `ClosedAt` | ✅ (horodatage) / 🔜 REQ-11 |
+| Satisfaite → Close | Demandeur, Manager, ou auto après 5 jours ouvrés | | `ClosedAt` ; `AutoClosed` si automatique, demandeur notifié | ✅ REQ-11 |
 | Rejetée, Annulée, Close → … | — | Statuts finaux | | ✅ REQ-08 |
 
 ## 5. Règles de gestion
@@ -117,7 +123,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | REQ-08 | **Transitions contraintes** selon le § 4 (SOC-05) ; Rejetée, Annulée et Close sont finales | ✅ | 1 |
 | REQ-09 | Statut **Annulée** : le demandeur (ou un Manager) annule une demande Soumise ou Approuvée, tant qu'elle n'est pas En cours | ✅ | 1 |
 | REQ-10 | **Contestation** : dans les 5 jours ouvrés, le demandeur ou le bénéficiaire renvoie une demande Satisfaite En cours, avec motif | ✅ | 2 |
-| REQ-11 | **Clôture** à la confirmation du demandeur, ou automatique 5 jours ouvrés après Satisfaite | 🔜 | 3 |
+| REQ-11 | **Clôture** à la confirmation du demandeur, ou automatique 5 jours ouvrés après Satisfaite | ✅ | 3 |
 | REQ-12 | Une demande qui révèle un **besoin non standard** se requalifie : créer un changement (ou un incident) relié, puis annuler la demande avec ce motif (`CancelReason`, qui cite la référence créée) ; demandeur ou gestionnaire, demande Soumise ou Approuvée (mêmes droits que REQ-09) | ✅ | 2 |
 
 ### Catalogue de demandes
@@ -128,8 +134,8 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 | REQ-21 | Un modèle **sans approbation** crée la demande directement **Approuvée** (« Modèle pré-approuvé »), comme un changement standard | ✅ | |
 | REQ-22 | **Échéance** = soumission (ou approbation si requise) + délai cible du modèle, en heures de service (SLM-14) ; modifiable par un Manager seulement | ✅ (calculée à l'approbation, ou à la création pré-approuvée, dans le calendrier du service du modèle) | |
 | REQ-23 | Le **groupe d'exécution** du modèle devient le responsable de la demande approuvée | ✅ (si la demande n'a pas encore de responsable) | |
-| REQ-24 | **Tâches d'exécution** : les tâches prédéfinies du modèle sont créées à l'approbation, chacune avec son responsable ; on peut en ajouter | 🔜 | 3 |
-| REQ-25 | **Satisfaite** exige que toutes les tâches soient Terminée ou Annulée | 🔜 | 3 |
+| REQ-24 | **Tâches d'exécution** : les tâches prédéfinies du modèle sont créées à l'approbation, chacune avec son responsable ; on peut en ajouter | ✅ | 3 |
+| REQ-25 | **Satisfaite** exige que toutes les tâches soient Terminée ou Annulée | ✅ | 3 |
 
 ## 6. Délais, calculs et alertes
 
@@ -137,7 +143,7 @@ approbation réservée aux gestionnaires ; traitement seulement après approbati
 |---|---|---|---|
 | REQ-30 | Une demande est **en retard** si son échéance est passée et qu'elle n'est ni Satisfaite, ni Close, ni Rejetée, ni Annulée ; même règle de date que PRB-19 (en retard le lendemain) | ✅ (`overdue` sur la fiche et le registre ; console, Relances des gestionnaires ; notification au responsable et aux gestionnaires, une fois) | |
 | REQ-31 | Notifications (SOC-21) : soumission → approbateurs ; approbation ou rejet → demandeur ; affectation → responsable ; satisfaction → demandeur et bénéficiaire | ✅ | |
-| REQ-32 | **Enquête de satisfaction** à la clôture (note 1 à 5, commentaire), facultative | 🔜 | 3 |
+| REQ-32 | **Enquête de satisfaction** à la clôture (note 1 à 5, commentaire), facultative | ✅ | 3 |
 
 ## 7. Liens avec les autres pratiques
 
@@ -169,6 +175,8 @@ prises en charge depuis plus d'un jour ouvré (Relances, lot 2).
 | `GET /api/requests` (filtres `status`, `q`, `owner`), `GET /api/requests/{id}` | User | Registre, fiche |
 | `POST /api/requests`, `PUT /api/requests/{id}` | User (Approuvée/Rejetée : Manager) | Création, modification, transitions |
 | `DELETE /api/requests/{id}` | Admin | Suppression |
+| `GET/POST /api/requests/{id}/tasks`, `PUT …/tasks/{taskId}`, `DELETE …/tasks/{taskId}` (Manager) | User | Tâches d'exécution (REQ-24, REQ-25) |
+| `POST /api/requests/{id}/satisfaction` (`score`, `comment`) | Demandeur, bénéficiaire | Enquête de satisfaction d'une demande close (REQ-32) |
 | `POST /api/requests/{id}/requalify` (`target` : `change` ou `incident`, `reason`) | Demandeur, Manager | Requalification d'un besoin non standard : changement ou incident créé et relié, demande annulée (REQ-12) |
 | `GET /api/request-catalog` (`?all=true` : désactivés compris), `GET /api/request-catalog/{id}` | User | Catalogue de demandes (REQ-20) |
 | `POST/PUT /api/request-catalog[/{id}]` | Manager | Tenue du catalogue |

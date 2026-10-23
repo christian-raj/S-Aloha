@@ -20,6 +20,7 @@ Sujets traités, un fichier par jour ([format](../protocole-documentation.md#3-j
 
 | Date | Journal |
 |---|---|
+| 2026-10-23 | [journal-2026-10-23](journal-2026-10-23.md) |
 | 2026-10-21 | [journal-2026-10-21](journal-2026-10-21.md) |
 | 2026-10-19 | [journal-2026-10-19](journal-2026-10-19.md) |
 | 2026-10-16 | [journal-2026-10-16](journal-2026-10-16.md) |

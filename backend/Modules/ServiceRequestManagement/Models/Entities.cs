@@ -44,6 +44,12 @@ public class ServiceRequest : Record, IServiceBound
 
     /// <summary>REQ-10 : délai de contestation d'une demande satisfaite, en jours ouvrés.</summary>
     public const int ContestBusinessDays = 5;
+    /// <summary>REQ-32 : enquête de satisfaction (note 1 à 5, commentaire), facultative, à la clôture.</summary>
+    public int? SatisfactionScore { get; set; }
+    public string? SatisfactionComment { get; set; }
+    public DateTime? SatisfactionAt { get; set; }
+    /// <summary>REQ-11 : clôture automatique, 5 jours ouvrés après la satisfaction sans contestation.</summary>
+    public bool AutoClosed { get; set; }
 
     /// <summary>REQ-30 : en retard le lendemain de l'échéance, tant qu'elle n'est ni satisfaite, ni close, ni rejetée, ni annulée.</summary>
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
@@ -77,7 +83,9 @@ public class RequestCatalogItem
     [MaxLength(200)] public string CreatedBy { get; set; } = "";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    /// <summary>REQ-24 : tâches prédéfinies, dans l'ordre.</summary>
+    public List<RequestCatalogTask> Tasks { get; set; } = [];
 }
 
 public record RequestCatalogItemDto(string Name, string? Description, int? ServiceId, bool RequiresApproval,
-    int? TargetHours, string? FulfillmentGroup, bool Active = true);
+    int? TargetHours, string? FulfillmentGroup, bool Active = true, List<RequestCatalogTaskDto>? Tasks = null);

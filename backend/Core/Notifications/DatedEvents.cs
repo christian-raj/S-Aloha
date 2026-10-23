@@ -168,6 +168,9 @@ public class DatedEvents(AppDbContext db, Notifier notify)
             }
         }
 
+        // REQ-11 : clôture automatique des demandes satisfaites sans contestation depuis 5 jours ouvrés.
+        count += await Modules.ServiceRequestManagement.RequestAutoClose.RunAsync(db, notify, now);
+
         // SLM-23, CSI-20 : mois précédent sous la cible → gestionnaires, amélioration proposée.
         count += await SAloha.Api.Core.Itil.SlaCompliance.AlertAsync(db, notify, now, (t, id, ev) => done.Add((t, id, ev)));
 
