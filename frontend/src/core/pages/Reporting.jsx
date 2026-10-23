@@ -5,6 +5,7 @@ import usePerimeters, { perimeterName } from '../usePerimeters'
 import Overview, { overviewCsv } from './reporting/Overview'
 import IncidentsTab, { incidentsCsv } from './reporting/IncidentsTab'
 import ProblemsTab, { problemsCsv } from './reporting/ProblemsTab'
+import RequestsTab, { requestsCsv } from './reporting/RequestsTab'
 import ChangesProjectsTab, { changesProjectsCsv } from './reporting/ChangesProjectsTab'
 import ComplianceTab, { complianceCsv } from './reporting/ComplianceTab'
 import ConfigurationTab, { configurationCsv } from './reporting/ConfigurationTab'
@@ -18,6 +19,7 @@ import { date, downloadCsv } from './reporting/exportCsv'
 export const TABS = [
   { id: 'overview', label: 'Synthèse globale', load: 'overview', View: Overview, csv: overviewCsv, service: true },
   { id: 'incidents', label: 'Incidents', load: 'incidents', View: IncidentsTab, csv: incidentsCsv, badge: 'incidents', service: true },
+  { id: 'requests', label: 'Demandes', load: 'requests', View: RequestsTab, csv: requestsCsv, badge: 'requests', service: true },
   { id: 'problems', label: 'Problèmes', load: 'problems', View: ProblemsTab, csv: problemsCsv, badge: 'problems', service: true },
   { id: 'changes', label: 'Changements & projets', load: 'changes-projects', View: ChangesProjectsTab, csv: changesProjectsCsv, badge: 'changesProjects', service: false },
   { id: 'compliance', label: 'Conformité & métriques', load: 'compliance', View: ComplianceTab, csv: complianceCsv, badge: 'compliance', service: true },

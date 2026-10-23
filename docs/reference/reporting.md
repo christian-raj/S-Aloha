@@ -21,8 +21,8 @@ Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=&perime
 
 - **Période** : 7, 30 (défaut), 90 jours, 12 mois ou personnalisée ; bornes **incluses**,
   aujourd'hui compris ([SOC-18](regles-metier.md#7-reporting)).
-- **Service** : nom d'un service du catalogue. Il filtre les **incidents** et les
-  **problèmes** (service affecté), pas les changements ni les projets, qui n'ont pas de
+- **Service** : nom d'un service du catalogue. Il filtre les **incidents**, les
+  **demandes** et les **problèmes** (service affecté), pas les changements ni les projets, qui n'ont pas de
   service ; les onglets Changements & projets et Configuration & inventaire l'ignorent.
 - **Périmètre** ([PER-09](perimetres.md)) : les indicateurs portent sur les périmètres de
   l'utilisateur (tous pour l'Admin) ; le filtre, affiché dès qu'on en a plusieurs, en retient
@@ -32,6 +32,7 @@ Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=&perime
 |---|---|---|
 | Synthèse globale | `GET /api/reports/dashboard/overview` | REP-01 à REP-07 |
 | Incidents | `GET /api/reports/dashboard/incidents` | REP-10 à REP-15 |
+| Demandes | `GET /api/reports/dashboard/requests` | REP-60 à REP-63 |
 | Problèmes | `GET /api/reports/dashboard/problems` | REP-20 à REP-25 |
 | Changements & projets | `GET /api/reports/dashboard/changes-projects` | REP-30 à REP-34 |
 | Conformité & métriques | `GET /api/reports/dashboard/compliance` | REP-40 à REP-44 |
@@ -50,7 +51,7 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 | REP-04 | **Matrice des priorités** des incidents et problèmes ouverts : P1 Critique, P2 Élevée, P3 Moyenne, P4 Basse | ✅ | |
 | REP-05 | **État de tolérance** d'un projet (délai, coût) : même calcul que la synthèse du projet ([PRJ-31, PRJ-32](processus/gestion-de-projet.md)) | ✅ | |
 | REP-06 | **Projets à risque ou en retard** : liste avec leur état de tolérance et le lien vers la fiche | ✅ | |
-| REP-07 | **Badges** des onglets : Incidents = majeurs ouverts + ouverts hors SLA (rouge s'il y a un majeur) ; Problèmes = RCA en attente (REP-22) ; Changements & projets = projets hors tolérance + changements en échec (rouge s'il y a un projet hors tolérance) ; Conformité = SLA à revoir ; Configuration = actifs matériels en fin de support dépassée + actifs du sas de staging à rapprocher ou en conflit, pour les gestionnaires (rouge s'il y a une fin de support dépassée) | ✅ | |
+| REP-07 | **Badges** des onglets : Incidents = majeurs ouverts + ouverts hors SLA (rouge s'il y a un majeur) ; Demandes = demandes en retard (REQ-30) ; Problèmes = RCA en attente (REP-22) ; Changements & projets = projets hors tolérance + changements en échec (rouge s'il y a un projet hors tolérance) ; Conformité = SLA à revoir ; Configuration = actifs matériels en fin de support dépassée + actifs du sas de staging à rapprocher ou en conflit, pour les gestionnaires (rouge s'il y a une fin de support dépassée) | ✅ | |
 | REP-08 | **Exports** : CSV de l'onglet actif (séparateur « ; », BOM UTF-8, décimales à la française : s'ouvre tel quel dans Excel) ; **PDF** par l'impression du navigateur, tous les onglets chargés puis imprimés à la suite | ✅ | |
 
 ## 4. Incidents
@@ -108,7 +109,19 @@ périmètres qu'ils gèrent ([CFG-40](processus/gestion-de-la-configuration.md))
 | REP-52 | **Obsolescence** : actifs matériels par état de support, actifs en fin de support dépassée ou dans les 6 mois (25 au plus, du plus ancien au plus récent), avec la source de la date ([CFG-38, CFG-47](processus/gestion-de-la-configuration.md)) ; en alerte s'il y en a une dépassée | ✅ | |
 | REP-53 | **Découverte** (gestionnaires) : actifs à rapprocher, en conflit, inconnus (Shadow IT, 25 derniers listés), rapprochés ; actifs par source ; nouveaux actifs et rapprochements par jour de la période ([CFG-36, CFG-37, CFG-42](processus/gestion-de-la-configuration.md)) | ✅ | |
 
-## 9. Limites connues
+## 9. Demandes
+
+Demandes de mes périmètres, filtrées par service ; « Hors catalogue » regroupe les demandes
+sans modèle ([gestion des demandes](processus/gestion-des-demandes.md), § 8).
+
+| ID | Règle | Statut | Lot |
+|---|---|---|---|
+| REP-60 | **Indicateurs** : délai moyen de traitement en heures (`FulfilledAt − CreatedAt`, demandes satisfaites sur la période, REQ-40) ; **respect des délais** (satisfaites au plus tard à l'échéance / satisfaites ayant une échéance, REQ-41) ; **taux d'approbation** (approuvées / approuvées + rejetées, décisions de la période ; un modèle pré-approuvé ne compte pas ; une demande rejetée l'est à sa dernière modification, REQ-42) ; **satisfaction moyenne** sur 5 (avis de la période, REQ-43) ; demandes ouvertes et en retard | ✅ | 2 |
+| REP-61 | **Par modèle du catalogue** : demandes créées, délai moyen, respect des délais, approbation, satisfaction | ✅ | 2 |
+| REP-62 | **Avis de satisfaction** par note (1 à 5) | ✅ | 3 |
+| REP-63 | **Demandes en retard** ([REQ-30](processus/gestion-des-demandes.md)) : 25 au plus, de l'échéance la plus ancienne à la plus récente, avec le lien vers la fiche ; export CSV de l'onglet | ✅ | 2 |
+
+## 10. Limites connues
 
 - Les **heures** des échéances SLA sont calendaires ; heures de service et suspension En
   attente viendront avec [INC-22](processus/gestion-des-incidents.md).

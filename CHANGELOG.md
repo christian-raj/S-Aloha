@@ -14,6 +14,10 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
 
 ### Ajouté
 
+- **Reporting : onglet Demandes** (REP-60 à REP-63, indicateurs REQ-40 à REQ-43) : délai moyen
+  de traitement, respect des délais, taux d'approbation et satisfaction moyenne, globalement
+  et par modèle du catalogue ; avis par note ; demandes en retard, aussi en badge de l'onglet.
+
 - **Demandes : tâches d'exécution, clôture, satisfaction** (REQ-24, REQ-25, REQ-11, REQ-32) :
   un modèle du catalogue porte ses tâches prédéfinies, créées sur la demande à l'approbation
   (onglet Tâches) ; une demande n'est satisfaite que ses tâches terminées ou annulées ; le
