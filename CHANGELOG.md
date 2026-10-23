@@ -2,15 +2,18 @@
 
 Les changements notables de chaque version, pour qui installe et met à jour S-Aloha.
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) ; versions selon
-le [versionnage sémantique](https://semver.org/lang/fr/). Tant que le projet est en `0.x`,
-une version mineure peut modifier la configuration ou le schéma : lire la section
-**Mise à jour** avant d'installer.
+le [versionnage sémantique](https://semver.org/lang/fr/).
+
+**Aucune version publiée pour l'instant** : la première, stable, sortira à la fin du plan
+d'action en cours. Les préversions 0.1.0 et 0.2.0 ont été retirées le 2026-10-23 ; leurs
+sections, conservées ci-dessous, sont devenues des étapes datées du développement. Lire la
+section **Mise à jour** de chaque étape avant de mettre à jour une installation.
 
 Le détail au jour le jour (sujets traités, raisons, commits) est dans les
-[journaux](docs/archives/readme.md) ; les notes complètes de chaque version dans les
-[releases](https://github.com/christian-raj/S-Aloha/releases).
+[journaux](docs/archives/readme.md) ; les notes complètes de chaque version, une fois
+publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases).
 
-## [Non publié]
+## Non publié
 
 ### Ajouté
 
@@ -192,7 +195,7 @@ Le détail au jour le jour (sujets traités, raisons, commits) est dans les
   requête. Derrière un reverse proxy TLS, transmettre `X-Forwarded-Proto` pour un cookie
   `Secure`.
 
-## [0.2.0] — 2026-10-19
+## Étape du 2026-10-19 (ex-préversion 0.2.0)
 
 Toutes les pratiques sortent du stade MVP ; la configuration gagne le portefeuille
 applicatif, les actifs matériels et la découverte automatique du réseau ; l'API se durcit
@@ -525,9 +528,9 @@ section Mise à jour avant d'installer** : migrations de base, nouveaux secrets 
   mais leur prochaine modification exigera ces champs : les compléter depuis l'inventaire
   (filtre « Gouvernance incomplète »).
 
-## [0.1.0] — 2026-10-06
+## Étape du 2026-10-06 (ex-préversion 0.1.0)
 
-Première version publique.
+Première ouverture publique du dépôt.
 
 ### Ajouté
 
@@ -555,7 +558,3 @@ Première version publique.
 - Configuration par défaut destinée à l'évaluation : suivre la
   [liste de durcissement](docs/reference/securite.md#points-de-durcissement-avant-production)
   avant toute mise en production.
-
-[Non publié]: https://github.com/christian-raj/S-Aloha/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/christian-raj/S-Aloha/releases/tag/v0.2.0
-[0.1.0]: https://github.com/christian-raj/S-Aloha/releases/tag/v0.1.0
