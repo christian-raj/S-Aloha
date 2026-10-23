@@ -191,9 +191,9 @@ Accueil des contributeurs et financement du projet ; canaux et contreparties pub
 
 | # | Chantier | Qui |
 |---|---|---|
-| C2 | Code de conduite (attend l'adresse de contact dédiée), `.github/FUNDING.yml` (après C6) | code + action |
+| ~~C2~~ | ~~Code de conduite, `.github/FUNDING.yml`~~ — faits le 2026-10-23 (Contributor Covenant 2.1, signalement privé par « Report content » de GitHub : activer **Settings › Moderation options › Reported content** du dépôt) | code + action |
 | C5 | Tableau GitHub Projects public alimenté par ce plan (le jeton `gh` du mainteneur doit recevoir le droit `project` : `gh auth refresh -s project`) | action |
-| C6 | **Activer GitHub Sponsors** (profil du mainteneur : informations bancaires et fiscales), niveaux et contreparties ([ADR-0011](decisions/adr-0011-financement-sponsoring-et-services.md)) | action |
-| C7 | Lancement : LinuxFr, Reddit, AlternativeTo, Framalibre (textes prêts) ; téléverser l'image de partage `docs/screenshots/partage-1280x640.png` (Settings → Social preview) ; awesome-selfhosted **4 mois après la première version stable** (première version de plus de 4 mois exigée ; les préversions retirées ne comptent plus) | action |
+| C6 | ~~Activer GitHub Sponsors~~ (profil public, objectif « 5 monthly sponsors ») ; **niveaux** décidés le 2026-10-23 — Soutien 5 $, Bronze 25 $, Argent 100 $, Or 500 $ par mois ([Soutenir](soutenir.md)) — à créer sur la page Sponsors (jeton `gh` avec le droit `user` : `gh auth refresh -h github.com -s user`) ([ADR-0011](decisions/adr-0011-financement-sponsoring-et-services.md)) | action |
+| C7 | Lancement **à la version stable** (décision du 2026-10-23) : LinuxFr, Reddit, AlternativeTo, Framalibre (textes prêts) ; téléverser l'image de partage `docs/screenshots/partage-1280x640.png` (Settings → Social preview) ; awesome-selfhosted **4 mois après la première version stable** (première version de plus de 4 mois exigée ; les préversions retirées ne comptent plus) | action |
 | C8 | Démo en ligne réinitialisée chaque nuit | décision |
 | C9 | `GOVERNANCE.md` dès le deuxième contributeur régulier | décision |
