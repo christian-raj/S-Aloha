@@ -36,7 +36,7 @@
 | ID | Règle | Statut |
 |---|---|---|
 | ADM-20 | **État des composants**, chacun « OK », « Dégradé » ou « Hors service » avec un message et la durée de la vérification : base (connexion, migrations en attente), annuaire (liaison du compte de service), service d'embeddings ([RAG-08](recherche.md)), coffre de la découverte (clé configurée), messagerie et stockage des pièces jointes (activés ou non, ADM-63), tâches de fond (dernier relevé des notifications datées, tâches de découverte en échec) | ✅ |
-| ADM-21 | **Version** déployée (numéro et commit), date de démarrage de l'API, environnement ; aucun secret ni chaîne de connexion affichés. Les sondes publiques `/health/live` et `/health/ready` sont distinctes ([#121](https://github.com/christian-raj/S-Aloha/issues/121)) | ✅ |
+| ADM-21 | **Version** déployée (numéro et commit), date de démarrage de l'API, environnement ; aucun secret ni chaîne de connexion affichés. Les sondes publiques `/health/live` et `/health/ready` sont distinctes ([#121](https://github.com/chrraj7/S-Aloha/issues/121)) | ✅ |
 
 ## 4. Journal d'audit global
 

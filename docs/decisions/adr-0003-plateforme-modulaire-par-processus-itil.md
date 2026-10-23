@@ -4,7 +4,7 @@
 
 - **Date** : 2026-10-06
 - **Statut** : accepté — amendé le 2026-10-06 (voir l'addendum)
-- **Décideur** : Christian Rajaonary
+- **Décideur** : Leipa
 
 ## Contexte
 

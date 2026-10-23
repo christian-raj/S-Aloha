@@ -4,7 +4,7 @@
 
 - **Date** : 2026-10-23
 - **Statut** : accepté le 2026-10-23
-- **Décideur** : Christian Rajaonary
+- **Décideur** : Leipa
 
 ## Contexte
 

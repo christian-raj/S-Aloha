@@ -25,7 +25,7 @@ travail). Sources :
 
 - `git log` depuis le dernier passage, `git status`, `git diff HEAD` ;
 - les décisions prises en séance (validées par le décideur) ;
-- les défauts ouverts ou fermés dans [GitHub Issues](https://github.com/christian-raj/S-Aloha/issues).
+- les défauts ouverts ou fermés dans [GitHub Issues](https://github.com/chrraj7/S-Aloha/issues).
 
 Si rien n'a changé, la routine s'arrête là.
 
@@ -96,7 +96,7 @@ la documentation mise à jour.
 
 ## 6. Publier le wiki
 
-Le [wiki GitHub](https://github.com/christian-raj/S-Aloha/wiki) est un **miroir généré**
+Le [wiki GitHub](https://github.com/chrraj7/S-Aloha/wiki) est un **miroir généré**
 de `docs/` : il offre une lecture navigable (accueil, barre latérale, une page par
 document de référence, par ADR, plan d'action et protocole), mais la documentation fait
 foi dans le dépôt ([ADR-0002](decisions/adr-0002-documentation-dans-le-depot.md)). Chaque
@@ -107,7 +107,7 @@ Le wiki se régénère **après chaque poussée de `main` qui touche `docs/`**, 
 décrive jamais un état que le dépôt public n'a pas encore :
 
 ```bash
-git clone git@github.com:christian-raj/S-Aloha.wiki.git /tmp/s-aloha-wiki   # une fois
+git clone git@github.com:chrraj7/S-Aloha.wiki.git /tmp/s-aloha-wiki   # une fois
 git -C /tmp/s-aloha-wiki pull
 python3 scripts/sync-wiki.py /tmp/s-aloha-wiki
 git -C /tmp/s-aloha-wiki add -A
