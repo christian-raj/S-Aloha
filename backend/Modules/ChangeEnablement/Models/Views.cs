@@ -120,7 +120,13 @@ public record StandardChangeModelView(
     bool Active,
     string? CreatedBy,
     DateTime CreatedAt,
-    DateTime UpdatedAt)
+    DateTime UpdatedAt,
+    DateTime? SuspendedAt = null,
+    int? SuspendedByChangeId = null,
+    string? SuspendedByChange = null,
+    DateTime? ReviewedAt = null,
+    string? ReviewedBy = null,
+    string? ReviewNote = null)
 {
     public static StandardChangeModelView From(StandardChangeModel e) => new(
         e.Id,
@@ -132,5 +138,11 @@ public record StandardChangeModelView(
         e.Active,
         e.CreatedBy,
         e.CreatedAt,
-        e.UpdatedAt);
+        e.UpdatedAt,
+        e.SuspendedAt,
+        e.SuspendedByChangeId,
+        e.SuspendedByChange,
+        e.ReviewedAt,
+        e.ReviewedBy,
+        e.ReviewNote);
 }

@@ -203,6 +203,13 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                 .OrderBy(r => r.DueDate)
                 .Select(r => new Item("request", r.Id, r.Reference, r.Title, r.Status)).ToListAsync();
 
+            // CHG-27 : modèles standard suspendus après un échec, à revoir (le changement en échec y mène).
+            var suspended = await db.StandardChangeModels.AsNoTracking().Where(m => m.SuspendedAt != null && m.SuspendedByChangeId != null)
+                .ToDictionaryAsync(m => m.SuspendedByChangeId!.Value, m => m.Name);
+            decisions.AddRange((await db.Changes.AsNoTracking()
+                    .Where(c => suspended.Keys.Contains(c.Id) && (all || managed.Contains(c.PerimeterId))).ToListAsync())
+                .Select(c => new Item("change", c.Id, c.Reference, c.Title, $"Modèle standard « {suspended[c.Id]} » suspendu : revue à faire")));
+
             // PRJ-34 : projets en cadrage, à valider par un gestionnaire.
             decisions.AddRange(await db.Projects.AsNoTracking()
                 .Where(p => p.Status == "Cadrage" && (all || managed.Contains(p.PerimeterId))).OrderBy(p => p.CreatedAt)
@@ -265,6 +272,10 @@ public class ConsoleController(AppDbContext db, PerimeterAccess access) : Contro
                                // CHG-30, CHG-31 : changements à relancer des périmètres gérés.
                                ChangeFollowUps = followUps.Where(x => all || managed.Contains(x.c.PerimeterId))
                                    .Select(x => new Item("change", x.c.Id, x.c.Reference, x.c.Title, x.Reason!)).ToList(),
+                               // PRB-32 : problèmes ouverts sans activité depuis 30 jours.
+                               IdleProblems = (await ProblemRules.IdleAsync(db, now, id => all || managed.Contains(id)))
+                                   .Select(x => new Item("problem", x.Problem.Id, x.Problem.Reference, x.Problem.Title,
+                                       $"Sans activité depuis le {x.LastActivity:dd/MM/yyyy}")).ToList(),
                                // INC-26 : incidents En attente prolongée des périmètres gérés.
                                IncidentFollowUps = heldLong.Where(x => all || managed.Contains(x.i.PerimeterId))
                                    .Select(x => new Item("incident", x.i.Id, x.i.Reference, x.i.Title, x.Reason!)).ToList(),

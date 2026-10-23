@@ -153,7 +153,7 @@ seules les transitions ci-dessous sont permises (SOC-05).
 |---|---|---|---|
 | PRB-30 | Au passage à **Erreur connue**, l'interface propose de créer un article de connaissance de type *Erreur connue* (symptômes, contournement) relié au problème ; s'il existe, la fiche y renvoie | ✅ | |
 | PRB-31 | Notifications (SOC-21) : action affectée → R et A ; action en retard → R, A, gestionnaire ; problème qualifié ou clos → déclarant | ✅ | |
-| PRB-32 | Un problème **sans activité depuis 30 jours** (aucune analyse, action ni modification) remonte en relance aux gestionnaires | 🔜 | 3 |
+| PRB-32 | Un problème **sans activité depuis 30 jours** (aucune analyse, action ni modification) remonte en relance aux gestionnaires | ✅ (problème ni Résolu ni Clos ; activité : modification du problème, analyse, action créée ou terminée, commentaire, ligne du journal d'audit ; console des gestionnaires, Relances ; notification aux gestionnaires une fois par période d'inactivité) | 3 |
 
 ## 7. Liens avec les autres pratiques
 
@@ -170,7 +170,8 @@ seules les transitions ci-dessous sont permises (SOC-05).
 
 Console : problèmes à qualifier, erreurs connues sans action, analyses sans cause racine,
 mes problèmes déclarés, mes actions (en retard, en cours), actions en retard toutes
-équipes ([socle § 2](../regles-metier.md#2-consoles-par-rôle)). ✅
+équipes, problèmes sans activité depuis 30 jours (Relances, PRB-32)
+([socle § 2](../regles-metier.md#2-consoles-par-rôle)). ✅
 
 | Indicateur | Calcul | Statut |
 |---|---|---|

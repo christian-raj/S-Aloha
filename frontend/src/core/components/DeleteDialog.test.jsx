@@ -52,6 +52,8 @@ it('Annuler ou Échap ferme sans rien supprimer', async () => {
   open()
   fireEvent.click(await screen.findByRole('button', { name: 'Supprimer' }))
   await screen.findByRole('alertdialog')
+  // L'écoute d'Échap est posée par le même effet que le focus : l'attendre avant d'appuyer.
+  await waitFor(() => expect(document.activeElement.textContent).toBe('Annuler'))
   fireEvent.keyDown(window, { key: 'Escape' })
   await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
   expect(remove).not.toHaveBeenCalled()

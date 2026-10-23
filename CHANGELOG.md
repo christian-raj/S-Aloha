@@ -17,6 +17,11 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 ### Ajouté
 
+- **Problèmes sans activité** (PRB-32) : un problème ouvert sans analyse, action, commentaire
+  ni modification depuis 30 jours remonte aux gestionnaires (Relances, notification).
+- **Modèle standard suspendu** (CHG-27) : l'échec d'un changement Standard suspend son modèle
+  jusqu'à la revue d'un gestionnaire (remise en service ou désactivation, motivée).
+
 - **Incidents d'une même panne** (INC-16) : un incident se rattache à un incident parent ;
   résoudre le parent résout ses enfants avec la même résolution (encadré « Même panne »).
 - **Attente prolongée** (INC-26) : un incident En attente depuis plus de 5 jours ouvrés
@@ -175,6 +180,7 @@ publiée, dans les [releases](https://github.com/christian-raj/S-Aloha/releases)
 
 - **Dernière connexion (ADM-12)** : la migration `LastLogins` crée une table (compte, date) ;
   à mentionner au registre des traitements de l'organisation.
+- **Changements** : la migration `ProblemChangeLot3` ajoute six colonnes aux modèles standard.
 - **Incidents** : la migration `IncidentParent` ajoute la colonne `Incidents.ParentId`.
 - **Messagerie et stockage** : la migration `PlatformSettings` ajoute deux tables de réglages.
   Rien n'est activé : régler et essayer dans la console. Les secrets dépendent de

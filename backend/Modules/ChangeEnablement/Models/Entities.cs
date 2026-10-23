@@ -112,9 +112,20 @@ public class StandardChangeModel
     [MaxLength(200)] public string CreatedBy { get; set; } = "";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    /// <summary>CHG-27 : suspendu à l'échec d'un changement créé depuis lui, jusqu'à la revue d'un gestionnaire.</summary>
+    public DateTime? SuspendedAt { get; set; }
+    public int? SuspendedByChangeId { get; set; }
+    [MaxLength(20)] public string? SuspendedByChange { get; set; }
+    /// <summary>CHG-27 : dernière revue après suspension (gestionnaire, date, conclusion).</summary>
+    public DateTime? ReviewedAt { get; set; }
+    [MaxLength(200)] public string? ReviewedBy { get; set; }
+    public string? ReviewNote { get; set; }
 }
 
 public record ApprovalDto(bool Approve, string? Comment);
 public record FreezeDto(DateTime Start, DateTime End, string? Reason);
+/// <summary>CHG-27 : revue d'un modèle suspendu ; <c>Keep</c> faux : le modèle est désactivé.</summary>
+public record StandardModelReviewDto(string Note, bool Keep = true);
+
 public record StandardChangeModelDto(string Name, string? Description, string? ImplementationPlan, string? BackoutPlan,
     string? Risk, bool Active = true);

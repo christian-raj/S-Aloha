@@ -20,6 +20,7 @@ l'historique est dans la table `__EFMigrationsHistory`
 | `ProjectManagement` | Le projet et ses composants : `Projects`, `ProjectPhases`, `Milestones`, `Deliverables`, `Sprints`, `WorkItems`, `ProjectRisks`, `ProjectIssues` ([gestion de projet](processus/gestion-de-projet.md)) |
 | `Lot1RightsAndStatuses` | Colonnes de l'étape 4 du lot 1 (droits et statuts) : `Incidents.ReopenCount`, `Incidents.ReopenReason` (INC-11), `ServiceRequests.CancelledAt` (REQ-09) |
 | `DuplicateDismissals` | Table `DuplicateDismissals` : paires écartées (« pas un doublon », ADM-42) — type, identifiants dans l'ordre croissant (unique), auteur, date |
+| `ProblemChangeLot3` | Colonnes `StandardChangeModels.SuspendedAt`, `SuspendedByChangeId`, `SuspendedByChange`, `ReviewedAt`, `ReviewedBy`, `ReviewNote` (CHG-27) |
 | `IncidentParent` | Colonne `Incidents.ParentId` (INC-16), clé étrangère vers l'incident parent, mise à null à sa suppression |
 | `PlatformSettings` | Tables `MailSettings` (SMTP) et `StorageSettings` (stockage S3 des pièces jointes), une ligne chacune, secrets chiffrés par le coffre (ADM-60, ADM-61) |
 | `RequestTasksSatisfaction` | Tables `RequestCatalogTasks` (tâches prédéfinies d'un modèle) et `RequestTasks` (tâches d'une demande), en cascade (REQ-24) ; colonnes `ServiceRequests.SatisfactionScore`, `SatisfactionComment`, `SatisfactionAt` (REQ-32), `AutoClosed` (REQ-11) |

@@ -145,7 +145,9 @@ export const api = {
   standardChanges: {
     list: (all = false) => request('/standard-changes' + (all ? '?all=true' : '')),
     create: dto => request('/standard-changes', { method: 'POST', body: JSON.stringify(dto) }),
-    update: (id, dto) => request('/standard-changes/' + id, { method: 'PUT', body: JSON.stringify(dto) })
+    update: (id, dto) => request('/standard-changes/' + id, { method: 'PUT', body: JSON.stringify(dto) }),
+    // CHG-27 : revue d'un modèle suspendu après un échec.
+    review: (id, dto) => request(`/standard-changes/${id}/review`, { method: 'POST', body: JSON.stringify(dto) })
   },
   configurationItems: {
     impact: (id) => request(`/configuration-items/${id}/impact`),
