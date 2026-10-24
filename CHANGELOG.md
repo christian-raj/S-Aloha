@@ -186,6 +186,10 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Modifié
 
+- **Images de développement `edge`** : l'état de `main` est publié sur ghcr.io à chaque
+  fusion (CI verte), et c'est désormais l'image par défaut des fichiers compose — `latest`
+  datait du 2026-10-19. Les images des préversions 0.1.0 et 0.2.0, retirées, ne sont plus
+  proposées. Mise à jour : `docker compose pull && docker compose up -d`.
 - **Langage visuel v2** ([ADR-0021](docs/decisions/adr-0021-langage-visuel-v2-sombre-et-nouvel-embleme.md)) :
   **thème sombre par défaut** (le mode clair reste à un clic, et mémorisé), surfaces bleu nuit
   en couches, accent turquoise, angles adoucis, titres en Geologica et texte en IBM Plex Sans,

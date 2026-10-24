@@ -25,18 +25,4 @@ jobs:
         env:
           VERSION: ${{ github.ref_name }}
           COMMIT: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          prefixe=ghcr.io/chrraj7/s-aloha
-          source=https://github.com/${{ github.repository }}
-          for image in api:backend web:frontend annuaire-demo:demo/annuaire; do
-            nom=${image%%:*}; dossier=${image#*:}
-            docker build "$dossier" \
-              --build-arg VERSION="${VERSION#v}" --build-arg COMMIT="$COMMIT" \
-              --label org.opencontainers.image.source="$source" \
-              --label org.opencontainers.image.version="$VERSION" \
-              --label org.opencontainers.image.licenses=AGPL-3.0-or-later \
-              -t "$prefixe-$nom:$VERSION" -t "$prefixe-$nom:latest"
-            docker push "$prefixe-$nom:$VERSION"
-            docker push "$prefixe-$nom:latest"
-          done
+        run: bash scripts/publier-images.sh "$VERSION" latest

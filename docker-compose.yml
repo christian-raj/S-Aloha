@@ -16,7 +16,7 @@ services:
 
   api:
     # Image publiée à chaque version ; « up --build » construit depuis les sources.
-    image: ghcr.io/chrraj7/s-aloha-api:${S_ALOHA_VERSION:-latest}
+    image: ghcr.io/chrraj7/s-aloha-api:${S_ALOHA_VERSION:-edge}
     build: ./backend
     depends_on:
       db:
@@ -71,7 +71,7 @@ services:
       - garage-data:/var/lib/garage/data
 
   web:
-    image: ghcr.io/chrraj7/s-aloha-web:${S_ALOHA_VERSION:-latest}
+    image: ghcr.io/chrraj7/s-aloha-web:${S_ALOHA_VERSION:-edge}
     build: ./frontend
     depends_on:
       - api
