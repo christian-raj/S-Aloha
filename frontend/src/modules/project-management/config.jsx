@@ -19,15 +19,6 @@ export const COMPONENTS = [
   { id: 'tolerances', label: 'Tolérances', hint: 'Délai et coût au-delà desquels on remonte une exception' },
 ]
 
-/** Composants imposés par une méthode (miroir de Methods.DefaultComponents côté API). */
-export const DEFAULT_COMPONENTS = {
-  Scrum: ['backlog', 'sprints', 'board', 'burndown'],
-  Kanban: ['backlog', 'board'],
-  'Cycle en V': ['phases', 'milestones', 'deliverables'],
-  PRINCE2: ['stages', 'business-case', 'risks', 'issues', 'tolerances'],
-  Hybride: ['phases', 'milestones', 'deliverables', 'backlog', 'sprints', 'board', 'burndown', 'risks'],
-}
-
 export const componentsOf = (project) => (project.components || '').split(',').filter(Boolean)
 
 const money = (v) => (v === null || v === undefined ? '—' : Number(v).toLocaleString('fr-FR', { maximumFractionDigits: 2 }))

@@ -732,8 +732,6 @@ table.compact td { padding: 9px 12px; font-size: var(--fs-sm); }
 .health.t-done { border-left-color: var(--accent-emerald); }
 .health.t-wait { border-left-color: var(--accent-amber); }
 .health.t-bad { border-left-color: var(--accent-red); }
-.health-score b { font-size: 48px; line-height: 1; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; color: var(--text-primary); }
-.health-score span { color: var(--text-tertiary); margin-left: 4px; }
 .health-title { font-weight: 600; font-size: var(--fs-md); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .health-body { min-width: 0; color: var(--text-secondary); }
 .health details { margin-top: 6px; }

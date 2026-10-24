@@ -15,8 +15,5 @@ export default function usePerimeters() {
   return list
 }
 
-/** Pour les tests : oublie la liste chargée. */
-export function resetPerimeters() { cache = null }
-
 /** Nom d'un périmètre, ou à défaut son numéro. */
 export const perimeterName = (list, id) => list.find(p => p.id === id)?.name ?? (id ? `Périmètre n° ${id}` : '')
