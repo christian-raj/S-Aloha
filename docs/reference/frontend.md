@@ -113,7 +113,7 @@ sauf le registre `modules/registry.js` (lu par `Layout`).
 | `/assessments`, `/assessments/:id` | `modules/compliance-assessment/pages/Assessments`, `AssessmentDetail` | Conformité & réglementation › NIS 2 |
 | `/projects`, `/projects/:id` | `modules/project-management/pages/Projects`, `ProjectDetail` | Projets › Projets |
 | `/admin/perimeters`, `/admin/perimeters/:id` | `core/pages/admin/Perimeters`, `PerimeterDetail` | Administration › Périmètres (Admin) |
-| `/preferences` | `core/pages/Preferences` | Mes préférences : notifications par courriel (SOC-22), lien sous l'utilisateur dans la barre latérale |
+| `/preferences` | `core/pages/Preferences` | Mes préférences : notifications par courriel (SOC-22), icône sous l'utilisateur dans la barre latérale |
 | `/admin/users`, `/admin/platform`, `/admin/health`, `/admin/audit`, `/admin/duplicates` | `core/pages/admin/Users`, `PlatformSettings`, `Health`, `AuditLog`, `Duplicates` | Administration › Utilisateurs et rôles, Messagerie et stockage, Santé, Journal d'audit, Nettoyage des doublons (Admin) |
 | `/settings/categories` | `core/pages/settings/Categories` | Paramétrage › Catégories d'incident et de problème (Manager, Admin) |
 | `/settings/discovery` | `modules/service-configuration-management/pages/DiscoverySettings` | Paramétrage › Découverte du réseau (Manager, Admin) ; onglets `?tab=` : tâches, identifiants, fins de support, clés et certificats, constructeurs (OUI) |
@@ -143,7 +143,9 @@ Toutes les routes sauf `/login` passent par `Private` (jeton présent) et sont r
   (`id: 'settings'`, `roles: ['Manager','Admin']`) et **Administration**
   (`id: 'administration'`, `roles: ['Admin']`), chacune avec ses `entries`. Une entrée :
   `{ href, label, description, icon, roles? }`, où `icon` est une clé de `SECTION_ICONS`
-  (`'settings'` ou `'admin'`). Une section n'est affichée que si au moins une de ses
+  **propre à l'entrée** (`'categories'`, `'discovery'`, `'users'`, `'health'`…) : deux
+  entrées ne partagent jamais une icône, sans quoi on ne les distingue plus dans le rail
+  (vérifié par `Layout.rail.test.jsx`, modules compris). Une section n'est affichée que si au moins une de ses
   entrées est visible pour le rôle (pas de section vide, vérifié par
   `Layout.sections.test.jsx` sur le registre réel). Le titre de la section
   Administration porte un marqueur ambre (`.nav-section.admin`) ;
@@ -410,11 +412,24 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 
 - **Angles adoucis** par les jetons `--radius-*` : badges et puces 3 px, boutons, champs et
   liens de navigation 6 px, cartes, tableaux et tuiles 10 px, fenêtres modales 14 px.
-- **Barre latérale** de 264 px sur `--bg-nav`, toujours sombre, en sections : *Pilotage*
+- **Barre latérale** de 248 px sur `--bg-nav`, toujours sombre, en sections : *Pilotage*
   (Console, Reporting), *Pratiques* (les pratiques ITIL), *Projets*, *Conformité &
   réglementation*,
-  puis *Paramétrage* et *Administration* selon le rôle (§ Navigation cible). Le lien actif
-  porte un fond bleu à 16 % et un liseré au dégradé de la marque.
+  puis *Paramétrage* et *Administration* selon le rôle, **ancrées au pied de la liste**, à
+  l'écart du travail quotidien (§ Navigation cible). Le lien actif porte un fond bleu à 16 %
+  et un liseré au dégradé de la marque.
+- **Entrées compactes** (36 px) : icône et libellé seuls ; la description du registre
+  passe en infobulle. Les sous-entrées du module ouvert suivent un fil vertical aligné sur
+  l'icône. Seule la liste défile : marque et pied restent visibles.
+- **Pied** : avatar, nom et rôle, cloche, thème ; puis une rangée d'icônes (*Mes
+  préférences*, *Se déconnecter*, *Réduire le menu*) et le lien *Code source* (AGPLv3).
+- **Rail** (bureau seulement) : *Réduire le menu* ramène la barre à 64 px d'icônes,
+  choix mémorisé dans le navigateur (`localStorage`, clé `s-aloha-nav-rail` ; confort
+  seulement). Les libellés restent lus par les lecteurs d'écran ; les titres de section
+  deviennent un filet à losange, toutes sections dépliées. Au survol ou au focus, un **menu
+  volant** donne le libellé, la description et les sous-entrées ; *Paramétrage* et
+  *Administration* y tiennent chacune en une icône dont le menu volant liste les entrées.
+  Le tiroir mobile reste toujours déployé.
 - **Repères de section** : un **losange** devant le titre (le premier point de l'emblème) —
   bleu pour Pilotage et les pratiques, **turquoise** pour Projets (`.nav-section.projects`),
   **violet** pour Conformité & réglementation (`.nav-section.compliance`), **ambre** pour

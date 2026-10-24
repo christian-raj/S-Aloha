@@ -121,27 +121,28 @@ export const groupOf = (module) => module.group ?? 'practices'
  *   gestionnaires ;
  * - Administration : la plateforme elle-même (utilisateurs et rôles, santé,
  *   journal d'audit) — Admin seul.
- * Une entrée : { href, label, description, icon (clé de SECTION_ICONS), roles? }.
+ * Une entrée : { href, label, description, icon (clé de SECTION_ICONS, propre à
+ * l'entrée), roles? }.
  */
 export const SECTIONS = [
   {
     id: 'settings', label: 'Paramétrage', roles: ['Manager', 'Admin'], entries: [
-      { href: '/settings/categories', label: 'Catégories', description: 'Incidents et problèmes', icon: 'settings' },
+      { href: '/settings/categories', label: 'Catégories', description: 'Incidents et problèmes', icon: 'categories' },
       { href: '/settings/discovery', label: 'Découverte du réseau', description: 'Tâches de scan, coffre, fins de support',
-        icon: 'settings' },
+        icon: 'discovery' },
       { href: '/settings/nis2', label: 'Référentiel NIS 2', description: 'Structure et texte des exigences',
-        icon: 'settings', roles: ['Admin'] },
+        icon: 'nis2-framework', roles: ['Admin'] },
     ]
   },
   {
     id: 'administration', label: 'Administration', roles: ['Admin'], entries: [
-      { href: '/admin/users', label: 'Utilisateurs et rôles', description: 'Annuaire, rôles, connexions', icon: 'admin' },
-      { href: '/admin/perimeters', label: 'Périmètres', description: 'Directions, sites, affectations', icon: 'admin' },
-      { href: '/admin/search', label: 'Index de recherche', description: 'État et reconstruction', icon: 'admin' },
-      { href: '/admin/platform', label: 'Messagerie et stockage', description: 'SMTP des courriels, stockage S3 des pièces jointes', icon: 'admin' },
-      { href: '/admin/health', label: 'Santé', description: 'Base, annuaire, services, version', icon: 'admin' },
-      { href: '/admin/audit', label: "Journal d'audit", description: 'Toutes pratiques, export', icon: 'admin' },
-      { href: '/admin/duplicates', label: 'Nettoyage des doublons', description: 'Détection et fusion', icon: 'admin' },
+      { href: '/admin/users', label: 'Utilisateurs et rôles', description: 'Annuaire, rôles, connexions', icon: 'users' },
+      { href: '/admin/perimeters', label: 'Périmètres', description: 'Directions, sites, affectations', icon: 'perimeters' },
+      { href: '/admin/search', label: 'Index de recherche', description: 'État et reconstruction', icon: 'search-index' },
+      { href: '/admin/platform', label: 'Messagerie et stockage', description: 'SMTP des courriels, stockage S3 des pièces jointes', icon: 'platform' },
+      { href: '/admin/health', label: 'Santé', description: 'Base, annuaire, services, version', icon: 'health' },
+      { href: '/admin/audit', label: "Journal d'audit", description: 'Toutes pratiques, export', icon: 'audit' },
+      { href: '/admin/duplicates', label: 'Nettoyage des doublons', description: 'Détection et fusion', icon: 'duplicates' },
     ]
   },
 ]
