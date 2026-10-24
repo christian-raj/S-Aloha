@@ -442,6 +442,11 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 - **Badges** de statut, de priorité et de rôle RACI, en casse de phrase ; tableaux cliquables.
 - **Accessibilité** : `:focus-visible` en anneau `--focus-ring` de 2 px, décalé de 2 px ;
   `aria-label` sur les boutons-icônes.
+- **Impression** (`@media print`, `core/printTheme.js`) : la coque, bornée à la fenêtre à
+  l'écran (`.shell` à 100vh, `.main` qui défile), se déroule entièrement — sinon une seule
+  hauteur d'écran est imprimée ; impression **toujours en thème clair** (classe `dark` retirée
+  à `beforeprint`, rendue à `afterprint`) ; couleurs du contenu conservées
+  (`print-color-adjust: exact`) pour que barres, pastilles et badges restent sur le papier.
 - **Garde d'erreur** (`core/components/ErrorBoundary.jsx`) : une exception au rendu affiche
   « Cette page n'a pas pu s'afficher » (recharger, retour à la console, détail technique
   replié) au lieu d'une page blanche. Une garde entoure la page ouverte dans `Layout` — la

@@ -204,6 +204,9 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Corrigé
 
+- **Rapport complet (PDF) du reporting** : le PDF ne contenait qu'une page, la hauteur d'un
+  écran ; il déroule désormais tous les onglets (un par page), en thème clair et avec ses
+  barres même quand le navigateur n'imprime pas les arrière-plans.
 - **Mes préférences** : la page restait vide — l'appel des préférences de courriel était
   écrasé par celui de la session (même nom dans le client de l'API) et l'application
   s'interrompait à l'ouverture. Une **garde d'erreur** évite désormais toute page blanche :
