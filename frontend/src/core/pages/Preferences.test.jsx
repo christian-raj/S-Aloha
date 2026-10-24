@@ -5,7 +5,7 @@ import Preferences from './Preferences'
 
 const save = vi.fn(dto => Promise.resolve({ ...dto, mailEnabled: false }))
 vi.mock('../../api', () => ({
-  api: { me: { mailPreferences: () => Promise.resolve({ mode: 'Aucun', address: null, mailEnabled: false }), saveMailPreferences: (...a) => save(...a) } }
+  api: { preferences: { mail: () => Promise.resolve({ mode: 'Aucun', address: null, mailEnabled: false }), saveMail: (...a) => save(...a) } }
 }))
 afterEach(() => { cleanup(); save.mockClear() })
 

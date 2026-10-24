@@ -771,6 +771,19 @@ table.compact td { padding: 9px 12px; font-size: var(--fs-sm); }
 .swatch.c1 { background: var(--chart-1); } .swatch.c2 { background: var(--chart-2); } .swatch.c3 { background: var(--chart-3); }
 
 .print-only { display: none; }
+
+/* Garde d'erreur (ErrorBoundary) : message à la place d'une page blanche. */
+.crash { max-width: 640px; margin: 48px auto; padding: 28px 32px; background: var(--bg-surface); border: 1px solid var(--border-default);
+  border-left: 3px solid var(--accent-red); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+.crash.app { margin-top: 15vh; }
+.crash-title { font-size: var(--fs-lg); font-weight: 500; color: var(--text-primary); margin-bottom: 8px; }
+.crash-text { color: var(--text-secondary); }
+.crash-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.crash-actions a.btn { text-decoration: none; }
+.crash-details { margin-top: 20px; font-size: var(--fs-sm); color: var(--text-tertiary); }
+.crash-details summary { cursor: pointer; }
+.crash-details pre { margin-top: 8px; padding: 10px 12px; white-space: pre-wrap; font-family: var(--font-mono);
+  background: var(--bg-surface-hover); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); }
 .report-section + .report-section { margin-top: 32px; }
 .report-section-title { font-size: var(--fs-lg); font-weight: 700; margin-bottom: 16px; }
 

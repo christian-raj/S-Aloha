@@ -11,9 +11,9 @@ const MODES = [
 export default function Preferences() {
   const [p, setP] = useState(null)
   const [msg, setMsg] = useState(null)
-  useEffect(() => { api.me.mailPreferences().then(setP).catch(e => setMsg({ ok: false, text: e.message })) }, [])
+  useEffect(() => { api.preferences.mail().then(setP).catch(e => setMsg({ ok: false, text: e.message })) }, [])
   if (!p) return msg ? <div className="error">{msg.text}</div> : <p>Chargement…</p>
-  const save = () => api.me.saveMailPreferences({ mode: p.mode, address: p.address || null })
+  const save = () => api.preferences.saveMail({ mode: p.mode, address: p.address || null })
     .then(r => { setP(r); setMsg({ ok: true, text: 'Préférences enregistrées.' }) }).catch(e => setMsg({ ok: false, text: e.message }))
   return (
     <>

@@ -77,10 +77,11 @@ export const api = {
     remove: (id) => request(`/attachments/${id}`, { method: 'DELETE' }),
     contentUrl: (id) => `${API}/attachments/${id}/content`
   },
-  // SOC-22 : mes courriels de notification.
-  me: {
-    mailPreferences: () => request('/me/mail-preferences'),
-    saveMailPreferences: (dto) => request('/me/mail-preferences', { method: 'PUT', body: JSON.stringify(dto) })
+  // SOC-22 : mes courriels de notification. Pas sous `me` : `api.me()` (session
+  // courante, plus bas) écraserait la clé, et la page Mes préférences planterait.
+  preferences: {
+    mail: () => request('/me/mail-preferences'),
+    saveMail: (dto) => request('/me/mail-preferences', { method: 'PUT', body: JSON.stringify(dto) })
   },
   admin: {
     health: () => request('/admin/health'),
