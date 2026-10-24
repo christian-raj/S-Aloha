@@ -253,12 +253,15 @@ Détails (registre des modules, thème, design) : [frontend.md](frontend.md).
 ### Intégration continue
 
 [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) rejoue ces contrôles à chaque
-push sur `main` et sur chaque pull request, en cinq jobs : **API** (tests ci-dessus et
+push sur `main` et sur chaque pull request, en six jobs : **API** (tests ci-dessus et
 `dotnet list package --vulnerable`), **Interface** (`npm ci`, tests, build,
 `npm audit --audit-level=high`), **Documentation** (`scripts/check-docs.py`) et
 **Images Docker** (build des deux images, sans publication) et, sur une pull request
 seulement, **DCO** (chaque commit porte le `Signed-off-by` de son auteur, bots exceptés ;
-[ADR-0010](../decisions/adr-0010-certificat-d-origine-dco.md)). Actions épinglées par SHA,
+[ADR-0010](../decisions/adr-0010-certificat-d-origine-dco.md)) et **Hygiène**
+(`scripts/check-hygiene.py` : trailers autres que `Signed-off-by` et termes réservés, lus dans
+le secret `HYGIENE_TERMES` ; avertissements seulement pour l'instant, non exigé pour
+fusionner). Actions épinglées par SHA,
 jeton en lecture seule. CodeQL (C#, JavaScript) et Dependabot
 ([`.github/dependabot.yml`](../../.github/dependabot.yml)) complètent : voir
 [sécurité § Contrôles du dépôt](securite.md#contrôles-du-dépôt).

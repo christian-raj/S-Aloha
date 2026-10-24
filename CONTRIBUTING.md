@@ -76,3 +76,8 @@ Oubli sur le dernier commit : `git commit --amend -s --no-edit`, puis
 Le job **DCO** de la CI le vérifie sur chaque pull request : un commit sans
 `Signed-off-by` à l'adresse de son auteur bloque la fusion. Pour signer après coup
 tous les commits de la branche : `git rebase --signoff main`.
+
+Le job **Hygiène** signale (sans bloquer, pour l'instant) tout trailer autre que
+`Signed-off-by` — ligne de co-auteur, lien de session d'un outil — et les termes réservés
+du projet (noms et adresses internes que le dépôt public ne doit pas contenir) :
+[`scripts/check-hygiene.py`](scripts/check-hygiene.py).

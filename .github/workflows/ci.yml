@@ -111,3 +111,23 @@ jobs:
             echo "Rattrapage : git rebase --signoff $BASE puis git push --force-with-lease."
           fi
           exit $fail
+
+  hygiene:
+    # Avertissements seulement pour l'instant (ne bloque pas la fusion) : trailers autres
+    # que Signed-off-by, termes réservés (liste dans le secret HYGIENE_TERMES, jamais
+    # affichée). scripts/check-hygiene.py ; --strict le rendra bloquant.
+    name: Hygiène
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Trailers et termes réservés
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          HYGIENE_TERMES: ${{ secrets.HYGIENE_TERMES }}
+        run: python3 scripts/check-hygiene.py "$BASE" "$HEAD"
