@@ -54,6 +54,12 @@ Une interface modifiée rend les **captures d'écran** obsolètes : les régén�
 du mode démonstration, sans enregistrement de test, trou de numérotation ni adresse interne
 visible.
 
+L'**image de partage** (`docs/screenshots/partage-1280x640.png`, 1280 × 640) reprend la
+marque et la capture de la console : elle se refait avec elles. C'est aussi l'**aperçu
+social** du dépôt, affiché quand un lien vers GitHub est partagé. GitHub n'offre aucune API
+pour le changer : le mainteneur la téléverse à nouveau dans *Settings → General → Social
+preview → Edit → Upload an image*.
+
 ## 3. Journaliser les sujets traités
 
 Les sujets traités du jour sont consignés dans **`archives/journal-AAAA-MM-JJ.md`**. Le
