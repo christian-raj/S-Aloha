@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 // Graphiques du tableau de bord (guide de visualisation) : traits de 2 px,
 // grille fine, légende dès deux séries, étiquettes directes en bout de courbe,
@@ -6,6 +6,42 @@ import React, { useState } from 'react'
 // palette catégorielle validée en clair et en sombre (styles.css).
 
 const day = (iso) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+
+/** Hauteur fixe des graphiques : le tracé suit la largeur de sa carte, jamais le texte. */
+const CHART_H = 220
+
+/**
+ * Largeur réelle du conteneur, pour dessiner le SVG à l'échelle 1 : un viewBox
+ * étiré agrandirait aussi les graduations (18 px sur une carte pleine largeur).
+ * Sans ResizeObserver (tests), largeur de repli.
+ */
+function useWidth(fallback = 640) {
+  const ref = useRef(null)
+  const [width, setWidth] = useState(fallback)
+  useEffect(() => {
+    if (!ref.current || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w > 0) setWidth(w) })
+    ro.observe(ref.current)
+    return () => ro.disconnect()
+  }, [])
+  return [ref, width]
+}
+
+/**
+ * Regroupe des comptes journaliers par semaine au-delà de 45 jours : 90 ou
+ * 365 barres d'un pixel ne se lisent pas. Une semaine porte la date de son
+ * premier jour.
+ */
+export function bucketDays(days, keys) {
+  if (days.length <= 45) return { rows: days, unit: 'jour' }
+  const rows = []
+  days.forEach((d, i) => {
+    if (i % 7 === 0) rows.push({ date: d.date, ...Object.fromEntries(keys.map(k => [k, 0])) })
+    const w = rows[rows.length - 1]
+    keys.forEach(k => { w[k] += d[k] ?? 0 })
+  })
+  return { rows, unit: 'semaine' }
+}
 
 /** Graduations rondes (0, 2, 5, 10…), prolongées jusqu'à la graduation qui couvre le maximum. */
 export function ticks(max) {
@@ -22,7 +58,8 @@ export function ticks(max) {
 export function LineChart({ title, days, series, unit = '' }) {
   const [hover, setHover] = useState(null)
   const [table, setTable] = useState(false)
-  const W = 640, H = 240, M = { top: 16, right: 92, bottom: 28, left: 36 }
+  const [ref, W] = useWidth()
+  const H = CHART_H, M = { top: 12, right: 72, bottom: 26, left: 32 }
   if (!days?.length) return <ChartCard title={title}><p className="muted small">Aucune donnée sur la période.</p></ChartCard>
 
   const yTicks = ticks(Math.max(...days.flatMap(d => series.map(s => d[s.key]))))
@@ -30,7 +67,7 @@ export function LineChart({ title, days, series, unit = '' }) {
   const x = (i) => M.left + (days.length === 1 ? 0 : (i * (W - M.left - M.right)) / (days.length - 1))
   const y = (v) => M.top + (1 - v / top) * (H - M.top - M.bottom)
   const path = (key) => days.map((d, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`).join('')
-  const labelEvery = Math.ceil(days.length / 8)
+  const labelEvery = Math.ceil(days.length / Math.max(2, Math.floor((W - M.left - M.right) / 64)))
   const last = days.length - 1
   // Étiquettes de fin écartées d'au moins 13 px pour rester lisibles quand les courbes se rejoignent.
   const ends = series.map(s => ({ s, py: y(days[last][s.key]) })).sort((a, b) => a.py - b.py)
@@ -50,16 +87,9 @@ export function LineChart({ title, days, series, unit = '' }) {
   return (
     <ChartCard title={title} onToggle={() => setTable(v => !v)} table={table}
       legend={series.map(s => <span key={s.key}><i className={`key c${s.slot}`} />{s.label}</span>)}>
-      {table ? (
-        <div className="table-scroll">
-          <table className="compact">
-            <thead><tr><th>Jour</th>{series.map(s => <th key={s.key}>{s.label}</th>)}</tr></thead>
-            <tbody>{days.map(d => <tr key={d.date}><td>{day(d.date)}</td>{series.map(s => <td key={s.key}>{d[s.key]}</td>)}</tr>)}</tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="chart-wrap">
-          <svg viewBox={`0 0 ${W} ${H}`} role="img" onMouseMove={onMove} onMouseLeave={() => setHover(null)}
+      {table ? <DataTable first="Jour" rows={days} series={series} /> : (
+        <div className="chart-wrap" ref={ref}>
+          <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" onMouseMove={onMove} onMouseLeave={() => setHover(null)}
             aria-label={`${title} : ${series.map(s => `${s.label} ${days[last][s.key]}${unit}`).join(', ')}`}>
             {yTicks.map(t => (
               <g key={t}>
@@ -81,6 +111,87 @@ export function LineChart({ title, days, series, unit = '' }) {
             <div className="chart-tip" style={{ left: `${(x(hover) / W) * 100}%` }} role="status">
               <b>{day(h.date)}</b>
               {series.map(s => <div key={s.key}><i className={`key c${s.slot}`} />{s.label} : {h[s.key]}{unit}</div>)}
+            </div>
+          )}
+        </div>
+      )}
+    </ChartCard>
+  )
+}
+
+function DataTable({ first, rows, series }) {
+  return (
+    <div className="table-scroll">
+      <table className="compact">
+        <thead><tr><th>{first}</th>{series.map(s => <th key={s.key}>{s.label}</th>)}</tr></thead>
+        <tbody>{rows.map(d => <tr key={d.date}><td>{day(d.date)}</td>{series.map(s => <td key={s.key}>{d[s.key]}</td>)}</tr>)}</tbody>
+      </table>
+    </div>
+  )
+}
+
+/**
+ * Colonnes empilées : des comptes par jour (ou par semaine, voir bucketDays)
+ * se lisent en barres, pas en courbe — une courbe de 0, 1, 2 zigzague. Total
+ * de chaque série dans la légende ; détail au survol.
+ */
+export function ColumnChart({ title, days, series }) {
+  const [hover, setHover] = useState(null)
+  const [table, setTable] = useState(false)
+  const [ref, W] = useWidth()
+  const H = CHART_H, M = { top: 12, right: 8, bottom: 26, left: 32 }
+  if (!days?.length) return <ChartCard title={title}><p className="muted small">Aucune donnée sur la période.</p></ChartCard>
+
+  const { rows, unit } = bucketDays(days, series.map(s => s.key))
+  const totals = Object.fromEntries(series.map(s => [s.key, rows.reduce((n, d) => n + (d[s.key] ?? 0), 0)]))
+  // Tout à zéro : un axe vide n'apprend rien, on le dit.
+  if (Object.values(totals).every(t => t === 0)) return <ChartCard title={title}><p className="muted small">Aucune donnée sur la période.</p></ChartCard>
+  const sum = (d) => series.reduce((n, s) => n + (d[s.key] ?? 0), 0)
+  const yTicks = ticks(Math.max(...rows.map(sum)))
+  const top = yTicks[yTicks.length - 1]
+  const band = (W - M.left - M.right) / rows.length
+  const gap = Math.max(1, Math.min(8, band * 0.3))
+  const y = (v) => M.top + (1 - v / top) * (H - M.top - M.bottom)
+  // Segments empilés de bas en haut, dans l'ordre des séries (et de la légende).
+  const stack = (d) => series.reduce((acc, s) => {
+    const base = acc.length ? acc[acc.length - 1].to : 0
+    return [...acc, { s, from: base, to: base + (d[s.key] ?? 0) }]
+  }, [])
+  const labelEvery = Math.ceil(rows.length / Math.max(2, Math.floor((W - M.left - M.right) / 64)))
+  const onMove = (e) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    const i = Math.floor(((e.clientX - r.left) - M.left) / band)
+    setHover(i >= 0 && i < rows.length ? i : null)
+  }
+  const h = hover === null ? null : rows[hover]
+
+  return (
+    <ChartCard title={title} onToggle={() => setTable(v => !v)} table={table}
+      legend={series.map(s => <span key={s.key}><i className={`swatch c${s.slot}`} />{s.label} <b>{totals[s.key]}</b></span>)}>
+      {table ? <DataTable first={unit === 'jour' ? 'Jour' : 'Semaine du'} rows={rows} series={series} /> : (
+        <div className="chart-wrap" ref={ref}>
+          <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" onMouseMove={onMove} onMouseLeave={() => setHover(null)}
+            aria-label={`${title}, par ${unit} : ${series.map(s => `${s.label} ${totals[s.key]} au total`).join(', ')}`}>
+            {yTicks.map(t => (
+              <g key={t}>
+                <line className="gridline" x1={M.left} x2={W - M.right} y1={y(t)} y2={y(t)} />
+                <text className="tick" x={M.left - 6} y={y(t) + 4} textAnchor="end">{t}</text>
+              </g>))}
+            {h && <rect className="col-hover" x={M.left + hover * band} y={M.top} width={band} height={H - M.top - M.bottom} />}
+            {rows.map((d, i) => (
+              <g key={d.date}>
+                {stack(d).map(({ s, from, to }) => to > from &&
+                  <rect key={s.key} className={`col c${s.slot}`} x={M.left + i * band + gap / 2} y={y(to)}
+                    width={Math.max(1, band - gap)} height={y(from) - y(to) - (from > 0 ? 1 : 0)} />)}
+                {i % labelEvery === 0 &&
+                  <text className="tick" x={M.left + i * band + band / 2} y={H - 8} textAnchor="middle">{day(d.date)}</text>}
+              </g>))}
+            <line className="baseline" x1={M.left} x2={W - M.right} y1={y(0)} y2={y(0)} />
+          </svg>
+          {h && (
+            <div className="chart-tip" style={{ left: `${((M.left + (hover + 0.5) * band) / W) * 100}%` }} role="status">
+              <b>{unit === 'jour' ? day(h.date) : `Semaine du ${day(h.date)}`}</b>
+              {series.map(s => <div key={s.key}><i className={`swatch c${s.slot}`} />{s.label} : {h[s.key]}</div>)}
             </div>
           )}
         </div>
@@ -126,14 +237,37 @@ export function HBars({ title, data, empty = 'Aucune donnée sur la période.', 
   )
 }
 
-/** Chiffre clé ; `alert` : bord et chiffre rouges, et la mention écrite de l'alerte. */
+/**
+ * Chiffre clé : libellé au-dessus, chiffre, puis précision. `alert` : liseré
+ * et chiffre rouges, et la mention écrite de l'alerte (la couleur n'est
+ * jamais le seul repère).
+ */
 export function Kpi({ value, label, sub, alert, suffix = '' }) {
   return (
-    <div className={`kpi${alert ? ' alert' : ''}`}>
-      <div className="n">{value ?? '—'}{value != null && suffix}</div>
+    <div className={`kpi${alert ? ' alert' : ''}${value == null ? ' empty' : ''}`}>
       <div className="l">{label}</div>
+      <div className="n">{value ?? '—'}{value != null && <small>{suffix}</small>}</div>
       {alert && <div className="kpi-alert">{alert}</div>}
       {sub && <div className="kpi-sub">{sub}</div>}
+    </div>
+  )
+}
+
+/** Intertitre d'un onglet : regroupe ses widgets par thème. */
+export const ReportHeading = ({ children, tone }) =>
+  <h2 className={'report-heading' + (tone ? ' ' + tone : '')}><span className="dot" aria-hidden />{children}</h2>
+
+/** Jauge circulaire d'un score sur 100 (santé des services). */
+export function ScoreRing({ score, tone }) {
+  const r = 34, c = 2 * Math.PI * r
+  return (
+    <div className={`score-ring ${tone ?? ''}`}>
+      <svg viewBox="0 0 84 84" width="84" height="84" aria-hidden>
+        <circle className="track" cx="42" cy="42" r={r} />
+        <circle className="value" cx="42" cy="42" r={r} strokeDasharray={`${(Math.max(0, Math.min(100, score)) / 100) * c} ${c}`}
+          transform="rotate(-90 42 42)" />
+      </svg>
+      <div className="score-ring-n"><b>{score}</b><span>/ 100</span></div>
     </div>
   )
 }

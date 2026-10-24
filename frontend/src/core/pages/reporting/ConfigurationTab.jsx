@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { HBars, Kpi, LineChart } from './charts'
+import { ColumnChart, HBars, Kpi, ReportHeading } from './charts'
 import { date, dateTime, fmt } from './exportCsv'
 
 const SOURCES = { IpSweep: 'Balayage IP', Snmp: 'SNMP', ActiveDirectory: 'Active Directory' }
@@ -11,6 +11,7 @@ export default function ConfigurationTab({ data }) {
   const { kpis, staging } = data
   return (
     <div className="report-body">
+      <ReportHeading>CMDB</ReportHeading>
       <div className="kpi-row">
         <Kpi value={kpis.cis} label="CI en CMDB (non retirés)" sub={`${kpis.applications} application(s), ${kpis.hardware} actif(s) matériel(s)`} />
         <Kpi value={fmt(kpis.portfolioCoverage, 0)} suffix=" %" label="Portefeuille applicatif gouverné"
@@ -39,15 +40,18 @@ export default function ConfigurationTab({ data }) {
         <HBars title="Applications par criticité" data={data.byCriticality} empty="Aucune application." />
         <HBars title="Support des actifs matériels" data={data.support} empty="Aucun actif matériel."
           note="Date de la fiche du CI ou du référentiel des fins de support ; « proche » : moins de 6 mois." />
-        {staging && <HBars title="Actifs découverts par source" data={staging.bySource.map(s => ({ ...s, label: SOURCES[s.label] ?? s.label }))}
-          empty="Aucun actif découvert." />}
       </div>
 
+      <ReportHeading tone="teal">Découverte et cycle de vie</ReportHeading>
       {staging && (
-        <LineChart title="Découverte, par jour" days={staging.discovered} series={[
-          { key: 'discovered', label: 'Nouveaux actifs découverts', short: 'nouv.', slot: 1 },
-          { key: 'reconciled', label: 'Actifs rapprochés', short: 'rapp.', slot: 2 },
-        ]} />
+        <div className="report-grid wide">
+          <ColumnChart title="Découverte" days={staging.discovered} series={[
+            { key: 'discovered', label: 'Nouveaux actifs découverts', slot: 1 },
+            { key: 'reconciled', label: 'Actifs rapprochés', slot: 2 },
+          ]} />
+          <HBars title="Actifs découverts par source" data={staging.bySource.map(s => ({ ...s, label: SOURCES[s.label] ?? s.label }))}
+            empty="Aucun actif découvert." />
+        </div>
       )}
 
       <div className="report-grid wide">

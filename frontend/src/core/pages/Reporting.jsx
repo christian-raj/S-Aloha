@@ -102,8 +102,16 @@ export default function Reporting() {
 
   return (
     <>
-      <h1 className="page-title">Reporting</h1>
-      <p className="page-sub">Tableau de bord des pratiques : santé des services, incidents, problèmes, changements et projets, conformité, configuration.</p>
+      <div className="report-head">
+        <div>
+          <h1 className="page-title">Reporting</h1>
+          <p className="page-sub">Indicateurs des pratiques, sur la période et le service choisis.</p>
+        </div>
+        <div className="report-export no-print">
+          <button className="btn ghost small" onClick={exportCsv} disabled={!current}>Exporter l'onglet (CSV / Excel)</button>
+          <button className="btn small" onClick={exportPdf} disabled={!overview}>Rapport complet (PDF)</button>
+        </div>
+      </div>
 
       <div className="report-toolbar no-print" role="search" aria-label="Filtres du tableau de bord">
         <label>Période
@@ -128,10 +136,6 @@ export default function Reporting() {
             {perimeters.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </label>}
-        <div className="report-export">
-          <button className="btn ghost small" onClick={exportCsv} disabled={!current}>Exporter l'onglet (CSV / Excel)</button>
-          <button className="btn small" onClick={exportPdf} disabled={!overview}>Rapport complet (PDF)</button>
-        </div>
       </div>
 
       <div className="tabs report-tabs no-print" role="tablist">
