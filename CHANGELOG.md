@@ -191,6 +191,12 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
   en couches, accent turquoise, angles adoucis, titres en Geologica et texte en IBM Plex Sans,
   contrastes des textes portés à 4,5:1 dans les deux thèmes. **Nouvel emblème** — un « S »
   hexagonal — dans la barre latérale, la page de connexion et le favicon.
+- **Navigation** : une icône propre à chaque entrée de Paramétrage et d'Administration ;
+  entrées compactes, Paramétrage et Administration au pied de la liste, et un menu
+  **réductible** en rail d'icônes (menus volants au survol), mémorisé dans le navigateur.
+- **Reporting en widgets** : tuiles d'indicateurs compactes, intertitres par thème, score de
+  santé en jauge ; graphiques à la taille de leur carte, volumétrie et découverte en colonnes
+  empilées (par semaine au-delà de 45 jours).
 - **Réponses de l'API en DTO** (A2) : l'API ne renvoie plus ses entités internes, mais des
   objets de réponse explicites, de mêmes noms de champs ; les navigations internes (problème
   d'une analyse, données brutes de la découverte…) n'en sortent plus. Le contrat est figé par

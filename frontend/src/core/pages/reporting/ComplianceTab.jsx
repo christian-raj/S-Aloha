@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { HBars, Kpi } from './charts'
+import { HBars, Kpi, ReportHeading } from './charts'
 import { date, fmt } from './exportCsv'
 
 const rateTone = (r) => r == null ? 't-closed' : r >= 95 ? 't-done' : r >= 80 ? 't-wait' : 't-bad'
@@ -14,6 +14,7 @@ export default function ComplianceTab({ data }) {
   const { nis2, nis2Pending = [], sla, improvements, knowledge, regulatory = [], availability = [] } = data
   return (
     <div className="report-body">
+      <ReportHeading tone="violet">Conformité réglementaire</ReportHeading>
       <div className="card">
         <h3 className="card-title">NIS 2 — dernière évaluation validée</h3>
         {!nis2 ? (
@@ -42,7 +43,28 @@ export default function ComplianceTab({ data }) {
         )}
       </div>
 
-      <div className="report-grid">
+      <div className="report-grid wide">
+        {/* REP-44, DRG-20 : déclarations réglementaires de la période et respect des délais légaux. */}
+        <div className="card">
+          <h3 className="card-title">Déclarations réglementaires</h3>
+          {regulatory.every(r => r.total === 0) ? <p className="muted small">Aucune déclaration sur la période.</p> : (
+            <div className="table-scroll">
+              <table className="compact">
+                <thead><tr><th>Régime</th><th>Déclarations</th><th>Déclarées</th><th>En cours</th><th>Non requises</th><th>Délais tenus</th></tr></thead>
+                <tbody>{regulatory.map(r => (
+                  <tr key={r.regime}>
+                    <td><b>{r.regime}</b></td><td>{r.total}</td><td>{r.declared ?? 0}</td><td>{r.inProgress}</td><td>{r.notRequired}</td>
+                    <td className="small">{r.steps.length === 0 ? '—' : r.steps.map(s => `${s.step} : ${s.onTime}/${s.sent} (${s.percent} %)`).join(' · ')}</td>
+                  </tr>))}</tbody>
+              </table>
+            </div>)}
+        </div>
+        {/* DRG-21 */}
+        <Kpi value={fmt(data.qualificationHours)} suffix=" h" label="Délai moyen de qualification" sub="incidents cyber, depuis la prise de connaissance" />
+      </div>
+
+      <ReportHeading>Niveaux de service</ReportHeading>
+      <div className="report-grid split">
         <div className="card">
           <h3 className="card-title">Respect des SLA, par service</h3>
           {sla.byService.length === 0 ? <p className="muted small">Aucun incident résolu avec SLA sur la période.</p> : (
@@ -61,51 +83,37 @@ export default function ComplianceTab({ data }) {
               <li key={a.id}><Link to={`/agreements/${a.id}`}>{a.reference}</Link> {a.title} — {a.service}, revue prévue le {date(a.reviewDate)}</li>))}</ul>
           )}
         </div>
+        {/* SLM-31 : disponibilité mesurée des SLA dotés d'une cible, sur la période. */}
+        {availability.length > 0 && <div className="card">
+          <h3 className="card-title">Disponibilité des services sous SLA</h3>
+          <div className="table-scroll">
+            <table className="compact">
+              <thead><tr><th>SLA</th><th>Service</th><th>Disponibilité</th><th>Cible</th><th>Indisponibilité</th></tr></thead>
+              <tbody>{availability.map(a => (
+                <tr key={a.id}>
+                  <td><Link to={`/agreements/${a.id}`}>{a.reference}</Link> {a.title}</td><td>{a.service}</td>
+                  <td><span className={`badge ${a.met === false ? 't-bad' : 't-done'}`}>{a.percent == null ? '—' : `${fmt(a.percent, 2)} %`}</span></td>
+                  <td>{a.target} %</td><td className="small">{fmt(a.downtimeHours)} h, {a.majorIncidents} incident(s) majeur(s)</td>
+                </tr>))}</tbody>
+            </table>
+          </div>
+        </div>}
+      </div>
+
+      <ReportHeading tone="teal">Amélioration continue</ReportHeading>
+      {/* CSI-31, CSI-32 */}
+      <div className="kpi-row">
+        <Kpi value={fmt(improvements.completionDays)} suffix=" j" label="Délai moyen de réalisation" sub="de la validation à la réalisation" />
+        <Kpi value={fmt(improvements.abandonRate)} suffix=" %" label="Taux d’abandon des améliorations" />
+      </div>
+      <div className="report-grid">
         <HBars title="Améliorations, par statut" data={improvements.byStatus.map(s => ({ label: s.status, count: s.count }))}
           note={`${improvements.completed} amélioration(s) réalisée(s) sur la période.`} />
         {/* CSI-30 */}
         <HBars title="Améliorations réalisées, par source" data={improvements.completedBySource ?? []} />
       </div>
 
-      {/* CSI-31, CSI-32, DRG-21 */}
-      <div className="kpi-row">
-        <Kpi value={fmt(improvements.completionDays)} suffix=" j" label="Délai moyen de réalisation" sub="de la validation à la réalisation" />
-        <Kpi value={fmt(improvements.abandonRate)} suffix=" %" label="Taux d’abandon des améliorations" />
-        <Kpi value={fmt(data.qualificationHours)} suffix=" h" label="Délai moyen de qualification" sub="incidents cyber, depuis la prise de connaissance" />
-      </div>
-
-      {/* SLM-31 : disponibilité mesurée des SLA dotés d'une cible, sur la période. */}
-      {availability.length > 0 && <div className="card" style={{ marginBottom: 16 }}>
-        <h3 className="card-title">Disponibilité des services sous SLA</h3>
-        <div className="table-scroll">
-          <table className="compact">
-            <thead><tr><th>SLA</th><th>Service</th><th>Disponibilité</th><th>Cible</th><th>Indisponibilité</th></tr></thead>
-            <tbody>{availability.map(a => (
-              <tr key={a.id}>
-                <td><Link to={`/agreements/${a.id}`}>{a.reference}</Link> {a.title}</td><td>{a.service}</td>
-                <td><span className={`badge ${a.met === false ? 't-bad' : 't-done'}`}>{a.percent == null ? '—' : `${fmt(a.percent, 2)} %`}</span></td>
-                <td>{a.target} %</td><td className="small">{fmt(a.downtimeHours)} h, {a.majorIncidents} incident(s) majeur(s)</td>
-              </tr>))}</tbody>
-          </table>
-        </div>
-      </div>}
-
-      {/* REP-44, DRG-20 : déclarations réglementaires de la période et respect des délais légaux. */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <h3 className="card-title">Déclarations réglementaires</h3>
-        {regulatory.every(r => r.total === 0) ? <p className="muted small">Aucune déclaration sur la période.</p> : (
-          <div className="table-scroll">
-            <table className="compact">
-              <thead><tr><th>Régime</th><th>Déclarations</th><th>Déclarées</th><th>En cours</th><th>Non requises</th><th>Délais tenus</th></tr></thead>
-              <tbody>{regulatory.map(r => (
-                <tr key={r.regime}>
-                  <td><b>{r.regime}</b></td><td>{r.total}</td><td>{r.declared ?? 0}</td><td>{r.inProgress}</td><td>{r.notRequired}</td>
-                  <td className="small">{r.steps.length === 0 ? '—' : r.steps.map(s => `${s.step} : ${s.onTime}/${s.sent} (${s.percent} %)`).join(' · ')}</td>
-                </tr>))}</tbody>
-            </table>
-          </div>)}
-      </div>
-
+      <ReportHeading tone="amber">Connaissances</ReportHeading>
       <div className="kpi-row">
         <Kpi value={knowledge.published} label="Articles publiés" />
         <Kpi value={knowledge.publishedInPeriod} label="Publiés sur la période" />

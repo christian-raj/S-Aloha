@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Kpi, LineChart, Tolerance } from './charts'
+import { ColumnChart, Kpi, ScoreRing, Tolerance } from './charts'
 import { date, fmt } from './exportCsv'
 
 const LEVEL_TONE = { Bon: 't-done', Dégradé: 't-wait', Critique: 't-bad' }
@@ -12,7 +12,7 @@ export default function Overview({ data }) {
   return (
     <div className="report-body">
       <section className={`health ${LEVEL_TONE[health.level]}`} aria-label="Score de santé">
-        <div className="health-score"><b>{health.score}</b><span>/ 100</span></div>
+        <ScoreRing score={health.score} tone={LEVEL_TONE[health.level]} />
         <div className="health-body">
           <div className="health-title">Santé des services : <span className={`badge ${LEVEL_TONE[health.level]}`}>{health.level}</span></div>
           <p className="small">
@@ -39,10 +39,10 @@ export default function Overview({ data }) {
       </div>
 
       <div className="report-grid wide">
-        <LineChart title="Volumétrie croisée, par jour" days={data.volume} series={[
-          { key: 'incidents', label: 'Incidents créés', short: 'inc.', slot: 1 },
-          { key: 'requests', label: 'Demandes créées', short: 'dem.', slot: 2 },
-          { key: 'changes', label: 'Changements mis en œuvre', short: 'chg.', slot: 3 },
+        <ColumnChart title="Volumétrie croisée" days={data.volume} series={[
+          { key: 'incidents', label: 'Incidents créés', slot: 1 },
+          { key: 'requests', label: 'Demandes créées', slot: 2 },
+          { key: 'changes', label: 'Changements mis en œuvre', slot: 3 },
         ]} />
         <figure className="card chart-card">
           <figcaption><h3>Matrice d'impact des priorités</h3></figcaption>

@@ -16,7 +16,8 @@ const data = {
 it('affiche les indicateurs REQ-40 à REQ-43, le détail par modèle et les demandes en retard', () => {
   render(<MemoryRouter><RequestsTab data={data} /></MemoryRouter>)
   expect(screen.getByText('Délai moyen de traitement')).toBeTruthy()
-  expect(screen.getByText('4,2 / 5')).toBeTruthy()
+  // Chiffre et unité dans la même tuile (l'unité en plus petit).
+  expect([...document.querySelectorAll('.kpi .n')].map(n => n.textContent)).toContain('4,2 / 5')
   expect(screen.getByText('Accès VPN')).toBeTruthy()
   expect(screen.getByRole('link', { name: 'REQ-2026-0007' }).getAttribute('href')).toBe('/requests/7')
   const csv = requestsCsv(data)

@@ -41,13 +41,31 @@ Filtres communs, conservés dans l'URL (`?tab=&period=&from=&to=&service=&perime
 Paramètres : `from`, `to` (dates, incluses), `service` (facultatif, sans tenir compte de la
 casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste servi.
 
+### Présentation
+
+Un tableau de bord en **widgets** (`reporting/charts.jsx`) :
+
+- **Tuiles** d'indicateurs : libellé en petites capitales au-dessus du chiffre, unité en plus
+  petit, précision dessous ; une tuile en alerte porte un liseré rouge **et** la mention
+  écrite de l'alerte. Les rangées se remplissent sans trou (5 ou 6 tuiles : 3 par ligne ;
+  7 ou 8 : 4).
+- **Intertitres** à losange par thème dans les onglets denses : *Conformité réglementaire*,
+  *Niveaux de service*, *Amélioration continue*, *Connaissances* ; *CMDB*, *Découverte et
+  cycle de vie*.
+- **Score de santé** en jauge circulaire, à la couleur de son niveau.
+- **Graphiques** dessinés à la largeur réelle de leur carte (hauteur fixe, graduations à
+  11 px) : des **colonnes empilées** pour les comptes par jour (volumétrie, découverte) —
+  par **semaine** au-delà de 45 jours —, avec le total de chaque série en légende ; une
+  **courbe** pour les cumuls (burn-up). Tout graphique bascule en tableau (« Voir les
+  données ») ; une série entièrement nulle affiche « Aucune donnée sur la période ».
+
 ## 3. Synthèse globale
 
 | ID | Règle | Statut | Lot |
 |---|---|---|---|
 | REP-01 | **Score de santé** = 100 − pénalités, plancher 0, formule affichée sous le score : incidents majeurs ouverts −25 chacun (50 au plus), P1 ouverts non majeurs −10 (30 au plus), incidents ouverts hors SLA −5 (25 au plus), changements en échec clos sur la période −5 (20 au plus), projets hors tolérance de délai ou de coût −10 (20 au plus). **Bon** ≥ 80, **Dégradé** 50 à 79, **Critique** < 50 | ✅ | |
 | REP-02 | Indicateurs : incidents majeurs ouverts (en alerte), **taux de résolution dans le SLA** sur la période (incidents résolus ayant une échéance, [INC-21](processus/gestion-des-incidents.md)), changements planifiés **cette semaine** (lundi à dimanche, hors rejetés), **projets à risque** (tolérance À surveiller ou Hors tolérance, [PRJ-31, PRJ-32](processus/gestion-de-projet.md)) | ✅ | |
-| REP-03 | **Volumétrie** par jour de la période : incidents et demandes créés, changements mis en œuvre (début planifié des changements Planifié, Mis en œuvre ou Clos) | ✅ | |
+| REP-03 | **Volumétrie** par jour de la période (colonnes regroupées par semaine au-delà de 45 jours) : incidents et demandes créés, changements mis en œuvre (début planifié des changements Planifié, Mis en œuvre ou Clos) | ✅ | |
 | REP-04 | **Matrice des priorités** des incidents et problèmes ouverts : P1 Critique, P2 Élevée, P3 Moyenne, P4 Basse | ✅ | |
 | REP-05 | **État de tolérance** d'un projet (délai, coût) : même calcul que la synthèse du projet ([PRJ-31, PRJ-32](processus/gestion-de-projet.md)) | ✅ | |
 | REP-06 | **Projets à risque ou en retard** : liste avec leur état de tolérance et le lien vers la fiche | ✅ | |
@@ -103,7 +121,7 @@ casse). Policy : User. L'ancien point d'entrée `GET /api/reports/summary` reste
 ## 8. Configuration et inventaire
 
 État de la CMDB **à date** (CI non retirés de mes périmètres) : la période ne règle que la
-courbe de la découverte. Le sas de staging n'est montré qu'aux gestionnaires, sur les
+graphique de la découverte. Le sas de staging n'est montré qu'aux gestionnaires, sur les
 périmètres qu'ils gèrent ([CFG-40](processus/gestion-de-la-configuration.md)).
 
 | ID | Règle | Statut | Lot |
