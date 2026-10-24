@@ -442,6 +442,11 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 - **Badges** de statut, de priorité et de rôle RACI, en casse de phrase ; tableaux cliquables.
 - **Accessibilité** : `:focus-visible` en anneau `--focus-ring` de 2 px, décalé de 2 px ;
   `aria-label` sur les boutons-icônes.
+- **Garde d'erreur** (`core/components/ErrorBoundary.jsx`) : une exception au rendu affiche
+  « Cette page n'a pas pu s'afficher » (recharger, retour à la console, détail technique
+  replié) au lieu d'une page blanche. Une garde entoure la page ouverte dans `Layout` — la
+  navigation reste utilisable, et changer de page la réarme (`key` = chemin) ; une garde
+  racine (`main.jsx`) couvre la coque elle-même.
 - **Jamais de composant déclaré dans le rendu d'un autre** : React le recrée à chaque
   rendu et la saisie perd le focus (défaut M1 de l'arbre des défaillances). Un sous-composant
   se déclare au niveau du module (ex. `FtaNode` dans `FtaTree.jsx`).

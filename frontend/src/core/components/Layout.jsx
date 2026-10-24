@@ -4,6 +4,7 @@ import { api, clearSession, getUser } from '../../api'
 import { GROUPS, MODULES, SECTIONS, groupOf, visibleFor } from '../../modules/registry'
 import ThemeToggle from './ThemeToggle'
 import NotificationBell from './NotificationBell'
+import ErrorBoundary from './ErrorBoundary'
 import { SOURCE_URL, LICENSE_LABEL } from '../about'
 import {
   BrandMark, IconConsole, IconReport, IconLogout, IconMenu, IconClose, IconPreferences, IconCode, IconRail,
@@ -326,7 +327,8 @@ export default function Layout() {
           <button className="topbar-btn" onClick={logout} aria-label="Se déconnecter" title="Se déconnecter"><IconLogout /></button>
         </header>
         <main className="main bg-canvas">
-          <div className="main-inner"><Outlet /></div>
+          {/* Une page qui échoue n'emporte pas la navigation ; changer de page réarme la garde. */}
+          <div className="main-inner"><ErrorBoundary key={location.pathname}><Outlet /></ErrorBoundary></div>
         </main>
       </div>
     </div>

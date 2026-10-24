@@ -206,7 +206,8 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 - **Mes préférences** : la page restait vide — l'appel des préférences de courriel était
   écrasé par celui de la session (même nom dans le client de l'API) et l'application
-  s'interrompait à l'ouverture.
+  s'interrompait à l'ouverture. Une **garde d'erreur** évite désormais toute page blanche :
+  une page qui échoue affiche un message, et le menu reste utilisable.
 - **Mode démonstration** : le chargement des données d'exemple s'arrêtait au premier
   problème, refusé par les règles des pratiques ajoutées depuis (problème relié à un incident
   avant l'analyse, CI relié avant l'évaluation d'un changement, autorisation par un autre que
