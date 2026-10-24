@@ -39,8 +39,9 @@ ultérieure** (SPDX `AGPL-3.0-or-later`), selon la formule recommandée par la F
   supplémentaire : le lien vers le dépôt d'origine suffit.
 - Les dépendances (ASP.NET Core, EF Core, Npgsql, Novell LDAP, Swashbuckle, React, React
   Router, Vite) sont sous licences permissives (MIT, Apache 2.0, PostgreSQL), compatibles
-  avec l'AGPLv3. La police Jost est sous OFL et chargée depuis Google Fonts, non
-  redistribuée.
+  avec l'AGPLv3. Les polices Geologica, IBM Plex Sans et IBM Plex Mono sont sous OFL,
+  redistribuées avec l'interface (`frontend/src/assets/fonts`, licences jointes) depuis
+  [ADR-0021](adr-0021-langage-visuel-v2-sombre-et-nouvel-embleme.md).
 - Toute nouvelle dépendance doit rester compatible avec l'AGPLv3.
 - Les contributions extérieures sont acceptées sous la même licence. Une relicence
   ultérieure demanderait l'accord de tous les contributeurs.

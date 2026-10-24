@@ -43,9 +43,9 @@ les tâches de communauté (section 8).
 
 **Actions en attente (hors dépôt)** :
 
-- **Recette AMD** : main y est à 85be86c ; #148 à #153 n'y sont pas déployés (« pas de
-  déploiement en local pour l'instant », 2026-10-21). Migrations à venir, après `pg_dump` :
-  `RegulatoryNotifications`, `ChangeFollowUps`, `RequestContestRequalify`, `IncidentProblemLot2`.
+- **Recette AMD** : déployée le 2026-10-23 avec main (jusqu'à #172) et le langage visuel v2 ;
+  treize migrations appliquées, après `pg_dump`. Restent à régler dans la console le stockage
+  S3 (Garage) et le SMTP, puis à dérouler la recette.
 - **WinRM** ([CFG-57](reference/processus/gestion-de-la-configuration.md)) à valider sur un
   Windows réel (aucun au laboratoire).
 - **Avant la production** : S1, S2 (section 5) ; issues de la communauté #120 à #126 ouvertes.

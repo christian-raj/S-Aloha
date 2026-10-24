@@ -13,7 +13,7 @@ son état actuel, et pas seulement *quel* est cet état.
 | [0002](adr-0002-documentation-dans-le-depot.md) | La documentation vit dans le dépôt ; un correctif et sa documentation tiennent dans un seul commit | 2026-10-06 | accepté |
 | [0003](adr-0003-plateforme-modulaire-par-processus-itil.md) | Plateforme modulaire par processus ITIL : socle + modules + registre | 2026-10-06 | accepté |
 | [0004](adr-0004-conserver-le-stack-dotnet-react.md) | On conserve le stack .NET / React / PostgreSQL ; pas de réécriture Next.js / Tailwind | 2026-10-06 | accepté |
-| [0005](adr-0005-langage-visuel-a-jetons-en-css-natif.md) | Nouveau langage visuel à jetons clair/sombre, réalisé en CSS natif | 2026-10-06 | accepté |
+| [0005](adr-0005-langage-visuel-a-jetons-en-css-natif.md) | Nouveau langage visuel à jetons clair/sombre, réalisé en CSS natif | 2026-10-06 | supersédé en partie par [0021](adr-0021-langage-visuel-v2-sombre-et-nouvel-embleme.md) |
 | [0006](adr-0006-licence-agplv3.md) | S-Aloha est publié sous licence AGPLv3 | 2026-10-06 | accepté |
 | [0007](adr-0007-pratiques-itil4-et-socle-commun-des-processus.md) | Pratiques ITIL 4 comme référentiel, socle commun des processus, liens inter-processus dans le socle | 2026-10-06 | accepté |
 | [0008](adr-0008-migrations-ef.md) | Migrations EF à la place d'EnsureCreated, avec reprise des bases existantes | 2026-10-06 | accepté |
@@ -29,6 +29,7 @@ son état actuel, et pas seulement *quel* est cet état.
 | [0018](adr-0018-jeton-en-cookie-httponly-et-csp.md) | Jeton de session en cookie HttpOnly, politique CSP | 2026-10-19 | accepté |
 | [0019](adr-0019-console-d-administration.md) | Administration : utilisateurs depuis l'annuaire, fusion des doublons, catégories | 2026-10-19 | accepté |
 | [0020](adr-0020-pieces-jointes-s3-et-smtp-configurables.md) | Pièces jointes sur un stockage compatible S3 (Garage), courriels par un SMTP configurable, réglés dans la console | 2026-10-23 | accepté |
+| [0021](adr-0021-langage-visuel-v2-sombre-et-nouvel-embleme.md) | Langage visuel v2 : sombre par défaut, nouvel emblème, polices servies par l'application | 2026-10-23 | accepté |
 
 Les choix fondateurs antérieurs à cette base (authentification AD LDAP → JWT, analyses
 RCA stockées en JSON) sont décrits dans [`reference/architecture.md`](../reference/architecture.md)

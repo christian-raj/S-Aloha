@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useId } from 'react'
 
 // Jeu d'icônes maison — une seule grammaire : 24×24, trait 1,7, bouts
 // arrondis, couleur héritée (currentColor). Pas de bibliothèque d'icônes :
@@ -11,14 +11,28 @@ const Svg = ({ size = 18, children, ...rest }) => (
   </svg>
 )
 
-/** Marque S-Aloha : un « S » tracé, posé sur une ligne d'horizon — « Aloha »,
- * c'est ce qui passe avant (« Service alohan'ny zavatra rehetra »). */
-export const BrandMark = ({ size = 20 }) => (
-  <Svg size={size} strokeWidth="1.9">
-    <path d="M16 7.2c-.8-1.2-2.3-1.9-4-1.9-2.3 0-4 1.2-4 3 0 4.1 8 2.5 8 6.6 0 1.9-1.8 3-4.1 3-1.8 0-3.3-.7-4.1-2" />
-    <path d="M4 21h16" opacity=".55" />
-  </Svg>
-)
+/** Emblème S-Aloha (ADR-0021) : un « S » hexagonal d'un seul trait dans un
+ * hexagone en filet, et un losange au départ du trait — le « premier point » :
+ * « Aloha », c'est ce qui passe avant (« Service alohan'ny zavatra rehetra »).
+ * Trait en dégradé --mark-from → --mark-to (marque sur fond sombre par défaut). */
+export const BrandMark = ({ size = 32 }) => {
+  // Identifiant unique : l'emblème est rendu plusieurs fois (barre, tiroir, connexion).
+  const gradient = useId()
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden>
+      <defs>
+        <linearGradient id={gradient} x1="0" y1="8" x2="0" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style={{ stopColor: 'var(--mark-from)' }} />
+          <stop offset="1" style={{ stopColor: 'var(--mark-to)' }} />
+        </linearGradient>
+      </defs>
+      <path d="M24 1.8 43.2 12.9v22.2L24 46.2 4.8 35.1V12.9z" style={{ stroke: 'var(--mark-from)' }} strokeOpacity=".4" strokeWidth="1.2" />
+      <path d="M32 13.4 24 8.8l-8 4.6v6.9l8 4.6 8 4.6v6.9l-8 4.6-8-4.6" stroke={`url(#${gradient})`}
+        strokeWidth="3.4" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M35.2 9.2l2.2 2.2-2.2 2.2-2.2-2.2z" style={{ fill: 'var(--mark-to)' }} />
+    </svg>
+  )
+}
 
 export const IconConsole = (p) => <Svg {...p}><rect x="3.5" y="3.5" width="7" height="7" /><rect x="13.5" y="3.5" width="7" height="7" /><rect x="3.5" y="13.5" width="7" height="7" /><rect x="13.5" y="13.5" width="7" height="7" /></Svg>
 export const IconReport = (p) => <Svg {...p}><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></Svg>

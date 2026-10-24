@@ -186,6 +186,11 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Modifié
 
+- **Langage visuel v2** ([ADR-0021](docs/decisions/adr-0021-langage-visuel-v2-sombre-et-nouvel-embleme.md)) :
+  **thème sombre par défaut** (le mode clair reste à un clic, et mémorisé), surfaces bleu nuit
+  en couches, accent turquoise, angles adoucis, titres en Geologica et texte en IBM Plex Sans,
+  contrastes des textes portés à 4,5:1 dans les deux thèmes. **Nouvel emblème** — un « S »
+  hexagonal — dans la barre latérale, la page de connexion et le favicon.
 - **Réponses de l'API en DTO** (A2) : l'API ne renvoie plus ses entités internes, mais des
   objets de réponse explicites, de mêmes noms de champs ; les navigations internes (problème
   d'une analyse, données brutes de la découverte…) n'en sortent plus. Le contrat est figé par
@@ -193,6 +198,11 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Corrigé
 
+- **Mode démonstration** : le chargement des données d'exemple s'arrêtait au premier
+  problème, refusé par les règles des pratiques ajoutées depuis (problème relié à un incident
+  avant l'analyse, CI relié avant l'évaluation d'un changement, autorisation par un autre que
+  le demandeur, changement standard tiré d'un modèle, publication à quatre yeux, motif
+  d'attente, valeur et effort d'une amélioration). Il charge de nouveau tout le jeu.
 - **Import du registre OUI** (CFG-50) refusé en 413 : nginx limitait le corps des requêtes à
   1 Mo, quand `oui.csv` fait environ 4 Mo. La limite de `/api/` passe à 16 Mo (couvre aussi
   le texte du référentiel NIS 2, 5 Mo) ; un refus de taille par un proxy s'affiche clairement.
@@ -213,6 +223,9 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
   de la page ; cookie `SameSite=Strict`, `Secure` en HTTPS, protection CSRF par l'en-tête
   `X-S-Aloha`, déconnexion côté serveur ; nginx sert une politique de sécurité du contenu
   (CSP) et `X-Content-Type-Options`.
+- **CSP resserrée** : les polices sont servies par l'application ; la politique n'autorise
+  plus aucun domaine externe pour les styles et les polices (`style-src 'self'`,
+  `font-src 'self'`).
 
 ### Mise à jour
 

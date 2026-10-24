@@ -5,7 +5,7 @@ import { dateFr } from '../../../core/fields'
 
 const pct = p => (p === null || p === undefined ? '—' : `${p.toLocaleString('fr-FR')} %`)
 const delta = d => (d === null || d === undefined ? '—' : `${d > 0 ? '+' : ''}${d.toLocaleString('fr-FR')}`)
-const tone = d => (d > 0 ? { color: 'var(--success, #15803d)' } : d < 0 ? { color: 'var(--danger)' } : {})
+const tone = d => (d > 0 ? { color: 'var(--accent-emerald)' } : d < 0 ? { color: 'var(--danger)' } : {})
 
 function ScoreRow({ label, score, sub }) {
   return (

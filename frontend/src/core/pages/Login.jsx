@@ -41,7 +41,7 @@ export default function Login() {
         <div className="login-glow b" aria-hidden />
 
         <div className="brand">
-          <div className="brand-mark large"><BrandMark size={24} /></div>
+          <div className="brand-mark large"><BrandMark size={40} /></div>
           <span className="brand-name large">S-Aloha</span>
         </div>
 
@@ -76,7 +76,7 @@ export default function Login() {
       <div className="login-side bg-canvas">
         <form className="login-card" onSubmit={submit}>
           <div className="login-compact-brand">
-            <div className="brand-mark large"><BrandMark size={24} /></div>
+            <div className="brand-mark large"><BrandMark size={40} /></div>
             <div>
               <p className="brand-name large">S-Aloha</p>
               <p className="muted small">Plateforme ITIL</p>

@@ -216,7 +216,7 @@ export default function Layout() {
       <div className="content">
         <header className="topbar">
           <button className="topbar-btn" onClick={() => setOpen(true)} aria-label="Ouvrir la navigation"><IconMenu /></button>
-          <div className="brand-mark small"><BrandMark size={16} /></div>
+          <div className="brand-mark small"><BrandMark size={24} /></div>
           <span className="brand-name">S-Aloha</span>
           <span className="push"><NotificationBell placement="top" /></span>
           <button className="topbar-btn" onClick={logout} aria-label="Se déconnecter" title="Se déconnecter"><IconLogout /></button>

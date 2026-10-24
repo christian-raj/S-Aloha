@@ -72,12 +72,13 @@ def connexion(role):
     sys.exit('✖ API injoignable')
 
 
-def creer(jeton, chemin, corps, statut=None):
+def creer(jeton, chemin, corps, statut=None, par=None):
     """Crée un enregistrement, puis lui donne son statut. Les transitions sont
-    contrôlées par l'API (SOC-05) : `statut` peut être une liste d'étapes."""
+    contrôlées par l'API (SOC-05) : `statut` peut être une liste d'étapes, et `par`
+    le jeton de qui les fait quand ce n'est pas l'auteur (quatre yeux)."""
     e = appel('POST', chemin, jeton, corps)
     for etape in ([statut] if isinstance(statut, str) else statut or []):
-        e = appel('PUT', f'{chemin}/{e["id"]}', jeton, {**corps, 'status': etape})
+        e = appel('PUT', f'{chemin}/{e["id"]}', par or jeton, {**corps, 'status': etape})
     return e
 
 
@@ -87,6 +88,8 @@ def lier(jeton, type_, id_, reference):
 
 def main():
     m, u = connexion('manager'), connexion('user')
+    # CHG-21 : le demandeur n'autorise pas son propre changement ; l'Admin autorise ceux du gestionnaire.
+    a = connexion('admin')
     if appel('GET', '/api/problems', m):
         print('Données déjà présentes : rien à faire.')
         return
@@ -151,6 +154,9 @@ def main():
     p_vpn = probleme('Coupures récurrentes du VPN',
         'Plusieurs incidents de coupure VPN depuis la mise à jour du mois dernier.',
         'Élevé', 'Moyenne', 'Réseau', 'Accès distant (VPN)')
+    # PRB-20 : un problème réactif passe en analyse une fois relié à un incident.
+    lier(u, 'problem', p_vpn['id'], inc_vpn['reference'])
+    lier(u, 'problem', p_vpn['id'], inc_vpn2['reference'])
     appel('POST', f'/api/problems/{p_vpn["id"]}/analyses', u, {'method': 'FIVE_WHYS',
         'dataJson': json.dumps({'problem': 'Les sessions VPN tombent toutes les 20 minutes',
             'whys': ['La passerelle renégocie les clés de session',
@@ -174,8 +180,6 @@ def main():
     appel('POST', f'/api/problems/{p_vpn["id"]}/actions', u, {'title': 'Sauvegarder la configuration avant toute mise à jour',
         'description': 'Ajouter l’étape au modèle de changement des équipements réseau.', 'status': None,
         'dueDate': jour(10), 'raci': raci})
-    lier(u, 'problem', p_vpn['id'], inc_vpn['reference'])
-    lier(u, 'problem', p_vpn['id'], inc_vpn2['reference'])
     lier(u, 'problem', p_vpn['id'], passerelle['reference'])
 
     probleme('Échecs intermittents des sauvegardes nocturnes',
@@ -188,14 +192,21 @@ def main():
         'changeType': 'Normal', 'risk': 'Moyen', 'plannedStart': jour(5), 'plannedEnd': jour(5),
         'implementationPlan': '1. Sauvegarder la configuration\n2. Corriger la durée de vie des clés\n3. Tester depuis une direction régionale',
         'backoutPlan': 'Restaurer la configuration sauvegardée.', 'outcome': None}
-    changement = creer(m, '/api/changes', chg, ['Évalué', 'Autorisé'])
-    appel('PUT', f'/api/changes/{changement["id"]}', m, {**chg, 'status': 'Planifié'})
+    changement = creer(m, '/api/changes', chg)
+    # Un CI relié avant l'évaluation : l'analyse d'impact en part.
     lier(m, 'change', changement['id'], p_vpn['reference'])
     lier(m, 'change', changement['id'], passerelle['reference'])
+    appel('PUT', f'/api/changes/{changement["id"]}', m, {**chg, 'status': 'Évalué'})
+    appel('PUT', f'/api/changes/{changement["id"]}', a, {**chg, 'status': 'Autorisé'})
+    appel('PUT', f'/api/changes/{changement["id"]}', m, {**chg, 'status': 'Planifié'})
+    # Un changement standard naît d'un modèle du catalogue, préautorisé.
+    modele = appel('POST', '/api/standard-changes', m, {'name': 'Boîte aux lettres partagée',
+        'description': 'Création d’une boîte partagée pour un service.', 'implementationPlan': 'Procédure standard.',
+        'backoutPlan': 'Supprimer la boîte.', 'risk': 'Faible'})
     creer(u, '/api/changes', {**URSULA, 'title': 'Ajout d’une boîte aux lettres partagée « Achats »',
         'description': 'Changement standard du catalogue.', 'changeType': 'Standard', 'risk': 'Faible',
         'plannedStart': jour(2), 'plannedEnd': jour(2), 'implementationPlan': 'Procédure standard.',
-        'backoutPlan': 'Supprimer la boîte.', 'outcome': None})
+        'backoutPlan': 'Supprimer la boîte.', 'outcome': None, 'standardModelId': modele['id']})
 
     # --- Demandes ----------------------------------------------------------------
     creer(u, '/api/requests', {**URSULA, 'title': 'Accès VPN pour une nouvelle arrivante',
@@ -211,20 +222,20 @@ def main():
     article = creer(m, '/api/knowledge', {**MARC, 'title': 'Rétablir une session VPN qui coupe',
         'description': 'Contournement de l’erreur connue sur VPN-GW-01.', 'articleType': 'Erreur connue',
         'content': 'Symptôme : la session VPN tombe toutes les 20 minutes.\n\nContournement : redémarrer la passerelle VPN-GW-01 depuis la console d’administration, puis demander aux utilisateurs de se reconnecter.\n\nCorrection définitive : changement planifié.',
-        'keywords': 'vpn, coupure, passerelle', 'reviewDate': jour(60)}, 'Publié')
+        'keywords': 'vpn, coupure, passerelle', 'reviewDate': jour(60)}, 'Publié', par=a)
     lier(m, 'article', article['id'], p_vpn['reference'])
 
     # --- Amélioration continue ---------------------------------------------------
     creer(m, '/api/improvements', {**MARC, 'title': 'Réduire le délai de résolution des incidents P2',
         'description': 'Les incidents P2 dépassent souvent la cible de 8 h.', 'step': 2, 'priority': 'Élevée',
         'benefit': 'Respect du SLA Accès distant', 'baseline': '11 h en moyenne', 'target': '6 h',
-        'outcome': None, 'dueDate': jour(45)}, 'Validée')
+        'outcome': None, 'dueDate': jour(45), 'value': 3, 'effort': 2}, 'Validée')
 
-    complements(m, u, messagerie, erp, mail, bdd, parefeu)
+    complements(m, u, a, messagerie, erp, mail, bdd, parefeu)
     print('✔ Données de démonstration chargées.')
 
 
-def complements(m, u, messagerie, erp, mail, bdd, parefeu):
+def complements(m, u, a, messagerie, erp, mail, bdd, parefeu):
     """Second jeu : de quoi remplir registres, reporting et captures d'écran."""
     # --- Services et SLA ---------------------------------------------------------
     impression = creer(m, '/api/services', {**MARC, 'title': 'Impression',
@@ -270,20 +281,21 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
     lier(m, 'ci', imp['id'], impression['reference'])
 
     # --- Incidents ---------------------------------------------------------------
-    def incident(titre, desc, impact, urgence, cat, service, statut=None, resolution=None):
+    def incident(titre, desc, impact, urgence, cat, service, statut=None, resolution=None, **autres):
         return creer(u, '/api/incidents', {**URSULA, 'title': titre, 'description': desc,
             'impact': impact, 'urgency': urgence, 'category': cat, 'affectedService': service,
             'isMajor': False, 'resolution': resolution,
-            'resolutionCode': 'Correctif appliqué' if resolution else None}, statut)
+            'resolutionCode': 'Correctif appliqué' if resolution else None, **autres}, statut)
     incident('ERP inaccessible pendant la clôture mensuelle', 'Erreur de connexion à la base.',
              'Élevé', 'Élevée', 'Application', 'ERP Finances', 'Résolu',
              'Redémarrage du service de base de données ; surveillance renforcée.')
     incident('Imprimante de Toamasina hors ligne', 'Plus aucune impression depuis ce matin.',
-             'Faible', 'Moyenne', 'Matériel', 'Impression', ['En cours', 'En attente'])
+             'Faible', 'Moyenne', 'Matériel', 'Impression', ['En cours', 'En attente'],
+             onHoldReason='Attente fournisseur')
     incident('Boîte aux lettres pleine', 'Réception bloquée pour un utilisateur.',
              'Faible', 'Faible', 'Messagerie', 'Messagerie', ['Résolu', 'Clos'], 'Archivage et quota relevé.')
-    incident('Lenteurs ERP en fin de journée', 'Temps de réponse supérieurs à 10 s.',
-             'Moyen', 'Moyenne', 'Application', 'ERP Finances')
+    inc_erp = incident('Lenteurs ERP en fin de journée', 'Temps de réponse supérieurs à 10 s.',
+                       'Moyen', 'Moyenne', 'Application', 'ERP Finances')
 
     # --- Problèmes ---------------------------------------------------------------
     def probleme(titre, desc, impact, urgence, cat, service):
@@ -293,6 +305,7 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
     p_erp = probleme('Lenteurs récurrentes de l’ERP en fin de journée',
         'Temps de réponse dégradés chaque soir depuis trois semaines.', 'Moyen', 'Moyenne',
         'Application', 'ERP Finances')
+    lier(u, 'problem', p_erp['id'], inc_erp['reference'])  # PRB-20
     appel('POST', f'/api/problems/{p_erp["id"]}/analyses', u, {'method': 'ISHIKAWA',
         'dataJson': json.dumps({'categories': {
             'Méthode': ['Traitements par lots lancés à 17 h'], 'Matériel': ['Baie SAN saturée en écriture'],
@@ -312,17 +325,25 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
         'changeType': 'Normal', 'risk': 'Moyen', 'plannedStart': jour(-12), 'plannedEnd': jour(-12),
         'implementationPlan': 'Appliquer les correctifs, redémarrer, vérifier les flux.',
         'backoutPlan': 'Désinstaller les correctifs.', 'outcome': None}
-    c = creer(m, '/api/changes', chg, ['Évalué', 'Autorisé'])
-    for statut in ['Planifié', 'Mis en œuvre']:
-        appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': statut})
-    appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': 'Clos', 'outcome': 'Réussi'})
+    c = creer(m, '/api/changes', chg)
     lier(m, 'change', c['id'], mail['reference'])
+    appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': 'Évalué'})
+    appel('PUT', f'/api/changes/{c["id"]}', a, {**chg, 'status': 'Autorisé'})
+    appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': 'Planifié'})
+    # Début et fin réels exigés pour la mise en œuvre et la clôture.
+    chg = {**chg, 'actualStart': jour(-12), 'actualEnd': jour(-12)}
+    appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': 'Mis en œuvre'})
+    appel('PUT', f'/api/changes/{c["id"]}', m, {**chg, 'status': 'Clos', 'outcome': 'Réussi'})
     ajout = creer(u, '/api/changes', {**URSULA, 'title': 'Ajout d’un index sur les écritures comptables',
         'description': 'Correctif des lenteurs de l’ERP.', 'changeType': 'Normal', 'risk': 'Faible',
         'plannedStart': jour(7), 'plannedEnd': jour(7), 'implementationPlan': 'Créer l’index hors production, puis en production.',
-        'backoutPlan': 'Supprimer l’index.', 'outcome': None}, 'Évalué')
+        'backoutPlan': 'Supprimer l’index.', 'outcome': None})
     lier(u, 'change', ajout['id'], p_erp['reference'])
     lier(u, 'change', ajout['id'], bdd['reference'])
+    appel('PUT', f'/api/changes/{ajout["id"]}', m, {**URSULA, 'title': ajout['title'], 'description': ajout['description'],
+        'changeType': 'Normal', 'risk': 'Faible', 'plannedStart': jour(7), 'plannedEnd': jour(7),
+        'implementationPlan': ajout['implementationPlan'], 'backoutPlan': ajout['backoutPlan'],
+        'outcome': None, 'status': 'Évalué'})
 
     # --- Demandes, connaissances, amélioration -----------------------------------
     creer(u, '/api/requests', {**URSULA, 'title': 'Accès à l’ERP pour le contrôle de gestion',
@@ -333,13 +354,13 @@ def complements(m, u, messagerie, erp, mail, bdd, parefeu):
         ('Que faire si l’ERP est lent ?', 'FAQ', 'Vérifier l’heure : les traitements par lots tournent à 17 h.'),
         ('Libérer de l’espace dans sa boîte aux lettres', 'Solution', 'Archiver les messages de plus d’un an.')]:
         creer(m, '/api/knowledge', {**MARC, 'title': titre, 'description': '', 'articleType': type_,
-            'content': contenu, 'keywords': '', 'reviewDate': jour(200)}, 'Publié')
+            'content': contenu, 'keywords': '', 'reviewDate': jour(200)}, 'Publié', par=a)
     for titre, etape, priorite, statut in [
         ('Superviser les temps de réponse des applications', 4, 'Élevée', 'Validée'),
         ('Former les agences à la résolution de premier niveau', 1, 'Moyenne', None)]:
         creer(m, '/api/improvements', {**MARC, 'title': titre, 'description': '', 'step': etape,
             'priority': priorite, 'benefit': 'Moins d’incidents escaladés', 'baseline': 'À mesurer',
-            'target': 'À définir', 'outcome': None, 'dueDate': jour(60)}, statut)
+            'target': 'À définir', 'outcome': None, 'dueDate': jour(60), 'value': 3, 'effort': 2}, statut)
 
 
 if __name__ == '__main__':
