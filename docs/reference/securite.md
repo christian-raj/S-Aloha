@@ -29,7 +29,7 @@
   cookie sans l'en-tête `X-S-Aloha: 1` reçoit 403. Les clients d'API (scripts) obtiennent le
   jeton sur demande (`returnToken`) et l'envoient en `Authorization: Bearer`.
 - **CSP** servie par nginx : scripts de la seule origine (le script de thème en ligne autorisé
-  par son empreinte), polices Google Fonts, `frame-ancestors 'none'`, `object-src 'none'` ;
+  par son empreinte), styles et polices de la seule origine (ADR-0021), `frame-ancestors 'none'`, `object-src 'none'` ;
   avec `X-Content-Type-Options: nosniff` et `Referrer-Policy: same-origin`.
 - Le jeton porte les **groupes AD directs** de l'utilisateur (SOC-10), lus à la connexion :
   un changement d'appartenance prend effet à la connexion suivante. Les noms de groupes

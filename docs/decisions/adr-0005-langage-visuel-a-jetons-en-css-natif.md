@@ -3,7 +3,7 @@
 <sub>[← Documentation](../readme.md) · [Toutes les décisions](readme.md)</sub>
 
 - **Date** : 2026-10-06
-- **Statut** : accepté
+- **Statut** : accepté — supersédé en partie par [ADR-0021](adr-0021-langage-visuel-v2-sombre-et-nouvel-embleme.md) (thème sombre par défaut, couleurs, angles, polices, emblème) ; l'architecture à jetons en CSS natif reste en vigueur
 - **Décideur** : Leipa
 
 ## Contexte

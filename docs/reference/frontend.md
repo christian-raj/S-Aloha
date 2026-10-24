@@ -8,14 +8,15 @@
 
 ```
 frontend/
-├── index.html                    # métadonnées, police Jost, script de thème avant rendu
+├── index.html                    # métadonnées, script de thème avant rendu
 ├── nginx.conf                    # sert le build, proxifie /api/ vers le service api
-├── public/favicon.svg
+├── public/favicon.svg            # emblème sur tuile marine (ADR-0021)
 └── src/
     ├── main.jsx
     ├── api.js                    # client fetch + JWT (sessionStorage) ; 401 ⇒ retour /login
     ├── App.jsx                   # déclaration des routes
     ├── styles.css                # jetons, thèmes, composants — voir § Design
+    ├── assets/fonts/             # Geologica, IBM Plex Sans et Mono (woff2, OFL)
     ├── core/                     # socle UI, transverse aux processus
     │   ├── about.js              # URL du code source et licence (AGPLv3, VITE_SOURCE_URL)
     │   ├── fields.js             # champs communs (titre, description, responsable AD), formats de date
@@ -353,23 +354,30 @@ sans en créer de nouveau.
 ## Design
 
 Langage visuel à jetons, en CSS natif sans Tailwind
-([ADR-0005](../decisions/adr-0005-langage-visuel-a-jetons-en-css-natif.md)). Tout est dans
-`frontend/src/styles.css`.
+([ADR-0005](../decisions/adr-0005-langage-visuel-a-jetons-en-css-natif.md)), dans sa
+**version 2** : sombre par défaut, surfaces en couches, nouvel emblème
+([ADR-0021](../decisions/adr-0021-langage-visuel-v2-sombre-et-nouvel-embleme.md)). Tout est
+dans `frontend/src/styles.css`.
 
 ### Jetons
 
-Définis sur `:root` (thème clair, défaut) et redéfinis sur `.dark`. **Toute couleur passe
-par un jeton** défini dans les deux thèmes.
+Définis sur `:root` (thème clair) et redéfinis sur `.dark` (thème sombre, **par défaut**).
+**Toute couleur passe par un jeton** défini dans les deux thèmes.
 
 | Famille | Jetons |
 |---|---|
-| Fonds | `--bg-app`, `--bg-surface`, `--bg-surface-raised`, `--bg-surface-hover`, `--bg-overlay` |
-| Textes | `--text-primary`, `--text-secondary`, `--text-tertiary`, `--text-disabled` |
-| Bordures | `--border-subtle`, `--border-default`, `--border-strong` |
-| Accents | `--accent-{blue,emerald,red,amber,violet}` et leur variante `-soft` |
-| Ombres | `--shadow-sm`, `--shadow-md`, `--shadow-lg` |
-| Marque (indépendante du thème) | `--brand-navy`, `--brand-navy-deep`, `--brand-blue`, `--brand-gradient`, `--brand-tile` |
-| Typographie | `--font-sans` (Jost), `--font-mono` |
+| Fonds (couches 0 à 3) | `--bg-app`, `--bg-surface`, `--bg-surface-raised`, `--bg-surface-hover`, `--bg-overlay` ; `--bg-nav` (barre latérale, sombre dans les deux thèmes) |
+| Textes | `--text-primary`, `--text-secondary`, `--text-tertiary`, `--text-disabled`, `--text-on-nav` |
+| Bordures et focus | `--border-subtle`, `--border-default`, `--border-strong` (bord des champs, ≥ 3:1), `--focus-ring` |
+| Accents | `--accent-{blue,teal,emerald,red,amber,violet}` et leur variante `-soft` ; `--on-accent` (texte sur un aplat d'accent) |
+| Graphiques | `--chart-series`, `--chart-reference`, `--chart-1` à `--chart-3` |
+| Ombres | `--shadow-sm`, `--shadow-md`, `--shadow-lg`, `--glow-focus` |
+| Angles | `--radius-xs` 3 · `--radius-sm` 6 · `--radius-md` 10 · `--radius-lg` 14 px |
+| Marque (indépendante du thème) | `--brand-navy`, `--brand-navy-deep`, `--brand-blue`, `--brand-teal`, `--brand-gradient`, `--brand-line`, `--focus-line` ; `--mark-from`, `--mark-to` (trait de l'emblème) |
+| Typographie | `--font-display` (Geologica), `--font-sans` (IBM Plex Sans), `--font-mono` (IBM Plex Mono) |
+
+Contrastes vérifiés : tous les textes à **4,5:1** au moins sur toutes les surfaces, dans les
+deux thèmes ; chaque accent à 4,5:1 sur sa variante `-soft`.
 
 **Alias historiques** — `--navy`, `--ink`, `--muted`, `--line`, `--blue`, `--blue-soft`,
 `--ok`, `--warn`, `--danger` pointent vers les jetons. Ils existent pour les styles en
@@ -377,31 +385,48 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 
 ### Typographie
 
-- Échelle en jetons sur `:root` : `--fs-2xs` 11,5 · `--fs-xs` 12,5 · `--fs-sm` 14 ·
-  `--fs-base` 15,5 · `--fs-md` 17 · `--fs-lg` 21 · `--fs-xl` 28 · `--fs-2xl` 36 px ;
+- **Polices servies par l'application** (`src/assets/fonts`, licences OFL jointes) :
+  Geologica (variable) pour les titres, chiffres clés et le nom de la marque, en graisse 500 ;
+  IBM Plex Sans pour le texte ; IBM Plex Mono pour les références (`.row-ref`, `.mono`).
+  Aucun appel à un service externe : une installation sans Internet garde sa typographie.
+- Échelle en jetons sur `:root` : `--fs-2xs` 11,5 · `--fs-xs` 12 · `--fs-sm` 13 ·
+  `--fs-base` 15 · `--fs-md` 16 · `--fs-lg` 20 · `--fs-xl` 28 · `--fs-2xl` 32 px ;
   `html` à 16 px. **Toute nouvelle taille de police passe par ces jetons**, sans valeur en
   px en dur.
-- Tailles courantes : cellules 15 px, champs 15,5, boutons 15, libellés de champ 14,
-  badges 11,5, en-têtes de colonnes 12, titre de page 36 (30 en mobile), sous-titre 16,5
-  en `--text-secondary`.
+- Tailles courantes : cellules, champs et boutons 14 px, libellés 13, badges et en-têtes de
+  colonnes 11,5, titre de page 32 (26 en mobile), sous-titre 16 en `--text-secondary`.
+
+### Emblème
+
+- `BrandMark` (`core/components/icons.jsx`) : un « S » hexagonal d'un seul trait dans un
+  hexagone en filet, et un losange au départ du trait — le « premier point » d'*Aloha*.
+  Trait en dégradé `--mark-from` → `--mark-to` (bleu → turquoise de la marque) ; sur la
+  carte de connexion en thème clair, encres foncées (`#1463d6` → `#00745c`).
+- Rendu dans la barre latérale (32 px), la barre mobile et la page de connexion, sans tuile
+  de fond ; chaque instance a son propre identifiant de dégradé (`useId`).
+- Favicon (`public/favicon.svg`) : l'emblème sur une tuile marine arrondie.
 
 ### Principes
 
-- **Angles droits** : aucun `border-radius`.
-- **Police Jost** (Google Fonts), repli `system-ui`.
-- **Sidebar marine** de 272 px en dégradé, toujours sombre, en sections : *Pilotage*
+- **Angles adoucis** par les jetons `--radius-*` : badges et puces 3 px, boutons, champs et
+  liens de navigation 6 px, cartes, tableaux et tuiles 10 px, fenêtres modales 14 px.
+- **Barre latérale** de 264 px sur `--bg-nav`, toujours sombre, en sections : *Pilotage*
   (Console, Reporting), *Pratiques* (les pratiques ITIL), *Projets*, *Conformité &
   réglementation*,
-  puis *Paramétrage* et *Administration* selon le rôle (§ Navigation cible).
-- **Repères de section** : un point de couleur devant le titre distingue les sections qui
-  ne sont pas des pratiques — **vert** pour Projets (`.nav-section.projects`,
-  `--accent-emerald`), **violet** pour Conformité & réglementation
-  (`.nav-section.compliance`, `--accent-violet`), **ambre** pour Administration
-  (`.nav-section.admin`, `--accent-amber`).
-- **Canevas à points** (`.bg-canvas`) : grille de points fine et lueurs de marque en coin,
-  pour éviter un fond plat sur les pages peu denses.
-- **Badges** de statut, de priorité et de rôle RACI ; tableaux cliquables.
-- **Accessibilité** : `:focus-visible` marqué, `aria-label` sur les boutons-icônes.
+  puis *Paramétrage* et *Administration* selon le rôle (§ Navigation cible). Le lien actif
+  porte un fond bleu à 16 % et un liseré au dégradé de la marque.
+- **Repères de section** : un **losange** devant le titre (le premier point de l'emblème) —
+  bleu pour Pilotage et les pratiques, **turquoise** pour Projets (`.nav-section.projects`),
+  **violet** pour Conformité & réglementation (`.nav-section.compliance`), **ambre** pour
+  Administration (`.nav-section.admin`). Le même losange, au ton de la liste, précède le
+  titre des listes de la console.
+- **Le dégradé de la marque** est réservé à l'emblème, au liseré du lien actif et au
+  soulignement de l'onglet actif (`--focus-line`) : il n'habille ni boutons ni fonds.
+- **Canevas** (`.bg-canvas`) : grille fine de 24 px et lueur bleue en coin, pour éviter un
+  fond plat sur les pages peu denses.
+- **Badges** de statut, de priorité et de rôle RACI, en casse de phrase ; tableaux cliquables.
+- **Accessibilité** : `:focus-visible` en anneau `--focus-ring` de 2 px, décalé de 2 px ;
+  `aria-label` sur les boutons-icônes.
 - **Jamais de composant déclaré dans le rendu d'un autre** : React le recrée à chaque
   rendu et la saisie perd le focus (défaut M1 de l'arbre des défaillances). Un sous-composant
   se déclare au niveau du module (ex. `FtaNode` dans `FtaTree.jsx`).
@@ -436,9 +461,10 @@ ligne des pages antérieures ; ne pas les utiliser dans du code nouveau.
 ### Thème clair / sombre
 
 - Le thème est une classe `dark` sur `<html>`.
-- Il est posé **avant le premier rendu** par un script en tête d'`index.html` : préférence
-  enregistrée (`localStorage`, clé `s-aloha-theme`), sinon préférence système
-  (`prefers-color-scheme`). Décidé dans React, il ferait flasher l'écran en clair.
+- Il est posé **avant le premier rendu** par un script en tête d'`index.html` : **sombre par
+  défaut**, sauf si l'utilisateur a choisi le mode clair (`localStorage`, clé
+  `s-aloha-theme`) — [ADR-0021](../decisions/adr-0021-langage-visuel-v2-sombre-et-nouvel-embleme.md).
+  Décidé dans React, il ferait flasher l'écran au chargement.
 - `ThemeToggle` ne fait que basculer la classe et enregistrer le choix ; si le stockage est
   indisponible (navigation privée), le thème reste en mémoire pour la session.
 

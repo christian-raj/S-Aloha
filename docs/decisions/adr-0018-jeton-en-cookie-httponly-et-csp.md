@@ -30,7 +30,8 @@ initial : [état du 2026-10-06](../archives/etat-initial-2026-10-06.md).
 4. **Déconnexion** : `POST /api/auth/logout` efface le cookie ; `GET /api/auth/me` rend
    l'utilisateur de la session, pour que l'interface se recharge sans stocker de secret.
 5. **CSP** servie par nginx : scripts de la seule origine (le script de thème en ligne
-   autorisé par son empreinte), polices Google Fonts, aucun cadre (`frame-ancestors 'none'`),
+   autorisé par son empreinte), polices Google Fonts — servies par l'application depuis
+   [ADR-0021](adr-0021-langage-visuel-v2-sombre-et-nouvel-embleme.md) —, aucun cadre (`frame-ancestors 'none'`),
    aucun `object`, connexions vers la seule origine.
 
 ## Conséquences
