@@ -204,6 +204,9 @@ publiée, dans les [releases](https://github.com/chrraj7/S-Aloha/releases).
 
 ### Corrigé
 
+- **Mes préférences** : la page restait vide — l'appel des préférences de courriel était
+  écrasé par celui de la session (même nom dans le client de l'API) et l'application
+  s'interrompait à l'ouverture.
 - **Mode démonstration** : le chargement des données d'exemple s'arrêtait au premier
   problème, refusé par les règles des pratiques ajoutées depuis (problème relié à un incident
   avant l'analyse, CI relié avant l'évaluation d'un changement, autorisation par un autre que
