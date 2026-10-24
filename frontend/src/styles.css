@@ -856,11 +856,19 @@ table.compact td { padding: 9px 12px; font-size: var(--fs-sm); }
 @media print {
   .sidebar, .topbar, .drawer, .no-print, .chart-tip { display: none !important; }
   .print-only { display: block; }
-  .shell, .content, .main, .main-inner { display: block; margin: 0; padding: 0; background: none; }
+  /* À l'écran, la coque tient dans la fenêtre (100vh) et .main défile : à l'impression, tout
+     se déroule, sinon le navigateur n'imprime qu'une hauteur d'écran (un PDF d'une page). */
+  html, body, #root, .shell, .content, .main, .main-inner {
+    display: block; height: auto; overflow: visible; margin: 0; padding: 0; background: none; animation: none;
+  }
+  /* Barres, pastilles et badges sont des fonds : sans cela, le réglage par défaut des
+     navigateurs (pas d'arrière-plans) les efface du PDF. Thème clair à l'impression
+     (core/printTheme.js) : les surfaces restent claires. */
+  .main * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .card, .kpi, .health, figure, table { box-shadow: none; break-inside: avoid; }
   .report-section { break-before: page; }
   .report-section:first-of-type { break-before: auto; }
-  .report-grid, .report-grid.wide { grid-template-columns: 1fr 1fr; }
+  .report-grid, .report-grid.wide, .report-grid.split { grid-template-columns: 1fr 1fr; }
 }
 
 /* ---- Tableau Kanban d'un projet ---- */
